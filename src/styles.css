@@ -1,0 +1,456 @@
+:root {
+  --bg: #1e1f22;
+  --panel: #26282c;
+  --border: #393b40;
+  --fg: #d4d4d4;
+  --muted: #7f848e;
+  --accent: #61afef;
+  --hot: #ff5c5c;
+  --ok: #4ec98b;
+  --warn: #e5c07b;
+  --mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --anim-ms: 400ms;
+  color-scheme: dark;
+  font-variant-ligatures: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, "Segoe UI", "Hiragino Sans", sans-serif;
+}
+
+main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 24px 32px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+header p {
+  margin: 4px 0 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 設定パネル */
+.config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: flex-start;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.config label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.config label.check-field {
+  flex-direction: row;
+  align-items: center;
+  align-self: center;
+  margin-top: 16px;
+}
+
+.config input:not([type="checkbox"]),
+.config select,
+.controls select {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+}
+
+.config input:not([type="checkbox"]) {
+  width: 8.5em;
+}
+
+.config .input-field {
+  flex: 1;
+  min-width: 16em;
+}
+
+.config .input-field input {
+  width: 100%;
+}
+
+.config .invalid input {
+  border-color: var(--hot);
+}
+
+.error {
+  color: var(--hot);
+  max-width: 16em;
+}
+
+.invalid-config {
+  color: var(--hot);
+}
+
+/* ペイン */
+.visualizer {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.pane {
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.hardware {
+  overflow-x: auto;
+}
+
+.software {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 16px;
+}
+
+/* 再生コントロール */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.controls button {
+  min-width: 36px;
+  height: 32px;
+  background: var(--panel);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.controls button.primary {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.controls .seek {
+  flex: 1;
+}
+
+.controls .counter {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-width: 6em;
+  text-align: right;
+}
+
+/* LFSR 図 */
+.lfsr {
+  display: block;
+  width: 100%;
+  max-height: 340px;
+  font-family: var(--mono);
+}
+
+.lfsr .label {
+  fill: var(--muted);
+  font-size: 13px;
+}
+
+.wire {
+  stroke: #4b5060;
+  stroke-width: 2;
+  transition: stroke var(--anim-ms);
+}
+
+.wire.fb-on {
+  stroke: var(--hot);
+  filter: url(#glow);
+}
+
+.wire.fb-off {
+  stroke: #5c6370;
+  stroke-dasharray: 5 4;
+}
+
+.gate circle {
+  fill: var(--bg);
+  stroke: #4b5060;
+  stroke-width: 2;
+}
+
+.gate line {
+  stroke: #4b5060;
+  stroke-width: 2;
+}
+
+.gate.fb-on circle,
+.gate.fb-on line {
+  stroke: var(--hot);
+}
+
+.gate.input-gate.fb-off circle,
+.gate.input-gate.fb-off line {
+  stroke: var(--accent);
+}
+
+.gate.spin .gate-body {
+  animation: spin var(--anim-ms) ease-in-out;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(180deg);
+  }
+}
+
+.stream {
+  transition: transform var(--anim-ms) ease-in-out;
+}
+
+.stream-bit {
+  font-size: 16px;
+  text-anchor: middle;
+  fill: var(--fg);
+  transition: fill var(--anim-ms);
+}
+
+.stream-bit.used {
+  fill: #4b5060;
+}
+
+.stream-bit.next {
+  fill: var(--warn);
+  font-weight: bold;
+}
+
+.stream-bit.flip-x {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flip-x var(--anim-ms) ease-in-out;
+  fill: var(--accent);
+}
+
+@keyframes flip-x {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.reg rect {
+  fill: #2c313a;
+  stroke: #5c6370;
+  stroke-width: 2;
+  transition:
+    fill var(--anim-ms),
+    stroke var(--anim-ms);
+}
+
+.reg.msb rect {
+  stroke: var(--warn);
+}
+
+.reg.hit rect {
+  stroke: var(--hot);
+  fill: #3a2626;
+}
+
+.reg.done rect {
+  stroke: var(--ok);
+  fill: #213a2d;
+  filter: url(#glow);
+}
+
+.reg-bit {
+  font-size: 24px;
+  text-anchor: middle;
+  fill: var(--fg);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.reg-name {
+  font-size: 12px;
+  text-anchor: middle;
+  fill: var(--muted);
+}
+
+.reg-bit.slide {
+  animation: slide var(--anim-ms) ease-in-out;
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(var(--slide-from));
+    opacity: 0.3;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.reg-bit.flip {
+  animation: flip-y var(--anim-ms) ease-in-out;
+  fill: var(--hot);
+}
+
+@keyframes flip-y {
+  0% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.reg-bit.mirror {
+  animation: flip-x var(--anim-ms) ease-in-out;
+  fill: var(--accent);
+}
+
+.fb-label {
+  font-size: 13px;
+}
+
+.fb-label.fb-on {
+  fill: var(--hot);
+}
+
+.fb-label.fb-off {
+  fill: var(--muted);
+}
+
+/* 擬似コード */
+.code {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.code-line {
+  display: flex;
+  gap: 12px;
+  padding: 0 8px;
+  border-left: 3px solid transparent;
+  white-space: pre;
+  transition:
+    background var(--anim-ms),
+    opacity var(--anim-ms);
+}
+
+.code-line .ln {
+  width: 2ch;
+  text-align: right;
+  color: #4b5060;
+}
+
+.code-line.active {
+  background: #2f3a4d;
+  border-left-color: var(--accent);
+}
+
+.code-line.skipped {
+  opacity: 0.35;
+  text-decoration: line-through;
+}
+
+.note {
+  color: var(--muted);
+}
+
+.note-true {
+  color: var(--hot);
+}
+
+/* 状態 */
+.state {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.state-kind {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.state-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.state-row .key {
+  color: var(--muted);
+  min-width: 6em;
+}
+
+.state code {
+  font-family: var(--mono);
+  font-size: 1rem;
+}
+
+.framed {
+  word-break: break-all;
+}
+
+.crc-tail {
+  color: var(--ok);
+  font-weight: bold;
+}
+
+.check.ok {
+  color: var(--ok);
+}
+
+.check.ng {
+  color: var(--hot);
+}
