@@ -1,6 +1,9 @@
+import { Pause, Play, Repeat, SkipBack, SkipForward, StepBack, StepForward } from "lucide-react";
 import type { Player, PlayerMsg, SpeedMode } from "../playback/playback";
 
 export const RATES = [0.25, 0.5, 1, 2, 4, 8] as const;
+
+const ICON_SIZE = 18;
 
 type Props = Readonly<{
   player: Player;
@@ -19,19 +22,25 @@ export function Controls({ player, length, speedMode, rate, loop, send, onSpeedM
   return (
     <div className="controls">
       <button type="button" title="先頭 (Home)" onClick={() => send({ type: "first" })}>
-        ⏮
+        <SkipBack size={ICON_SIZE} />
       </button>
       <button type="button" title="1 ステップ戻る (←)" onClick={() => send({ type: "prev" })}>
-        ◀
+        <StepBack size={ICON_SIZE} />
       </button>
-      <button type="button" className="primary" title="再生 / 一時停止 (Space)" onClick={() => send({ type: "toggle" })}>
-        {player.playing ? "⏸" : "▶"}
+      <button
+        type="button"
+        className="primary"
+        title="再生 / 一時停止 (Space)"
+        aria-label={player.playing ? "一時停止" : "再生"}
+        onClick={() => send({ type: "toggle" })}
+      >
+        {player.playing ? <Pause size={ICON_SIZE} /> : <Play size={ICON_SIZE} />}
       </button>
       <button type="button" title="1 ステップ進む (→)" onClick={() => send({ type: "next" })}>
-        ▶|
+        <StepForward size={ICON_SIZE} />
       </button>
       <button type="button" title="末尾 (End)" onClick={() => send({ type: "last" })}>
-        ⏭
+        <SkipForward size={ICON_SIZE} />
       </button>
       <button
         type="button"
@@ -40,7 +49,7 @@ export function Controls({ player, length, speedMode, rate, loop, send, onSpeedM
         aria-pressed={loop}
         onClick={() => onLoop(!loop)}
       >
-        🔁
+        <Repeat size={ICON_SIZE} />
       </button>
       <input
         className="seek"
