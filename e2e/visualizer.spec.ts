@@ -25,7 +25,7 @@ test("xor ステップでは poly の 1 のビットの箱が光り、XOR の行
 });
 
 test("XOR ゲートには働いた瞬間の計算式を出し、凡例で ⊕ の意味を示す", async ({ page }) => {
-  await expect(page.locator(".legend")).toHaveText("⊕ = XOR（2 入力が異なれば 1）");
+  await expect(page.locator(".legend")).toContainText("⊕ = XOR（2 入力が異なれば 1）");
   await stepForward(page, 1);
   await expect(page.locator('.gate-eq[data-gate="input"]')).toHaveText("msb⊕b=fb : 0⊕1=1");
   await stepForward(page, 2);
@@ -34,6 +34,25 @@ test("XOR ゲートには働いた瞬間の計算式を出し、凡例で ⊕ �
   await expect(page.locator(".gate.active")).toHaveCount(1);
   await stepForward(page, 1);
   await expect(page.locator(".gate-eq")).toHaveCount(1);
+});
+
+test("ゲートの色は計算中なら黄、それ以外は fb の値によらず灰", async ({ page }) => {
+  const YELLOW = "rgb(229, 192, 123)";
+  const GRAY = "rgb(75, 80, 96)";
+  const stroke = (gate: string) =>
+    page.locator(`.gate[data-gate="${gate}"] circle`).evaluate((el) => getComputedStyle(el).stroke);
+  await expect(page.locator(".legend")).toContainText("赤 = fb 1 の経路");
+  await stepForward(page, 1); // feedback, fb = 1
+  await expect(counter(page)).toHaveText("2 / 15");
+  await expect.poll(() => stroke("input")).toBe(YELLOW);
+  await expect.poll(() => stroke("1")).toBe(GRAY);
+  await stepForward(page, 2); // xor
+  await expect(counter(page)).toHaveText("4 / 15");
+  await expect.poll(() => stroke("input")).toBe(GRAY);
+  await expect.poll(() => stroke("1")).toBe(YELLOW);
+  await stepForward(page, 1); // feedback, fb = 0
+  await expect(counter(page)).toHaveText("5 / 15");
+  await expect.poll(() => stroke("input")).toBe(YELLOW);
 });
 
 test("fb = 0 の shift では if が false と注記され、本体が打ち消される", async ({ page }) => {
