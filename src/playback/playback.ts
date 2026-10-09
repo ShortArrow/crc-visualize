@@ -37,7 +37,7 @@ export type PlayerMsg =
   | { type: "play" }
   | { type: "pause" }
   | { type: "toggle" }
-  | { type: "tick" }
+  | { type: "tick"; loop: boolean }
   | { type: "next" }
   | { type: "prev" }
   | { type: "first" }
@@ -47,7 +47,7 @@ export type PlayerMsg =
 
 export const initialPlayer: Player = { index: 0, playing: false };
 
-/** 再生状態の遷移。length はステップ数（1 以上）。 */
+/** 再生状態の遷移。length はステップ数（1 以上）。tick の loop が真なら末尾の次は先頭に戻る。 */
 export function updatePlayer(player: Player, msg: PlayerMsg, length: number): Player {
   const last = length - 1;
   const stopAt = (index: number): Player => ({ index: Math.min(Math.max(index, 0), last), playing: false });
@@ -60,6 +60,7 @@ export function updatePlayer(player: Player, msg: PlayerMsg, length: number): Pl
       return updatePlayer(player, { type: player.playing ? "pause" : "play" }, length);
     case "tick":
       if (!player.playing) return player;
+      if (msg.loop) return { index: player.index >= last ? 0 : player.index + 1, playing: true };
       return { index: Math.min(player.index + 1, last), playing: player.index + 1 < last };
     case "next":
       return stopAt(player.index + 1);

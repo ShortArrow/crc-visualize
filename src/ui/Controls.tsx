@@ -7,13 +7,15 @@ type Props = Readonly<{
   length: number;
   speedMode: SpeedMode;
   rate: number;
+  loop: boolean;
   send: (msg: PlayerMsg) => void;
   onSpeedMode: (mode: SpeedMode) => void;
   onRate: (rate: number) => void;
+  onLoop: (loop: boolean) => void;
 }>;
 
 /** 再生コントロール。 */
-export function Controls({ player, length, speedMode, rate, send, onSpeedMode, onRate }: Props) {
+export function Controls({ player, length, speedMode, rate, loop, send, onSpeedMode, onRate, onLoop }: Props) {
   return (
     <div className="controls">
       <button type="button" title="先頭 (Home)" onClick={() => send({ type: "first" })}>
@@ -30,6 +32,15 @@ export function Controls({ player, length, speedMode, rate, send, onSpeedMode, o
       </button>
       <button type="button" title="末尾 (End)" onClick={() => send({ type: "last" })}>
         ⏭
+      </button>
+      <button
+        type="button"
+        className={loop ? "toggle on" : "toggle"}
+        title="ループ再生 (L)"
+        aria-pressed={loop}
+        onClick={() => onLoop(!loop)}
+      >
+        🔁
       </button>
       <input
         className="seek"

@@ -163,6 +163,15 @@ h2 {
   border-color: var(--accent);
 }
 
+.controls button.toggle {
+  opacity: 0.45;
+}
+
+.controls button.toggle.on {
+  opacity: 1;
+  border-color: var(--accent);
+}
+
 .controls .seek {
   flex: 1;
 }
