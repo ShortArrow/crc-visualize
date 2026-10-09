@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 const counter = (page: Page) => page.locator(".counter");
 const reg = (page: Page, bit: number) => page.locator(`.reg[data-bit="${bit}"]`);
 const activeLine = (page: Page) => page.locator(".code-line.active");
+const latestLog = (page: Page) => page.locator(".log-entry.latest");
 
 async function stepForward(page: Page, times: number) {
   for (let i = 0; i < times; i++) await page.keyboard.press("ArrowRight");
@@ -16,12 +17,28 @@ test.beforeEach(async ({ page }) => {
 test("xor ステップでは poly の 1 のビットの箱が光り、XOR の行がハイライトされる", async ({ page }) => {
   await stepForward(page, 3);
   await expect(counter(page)).toHaveText("4 / 15");
-  await expect(page.locator(".state-kind")).toHaveText("多項式と XOR");
+  await expect(latestLog(page).locator(".log-title")).toHaveText("多項式と XOR");
   await expect(reg(page, 0)).toHaveClass(/\bhit\b/);
   await expect(reg(page, 1)).toHaveClass(/\bhit\b/);
   await expect(reg(page, 2)).not.toHaveClass(/\bhit\b/);
   await expect(activeLine(page)).toContainText("crc ^= poly");
-  await expect(page.locator(".state")).toContainText("0b011");
+  await expect(latestLog(page)).toContainText("0b011");
+});
+
+test("ログは新しい順に流れ、最新の行だけ大きく表示され、コマ戻しで巻き戻る", async ({ page }) => {
+  await stepForward(page, 3);
+  const entries = page.locator(".log-entry");
+  await expect(entries).toHaveCount(4);
+  await expect(entries.nth(0)).toHaveClass(/\blatest\b/);
+  await expect(entries.nth(0)).toContainText("多項式と XOR");
+  await expect(entries.nth(1)).toContainText("シフト");
+  await expect(entries.nth(3)).toContainText("初期化");
+  const fontSize = (i: number) =>
+    entries.nth(i).locator(".log-title").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  expect(await fontSize(0)).toBeGreaterThan(await fontSize(1));
+  await page.keyboard.press("ArrowLeft");
+  await expect(entries).toHaveCount(3);
+  await expect(entries.nth(0)).toContainText("シフト");
 });
 
 test("XOR ゲートには働いた瞬間の計算式を出し、凡例で ⊕ の意味を示す", async ({ page }) => {

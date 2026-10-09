@@ -8,7 +8,7 @@ import { ConfigPanel, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { LfsrView } from "./ui/LfsrView";
 import type { ParamFocus } from "./ui/paramFocus";
-import { StatePanel } from "./ui/StatePanel";
+import { StepLog } from "./ui/StepLog";
 
 const CHECK_BITS = bitsFromBytes([...new TextEncoder().encode("123456789")]);
 const sameBits = (a: readonly Bit[], b: readonly Bit[]) => a.length === b.length && a.every((x, i) => x === b[i]);
@@ -135,7 +135,10 @@ function Visualizer(props: VisualizerProps) {
           <h2>ソフトウェア</h2>
           <CodeView params={params} step={step} focus={focus} />
         </div>
-        <StatePanel step={step} input={bits} check={check} />
+        <div>
+          <h2>経過</h2>
+          <StepLog steps={steps} current={player.index} input={bits} check={check} />
+        </div>
       </section>
     </div>
   );
