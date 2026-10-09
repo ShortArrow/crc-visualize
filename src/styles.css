@@ -254,17 +254,60 @@ h2 {
   stroke: var(--accent);
 }
 
-.gate.spin .gate-body {
-  animation: spin var(--anim-ms) ease-in-out;
+.gate.active circle {
+  fill: #4a2020;
+  stroke: var(--hot);
+  filter: url(#glow);
 }
 
-@keyframes spin {
+.gate.active line {
+  stroke: var(--hot);
+}
+
+.gate.active.fb-off circle {
+  fill: #1d3347;
+  stroke: var(--accent);
+}
+
+.gate.active.fb-off line {
+  stroke: var(--accent);
+}
+
+.gate-eq {
+  font-size: 13px;
+  animation: pop-in var(--anim-ms) ease-out;
+}
+
+.gate-eq.tap {
+  font-size: 17px;
+  text-anchor: middle;
+  font-weight: bold;
+}
+
+.gate-eq.fb-on {
+  fill: var(--hot);
+}
+
+.gate-eq.fb-off {
+  fill: var(--accent);
+}
+
+@keyframes pop-in {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(6px);
   }
   to {
-    transform: rotate(180deg);
+    opacity: 1;
+    transform: translateY(0);
   }
+}
+
+.legend {
+  margin-left: 12px;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .stream {
