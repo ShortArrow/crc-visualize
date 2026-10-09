@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { toRegister, type CrcParams, type Step } from "../domain/trace";
+import { toRegister, type CrcParams, type ParamName, type Step } from "../domain/trace";
 import { gateEquations } from "./gates";
 import { lfsrLayout, type Point } from "./layout";
 
@@ -43,9 +43,10 @@ function boxAnimation(params: CrcParams, step: Step, bit: number): string | unde
 }
 
 /** XOR ゲート（⊕）。id は "input" か入口にあるレジスタの番号。active はこのステップで計算に使われていること。 */
-function XorGate({ at, id, active }: { at: Point; id: "input" | number; active: boolean }) {
+function XorGate(props: { at: Point; id: "input" | number; active: boolean; highlight: boolean }) {
+  const { at, id, active, highlight } = props;
   return (
-    <g className={`gate ${active ? "active" : ""}`} data-gate={id} transform={`translate(${at.x} ${at.y})`}>
+    <g className={`gate ${active ? "active" : ""} ${highlight ? "param-hl" : ""}`} data-gate={id} transform={`translate(${at.x} ${at.y})`}>
       <circle r={GATE_R} />
       <line x1={-GATE_R} x2={GATE_R} y1={0} y2={0} />
       <line x1={0} x2={0} y1={-GATE_R} y2={GATE_R} />
@@ -53,10 +54,20 @@ function XorGate({ at, id, active }: { at: Point; id: "input" | number; active: 
   );
 }
 
-type Props = Readonly<{ params: CrcParams; step: Step; stepIndex: number }>;
+type Props = Readonly<{ params: CrcParams; step: Step; stepIndex: number; focused: ParamName | undefined }>;
+
+/** 注目中のパラメータが図のどこに効くか。 */
+const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
+  width: "registers",
+  poly: "taps",
+  init: "registers",
+  refin: "stream",
+  refout: "registers",
+  xorout: "registers",
+};
 
 /** LFSR（ハードウェア表現）。描画は step だけで決まり、アニメーションは stepIndex ごとに再生し直す。 */
-export function LfsrView({ params, step, stepIndex }: Props) {
+export function LfsrView({ params, step, stepIndex, focused }: Props) {
   const layout = lfsrLayout(params);
   const { box, regY, streamY, busY, busEndX, inputGate: ig, taps, entry } = layout;
   const w = params.width;
@@ -70,6 +81,8 @@ export function LfsrView({ params, step, stepIndex }: Props) {
   const done = step.kind === "done";
   const equations = gateEquations(params, step);
   const activeGates = new Set(equations.map((e) => e.gate));
+  const target = focused ? PARAM_TARGET[focused] : undefined;
+  const hl = (kind: typeof target) => (target === kind ? "param-hl" : "");
 
   return (
     <svg
@@ -93,7 +106,7 @@ export function LfsrView({ params, step, stepIndex }: Props) {
       </defs>
 
       <g clipPath="url(#stream-clip)">
-        <g className="stream" style={{ transform: `translateX(${ig.x + streamShift}px)` }}>
+        <g className={`stream ${hl("stream")}`} style={{ transform: `translateX(${ig.x + streamShift}px)` }}>
           {step.stream.map((b, k) => {
             const state = k < step.cursor ? "used" : k === step.cursor ? "next" : "pending";
             const flip = Math.floor(k / 8) === reflectedByte;
@@ -127,7 +140,7 @@ export function LfsrView({ params, step, stepIndex }: Props) {
           i === 0
             ? `${e.x},${busY} ${e.x},${midY} ${layout.boxes[0]!.x + box},${midY}`
             : `${e.x},${busY} ${e.x},${midY + GATE_R}`;
-        return <polyline key={i} className={fbClass} points={points} fill="none" />;
+        return <polyline key={i} className={`${fbClass} ${hl("taps")}`} points={points} fill="none" />;
       })}
       {taps.includes(0) ? null : (
         <text className="label" x={entry(0).x - 4} y={midY + 5}>
@@ -138,15 +151,16 @@ export function LfsrView({ params, step, stepIndex }: Props) {
         <line key={bit} className="wire" x1={layout.boxes[bit - 1]!.x} y1={midY} x2={x + box} y2={midY} />
       ))}
 
-      <XorGate at={ig} id="input" active={activeGates.has("input")} />
+      <XorGate at={ig} id="input" active={activeGates.has("input")} highlight={false} />
       {layout.gates.map((g) => (
-        <XorGate key={g.bit} at={g} id={g.bit} active={activeGates.has(g.bit)} />
+        <XorGate key={g.bit} at={g} id={g.bit} active={activeGates.has(g.bit)} highlight={target === "taps"} />
       ))}
 
       {layout.boxes.map(({ bit, x, y }) => {
         const anim = boxAnimation(params, step, bit);
         const isMsb = bit === w - 1 && step.kind === "feedback";
-        const classes = ["reg", isMsb ? "msb" : "", anim === "flip" ? "hit" : "", done ? "done" : ""].join(" ");
+        const flags = [isMsb && "msb", anim === "flip" && "hit", done && "done", hl("registers")];
+        const classes = ["reg", ...flags].filter(Boolean).join(" ");
         const style = { "--slide-from": `${layout.pitch}px` } as CSSProperties;
         return (
           <g key={bit} className={classes} data-bit={bit} transform={`translate(${x} ${y})`}>

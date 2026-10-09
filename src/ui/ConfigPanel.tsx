@@ -1,5 +1,8 @@
+import type { ReactNode } from "react";
 import type { ConfigField, ConfigForm } from "../domain/parse";
 import { PRESETS, type InputMode, type Preset } from "../domain/presets";
+import type { ParamName } from "../domain/trace";
+import { focusHandlers, type ParamFocus } from "./paramFocus";
 
 /** プリセットをフォームの値にする。 */
 export function formFromPreset({ params, input }: Preset): ConfigForm {
@@ -21,20 +24,33 @@ type Props = Readonly<{
   presetName: string | undefined;
   errors: Partial<Record<ConfigField, string>>;
   onChange: (form: ConfigForm) => void;
+  focus: ParamFocus;
 }>;
 
 const CUSTOM = "";
 
 /** CRC パラメータと入力の設定パネル。 */
-export function ConfigPanel({ form, presetName, errors, onChange }: Props) {
+export function ConfigPanel({ form, presetName, errors, onChange, focus }: Props) {
   const set = <K extends keyof ConfigForm>(key: K, value: ConfigForm[K]) => onChange({ ...form, [key]: value });
-  const text = (key: "width" | "poly" | "init" | "xorout", label: string) => (
-    <label className={errors[key] ? "invalid" : ""}>
-      <span>{label}</span>
-      <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />
-      {errors[key] ? <small className="error">{errors[key]}</small> : null}
-    </label>
-  );
+  const paramField = (param: ParamName, control: ReactNode, className = "") => {
+    const error = errors[param as ConfigField];
+    const classes = [className, error && "invalid", focus.focused === param && "hl"].filter(Boolean).join(" ");
+    return (
+      <label className={classes} data-param={param} {...focusHandlers(focus, param)}>
+        <span className="param-name">{param}</span>
+        {control}
+        {error ? <small className="error">{error}</small> : null}
+      </label>
+    );
+  };
+  const text = (key: "width" | "poly" | "init" | "xorout") =>
+    paramField(key, <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />);
+  const check = (key: "refin" | "refout") =>
+    paramField(
+      key,
+      <input type="checkbox" checked={form[key]} onChange={(e) => set(key, e.target.checked)} />,
+      "check-field",
+    );
 
   return (
     <form className="config" onSubmit={(e) => e.preventDefault()}>
@@ -57,18 +73,12 @@ export function ConfigPanel({ form, presetName, errors, onChange }: Props) {
           ))}
         </select>
       </label>
-      {text("width", "width")}
-      {text("poly", "poly")}
-      {text("init", "init")}
-      {text("xorout", "xorout")}
-      <label className="check-field">
-        <input type="checkbox" checked={form.refin} onChange={(e) => set("refin", e.target.checked)} />
-        <span>refin</span>
-      </label>
-      <label className="check-field">
-        <input type="checkbox" checked={form.refout} onChange={(e) => set("refout", e.target.checked)} />
-        <span>refout</span>
-      </label>
+      {text("width")}
+      {text("poly")}
+      {text("init")}
+      {check("refin")}
+      {check("refout")}
+      {text("xorout")}
       <label>
         <span>入力形式</span>
         <select value={form.inputMode} onChange={(e) => set("inputMode", e.target.value as InputMode)}>

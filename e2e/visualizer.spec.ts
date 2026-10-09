@@ -20,7 +20,7 @@ test("xor ステップでは poly の 1 のビットの箱が光り、XOR の行
   await expect(reg(page, 0)).toHaveClass(/\bhit\b/);
   await expect(reg(page, 1)).toHaveClass(/\bhit\b/);
   await expect(reg(page, 2)).not.toHaveClass(/\bhit\b/);
-  await expect(activeLine(page)).toContainText("crc ^= 0x3;");
+  await expect(activeLine(page)).toContainText("crc ^= poly");
   await expect(page.locator(".state")).toContainText("0b011");
 });
 
@@ -55,11 +55,31 @@ test("ゲートの色は計算中なら黄、それ以外は fb の値によら�
   await expect.poll(() => stroke("input")).toBe(YELLOW);
 });
 
+test("設定項目にマウスを乗せると、そのパラメータの使用箇所がコードと図で強調される", async ({ page }) => {
+  await page.locator('label[data-param="poly"]').hover();
+  await expect(page.locator('label[data-param="poly"]')).toHaveClass(/\bhl\b/);
+  await expect(page.locator('.chip[data-param="poly"]')).toHaveClass(/\bhl\b/);
+  await expect(page.locator('.chip[data-param="init"]')).not.toHaveClass(/\bhl\b/);
+  await expect(page.locator('.gate[data-gate="1"]')).toHaveClass(/\bparam-hl\b/);
+});
+
+test("コードのチップにマウスを乗せると、対応する設定項目が強調される", async ({ page }) => {
+  await page.locator('.chip[data-param="init"]').hover();
+  await expect(page.locator('label[data-param="init"]')).toHaveClass(/\bhl\b/);
+  await expect(page.locator('label[data-param="poly"]')).not.toHaveClass(/\bhl\b/);
+});
+
+test("無効なパラメータの行も、値と理由つきで薄く表示される", async ({ page }) => {
+  const line = page.locator(".code-line.disabled", { has: page.locator('.chip[data-param="refout"]') });
+  await expect(line).toContainText("refout が false なので実行しない");
+  await expect(line.locator('.chip[data-param="refout"]')).toContainText("false");
+});
+
 test("fb = 0 の shift では if が false と注記され、本体が打ち消される", async ({ page }) => {
   await stepForward(page, 5);
   await expect(counter(page)).toHaveText("6 / 15");
-  await expect(page.locator(".code-line", { hasText: "if (fb == 1)" })).toContainText("// false");
-  await expect(page.locator(".code-line.skipped")).toContainText("crc ^= 0x3;");
+  await expect(page.locator(".code-line", { hasText: "if (feedback == 1)" })).toContainText("// false");
+  await expect(page.locator(".code-line.skipped")).toContainText("crc ^= poly");
   await expect(page.locator(".wire.fb-off").first()).toBeVisible();
 });
 
