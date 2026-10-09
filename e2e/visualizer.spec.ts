@@ -36,6 +36,11 @@ test("ログは新しい順に流れ、最新の行だけ大きく表示され�
   const fontSize = (i: number) =>
     entries.nth(i).locator(".log-title").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
   expect(await fontSize(0)).toBeGreaterThan(await fontSize(1));
+  expect(await fontSize(1)).toBe(await fontSize(3));
+  const opacity = (i: number) => entries.nth(i).evaluate((el) => getComputedStyle(el).opacity);
+  expect(await opacity(1)).toBe("1");
+  expect(await opacity(3)).toBe("1");
+  expect(await page.locator(".log").evaluate((el) => getComputedStyle(el).maskImage)).toBe("none");
   await page.keyboard.press("ArrowLeft");
   await expect(entries).toHaveCount(3);
   await expect(entries.nth(0)).toContainText("シフト");
