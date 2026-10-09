@@ -16,6 +16,7 @@ export function App() {
   const [form, setForm] = useState<ConfigForm>(() => formFromPreset(TUTORIAL));
   const [speedMode, setSpeedMode] = useState<SpeedMode>("auto");
   const [rate, setRate] = useState(1);
+  const [loop, setLoop] = useState(false);
   const config = useMemo(() => parseConfig(form), [form]);
   const preset = config.ok ? findPreset(config.params) : undefined;
 
@@ -34,8 +35,10 @@ export function App() {
           check={preset && sameBits(config.bits, CHECK_BITS) ? preset.check : undefined}
           speedMode={speedMode}
           rate={rate}
+          loop={loop}
           onSpeedMode={setSpeedMode}
           onRate={setRate}
+          onLoop={setLoop}
         />
       ) : (
         <p className="invalid-config">設定に誤りがあります。赤い項目を直してください。</p>
@@ -50,8 +53,10 @@ type VisualizerProps = Readonly<{
   check: number | undefined;
   speedMode: SpeedMode;
   rate: number;
+  loop: boolean;
   onSpeedMode: (mode: SpeedMode) => void;
   onRate: (rate: number) => void;
+  onLoop: (loop: boolean) => void;
 }>;
 
 const isEditable = (target: EventTarget | null) =>
@@ -66,7 +71,7 @@ const KEY_MSG: Record<string, PlayerMsg> = {
 };
 
 /** 1 つの設定に対するステップ列と再生状態。設定が変わると key で作り直され、先頭・停止に戻る。 */
-function Visualizer({ params, bits, check, speedMode, rate, onSpeedMode, onRate }: VisualizerProps) {
+function Visualizer({ params, bits, check, speedMode, rate, loop, onSpeedMode, onRate, onLoop }: VisualizerProps) {
   const steps = useMemo(() => trace(params, bits), [params, bits]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const [player, setPlayer] = useState(initialPlayer);
@@ -76,16 +81,18 @@ function Visualizer({ params, bits, check, speedMode, rate, onSpeedMode, onRate 
 
   useEffect(() => {
     if (!player.playing) return;
-    const timer = setTimeout(() => send({ type: "tick" }), stepMs);
+    const timer = setTimeout(() => send({ type: "tick", loop }), stepMs);
     return () => clearTimeout(timer);
   });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (isEditable(e.target)) return;
       const msg = KEY_MSG[e.key];
-      if (!msg || isEditable(e.target)) return;
+      if (msg) send(msg);
+      else if (e.key.toLowerCase() === "l") onLoop(!loop);
+      else return;
       e.preventDefault();
-      send(msg);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -102,9 +109,11 @@ function Visualizer({ params, bits, check, speedMode, rate, onSpeedMode, onRate 
         length={steps.length}
         speedMode={speedMode}
         rate={rate}
+        loop={loop}
         send={send}
         onSpeedMode={onSpeedMode}
         onRate={onRate}
+        onLoop={onLoop}
       />
       <section className="pane software">
         <div>

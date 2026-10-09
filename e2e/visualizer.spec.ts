@@ -47,6 +47,24 @@ test("再生すると末尾まで進んで停止する", async ({ page }) => {
   await expect(page.getByTitle("再生 / 一時停止 (Space)")).toHaveText("▶");
 });
 
+test("ループ再生では末尾の次に先頭へ戻って再生を続ける", async ({ page }) => {
+  const loop = page.getByTitle("ループ再生 (L)");
+  await expect(loop).toHaveAttribute("aria-pressed", "false");
+  await page.keyboard.press("l");
+  await expect(loop).toHaveAttribute("aria-pressed", "true");
+  await page.getByTitle("速度倍率").selectOption("8");
+  await page.getByTitle("再生 / 一時停止 (Space)").click();
+  await expect(counter(page)).toHaveText("15 / 15", { timeout: 10_000 });
+  await expect(counter(page)).toHaveText(/^[1-9] \/ 15$/, { timeout: 10_000 });
+  await expect(page.getByTitle("再生 / 一時停止 (Space)")).toHaveText("⏸");
+});
+
+test("ループ設定は CRC 設定を変えても保持される", async ({ page }) => {
+  await page.getByTitle("ループ再生 (L)").click();
+  await page.getByLabel("プリセット").selectOption("CRC-8/SMBUS");
+  await expect(page.getByTitle("ループ再生 (L)")).toHaveAttribute("aria-pressed", "true");
+});
+
 test("CRC-32/ISO-HDLC で 123456789 の CRC が check 値と一致する", async ({ page }) => {
   await page.getByLabel("プリセット").selectOption("CRC-32/ISO-HDLC");
   await page.locator("body").press("End");

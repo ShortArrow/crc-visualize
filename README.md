@@ -14,7 +14,7 @@ npm run e2e        # E2E テスト (Playwright、インストール済みの Chr
 npm run build      # dist/ に静的ファイルを出力
 ```
 
-キー操作: Space で再生 / 一時停止、← → で 1 ステップ移動、Home / End で先頭 / 末尾。
+キー操作: Space で再生 / 一時停止、← → で 1 ステップ移動、Home / End で先頭 / 末尾、L でループ再生の切り替え。
 
 ## 構成
 

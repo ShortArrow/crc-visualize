@@ -49,10 +49,16 @@ describe("updatePlayer", () => {
     expect(initialPlayer).toEqual(at(0));
   });
 
-  it("tick は再生中だけ進み、末尾に着いたら停止する", () => {
-    expect(updatePlayer(at(1, true), { type: "tick" }, len)).toEqual(at(2, true));
-    expect(updatePlayer(at(3, true), { type: "tick" }, len)).toEqual(at(4, false));
-    expect(updatePlayer(at(1), { type: "tick" }, len)).toEqual(at(1));
+  it("tick は再生中だけ進み、ループ無効なら末尾に着いたら停止する", () => {
+    expect(updatePlayer(at(1, true), { type: "tick", loop: false }, len)).toEqual(at(2, true));
+    expect(updatePlayer(at(3, true), { type: "tick", loop: false }, len)).toEqual(at(4, false));
+    expect(updatePlayer(at(1), { type: "tick", loop: false }, len)).toEqual(at(1));
+  });
+
+  it("ループ有効なら末尾を表示したまま再生を続け、次の tick で先頭に戻る", () => {
+    expect(updatePlayer(at(3, true), { type: "tick", loop: true }, len)).toEqual(at(4, true));
+    expect(updatePlayer(at(4, true), { type: "tick", loop: true }, len)).toEqual(at(0, true));
+    expect(updatePlayer(at(4), { type: "tick", loop: true }, len)).toEqual(at(4));
   });
 
   it("末尾で play すると先頭から再生する", () => {
