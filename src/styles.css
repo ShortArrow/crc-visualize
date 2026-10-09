@@ -313,6 +313,10 @@ h2 {
   color: var(--ok);
 }
 
+.swatch.param {
+  color: var(--param);
+}
+
 .stream {
   transition: transform var(--anim-ms) ease-in-out;
 }

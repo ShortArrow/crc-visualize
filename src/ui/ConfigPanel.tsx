@@ -64,7 +64,7 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus }: Props
           }}
         >
           <option value={CUSTOM} disabled>
-            カスタム
+            プリセットなし
           </option>
           {PRESETS.map((p) => (
             <option key={p.name} value={p.name}>
@@ -82,9 +82,9 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus }: Props
       <label>
         <span>入力形式</span>
         <select value={form.inputMode} onChange={(e) => set("inputMode", e.target.value as InputMode)}>
-          <option value="bits">bits</option>
-          <option value="hex">hex</option>
-          <option value="text">text (UTF-8)</option>
+          <option value="bits">2 進数</option>
+          <option value="hex">16 進数</option>
+          <option value="text">文字列（UTF-8）</option>
         </select>
       </label>
       <label className={`input-field ${errors.input ? "invalid" : ""}`}>

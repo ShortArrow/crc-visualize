@@ -66,7 +66,7 @@ describe("codeLines", () => {
 
   it("feedback 行には 最上位ビット ⊕ 入力ビット の計算結果を注記する", () => {
     const step = stepOf(trace({ ...plain3, init: 4 }, bits("0")), "feedback");
-    expect(codeLines(plain3, step).find((l) => l.active)!.note).toBe("msb 1 ⊕ bit 0 = 1");
+    expect(codeLines(plain3, step).find((l) => l.active)!.note).toBe("msb 1 ⊕ bit 0 = feedback 1");
   });
 
   it("shift ステップでは if の評価結果を示し、feedback = 0 なら本体を飛ばしたと示す", () => {
