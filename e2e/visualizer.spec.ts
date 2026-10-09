@@ -96,6 +96,19 @@ test("設定項目にマウスを乗せると、そのパラメータの使用�
   await expect(page.locator('.gate[data-gate="1"]')).toHaveClass(/\bparam-hl\b/);
 });
 
+test("設定項目は日本語名で示し、注目中のパラメータの説明と別名を出す", async ({ page }) => {
+  const help = page.locator(".param-help");
+  await expect(page.locator('label[data-param="poly"]')).toContainText("生成多項式");
+  await expect(help).toContainText("マウスを乗せると、説明と別名を表示します");
+  await page.getByLabel("プリセット").selectOption("CRC-16/ARC");
+  await page.locator('label[data-param="poly"]').hover();
+  await expect(help).toContainText("生成多項式");
+  await expect(help).toContainText("別名");
+  await expect(help).toContainText("0xA001");
+  await page.locator('label[data-param="refin"]').hover();
+  await expect(help).toContainText("右送り");
+});
+
 test("コードのチップにマウスを乗せると、対応する設定項目が強調される", async ({ page }) => {
   await page.locator('.chip[data-param="init"]').hover();
   await expect(page.locator('label[data-param="init"]')).toHaveClass(/\bhl\b/);

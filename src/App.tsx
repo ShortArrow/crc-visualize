@@ -7,6 +7,7 @@ import { CodeView } from "./ui/CodeView";
 import { ConfigPanel, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { LfsrView } from "./ui/LfsrView";
+import { ParamHelp } from "./ui/ParamHelp";
 import type { ParamFocus } from "./ui/paramFocus";
 import { StepLog } from "./ui/StepLog";
 
@@ -30,6 +31,7 @@ export function App() {
         <p>LFSR の 1 クロックと、ビット単位 CRC 実装の 1 行を同期させて表示します。</p>
       </header>
       <ConfigPanel form={form} presetName={preset?.name} errors={config.ok ? {} : config.errors} onChange={setForm} focus={focus} />
+      <ParamHelp focused={focused} params={config.ok ? config.params : undefined} />
       {config.ok ? (
         <Visualizer
           key={JSON.stringify([config.params, config.bits])}
