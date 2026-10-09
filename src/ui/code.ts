@@ -96,7 +96,7 @@ export function codeLines(params: CrcParams, step: Step): CodeLine[] {
     const note =
       disabledNote ??
       (active && step.kind === "feedback"
-        ? `msb ${step.msb} ⊕ bit ${step.inBit} = ${step.fb}`
+        ? `msb ${step.msb} ⊕ bit ${step.inBit} = feedback ${step.fb}`
         : role === "if" && taken !== undefined
           ? String(taken)
           : undefined);

@@ -26,7 +26,7 @@ export function App() {
   return (
     <main>
       <header>
-        <h1>CRC Visualizer</h1>
+        <h1>CRC 可視化</h1>
         <p>LFSR の 1 クロックと、ビット単位 CRC 実装の 1 行を同期させて表示します。</p>
       </header>
       <ConfigPanel form={form} presetName={preset?.name} errors={config.ok ? {} : config.errors} onChange={setForm} focus={focus} />
@@ -108,12 +108,13 @@ function Visualizer(props: VisualizerProps) {
     <div className="visualizer" style={{ "--anim-ms": `${Math.min(stepMs * 0.8, 600)}ms` } as CSSProperties}>
       <section className="pane hardware">
         <h2>
-          ハードウェア (LFSR)
+          ハードウェア（LFSR）
           <span className="legend">
             ⊕ = XOR（2 入力が異なれば 1）
-            <span className="swatch hot">赤 = fb 1 の経路</span>
+            <span className="swatch hot">赤 = フィードバックビットが 1 の経路</span>
             <span className="swatch warn">黄 = 計算中</span>
             <span className="swatch ok">緑 = CRC</span>
+            <span className="swatch param">水色 = 注目中のパラメータ</span>
           </span>
         </h2>
         <LfsrView params={params} step={step} stepIndex={player.index} focused={focus.focused} />

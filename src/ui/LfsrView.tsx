@@ -124,7 +124,7 @@ export function LfsrView({ params, step, stepIndex, focused }: Props) {
         </g>
       </g>
       <text className="label" x={8} y={streamY - 22}>
-        入力 ({step.cursor}/{step.stream.length})
+        入力ビット（{step.cursor}/{step.stream.length}）
       </text>
 
       <line className="wire" x1={ig.x} y1={streamY + 8} x2={ig.x} y2={ig.y - GATE_R} />
@@ -190,7 +190,7 @@ export function LfsrView({ params, step, stepIndex, focused }: Props) {
             x={ig.x + GATE_R + 6}
             y={busY - 10}
           >
-            msb⊕b=fb : {text}
+            {text}
           </text>
         ) : (
           <text
@@ -209,13 +209,13 @@ export function LfsrView({ params, step, stepIndex, focused }: Props) {
   );
 }
 
-/** shift と xor の間、確定したフィードバック値 fb を入力ゲートの下に残す。 */
+/** shift と xor の間、確定したフィードバックビットを入力ゲートの下に残す。 */
 function FeedbackLabel({ step, at }: { step: Step; at: Point }) {
   if (step.kind === "shift" || step.kind === "xor") {
     const fb = step.kind === "xor" ? 1 : step.fb;
     return (
       <text className={`fb-label fb-${fb === 1 ? "on" : "off"}`} x={at.x} y={at.y}>
-        fb {fb}
+        feedback = {fb}
       </text>
     );
   }

@@ -21,31 +21,31 @@ type Props = Readonly<{
 export function Controls({ player, length, speedMode, rate, loop, send, onSpeedMode, onRate, onLoop }: Props) {
   return (
     <div className="controls">
-      <button type="button" title="先頭 (Home)" onClick={() => send({ type: "first" })}>
+      <button type="button" title="先頭（Home）" onClick={() => send({ type: "first" })}>
         <SkipBack size={ICON_SIZE} />
       </button>
-      <button type="button" title="1 ステップ戻る (←)" onClick={() => send({ type: "prev" })}>
+      <button type="button" title="1 ステップ戻る（←）" onClick={() => send({ type: "prev" })}>
         <StepBack size={ICON_SIZE} />
       </button>
       <button
         type="button"
         className="primary"
-        title="再生 / 一時停止 (Space)"
+        title="再生 / 一時停止（Space）"
         aria-label={player.playing ? "一時停止" : "再生"}
         onClick={() => send({ type: "toggle" })}
       >
         {player.playing ? <Pause size={ICON_SIZE} /> : <Play size={ICON_SIZE} />}
       </button>
-      <button type="button" title="1 ステップ進む (→)" onClick={() => send({ type: "next" })}>
+      <button type="button" title="1 ステップ進む（→）" onClick={() => send({ type: "next" })}>
         <StepForward size={ICON_SIZE} />
       </button>
-      <button type="button" title="末尾 (End)" onClick={() => send({ type: "last" })}>
+      <button type="button" title="末尾（End）" onClick={() => send({ type: "last" })}>
         <SkipForward size={ICON_SIZE} />
       </button>
       <button
         type="button"
         className={loop ? "toggle on" : "toggle"}
-        title="ループ再生 (L)"
+        title="ループ再生（L）"
         aria-pressed={loop}
         onClick={() => onLoop(!loop)}
       >
@@ -63,7 +63,7 @@ export function Controls({ player, length, speedMode, rate, loop, send, onSpeedM
         {player.index + 1} / {length}
       </span>
       <select value={speedMode} onChange={(e) => onSpeedMode(e.target.value as SpeedMode)} title="速度モード">
-        <option value="auto">自動 (序盤スロー)</option>
+        <option value="auto">自動（序盤は低速）</option>
         <option value="steady">一定</option>
       </select>
       <select value={rate} onChange={(e) => onRate(Number(e.target.value))} title="速度倍率">

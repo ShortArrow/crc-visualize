@@ -3,12 +3,12 @@ import { bitsToString, toBinary, toHex } from "./format";
 
 const KIND_LABEL: Record<Step["kind"], string> = {
   init: "初期化",
-  reflectIn: "入力バイトを反転 (refin)",
-  feedback: "フィードバック判定",
+  reflectIn: "入力バイトを反転（refin）",
+  feedback: "フィードバックビットの計算",
   shift: "シフト",
   xor: "多項式と XOR",
-  reflectOut: "出力を反転 (refout)",
-  xorOut: "最終 XOR (xorout)",
+  reflectOut: "出力を反転（refout）",
+  xorOut: "最終 XOR（xorout）",
   done: "完了",
 };
 
@@ -36,7 +36,7 @@ export function StatePanel({ step, input, check }: Props) {
           </div>
           {check === undefined ? null : (
             <div className={`check ${check === crc ? "ok" : "ng"}`}>
-              check 値 {toHex(toRegister(check, step.reg.length))}{" "}
+              検査値 {toHex(toRegister(check, step.reg.length))}{" "}
               {check === crc ? "と一致" : "と不一致"}
             </div>
           )}
