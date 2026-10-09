@@ -167,12 +167,29 @@ h2 {
 }
 
 .controls button.toggle {
-  opacity: 0.45;
+  position: relative;
+  color: var(--muted);
+  transition:
+    color var(--anim-ms),
+    background var(--anim-ms),
+    border-color var(--anim-ms);
 }
 
 .controls button.toggle.on {
-  opacity: 1;
+  color: var(--accent);
+  background: rgb(97 175 239 / 0.16);
   border-color: var(--accent);
+  box-shadow: 0 0 8px rgb(97 175 239 / 0.45);
+}
+
+.controls button.toggle.on::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .controls .seek {
