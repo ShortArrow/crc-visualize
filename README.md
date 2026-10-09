@@ -9,7 +9,8 @@ LFSR（ハードウェア）の 1 クロックと、ビット単位 CRC 実装�
 ```sh
 npm install
 npm run dev        # 開発サーバ
-npm test           # テスト
+npm test           # 単体テスト (Vitest)
+npm run e2e        # E2E テスト (Playwright、インストール済みの Chrome を使う)
 npm run build      # dist/ に静的ファイルを出力
 ```
 

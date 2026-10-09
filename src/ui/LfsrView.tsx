@@ -147,7 +147,7 @@ export function LfsrView({ params, step, stepIndex }: Props) {
         const classes = ["reg", isMsb ? "msb" : "", anim === "flip" ? "hit" : "", done ? "done" : ""].join(" ");
         const style = { "--slide-from": `${layout.pitch}px` } as CSSProperties;
         return (
-          <g key={bit} className={classes} transform={`translate(${x} ${y})`}>
+          <g key={bit} className={classes} data-bit={bit} transform={`translate(${x} ${y})`}>
             <rect width={box} height={box} rx={6} />
             <text
               key={anim ? `${anim}-${stepIndex}` : "static"}
