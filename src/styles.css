@@ -498,8 +498,7 @@ h2 {
   gap: 10px;
   min-width: 0;
   max-height: 420px;
-  overflow: hidden;
-  mask-image: linear-gradient(to bottom, black 70%, transparent);
+  overflow-y: auto;
 }
 
 .log-list {

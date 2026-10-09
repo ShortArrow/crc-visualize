@@ -9,10 +9,7 @@ type Props = Readonly<{ steps: readonly Step[]; current: number; input: readonly
 
 function Entry({ entry, age }: { entry: LogEntry; age: number }) {
   return (
-    <li
-      className={`log-entry log-${entry.kind} ${age === 0 ? "latest" : ""}`}
-      style={{ opacity: Math.max(1 - age * 0.12, 0.25) }}
-    >
+    <li className={`log-entry log-${entry.kind} ${age === 0 ? "latest" : ""}`}>
       <div className="log-head">
         {entry.bitNo === undefined ? null : <span className="log-bit">入力ビット {entry.bitNo}</span>}
         <span className="log-title">{entry.title}</span>
@@ -46,7 +43,7 @@ function Result({ step, input, check }: { step: Step; input: readonly Bit[]; che
   );
 }
 
-/** ステップのログ。最新を一番上に大きく出し、古いものほど小さく薄くして下へ流す。 */
+/** ステップのログ。最新を一番上に大きく出し、それより前は同じ大きさで下へ並べる。 */
 export function StepLog({ steps, current, input, check }: Props) {
   const step = steps[current]!;
   return (
