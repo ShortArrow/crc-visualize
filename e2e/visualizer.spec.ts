@@ -46,6 +46,17 @@ test("ログは新しい順に流れ、最新の行だけ大きく表示され�
   await expect(entries.nth(0)).toContainText("シフト");
 });
 
+test("ソフトウェア欄の高さはログの行数によらず一定", async ({ page }) => {
+  const height = () => page.locator(".software").evaluate((el) => el.getBoundingClientRect().height);
+  const first = await height();
+  await stepForward(page, 3);
+  await expect(counter(page)).toHaveText("4 / 15");
+  expect(await height()).toBe(first);
+  await page.keyboard.press("End");
+  await expect(counter(page)).toHaveText("15 / 15");
+  expect(await height()).toBe(first);
+});
+
 test("XOR ゲートには働いた瞬間の計算式を出し、凡例で ⊕ の意味を示す", async ({ page }) => {
   await expect(page.locator(".legend")).toContainText("⊕ = XOR（2 入力が異なれば 1）");
   await stepForward(page, 1);
