@@ -141,6 +141,11 @@ h2 {
   gap: 16px;
 }
 
+.software > div {
+  min-width: 0;
+  overflow-x: auto;
+}
+
 /* 再生コントロール */
 .controls {
   display: flex;
@@ -486,18 +491,89 @@ h2 {
   color: var(--hot);
 }
 
-/* 状態 */
-.state {
+/* ステップのログ */
+.log {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-size: 0.9rem;
+  min-width: 0;
+  max-height: 420px;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 70%, transparent);
 }
 
-.state-kind {
-  font-size: 1.1rem;
+.log-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-entry {
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+  font-size: 0.8rem;
+}
+
+.log-entry.latest {
+  border-left-color: var(--accent);
+  animation: log-in var(--anim-ms) ease-out;
+}
+
+@keyframes log-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.log-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.log-title {
   font-weight: 600;
+}
+
+.log-entry.latest .log-title {
+  font-size: 1.4rem;
   color: var(--accent);
+}
+
+.log-bit {
+  color: var(--warn);
+}
+
+.log-crc,
+.log-detail {
+  font-family: var(--mono);
+  color: var(--muted);
+}
+
+.log-entry.latest .log-crc {
+  font-size: 1.1rem;
+  color: var(--fg);
+}
+
+.log-entry.latest .log-detail {
+  font-size: 1rem;
+  color: var(--fg);
+}
+
+.log-result {
+  padding: 8px;
+  border: 1px solid var(--ok);
+  border-radius: 6px;
+}
+
+.log-result code {
+  font-family: var(--mono);
+  font-size: 1rem;
 }
 
 .state-row {
