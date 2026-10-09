@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
-import { toRegister, type Bit, type CrcParams, type Step } from "../domain/trace";
+import { toRegister, type CrcParams, type Step } from "../domain/trace";
+import { gateEquations } from "./gates";
 import { lfsrLayout, type Point } from "./layout";
 
 const GATE_R = 13;
@@ -41,14 +42,13 @@ function boxAnimation(params: CrcParams, step: Step, bit: number): string | unde
   }
 }
 
-function XorGate({ at, className, spin }: { at: Point; className: string; spin: boolean }) {
+/** XOR ゲート（⊕）。active はこのステップで計算に使われていること。 */
+function XorGate({ at, className, active }: { at: Point; className: string; active: boolean }) {
   return (
-    <g className={`gate ${className} ${spin ? "spin" : ""}`} transform={`translate(${at.x} ${at.y})`}>
-      <g className="gate-body">
-        <circle r={GATE_R} />
-        <line x1={-GATE_R} x2={GATE_R} y1={0} y2={0} />
-        <line x1={0} x2={0} y1={-GATE_R} y2={GATE_R} />
-      </g>
+    <g className={`gate ${className} ${active ? "active" : ""}`} transform={`translate(${at.x} ${at.y})`}>
+      <circle r={GATE_R} />
+      <line x1={-GATE_R} x2={GATE_R} y1={0} y2={0} />
+      <line x1={0} x2={0} y1={-GATE_R} y2={GATE_R} />
     </g>
   );
 }
@@ -68,6 +68,8 @@ export function LfsrView({ params, step, stepIndex }: Props) {
   const streamShift = -streamX(step.cursor, grouped);
   const reflectedByte = step.kind === "reflectIn" ? step.byteIndex : -1;
   const done = step.kind === "done";
+  const equations = gateEquations(params, step);
+  const activeGates = new Set(equations.map((e) => e.gate));
 
   return (
     <svg
@@ -136,9 +138,9 @@ export function LfsrView({ params, step, stepIndex }: Props) {
         <line key={bit} className="wire" x1={layout.boxes[bit - 1]!.x} y1={midY} x2={x + box} y2={midY} />
       ))}
 
-      <XorGate at={ig} className={`input-gate fb-${fbState}`} spin={step.kind === "feedback"} />
+      <XorGate at={ig} className={`input-gate fb-${fbState}`} active={activeGates.has("input")} />
       {layout.gates.map((g) => (
-        <XorGate key={g.bit} at={g} className={`fb-${fbState}`} spin={step.kind === "xor"} />
+        <XorGate key={g.bit} at={g} className={`fb-${fbState}`} active={activeGates.has(g.bit)} />
       ))}
 
       {layout.boxes.map(({ bit, x, y }) => {
@@ -165,20 +167,36 @@ export function LfsrView({ params, step, stepIndex }: Props) {
         );
       })}
 
+      {equations.map(({ gate, text }) =>
+        gate === "input" ? (
+          <text
+            key={`${gate}-${stepIndex}`}
+            className={`gate-eq fb-${fbState}`}
+            data-gate={gate}
+            x={ig.x + GATE_R + 6}
+            y={busY - 10}
+          >
+            msb⊕b=fb : {text}
+          </text>
+        ) : (
+          <text
+            key={`${gate}-${stepIndex}`}
+            className="gate-eq tap fb-on"
+            data-gate={gate}
+            x={entry(gate).x}
+            y={regY - 26}
+          >
+            {text}
+          </text>
+        ),
+      )}
       <FeedbackLabel step={step} at={{ x: ig.x + GATE_R + 6, y: busY - 10 }} />
     </svg>
   );
 }
 
+/** shift と xor の間、確定したフィードバック値 fb を入力ゲートの下に残す。 */
 function FeedbackLabel({ step, at }: { step: Step; at: Point }) {
-  const text = (msb: Bit, b: Bit, fb: Bit) => `msb ${msb} ⊕ b ${b} = fb ${fb}`;
-  if (step.kind === "feedback") {
-    return (
-      <text className={`fb-label fb-${step.fb === 1 ? "on" : "off"}`} x={at.x} y={at.y}>
-        {text(step.msb, step.inBit, step.fb)}
-      </text>
-    );
-  }
   if (step.kind === "shift" || step.kind === "xor") {
     const fb = step.kind === "xor" ? 1 : step.fb;
     return (

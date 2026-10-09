@@ -24,6 +24,18 @@ test("xor ステップでは poly の 1 のビットの箱が光り、XOR の行
   await expect(page.locator(".state")).toContainText("0b011");
 });
 
+test("XOR ゲートには働いた瞬間の計算式を出し、凡例で ⊕ の意味を示す", async ({ page }) => {
+  await expect(page.locator(".legend")).toHaveText("⊕ = XOR（2 入力が異なれば 1）");
+  await stepForward(page, 1);
+  await expect(page.locator('.gate-eq[data-gate="input"]')).toHaveText("msb⊕b=fb : 0⊕1=1");
+  await stepForward(page, 2);
+  await expect(counter(page)).toHaveText("4 / 15");
+  await expect(page.locator('.gate-eq[data-gate="1"]')).toHaveText("0⊕1=1");
+  await expect(page.locator(".gate.active")).toHaveCount(1);
+  await stepForward(page, 1);
+  await expect(page.locator(".gate-eq")).toHaveCount(1);
+});
+
 test("fb = 0 の shift では if が false と注記され、本体が打ち消される", async ({ page }) => {
   await stepForward(page, 5);
   await expect(counter(page)).toHaveText("6 / 15");
