@@ -237,44 +237,28 @@ h2 {
   fill: var(--bg);
   stroke: #4b5060;
   stroke-width: 2;
+  transition: stroke var(--anim-ms);
 }
 
 .gate line {
   stroke: #4b5060;
   stroke-width: 2;
-}
-
-.gate.fb-on circle,
-.gate.fb-on line {
-  stroke: var(--hot);
-}
-
-.gate.input-gate.fb-off circle,
-.gate.input-gate.fb-off line {
-  stroke: var(--accent);
+  transition: stroke var(--anim-ms);
 }
 
 .gate.active circle {
-  fill: #4a2020;
-  stroke: var(--hot);
+  fill: #3d3523;
+  stroke: var(--warn);
   filter: url(#glow);
 }
 
 .gate.active line {
-  stroke: var(--hot);
-}
-
-.gate.active.fb-off circle {
-  fill: #1d3347;
-  stroke: var(--accent);
-}
-
-.gate.active.fb-off line {
-  stroke: var(--accent);
+  stroke: var(--warn);
 }
 
 .gate-eq {
   font-size: 13px;
+  fill: var(--warn);
   animation: pop-in var(--anim-ms) ease-out;
 }
 
@@ -282,14 +266,6 @@ h2 {
   font-size: 17px;
   text-anchor: middle;
   font-weight: bold;
-}
-
-.gate-eq.fb-on {
-  fill: var(--hot);
-}
-
-.gate-eq.fb-off {
-  fill: var(--accent);
 }
 
 @keyframes pop-in {
@@ -308,6 +284,32 @@ h2 {
   font-weight: normal;
   text-transform: none;
   letter-spacing: 0;
+}
+
+.legend .swatch {
+  margin-left: 12px;
+}
+
+.legend .swatch::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.swatch.hot {
+  color: var(--hot);
+}
+
+.swatch.warn {
+  color: var(--warn);
+}
+
+.swatch.ok {
+  color: var(--ok);
 }
 
 .stream {

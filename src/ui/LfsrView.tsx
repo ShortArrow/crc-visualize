@@ -42,10 +42,10 @@ function boxAnimation(params: CrcParams, step: Step, bit: number): string | unde
   }
 }
 
-/** XOR ゲート（⊕）。active はこのステップで計算に使われていること。 */
-function XorGate({ at, className, active }: { at: Point; className: string; active: boolean }) {
+/** XOR ゲート（⊕）。id は "input" か入口にあるレジスタの番号。active はこのステップで計算に使われていること。 */
+function XorGate({ at, id, active }: { at: Point; id: "input" | number; active: boolean }) {
   return (
-    <g className={`gate ${className} ${active ? "active" : ""}`} transform={`translate(${at.x} ${at.y})`}>
+    <g className={`gate ${active ? "active" : ""}`} data-gate={id} transform={`translate(${at.x} ${at.y})`}>
       <circle r={GATE_R} />
       <line x1={-GATE_R} x2={GATE_R} y1={0} y2={0} />
       <line x1={0} x2={0} y1={-GATE_R} y2={GATE_R} />
@@ -138,9 +138,9 @@ export function LfsrView({ params, step, stepIndex }: Props) {
         <line key={bit} className="wire" x1={layout.boxes[bit - 1]!.x} y1={midY} x2={x + box} y2={midY} />
       ))}
 
-      <XorGate at={ig} className={`input-gate fb-${fbState}`} active={activeGates.has("input")} />
+      <XorGate at={ig} id="input" active={activeGates.has("input")} />
       {layout.gates.map((g) => (
-        <XorGate key={g.bit} at={g} className={`fb-${fbState}`} active={activeGates.has(g.bit)} />
+        <XorGate key={g.bit} at={g} id={g.bit} active={activeGates.has(g.bit)} />
       ))}
 
       {layout.boxes.map(({ bit, x, y }) => {
@@ -171,7 +171,7 @@ export function LfsrView({ params, step, stepIndex }: Props) {
         gate === "input" ? (
           <text
             key={`${gate}-${stepIndex}`}
-            className={`gate-eq fb-${fbState}`}
+            className="gate-eq"
             data-gate={gate}
             x={ig.x + GATE_R + 6}
             y={busY - 10}
@@ -181,7 +181,7 @@ export function LfsrView({ params, step, stepIndex }: Props) {
         ) : (
           <text
             key={`${gate}-${stepIndex}`}
-            className="gate-eq tap fb-on"
+            className="gate-eq tap"
             data-gate={gate}
             x={entry(gate).x}
             y={regY - 26}

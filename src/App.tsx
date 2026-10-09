@@ -102,7 +102,13 @@ function Visualizer({ params, bits, check, speedMode, rate, loop, onSpeedMode, o
     <div className="visualizer" style={{ "--anim-ms": `${Math.min(stepMs * 0.8, 600)}ms` } as CSSProperties}>
       <section className="pane hardware">
         <h2>
-          ハードウェア (LFSR)<span className="legend">⊕ = XOR（2 入力が異なれば 1）</span>
+          ハードウェア (LFSR)
+          <span className="legend">
+            ⊕ = XOR（2 入力が異なれば 1）
+            <span className="swatch hot">赤 = fb 1 の経路</span>
+            <span className="swatch warn">黄 = 計算中</span>
+            <span className="swatch ok">緑 = CRC</span>
+          </span>
         </h2>
         <LfsrView params={params} step={step} stepIndex={player.index} />
       </section>
