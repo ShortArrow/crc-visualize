@@ -44,7 +44,7 @@ test("再生すると末尾まで進んで停止する", async ({ page }) => {
   await page.getByTitle("速度倍率").selectOption("8");
   await page.getByTitle("再生 / 一時停止 (Space)").click();
   await expect(counter(page)).toHaveText("15 / 15", { timeout: 10_000 });
-  await expect(page.getByTitle("再生 / 一時停止 (Space)")).toHaveText("▶");
+  await expect(page.getByTitle("再生 / 一時停止 (Space)")).toHaveAttribute("aria-label", "再生");
 });
 
 test("ループ再生では末尾の次に先頭へ戻って再生を続ける", async ({ page }) => {
@@ -56,7 +56,7 @@ test("ループ再生では末尾の次に先頭へ戻って再生を続ける",
   await page.getByTitle("再生 / 一時停止 (Space)").click();
   await expect(counter(page)).toHaveText("15 / 15", { timeout: 10_000 });
   await expect(counter(page)).toHaveText(/^[1-9] \/ 15$/, { timeout: 10_000 });
-  await expect(page.getByTitle("再生 / 一時停止 (Space)")).toHaveText("⏸");
+  await expect(page.getByTitle("再生 / 一時停止 (Space)")).toHaveAttribute("aria-label", "一時停止");
 });
 
 test("ループ設定は CRC 設定を変えても保持される", async ({ page }) => {

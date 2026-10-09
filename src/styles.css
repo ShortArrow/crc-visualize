@@ -155,6 +155,9 @@ h2 {
   border: 1px solid var(--border);
   border-radius: 4px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .controls button.primary {
