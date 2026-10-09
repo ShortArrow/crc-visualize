@@ -3,6 +3,7 @@ import type { ConfigField, ConfigForm } from "../domain/parse";
 import { PRESETS, type InputMode, type Preset } from "../domain/presets";
 import type { ParamName } from "../domain/trace";
 import { focusHandlers, type ParamFocus } from "./paramFocus";
+import { PARAM_INFO } from "./paramInfo";
 
 /** プリセットをフォームの値にする。 */
 export function formFromPreset({ params, input }: Preset): ConfigForm {
@@ -37,7 +38,9 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus }: Props
     const classes = [className, error && "invalid", focus.focused === param && "hl"].filter(Boolean).join(" ");
     return (
       <label className={classes} data-param={param} {...focusHandlers(focus, param)}>
-        <span className="param-name">{param}</span>
+        <span>
+          {PARAM_INFO[param].title} <span className="param-name">{param}</span>
+        </span>
         {control}
         {error ? <small className="error">{error}</small> : null}
       </label>

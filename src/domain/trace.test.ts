@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PRESETS, TUTORIAL } from "./presets";
-import { bitsFromBytes, registerValue, trace, type Bit, type CrcParams } from "./trace";
+import { bitsFromBytes, reflectValue, registerValue, trace, type Bit, type CrcParams } from "./trace";
 
 const bits = (s: string): Bit[] => [...s].map((c) => (c === "1" ? 1 : 0));
 const ascii = (s: string): Bit[] => bitsFromBytes([...new TextEncoder().encode(s)]);
@@ -8,6 +8,16 @@ const finalValue = (params: CrcParams, input: readonly Bit[]): number =>
   registerValue(trace(params, input).at(-1)!.reg);
 
 const plain3: CrcParams = { width: 3, poly: 0b011, init: 0, refin: false, refout: false, xorout: 0 };
+
+describe("reflectValue", () => {
+  it.each([
+    [0x8005, 16, 0xa001],
+    [0x04c11db7, 32, 0xedb88320],
+    [0b011, 3, 0b110],
+  ])("0x%s を %i ビットで反転すると %s", (value, width, expected) => {
+    expect(reflectValue(value, width)).toBe(expected);
+  });
+});
 
 describe("trace", () => {
   it("教材設定で 10101 の CRC は 101", () => {

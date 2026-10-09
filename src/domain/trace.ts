@@ -55,6 +55,11 @@ export function registerValue(reg: Register): number {
   return reg.reduceRight<number>((acc, b) => acc * 2 + b, 0);
 }
 
+/** 整数の下位 width ビットの並びを反転する（例: 0x8005 を 16 ビットで反転すると 0xA001）。 */
+export function reflectValue(value: number, width: number): number {
+  return registerValue(toRegister(value, width).toReversed());
+}
+
 /** バイト列を MSB 先頭のビット列にする。 */
 export function bitsFromBytes(bytes: readonly number[]): Bit[] {
   return bytes.flatMap((byte) => toRegister(byte, 8).toReversed());

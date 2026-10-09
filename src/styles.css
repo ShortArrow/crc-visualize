@@ -668,3 +668,39 @@ h2 {
 .stream.param-hl .stream-bit {
   fill: var(--param);
 }
+
+/* パラメータの説明 */
+.param-help {
+  height: calc(4 * 1.6em + 18px);
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--param);
+  border-radius: 6px;
+  background: var(--panel);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+.param-help.idle {
+  color: var(--muted);
+  border-left-color: var(--border);
+}
+
+.param-help-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.param-help-title {
+  font-weight: 600;
+  color: var(--param);
+}
+
+.param-help-aliases,
+.param-help-note {
+  color: var(--muted);
+}
