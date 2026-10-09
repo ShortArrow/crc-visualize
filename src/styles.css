@@ -8,6 +8,7 @@
   --hot: #ff5c5c;
   --ok: #4ec98b;
   --warn: #e5c07b;
+  --param: #56b6c2;
   --mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --anim-ms: 400ms;
   color-scheme: dark;
@@ -527,4 +528,64 @@ h2 {
 
 .check.ng {
   color: var(--hot);
+}
+
+/* パラメータの対応づけ */
+.param-name {
+  font-family: var(--mono);
+  color: var(--param);
+}
+
+.config label[data-param] {
+  padding: 2px 6px;
+  border-radius: 4px;
+  outline: 1px solid transparent;
+  transition: outline-color var(--anim-ms);
+}
+
+.config label[data-param].hl {
+  outline-color: var(--param);
+  background: rgb(86 182 194 / 0.1);
+}
+
+.chip {
+  display: inline-flex;
+  border: 1px solid rgb(86 182 194 / 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: default;
+}
+
+.chip-name {
+  padding: 0 4px;
+  color: var(--param);
+}
+
+.chip-value {
+  padding: 0 4px;
+  background: rgb(86 182 194 / 0.15);
+  color: var(--fg);
+}
+
+.chip.hl {
+  border-color: var(--param);
+  box-shadow: 0 0 6px rgb(86 182 194 / 0.6);
+}
+
+.code-line.disabled {
+  opacity: 0.45;
+}
+
+.reg.param-hl rect,
+.gate.param-hl circle {
+  stroke: var(--param);
+  stroke-dasharray: 4 3;
+}
+
+.wire.param-hl {
+  stroke: var(--param);
+}
+
+.stream.param-hl .stream-bit {
+  fill: var(--param);
 }

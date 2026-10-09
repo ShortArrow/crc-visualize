@@ -16,6 +16,11 @@ export type CrcParams = Readonly<{
   xorout: number;
 }>;
 
+/** Rocksoft モデルのパラメータ名。 */
+export type ParamName = keyof CrcParams;
+
+export const PARAM_NAMES: readonly ParamName[] = ["width", "poly", "init", "refin", "refout", "xorout"];
+
 type StepBase = Readonly<{
   /** このステップ適用後のレジスタ。 */
   reg: Register;

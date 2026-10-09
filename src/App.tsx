@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { parseConfig, type ConfigForm } from "./domain/parse";
 import { findPreset, TUTORIAL } from "./domain/presets";
-import { bitsFromBytes, trace, type Bit, type CrcParams } from "./domain/trace";
+import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "./domain/trace";
 import { initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
 import { CodeView } from "./ui/CodeView";
 import { ConfigPanel, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { LfsrView } from "./ui/LfsrView";
+import type { ParamFocus } from "./ui/paramFocus";
 import { StatePanel } from "./ui/StatePanel";
 
 const CHECK_BITS = bitsFromBytes([...new TextEncoder().encode("123456789")]);
@@ -17,6 +18,8 @@ export function App() {
   const [speedMode, setSpeedMode] = useState<SpeedMode>("auto");
   const [rate, setRate] = useState(1);
   const [loop, setLoop] = useState(false);
+  const [focused, setFocused] = useState<ParamName | undefined>(undefined);
+  const focus: ParamFocus = { focused, onFocus: setFocused };
   const config = useMemo(() => parseConfig(form), [form]);
   const preset = config.ok ? findPreset(config.params) : undefined;
 
@@ -26,7 +29,7 @@ export function App() {
         <h1>CRC Visualizer</h1>
         <p>LFSR の 1 クロックと、ビット単位 CRC 実装の 1 行を同期させて表示します。</p>
       </header>
-      <ConfigPanel form={form} presetName={preset?.name} errors={config.ok ? {} : config.errors} onChange={setForm} />
+      <ConfigPanel form={form} presetName={preset?.name} errors={config.ok ? {} : config.errors} onChange={setForm} focus={focus} />
       {config.ok ? (
         <Visualizer
           key={JSON.stringify([config.params, config.bits])}
@@ -36,6 +39,7 @@ export function App() {
           speedMode={speedMode}
           rate={rate}
           loop={loop}
+          focus={focus}
           onSpeedMode={setSpeedMode}
           onRate={setRate}
           onLoop={setLoop}
@@ -54,6 +58,7 @@ type VisualizerProps = Readonly<{
   speedMode: SpeedMode;
   rate: number;
   loop: boolean;
+  focus: ParamFocus;
   onSpeedMode: (mode: SpeedMode) => void;
   onRate: (rate: number) => void;
   onLoop: (loop: boolean) => void;
@@ -71,7 +76,8 @@ const KEY_MSG: Record<string, PlayerMsg> = {
 };
 
 /** 1 つの設定に対するステップ列と再生状態。設定が変わると key で作り直され、先頭・停止に戻る。 */
-function Visualizer({ params, bits, check, speedMode, rate, loop, onSpeedMode, onRate, onLoop }: VisualizerProps) {
+function Visualizer(props: VisualizerProps) {
+  const { params, bits, check, speedMode, rate, loop, focus, onSpeedMode, onRate, onLoop } = props;
   const steps = useMemo(() => trace(params, bits), [params, bits]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const [player, setPlayer] = useState(initialPlayer);
@@ -110,7 +116,7 @@ function Visualizer({ params, bits, check, speedMode, rate, loop, onSpeedMode, o
             <span className="swatch ok">緑 = CRC</span>
           </span>
         </h2>
-        <LfsrView params={params} step={step} stepIndex={player.index} />
+        <LfsrView params={params} step={step} stepIndex={player.index} focused={focus.focused} />
       </section>
       <Controls
         player={player}
@@ -126,7 +132,7 @@ function Visualizer({ params, bits, check, speedMode, rate, loop, onSpeedMode, o
       <section className="pane software">
         <div>
           <h2>ソフトウェア</h2>
-          <CodeView params={params} step={step} />
+          <CodeView params={params} step={step} focus={focus} />
         </div>
         <StatePanel step={step} input={bits} check={check} />
       </section>
