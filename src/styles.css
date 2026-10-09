@@ -497,7 +497,7 @@ h2 {
   flex-direction: column;
   gap: 10px;
   min-width: 0;
-  max-height: 420px;
+  height: 420px;
   overflow-y: auto;
 }
 
