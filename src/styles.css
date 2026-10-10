@@ -671,7 +671,7 @@ h2 {
 
 /* パラメータの説明 */
 .param-help {
-  height: calc(4 * 1.6em + 18px);
+  display: grid;
   margin-top: 8px;
   padding: 8px 12px;
   border: 1px solid var(--border);
@@ -680,7 +680,14 @@ h2 {
   background: var(--panel);
   font-size: 0.85rem;
   line-height: 1.6;
-  overflow: hidden;
+}
+
+.param-help > * {
+  grid-area: 1 / 1;
+}
+
+.param-help > :not(.current) {
+  visibility: hidden;
 }
 
 .param-help.idle {

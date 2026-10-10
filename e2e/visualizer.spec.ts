@@ -96,8 +96,23 @@ test("設定項目にマウスを乗せると、そのパラメータの使用�
   await expect(page.locator('.gate[data-gate="1"]')).toHaveClass(/\bparam-hl\b/);
 });
 
+for (const width of [1024, 1600]) {
+  test(`説明欄は横幅 ${width}px でもどのパラメータの説明も見切れず、高さが変わらない`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const help = page.locator(".param-help");
+    const idleHeight = (await help.boundingBox())!.height;
+    for (const param of ["width", "poly", "init", "refin", "refout", "xorout"]) {
+      await page.locator(`label[data-param="${param}"]`).hover();
+      await expect(help.locator(".current")).toHaveAttribute("data-param", param);
+      const { scroll, client } = await help.evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
+      expect(scroll, param).toBeLessThanOrEqual(client);
+      expect((await help.boundingBox())!.height, param).toBe(idleHeight);
+    }
+  });
+}
+
 test("設定項目は日本語名で示し、注目中のパラメータの説明と別名を出す", async ({ page }) => {
-  const help = page.locator(".param-help");
+  const help = page.locator(".param-help .current");
   await expect(page.locator('label[data-param="poly"]')).toContainText("生成多項式");
   await expect(help).toContainText("マウスを乗せると、説明と別名を表示します");
   await page.getByLabel("プリセット").selectOption("CRC-16/ARC");
