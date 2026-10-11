@@ -20,11 +20,14 @@ const GLOW_MARGIN = 200;
 /** ストリーム上のビット位置 k の x 座標（入力 XOR を原点とした相対値）。 */
 const streamX = (k: number, grouped: boolean) => k * STREAM_PITCH + (grouped ? Math.floor(k / 8) * BYTE_GAP : 0);
 
-/** ステップごとにレジスタ箱へ付けるアニメーション名。 */
+/**
+ * ステップごとにレジスタ箱へ付けるアニメーション名。
+ * shift では、間にゲートのある箱（1 ≤ i のタップ）はゲートを通る粒が届いてから現れ（arrive）、それ以外は右から滑り込む。
+ */
 function boxAnimation(params: CrcParams, step: Step, bit: number): string | undefined {
   switch (step.kind) {
     case "shift":
-      return "slide";
+      return bit >= 1 && toRegister(params.poly, params.width)[bit] === 1 ? "arrive" : "slide";
     case "xor":
       return toRegister(params.poly, params.width)[bit] === 1 ? "flip" : undefined;
     case "reflectOut":
@@ -126,8 +129,11 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
   const routeOf = (route: Particle["route"]) => {
     if (route === "input") return layout.inputRoute;
     if (route === "msb") return layout.msbRoute;
-    const [kind, i] = route.split("-");
-    return kind === "tap" ? layout.tapRoute(Number(i)) : layout.outRoute(Number(i));
+    const [kind, n] = route.split("-");
+    const i = Number(n);
+    if (kind === "tap") return layout.tapRoute(i);
+    if (kind === "out") return layout.outRoute(i);
+    return [...layout.tapInRoute(i), ...layout.outRoute(i)];
   };
   const phaseMs = animMs * PHASE_SHARE;
   const target = focused ? PARAM_TARGET[focused] : undefined;
@@ -255,7 +261,7 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
       })}
 
       {Object.entries(upcomingValues(next)).map(([bit, value]) => {
-        const at = entry(Number(bit));
+        const at = entry(0);
         return (
           <g key={bit} className={`upcoming v${value}`} data-bit={bit} transform={`translate(${at.x} ${at.y})`}>
             <circle r={9} />
@@ -269,8 +275,8 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
           route={route}
           value={value}
           points={routeOf(route)}
-          delayMs={phase * phaseMs}
-          durationMs={phaseMs}
+          delayMs={phase === 1 ? phaseMs : 0}
+          durationMs={phase === "both" ? 2 * phaseMs : phaseMs}
         />
       ))}
     </svg>
