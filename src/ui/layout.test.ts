@@ -27,7 +27,8 @@ describe("lfsrLayout", () => {
 
   it("フィードバックバスは最も右のタップ（最小の i）の入口まで伸びる", () => {
     expect(layout.busEndX).toBe(layout.entry(0).x);
-    expect(lfsrLayout({ width: 3, poly: 0b110 }).busEndX).toBe(layout.entry(1).x);
+    const upper = lfsrLayout({ width: 3, poly: 0b110 });
+    expect(upper.busEndX).toBe(upper.entry(1).x);
   });
 
   it("入力 XOR は r[width-1] の左にある", () => {
@@ -46,12 +47,42 @@ describe("lfsrLayout", () => {
     expect(layout.msbRoute.at(-1)).toEqual({ x: layout.inputGate.x + layout.gateR, y: layout.inputGate.y });
   });
 
-  it("タップへの経路は入力ゲートの下端からバスを通り、ゲートの下端か r[0] の右辺で終わる", () => {
+  it("タップへの経路は入力ゲートの下端からバスを通り、ゲートの下端か r[0] の入口で終わる", () => {
     const start = { x: layout.inputGate.x, y: layout.inputGate.y + layout.gateR };
-    const r0 = layout.boxes[0]!;
     expect(layout.tapRoute(1)[0]).toEqual(start);
     expect(layout.tapRoute(1).at(-1)).toEqual({ x: layout.entry(1).x, y: layout.entry(1).y + layout.gateR });
-    expect(layout.tapRoute(0).at(-1)).toEqual({ x: r0.x + layout.box, y: r0.y + layout.box / 2 });
+    expect(layout.tapRoute(0).at(-1)).toEqual(layout.entry(0));
     expect(layout.tapRoute(0).every((p, k) => k === 0 || p.y <= layout.busY)).toBe(true);
+  });
+
+  it("タップの入力線は r[i-1] の左辺からゲートの右端まで", () => {
+    const r0 = layout.boxes[0]!;
+    expect(layout.tapInRoute(1)).toEqual([
+      { x: r0.x, y: layout.entry(1).y },
+      { x: layout.entry(1).x + layout.gateR, y: layout.entry(1).y },
+    ]);
+  });
+
+  it("タップの出力線はゲートの左端（i = 0 では入口）から r[i] の右辺まで", () => {
+    const [r0, r1] = [layout.boxes[0]!, layout.boxes[1]!];
+    const y = layout.entry(0).y;
+    expect(layout.outRoute(1)).toEqual([
+      { x: layout.entry(1).x - layout.gateR, y },
+      { x: r1.x + layout.box, y },
+    ]);
+    expect(layout.outRoute(0)).toEqual([layout.entry(0), { x: r0.x + layout.box, y }]);
+  });
+
+  it("タップの入力線と出力線は、値の色と粒が読める長さを持つ", () => {
+    const length = (route: readonly { x: number }[]) => Math.abs(route.at(-1)!.x - route[0]!.x);
+    expect(length(layout.tapInRoute(1))).toBeGreaterThanOrEqual(28);
+    expect(length(layout.outRoute(1))).toBeGreaterThanOrEqual(28);
+    expect(length(layout.outRoute(0))).toBeGreaterThanOrEqual(28);
+  });
+
+  it("タップの無い箱どうしは詰めて並べる", () => {
+    const sparse = lfsrLayout({ width: 3, poly: 0b001 });
+    const gap = (l: typeof sparse, i: number) => l.boxes[i - 1]!.x - (l.boxes[i]!.x + l.box);
+    expect(gap(sparse, 1)).toBeLessThan(gap(layout, 1));
   });
 });

@@ -83,9 +83,14 @@ test("図は配線の色と動く粒で値の流れを示し、計算式の文�
   await expect(wire("feedback").first()).toHaveAttribute("data-level", "1");
   await stepForward(page, 2); // xor
   await expect(counter(page)).toHaveText("4 / 15");
-  await expect(page.locator(".lfsr .particle")).toHaveCount(2);
-  await expect(particle("0")).toHaveText("1");
-  await expect(particle("1")).toHaveText("1");
+  await expect(page.locator(".lfsr .particle")).toHaveCount(4);
+  await expect(particle("tap-0")).toHaveText("1");
+  await expect(particle("tap-1")).toHaveText("1");
+  await expect(particle("out-0")).toHaveText("1");
+  await expect(particle("out-1")).toHaveText("1");
+  await expect(wire("tap-in-1")).toHaveAttribute("data-level", "0");
+  await expect(wire("tap-out-1")).toHaveAttribute("data-level", "1");
+  await expect(wire("tap-out-0")).toHaveAttribute("data-level", "1");
   await expect(wire("input")).toHaveAttribute("data-level", "none");
   await expect(page.locator(".lfsr")).not.toContainText("⊕");
   await expect(page.locator(".lfsr")).not.toContainText("=");

@@ -241,7 +241,7 @@ h2 {
 }
 
 .wire.after-gate {
-  transition-delay: calc(var(--anim-ms) * 0.5);
+  transition-delay: calc(var(--anim-ms) * 0.4);
 }
 
 .particle circle {
@@ -431,13 +431,13 @@ h2 {
   animation: flip-out var(--anim-ms) ease-in-out both;
 }
 
-/* 粒が届く（アニメーション時間の半分）まで元の値を見せ、届いてから新しい値に裏返す。 */
+/* 結果の粒が届く（アニメーション時間の 80%）まで元の値を見せ、届いてから新しい値に裏返す。 */
 @keyframes flip-out {
   0%,
-  50% {
+  80% {
     transform: scaleY(1);
   }
-  75%,
+  90%,
   100% {
     transform: scaleY(0);
   }
@@ -445,7 +445,7 @@ h2 {
 
 @keyframes flip-in {
   0%,
-  75% {
+  90% {
     transform: scaleY(0);
   }
   100% {
