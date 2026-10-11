@@ -1,27 +1,18 @@
-import type { CSSProperties } from "react";
-import { toRegister, type CrcParams, type ParamName, type Step } from "../domain/trace";
-import { gateEquations } from "./gates";
+import { useEffect, useRef, type CSSProperties } from "react";
+import { toRegister, type Bit, type CrcParams, type ParamName, type Step } from "../domain/trace";
 import { lfsrLayout, type Point } from "./layout";
+import { routeKeyframes } from "./motion";
+import { particles, wireLevels } from "./signals";
 
-const GATE_R = 13;
 const STREAM_PITCH = 22;
 const BYTE_GAP = 8;
 /** 幅の大きい CRC でも文字が読める最小の表示倍率。超える分は横スクロール。 */
 const MIN_SCALE = 0.8;
 
-type FeedbackState = "on" | "off" | "idle";
-
-function feedbackState(step: Step): FeedbackState {
-  switch (step.kind) {
-    case "feedback":
-    case "shift":
-      return step.fb === 1 ? "on" : "off";
-    case "xor":
-      return "on";
-    default:
-      return "idle";
-  }
-}
+/** 粒が経路を進む時間の、ステップのアニメーション時間に対する割合。粒が届いてから結果を見せる。 */
+const PARTICLE_SHARE = 0.5;
+/** 光彩の範囲を図の外側へ広げる量。箱やゲートは translate した座標で描くため、その分の余白を取る。 */
+const GLOW_MARGIN = 200;
 
 /** ストリーム上のビット位置 k の x 座標（入力 XOR を原点とした相対値）。 */
 const streamX = (k: number, grouped: boolean) => k * STREAM_PITCH + (grouped ? Math.floor(k / 8) * BYTE_GAP : 0);
@@ -43,18 +34,57 @@ function boxAnimation(params: CrcParams, step: Step, bit: number): string | unde
 }
 
 /** XOR ゲート（⊕）。id は "input" か入口にあるレジスタの番号。active はこのステップで計算に使われていること。 */
-function XorGate(props: { at: Point; id: "input" | number; active: boolean; highlight: boolean }) {
-  const { at, id, active, highlight } = props;
+function XorGate(props: { at: Point; r: number; id: "input" | number; active: boolean; highlight: boolean }) {
+  const { at, r, id, active, highlight } = props;
   return (
     <g className={`gate ${active ? "active" : ""} ${highlight ? "param-hl" : ""}`} data-gate={id} transform={`translate(${at.x} ${at.y})`}>
-      <circle r={GATE_R} />
-      <line x1={-GATE_R} x2={GATE_R} y1={0} y2={0} />
-      <line x1={0} x2={0} y1={-GATE_R} y2={GATE_R} />
+      <circle r={r} />
+      <line x1={-r} x2={r} y1={0} y2={0} />
+      <line x1={0} x2={0} y1={-r} y2={r} />
     </g>
   );
 }
 
-type Props = Readonly<{ params: CrcParams; step: Step; stepIndex: number; focused: ParamName | undefined }>;
+/** 値の流れる配線。level が undefined なら何も流れていない。 */
+function Wire(props: { name: string; points: readonly Point[]; level: Bit | undefined; className?: string }) {
+  const { name, points, level, className = "" } = props;
+  return (
+    <polyline
+      className={`wire ${className}`}
+      data-wire={name}
+      data-level={level ?? "none"}
+      points={points.map((p) => `${p.x},${p.y}`).join(" ")}
+      fill="none"
+    />
+  );
+}
+
+/** 経路 points に沿って durationMs で動き、終点に届いたら消える値の粒。届いた値は配線の色が引き継ぐ。 */
+function ParticleDot(props: { route: string; value: Bit; points: readonly Point[]; durationMs: number }) {
+  const { route, value, points, durationMs } = props;
+  const ref = useRef<SVGGElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    el?.animate(routeKeyframes(points), { duration: durationMs, easing: "ease-in-out", fill: "forwards" });
+    el?.animate([{ opacity: 1 }, { opacity: 0 }], { delay: durationMs, duration: durationMs / 2, fill: "forwards" });
+  }, []);
+  const start = points[0]!;
+  return (
+    <g ref={ref} className={`particle v${value}`} data-route={route} style={{ transform: `translate(${start.x}px, ${start.y}px)` }}>
+      <circle r={10} />
+      <text y={5}>{value}</text>
+    </g>
+  );
+}
+
+type Props = Readonly<{
+  params: CrcParams;
+  step: Step;
+  stepIndex: number;
+  /** このステップのアニメーション時間。 */
+  animMs: number;
+  focused: ParamName | undefined;
+}>;
 
 /** 注目中のパラメータが図のどこに効くか。 */
 const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
@@ -66,21 +96,26 @@ const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
   xorout: "registers",
 };
 
-/** LFSR（ハードウェア表現）。描画は step だけで決まり、アニメーションは stepIndex ごとに再生し直す。 */
-export function LfsrView({ params, step, stepIndex, focused }: Props) {
+/**
+ * LFSR（ハードウェア表現）。描画は step だけで決まり、アニメーションは stepIndex ごとに再生し直す。
+ * 値の流れは配線の色（wireLevels）と粒（particles）で示し、計算式の文字列は出さない。
+ */
+export function LfsrView({ params, step, stepIndex, animMs, focused }: Props) {
   const layout = lfsrLayout(params);
-  const { box, regY, streamY, busY, busEndX, inputGate: ig, taps, entry } = layout;
+  const { box, regY, streamY, busY, busEndX, gateR, inputGate: ig, taps, entry } = layout;
   const w = params.width;
-  const fbState = feedbackState(step);
-  const fbClass = `wire fb-${fbState}`;
+  const levels = wireLevels(step);
   const midY = regY + box / 2;
-  const msbBoxX = layout.boxes[w - 1]!.x;
   const grouped = step.stream.length % 8 === 0 && step.stream.length > 0;
   const streamShift = -streamX(step.cursor, grouped);
   const reflectedByte = step.kind === "reflectIn" ? step.byteIndex : -1;
   const done = step.kind === "done";
-  const equations = gateEquations(params, step);
-  const activeGates = new Set(equations.map((e) => e.gate));
+  const activeGates = new Set<"input" | number>(
+    step.kind === "feedback" ? ["input"] : step.kind === "xor" ? layout.gates.map((g) => g.bit) : [],
+  );
+  const afterGate = step.kind === "feedback" ? "after-gate" : "";
+  const routeOf = (route: "input" | "msb" | number) =>
+    route === "input" ? layout.inputRoute : route === "msb" ? layout.msbRoute : layout.tapRoute(route);
   const target = focused ? PARAM_TARGET[focused] : undefined;
   const hl = (kind: typeof target) => (target === kind ? "param-hl" : "");
 
@@ -93,7 +128,14 @@ export function LfsrView({ params, step, stepIndex, focused }: Props) {
       aria-label="LFSR"
     >
       <defs>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <filter
+          id="glow"
+          filterUnits="userSpaceOnUse"
+          x={-GLOW_MARGIN}
+          y={-GLOW_MARGIN}
+          width={layout.viewWidth + 2 * GLOW_MARGIN}
+          height={layout.viewHeight + 2 * GLOW_MARGIN}
+        >
           <feGaussianBlur stdDeviation="3" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -127,21 +169,23 @@ export function LfsrView({ params, step, stepIndex, focused }: Props) {
         入力ビット（{step.cursor}/{step.stream.length}）
       </text>
 
-      <line className="wire" x1={ig.x} y1={streamY + 8} x2={ig.x} y2={ig.y - GATE_R} />
-      <line className="wire" x1={msbBoxX} y1={midY} x2={ig.x + GATE_R} y2={midY} />
-      <polyline
-        className={fbClass}
-        points={`${ig.x},${ig.y + GATE_R} ${ig.x},${busY} ${busEndX},${busY}`}
-        fill="none"
+      <Wire name="input" points={layout.inputRoute} level={levels.input} />
+      <Wire name="msb" points={layout.msbRoute} level={levels.msb} />
+      <Wire
+        name="feedback"
+        points={[{ x: ig.x, y: ig.y + gateR }, { x: ig.x, y: busY }, { x: busEndX, y: busY }]}
+        level={levels.feedback}
+        className={afterGate}
       />
-      {taps.map((i) => {
-        const e = entry(i);
-        const points =
-          i === 0
-            ? `${e.x},${busY} ${e.x},${midY} ${layout.boxes[0]!.x + box},${midY}`
-            : `${e.x},${busY} ${e.x},${midY + GATE_R}`;
-        return <polyline key={i} className={`${fbClass} ${hl("taps")}`} points={points} fill="none" />;
-      })}
+      {taps.map((i) => (
+        <Wire
+          key={i}
+          name="feedback"
+          points={layout.tapRoute(i).slice(2)}
+          level={levels.feedback}
+          className={`${afterGate} ${hl("taps")}`}
+        />
+      ))}
       {taps.includes(0) ? null : (
         <text className="label" x={entry(0).x - 4} y={midY + 5}>
           0
@@ -151,9 +195,9 @@ export function LfsrView({ params, step, stepIndex, focused }: Props) {
         <line key={bit} className="wire" x1={layout.boxes[bit - 1]!.x} y1={midY} x2={x + box} y2={midY} />
       ))}
 
-      <XorGate at={ig} id="input" active={activeGates.has("input")} highlight={false} />
+      <XorGate at={ig} r={gateR} id="input" active={activeGates.has("input")} highlight={false} />
       {layout.gates.map((g) => (
-        <XorGate key={g.bit} at={g} id={g.bit} active={activeGates.has(g.bit)} highlight={target === "taps"} />
+        <XorGate key={g.bit} at={g} r={gateR} id={g.bit} active={activeGates.has(g.bit)} highlight={target === "taps"} />
       ))}
 
       {layout.boxes.map(({ bit, x, y }) => {
@@ -165,6 +209,11 @@ export function LfsrView({ params, step, stepIndex, focused }: Props) {
         return (
           <g key={bit} className={classes} data-bit={bit} transform={`translate(${x} ${y})`}>
             <rect width={box} height={box} rx={6} />
+            {anim === "flip" ? (
+              <text key={`old-${stepIndex}`} className="reg-bit flip-old" x={box / 2} y={box / 2 + 8}>
+                {step.reg[bit]! ^ 1}
+              </text>
+            ) : null}
             <text
               key={anim ? `${anim}-${stepIndex}` : "static"}
               className={`reg-bit ${anim ?? ""}`}
@@ -181,43 +230,15 @@ export function LfsrView({ params, step, stepIndex, focused }: Props) {
         );
       })}
 
-      {equations.map(({ gate, text }) =>
-        gate === "input" ? (
-          <text
-            key={`${gate}-${stepIndex}`}
-            className="gate-eq"
-            data-gate={gate}
-            x={ig.x + GATE_R + 6}
-            y={busY - 10}
-          >
-            {text}
-          </text>
-        ) : (
-          <text
-            key={`${gate}-${stepIndex}`}
-            className="gate-eq tap"
-            data-gate={gate}
-            x={entry(gate).x}
-            y={regY - 26}
-          >
-            {text}
-          </text>
-        ),
-      )}
-      <FeedbackLabel step={step} at={{ x: ig.x + GATE_R + 6, y: busY - 10 }} />
+      {particles(params, step).map(({ route, value }) => (
+        <ParticleDot
+          key={`${route}-${stepIndex}`}
+          route={String(route)}
+          value={value}
+          points={routeOf(route)}
+          durationMs={animMs * PARTICLE_SHARE}
+        />
+      ))}
     </svg>
   );
-}
-
-/** shift と xor の間、確定したフィードバックビットを入力ゲートの下に残す。 */
-function FeedbackLabel({ step, at }: { step: Step; at: Point }) {
-  if (step.kind === "shift" || step.kind === "xor") {
-    const fb = step.kind === "xor" ? 1 : step.fb;
-    return (
-      <text className={`fb-label fb-${fb === 1 ? "on" : "off"}`} x={at.x} y={at.y}>
-        feedback = {fb}
-      </text>
-    );
-  }
-  return null;
 }

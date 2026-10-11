@@ -8,6 +8,7 @@
   --hot: #ff5c5c;
   --ok: #4ec98b;
   --warn: #e5c07b;
+  --zero: #e6e9ef;
   --param: #56b6c2;
   --mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --anim-ms: 400ms;
@@ -229,14 +230,46 @@ h2 {
   transition: stroke var(--anim-ms);
 }
 
-.wire.fb-on {
+.wire[data-level="1"] {
   stroke: var(--hot);
+  stroke-width: 3;
   filter: url(#glow);
 }
 
-.wire.fb-off {
-  stroke: #5c6370;
-  stroke-dasharray: 5 4;
+.wire[data-level="0"] {
+  stroke: var(--zero);
+}
+
+.wire.after-gate {
+  transition-delay: calc(var(--anim-ms) * 0.5);
+}
+
+.particle circle {
+  stroke-width: 2;
+}
+
+.particle text {
+  font-size: 14px;
+  font-weight: bold;
+  text-anchor: middle;
+}
+
+.particle.v1 circle {
+  fill: #3a2626;
+  stroke: var(--hot);
+}
+
+.particle.v1 text {
+  fill: var(--hot);
+}
+
+.particle.v0 circle {
+  fill: var(--bg);
+  stroke: var(--zero);
+}
+
+.particle.v0 text {
+  fill: var(--zero);
 }
 
 .gate circle {
@@ -262,29 +295,6 @@ h2 {
   stroke: var(--warn);
 }
 
-.gate-eq {
-  font-size: 13px;
-  fill: var(--warn);
-  animation: pop-in var(--anim-ms) ease-out;
-}
-
-.gate-eq.tap {
-  font-size: 17px;
-  text-anchor: middle;
-  font-weight: bold;
-}
-
-@keyframes pop-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .legend {
   margin-left: 12px;
   font-weight: normal;
@@ -308,6 +318,10 @@ h2 {
 
 .swatch.hot {
   color: var(--hot);
+}
+
+.swatch.zero {
+  color: var(--zero);
 }
 
 .swatch.warn {
@@ -415,15 +429,29 @@ h2 {
 }
 
 .reg-bit.flip {
-  animation: flip-y var(--anim-ms) ease-in-out;
+  animation: flip-in var(--anim-ms) ease-in-out both;
   fill: var(--hot);
 }
 
-@keyframes flip-y {
-  0% {
+.reg-bit.flip-old {
+  animation: flip-out var(--anim-ms) ease-in-out both;
+}
+
+/* 粒が届く（アニメーション時間の半分）まで元の値を見せ、届いてから新しい値に裏返す。 */
+@keyframes flip-out {
+  0%,
+  50% {
     transform: scaleY(1);
   }
-  50% {
+  75%,
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes flip-in {
+  0%,
+  75% {
     transform: scaleY(0);
   }
   100% {
@@ -434,18 +462,6 @@ h2 {
 .reg-bit.mirror {
   animation: flip-x var(--anim-ms) ease-in-out;
   fill: var(--accent);
-}
-
-.fb-label {
-  font-size: 13px;
-}
-
-.fb-label.fb-on {
-  fill: var(--hot);
-}
-
-.fb-label.fb-off {
-  fill: var(--muted);
 }
 
 /* 擬似コード */

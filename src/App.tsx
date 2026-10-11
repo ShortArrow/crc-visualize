@@ -86,6 +86,7 @@ function Visualizer(props: VisualizerProps) {
   const send = (msg: PlayerMsg) => setPlayer((p) => updatePlayer(p, msg, steps.length));
   const step = steps[player.index]!;
   const stepMs = durations[player.index]! / rate;
+  const animMs = Math.min(stepMs * 0.8, 600);
 
   useEffect(() => {
     if (!player.playing) return;
@@ -107,19 +108,20 @@ function Visualizer(props: VisualizerProps) {
   });
 
   return (
-    <div className="visualizer" style={{ "--anim-ms": `${Math.min(stepMs * 0.8, 600)}ms` } as CSSProperties}>
+    <div className="visualizer" style={{ "--anim-ms": `${animMs}ms` } as CSSProperties}>
       <section className="pane hardware">
         <h2>
           ハードウェア（LFSR）
           <span className="legend">
             ⊕ = XOR（2 入力が異なれば 1）
-            <span className="swatch hot">赤 = フィードバックビットが 1 の経路</span>
+            <span className="swatch hot">赤 = 値 1</span>
+            <span className="swatch zero">白 = 値 0</span>
             <span className="swatch warn">黄 = 計算中</span>
             <span className="swatch ok">緑 = CRC</span>
             <span className="swatch param">水色 = 注目中のパラメータ</span>
           </span>
         </h2>
-        <LfsrView params={params} step={step} stepIndex={player.index} focused={focus.focused} />
+        <LfsrView params={params} step={step} stepIndex={player.index} animMs={animMs} focused={focus.focused} />
       </section>
       <Controls
         player={player}

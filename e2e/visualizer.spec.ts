@@ -57,16 +57,30 @@ test("ソフトウェア欄の高さはログの行数によらず一定", async
   expect(await height()).toBe(first);
 });
 
-test("XOR ゲートには働いた瞬間の計算式を出し、凡例で ⊕ の意味を示す", async ({ page }) => {
+test("図は配線の色と動く粒で値の流れを示し、計算式の文字列は出さない", async ({ page }) => {
+  const wire = (name: string) => page.locator(`.lfsr [data-wire="${name}"]`);
+  const particle = (route: string) => page.locator(`.lfsr .particle[data-route="${route}"]`);
   await expect(page.locator(".legend")).toContainText("⊕ = XOR（2 入力が異なれば 1）");
-  await stepForward(page, 1);
-  await expect(page.locator('.gate-eq[data-gate="input"]')).toHaveText("msb 0 ⊕ bit 1 = feedback 1");
-  await stepForward(page, 2);
+  await expect(page.locator(".lfsr .particle")).toHaveCount(0);
+  await expect(wire("feedback").first()).toHaveAttribute("data-level", "none");
+  await stepForward(page, 1); // msb 0 ⊕ bit 1 = feedback 1
+  await expect(counter(page)).toHaveText("2 / 15");
+  await expect(particle("input")).toHaveText("1");
+  await expect(particle("msb")).toHaveText("0");
+  await expect(wire("input")).toHaveAttribute("data-level", "1");
+  const filterUnits = await page.locator(".lfsr filter#glow").getAttribute("filterUnits");
+  expect(filterUnits, "直線の配線は外接矩形の幅か高さが 0 なので、光彩の範囲を図全体の座標で取る").toBe("userSpaceOnUse");
+  await expect.poll(() => page.locator(".lfsr .particle").first().evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
+  await expect(wire("msb")).toHaveAttribute("data-level", "0");
+  await expect(wire("feedback").first()).toHaveAttribute("data-level", "1");
+  await stepForward(page, 2); // xor
   await expect(counter(page)).toHaveText("4 / 15");
-  await expect(page.locator('.gate-eq[data-gate="1"]')).toHaveText("0 ⊕ 1 = 1");
-  await expect(page.locator(".gate.active")).toHaveCount(1);
-  await stepForward(page, 1);
-  await expect(page.locator(".gate-eq")).toHaveCount(1);
+  await expect(page.locator(".lfsr .particle")).toHaveCount(2);
+  await expect(particle("0")).toHaveText("1");
+  await expect(particle("1")).toHaveText("1");
+  await expect(wire("input")).toHaveAttribute("data-level", "none");
+  await expect(page.locator(".lfsr")).not.toContainText("⊕");
+  await expect(page.locator(".lfsr")).not.toContainText("=");
 });
 
 test("ゲートの色は計算中なら黄、それ以外はフィードバックビットによらず灰", async ({ page }) => {
@@ -74,7 +88,7 @@ test("ゲートの色は計算中なら黄、それ以外はフィードバッ�
   const GRAY = "rgb(75, 80, 96)";
   const stroke = (gate: string) =>
     page.locator(`.gate[data-gate="${gate}"] circle`).evaluate((el) => getComputedStyle(el).stroke);
-  await expect(page.locator(".legend")).toContainText("赤 = フィードバックビットが 1 の経路");
+  await expect(page.locator(".legend")).toContainText("赤 = 値 1");
   await stepForward(page, 1); // フィードバックビット 1 の計算
   await expect(counter(page)).toHaveText("2 / 15");
   await expect.poll(() => stroke("input")).toBe(YELLOW);
@@ -141,7 +155,7 @@ test("フィードバックビットが 0 のシフトでは if が false と注
   await expect(counter(page)).toHaveText("6 / 15");
   await expect(page.locator(".code-line", { hasText: "if (feedback == 1)" })).toContainText("// false");
   await expect(page.locator(".code-line.skipped")).toContainText("crc ^= poly");
-  await expect(page.locator(".wire.fb-off").first()).toBeVisible();
+  await expect(page.locator('.lfsr [data-wire="feedback"]').first()).toHaveAttribute("data-level", "0");
 });
 
 test("完了するとレジスタが緑になり、入力の後ろに CRC を連結して表示する", async ({ page }) => {
