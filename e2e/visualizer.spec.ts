@@ -27,8 +27,9 @@ test("xor ステップでは poly の 1 のビットの箱の値だけが裏返�
   await expect(reg(page, 0)).toHaveClass(/\bhit\b/);
   await expect(reg(page, 1)).toHaveClass(/\bhit\b/);
   await expect(reg(page, 2)).not.toHaveClass(/\bhit\b/);
-  await expect.poll(() => look(0)).toBe(await look(2));
-  await expect.poll(() => look(1)).toBe(await look(2));
+  const same = async (bit: number) => (await look(bit)) === (await look(2));
+  await expect.poll(() => same(0)).toBe(true);
+  await expect.poll(() => same(1)).toBe(true);
   await expect(activeLine(page)).toContainText("crc ^= poly");
   await expect(latestLog(page)).toContainText("0b011");
 });
@@ -83,11 +84,14 @@ test("図は配線の色と動く粒で値の流れを示し、計算式の文�
   await expect(wire("feedback").first()).toHaveAttribute("data-level", "1");
   await stepForward(page, 2); // xor
   await expect(counter(page)).toHaveText("4 / 15");
-  await expect(page.locator(".lfsr .particle")).toHaveCount(4);
+  await expect(page.locator(".lfsr .particle")).toHaveCount(6);
   await expect(particle("tap-0")).toHaveText("1");
   await expect(particle("tap-1")).toHaveText("1");
+  await expect(particle("in-0")).toHaveText("0");
+  await expect(particle("in-1")).toHaveText("0");
   await expect(particle("out-0")).toHaveText("1");
   await expect(particle("out-1")).toHaveText("1");
+  await expect(wire("tap-in-0")).toHaveAttribute("data-level", "0");
   await expect(wire("tap-in-1")).toHaveAttribute("data-level", "0");
   await expect(wire("tap-out-1")).toHaveAttribute("data-level", "1");
   await expect(wire("tap-out-0")).toHaveAttribute("data-level", "1");

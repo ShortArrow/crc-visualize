@@ -16,13 +16,14 @@ describe("lfsrLayout", () => {
     expect(xs[1]).toBeLessThan(xs[0]!);
   });
 
-  it("XOR ゲートは poly[i] = 1 かつ i ≥ 1 の r[i] と r[i-1] の間の下、フィードバック線より上に置く", () => {
-    expect(layout.gates.map((g) => g.bit)).toEqual([1]);
-    const gate = layout.gates[0]!;
-    expect(gate.x).toBeGreaterThan(bottom(r1).x);
-    expect(gate.x).toBeLessThan(bottom(r0).x);
-    expect(gate.y - layout.gateR).toBeGreaterThan(r1.y + layout.box);
-    expect(gate.y + layout.gateR).toBeLessThan(layout.busY);
+  it("XOR ゲートは poly[i] = 1 の各 r[i]（i = 0 を含む）の真下、フィードバック線より上に置く", () => {
+    expect(layout.gates.map((g) => g.bit)).toEqual([0, 1]);
+    for (const gate of layout.gates) {
+      const box = layout.boxes[gate.bit]!;
+      expect(gate.x).toBe(bottom(box).x);
+      expect(gate.y - layout.gateR).toBeGreaterThan(box.y + layout.box);
+      expect(gate.y + layout.gateR).toBeLessThan(layout.busY);
+    }
   });
 
   it("フィードバックの分岐先は poly の 1 のビット", () => {
@@ -30,10 +31,15 @@ describe("lfsrLayout", () => {
     expect(lfsrLayout({ width: 3, poly: 0b110 }).taps).toEqual([1, 2]);
   });
 
-  it("フィードバックバスは最も右のタップ（最小の i）まで伸びる", () => {
-    expect(layout.busEndX).toBe(layout.entry(0).x);
+  it("フィードバックバスは最も右のタップ（最小の i）のゲートまで伸びる", () => {
+    expect(layout.busEndX).toBe(bottom(r0).x);
     const upper = lfsrLayout({ width: 3, poly: 0b110 });
     expect(upper.busEndX).toBe(upper.gates.find((g) => g.bit === 1)!.x);
+  });
+
+  it("r[0] の入口は r[0] の真横の右にあり、シフトで 0 がここから入る", () => {
+    expect(layout.entry(0).y).toBe(r0.y + layout.box / 2);
+    expect(layout.entry(0).x).toBeGreaterThan(r0.x + layout.box);
   });
 
   it("入力 XOR は r[width-1] の左にある", () => {
@@ -52,30 +58,29 @@ describe("lfsrLayout", () => {
     expect(layout.msbRoute.at(-1)).toEqual({ x: layout.inputGate.x + layout.gateR, y: layout.inputGate.y });
   });
 
-  it("タップへの経路は入力ゲートの下端からバスを通り、ゲートの下端か r[0] の入口で終わる", () => {
-    const gate = layout.gates[0]!;
-    expect(layout.tapRoute(1)[0]).toEqual({ x: layout.inputGate.x, y: layout.inputGate.y + layout.gateR });
-    expect(layout.tapRoute(1).at(-1)).toEqual({ x: gate.x, y: gate.y + layout.gateR });
-    expect(layout.tapRoute(0).at(-1)).toEqual(layout.entry(0));
-    expect(layout.tapRoute(0).every((p, k) => k === 0 || p.y <= layout.busY)).toBe(true);
+  it("タップへの経路は入力ゲートの下端からバスを通り、ゲートの下端で終わる", () => {
+    for (const gate of layout.gates) {
+      const route = layout.tapRoute(gate.bit);
+      expect(route[0]).toEqual({ x: layout.inputGate.x, y: layout.inputGate.y + layout.gateR });
+      expect(route.at(-1)).toEqual({ x: gate.x, y: gate.y + layout.gateR });
+      expect(route.every((p) => p.y <= layout.busY)).toBe(true);
+    }
   });
 
-  it("タップの入力線は r[i-1] の下辺から下りてゲートの縁で終わる", () => {
-    const route = layout.tapInRoute(1);
-    expect(route[0]).toEqual(bottom(r0));
-    expect(dist(route.at(-1)!, layout.gates[0]!)).toBeCloseTo(layout.gateR);
-  });
-
-  it("タップの出力線はゲートの縁から上がって r[i] の下辺に入る（i = 0 では入口から r[0] の右辺）", () => {
-    const route = layout.outRoute(1);
-    expect(dist(route[0]!, layout.gates[0]!)).toBeCloseTo(layout.gateR);
-    expect(route.at(-1)).toEqual(bottom(r1));
-    expect(layout.outRoute(0)).toEqual([layout.entry(0), { x: r0.x + layout.box, y: layout.entry(0).y }]);
+  it("タップの入力線は r[i] の下辺の左寄りから下りてゲートの縁で終わり、出力線はゲートの縁から右寄りへ戻る", () => {
+    const gate = layout.gates.find((g) => g.bit === 1)!;
+    const down = layout.tapInRoute(1);
+    const up = layout.outRoute(1);
+    expect(down[0]!.y).toBe(r1.y + layout.box);
+    expect(down[0]!.x).toBeLessThan(gate.x);
+    expect(dist(down.at(-1)!, gate)).toBeCloseTo(layout.gateR);
+    expect(dist(up[0]!, gate)).toBeCloseTo(layout.gateR);
+    expect(up.at(-1)!.y).toBe(r1.y + layout.box);
+    expect(up.at(-1)!.x).toBeGreaterThan(gate.x);
   });
 
   it("タップの入力線と出力線は、値の色と粒が読める長さを持つ", () => {
-    expect(pathLength(layout.tapInRoute(1))).toBeGreaterThanOrEqual(28);
-    expect(pathLength(layout.outRoute(1))).toBeGreaterThanOrEqual(28);
-    expect(pathLength(layout.outRoute(0))).toBeGreaterThanOrEqual(28);
+    expect(pathLength(layout.tapInRoute(1))).toBeGreaterThanOrEqual(24);
+    expect(pathLength(layout.outRoute(1))).toBeGreaterThanOrEqual(24);
   });
 });

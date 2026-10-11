@@ -454,22 +454,6 @@ h2 {
   animation: flip-in var(--anim-ms) ease-in-out both;
 }
 
-.reg-bit.arrive {
-  animation: arrive var(--anim-ms) both;
-}
-
-/* ゲートを通る粒が届く（アニメーション時間の 80%）まで値を伏せる。 */
-@keyframes arrive {
-  0%,
-  80% {
-    opacity: 0;
-  }
-  90%,
-  100% {
-    opacity: 1;
-  }
-}
-
 .reg-bit.flip-old {
   animation: flip-out var(--anim-ms) ease-in-out both;
 }

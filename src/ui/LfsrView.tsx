@@ -20,14 +20,11 @@ const GLOW_MARGIN = 200;
 /** ストリーム上のビット位置 k の x 座標（入力 XOR を原点とした相対値）。 */
 const streamX = (k: number, grouped: boolean) => k * STREAM_PITCH + (grouped ? Math.floor(k / 8) * BYTE_GAP : 0);
 
-/**
- * ステップごとにレジスタ箱へ付けるアニメーション名。
- * shift では、間にゲートのある箱（1 ≤ i のタップ）はゲートを通る粒が届いてから現れ（arrive）、それ以外は右から滑り込む。
- */
+/** ステップごとにレジスタ箱へ付けるアニメーション名。 */
 function boxAnimation(params: CrcParams, step: Step, bit: number): string | undefined {
   switch (step.kind) {
     case "shift":
-      return bit >= 1 && toRegister(params.poly, params.width)[bit] === 1 ? "arrive" : "slide";
+      return "slide";
     case "xor":
       return toRegister(params.poly, params.width)[bit] === 1 ? "flip" : undefined;
     case "reflectOut":
@@ -132,8 +129,8 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
     const [kind, n] = route.split("-");
     const i = Number(n);
     if (kind === "tap") return layout.tapRoute(i);
-    if (kind === "out") return layout.outRoute(i);
-    return [...layout.tapInRoute(i), ...layout.outRoute(i)];
+    if (kind === "in") return layout.tapInRoute(i);
+    return layout.outRoute(i);
   };
   const phaseMs = animMs * PHASE_SHARE;
   const target = focused ? PARAM_TARGET[focused] : undefined;
@@ -206,23 +203,16 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
           className={`${afterGate} ${hl("taps")}`}
         />
       ))}
-      {taps.includes(0) ? (
-        <Wire name="tap-out-0" points={layout.outRoute(0)} level={levels.tapOut[0]} className="after-gate" />
-      ) : (
-        <text className="label" x={entry(0).x - 4} y={midY + 5}>
-          0
-        </text>
-      )}
-      {layout.boxes.slice(1).map(({ bit, x }) =>
-        taps.includes(bit) ? (
-          <g key={bit}>
-            <Wire name={`tap-in-${bit}`} points={layout.tapInRoute(bit)} level={levels.tapIn[bit]} />
-            <Wire name={`tap-out-${bit}`} points={layout.outRoute(bit)} level={levels.tapOut[bit]} className="after-gate" />
-          </g>
-        ) : (
-          <line key={bit} className="wire" x1={layout.boxes[bit - 1]!.x} y1={midY} x2={x + box} y2={midY} />
-        ),
-      )}
+      <line className="wire" x1={entry(0).x} y1={midY} x2={layout.boxes[0]!.x + box} y2={midY} />
+      {layout.boxes.slice(1).map(({ bit, x }) => (
+        <line key={bit} className="wire" x1={layout.boxes[bit - 1]!.x} y1={midY} x2={x + box} y2={midY} />
+      ))}
+      {taps.map((i) => (
+        <g key={i}>
+          <Wire name={`tap-in-${i}`} points={layout.tapInRoute(i)} level={levels.tapIn[i]} />
+          <Wire name={`tap-out-${i}`} points={layout.outRoute(i)} level={levels.tapOut[i]} className="after-gate" />
+        </g>
+      ))}
 
       <XorGate at={ig} r={gateR} id="input" active={activeGates.has("input")} highlight={false} />
       {layout.gates.map((g) => (
@@ -275,8 +265,8 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
           route={route}
           value={value}
           points={routeOf(route)}
-          delayMs={phase === 1 ? phaseMs : 0}
-          durationMs={phase === "both" ? 2 * phaseMs : phaseMs}
+          delayMs={phase * phaseMs}
+          durationMs={phaseMs}
         />
       ))}
     </svg>
