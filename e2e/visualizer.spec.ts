@@ -81,10 +81,17 @@ test("図は配線の色と動く粒で値の流れを示し、計算式の文�
   expect(filterUnits, "直線の配線は外接矩形の幅か高さが 0 なので、光彩の範囲を図全体の座標で取る").toBe("userSpaceOnUse");
   await expect.poll(() => page.locator(".lfsr .particle").first().evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
   await expect(wire("msb")).toHaveAttribute("data-level", "0");
+  await expect(wire("result")).toHaveAttribute("data-level", "1");
+  await expect(particle("result")).toHaveText("1");
+  await expect(wire("feedback").first()).toHaveAttribute("data-level", "none");
+  await expect(page.locator(".lfsr .fb-box .reg-bit")).toHaveText("1");
+  await stepForward(page, 1); // shift
+  await expect(wire("result")).toHaveAttribute("data-level", "none");
   await expect(wire("feedback").first()).toHaveAttribute("data-level", "1");
-  await stepForward(page, 2); // xor
+  await stepForward(page, 1); // xor
   await expect(counter(page)).toHaveText("4 / 15");
   await expect(page.locator(".lfsr .particle")).toHaveCount(6);
+  await expect(page.locator(".lfsr .fb-box .reg-bit")).toHaveText("1");
   await expect(particle("tap-0")).toHaveText("1");
   await expect(particle("tap-1")).toHaveText("1");
   await expect(particle("in-0")).toHaveText("0");
@@ -189,6 +196,7 @@ test("フィードバックビットが 0 のシフトでは if が false と注
   await expect(page.locator(".code-line", { hasText: "if (feedback == 1)" })).toContainText("// false");
   await expect(page.locator(".code-line.skipped")).toContainText("crc ^= poly");
   await expect(page.locator('.lfsr [data-wire="feedback"]').first()).toHaveAttribute("data-level", "0");
+  await expect(page.locator(".lfsr .fb-box .reg-bit")).toHaveText("0");
 });
 
 test("完了するとレジスタが緑になり、入力の後ろに CRC を連結して表示する", async ({ page }) => {

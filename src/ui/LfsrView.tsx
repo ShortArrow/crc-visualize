@@ -2,7 +2,7 @@ import { useEffect, useRef, type CSSProperties } from "react";
 import { toRegister, type Bit, type CrcParams, type ParamName, type Step } from "../domain/trace";
 import { lfsrLayout, type Point } from "./layout";
 import { routeKeyframes } from "./motion";
-import { particles, upcomingValues, wireLevels, type Particle } from "./signals";
+import { heldFeedback, particles, upcomingValues, wireLevels, type Particle } from "./signals";
 
 const STREAM_PITCH = 22;
 const BYTE_GAP = 8;
@@ -44,6 +44,23 @@ function XorGate(props: { at: Point; r: number; id: "input" | number; active: bo
       <circle r={r} />
       <line x1={-r} x2={r} y1={0} y2={0} />
       <line x1={0} x2={0} y1={-r} y2={r} />
+    </g>
+  );
+}
+
+/** 変数 feedback の値を示す箱。feedback ステップでは結果の粒が届いた時点で値が入る。 */
+function FeedbackBox(props: { at: Point & { size: number }; value: Bit | undefined; arriving: boolean; stepIndex: number }) {
+  const { at, value, arriving, stepIndex } = props;
+  const half = at.size / 2;
+  return (
+    <g className="fb-box" transform={`translate(${at.x} ${at.y})`}>
+      <rect x={-half} y={-half} width={at.size} height={at.size} rx={5} />
+      <text key={arriving ? `flip-${stepIndex}` : "static"} className={`reg-bit ${arriving ? "flip" : ""}`} y={7}>
+        {value ?? ""}
+      </text>
+      <text className="reg-name" x={-half - 6} y={4}>
+        feedback
+      </text>
     </g>
   );
 }
@@ -111,7 +128,7 @@ const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
  */
 export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Props) {
   const layout = lfsrLayout(params);
-  const { box, regY, streamY, busY, busEndX, gateR, inputGate: ig, taps, entry } = layout;
+  const { box, regY, streamY, busY, busEndX, gateR, inputGate: ig, feedbackBox: fb, taps, entry } = layout;
   const w = params.width;
   const levels = wireLevels(params, step);
   const midY = regY + box / 2;
@@ -122,10 +139,10 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
   const activeGates = new Set<"input" | number>(
     step.kind === "feedback" ? ["input"] : step.kind === "xor" ? layout.gates.map((g) => g.bit) : [],
   );
-  const afterGate = step.kind === "feedback" ? "after-gate" : "";
   const routeOf = (route: Particle["route"]) => {
     if (route === "input") return layout.inputRoute;
     if (route === "msb") return layout.msbRoute;
+    if (route === "result") return layout.resultRoute;
     const [kind, n] = route.split("-");
     const i = Number(n);
     if (kind === "tap") return layout.tapRoute(i);
@@ -188,20 +205,14 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
 
       <Wire name="input" points={layout.inputRoute} level={levels.input} />
       <Wire name="msb" points={layout.msbRoute} level={levels.msb} />
+      <Wire name="result" points={layout.resultRoute} level={levels.result} className="after-gate" />
       <Wire
         name="feedback"
-        points={[{ x: ig.x, y: ig.y + gateR }, { x: ig.x, y: busY }, { x: busEndX, y: busY }]}
+        points={[{ x: ig.x, y: fb.y + fb.size / 2 }, { x: ig.x, y: busY }, { x: busEndX, y: busY }]}
         level={levels.feedback}
-        className={afterGate}
       />
       {taps.map((i) => (
-        <Wire
-          key={i}
-          name="feedback"
-          points={layout.tapRoute(i).slice(2)}
-          level={levels.feedback}
-          className={`${afterGate} ${hl("taps")}`}
-        />
+        <Wire key={i} name="feedback" points={layout.tapRoute(i).slice(2)} level={levels.feedback} className={hl("taps")} />
       ))}
       <line className="wire" x1={entry(0).x} y1={midY} x2={layout.boxes[0]!.x + box} y2={midY} />
       {layout.boxes.slice(1).map(({ bit, x }) => (
@@ -215,6 +226,7 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
       ))}
 
       <XorGate at={ig} r={gateR} id="input" active={activeGates.has("input")} highlight={false} />
+      <FeedbackBox at={fb} value={heldFeedback(step)} arriving={step.kind === "feedback"} stepIndex={stepIndex} />
       {layout.gates.map((g) => (
         <XorGate key={g.bit} at={g} r={gateR} id={g.bit} active={activeGates.has(g.bit)} highlight={target === "taps"} />
       ))}

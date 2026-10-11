@@ -7,6 +7,7 @@ import { toRegister, type Bit, type CrcParams, type Step } from "../domain/trace
 export type WireLevels = Readonly<{
   input?: Bit;
   msb?: Bit;
+  result?: Bit;
   feedback?: Bit;
   tapIn: Readonly<Partial<Record<number, Bit>>>;
   tapOut: Readonly<Partial<Record<number, Bit>>>;
@@ -14,10 +15,10 @@ export type WireLevels = Readonly<{
 
 /**
  * 配線に沿って動く粒。route は "input"（入力ストリーム → 入力ゲート）、"msb"（r[width-1] → 入力ゲート）、
- * "tap-i"（入力ゲート → フィードバック線 → r[i] の真下のゲート）、"in-i"（r[i] → ゲート）、"out-i"（ゲート → r[i]）。
+ * "result"（入力ゲート → feedback の箱）、"tap-i"（feedback の箱 → フィードバック線 → r[i] の真下のゲート）、"in-i"（r[i] → ゲート）、"out-i"（ゲート → r[i]）。
  * phase はアニメーションの前半（0）と後半（1）のどちらで動くか。
  */
-export type Particle = Readonly<{ route: `${"tap" | "in" | "out"}-${number}` | "input" | "msb"; value: Bit; phase: 0 | 1 }>;
+export type Particle = Readonly<{ route: `${"tap" | "in" | "out"}-${number}` | "input" | "msb" | "result"; value: Bit; phase: 0 | 1 }>;
 
 const tapsOf = (params: CrcParams) => toRegister(params.poly, params.width).flatMap((tap, i) => (tap === 1 ? [i] : []));
 
@@ -25,7 +26,7 @@ const tapsOf = (params: CrcParams) => toRegister(params.poly, params.width).flat
 export function wireLevels(params: CrcParams, step: Step): WireLevels {
   switch (step.kind) {
     case "feedback":
-      return { input: step.inBit, msb: step.msb, feedback: step.fb, tapIn: {}, tapOut: {} };
+      return { input: step.inBit, msb: step.msb, result: step.fb, tapIn: {}, tapOut: {} };
     case "shift":
       return { feedback: step.fb, tapIn: {}, tapOut: {} };
     case "xor": {
@@ -46,6 +47,7 @@ export function particles(params: CrcParams, step: Step): Particle[] {
       return [
         { route: "input", value: step.inBit, phase: 0 },
         { route: "msb", value: step.msb, phase: 0 },
+        { route: "result", value: step.fb, phase: 1 },
       ];
     case "xor": {
       const taps = tapsOf(params);
@@ -57,6 +59,19 @@ export function particles(params: CrcParams, step: Step): Particle[] {
     }
     default:
       return [];
+  }
+}
+
+/** step で feedback の箱が示す値。クロックの feedback から xor まで保ち、それ以外では undefined。 */
+export function heldFeedback(step: Step): Bit | undefined {
+  switch (step.kind) {
+    case "feedback":
+    case "shift":
+      return step.fb;
+    case "xor":
+      return 1;
+    default:
+      return undefined;
   }
 }
 
