@@ -2,15 +2,18 @@ import { useEffect, useRef, type CSSProperties } from "react";
 import { toRegister, type Bit, type CrcParams, type ParamName, type Step } from "../domain/trace";
 import { lfsrLayout, type Point } from "./layout";
 import { routeKeyframes } from "./motion";
-import { particles, wireLevels } from "./signals";
+import { particles, wireLevels, type Particle } from "./signals";
 
 const STREAM_PITCH = 22;
 const BYTE_GAP = 8;
 /** 幅の大きい CRC でも文字が読める最小の表示倍率。超える分は横スクロール。 */
 const MIN_SCALE = 0.8;
 
-/** 粒が経路を進む時間の、ステップのアニメーション時間に対する割合。粒が届いてから結果を見せる。 */
-const PARTICLE_SHARE = 0.5;
+/**
+ * 前半・後半それぞれで粒が経路を進む時間の、ステップのアニメーション時間に対する割合。
+ * 後半の粒が届くのは 2 倍の時点で、styles.css の after-gate と flip の時間をこれに揃える。
+ */
+const PHASE_SHARE = 0.4;
 /** 光彩の範囲を図の外側へ広げる量。箱やゲートは translate した座標で描くため、その分の余白を取る。 */
 const GLOW_MARGIN = 200;
 
@@ -59,14 +62,18 @@ function Wire(props: { name: string; points: readonly Point[]; level: Bit | unde
   );
 }
 
-/** 経路 points に沿って durationMs で動き、終点に届いたら消える値の粒。届いた値は配線の色が引き継ぐ。 */
-function ParticleDot(props: { route: string; value: Bit; points: readonly Point[]; durationMs: number }) {
-  const { route, value, points, durationMs } = props;
+/**
+ * 経路 points に沿って動く値の粒。delayMs までは見えず、durationMs で終点に届いたら消える。
+ * 届いた値は配線の色が引き継ぐ。
+ */
+function ParticleDot(props: { route: string; value: Bit; points: readonly Point[]; delayMs: number; durationMs: number }) {
+  const { route, value, points, delayMs, durationMs } = props;
   const ref = useRef<SVGGElement>(null);
   useEffect(() => {
     const el = ref.current;
-    el?.animate(routeKeyframes(points), { duration: durationMs, easing: "ease-in-out", fill: "forwards" });
-    el?.animate([{ opacity: 1 }, { opacity: 0 }], { delay: durationMs, duration: durationMs / 2, fill: "forwards" });
+    el?.animate(routeKeyframes(points), { delay: delayMs, duration: durationMs, easing: "ease-in-out", fill: "both" });
+    el?.animate([{ opacity: 0 }, { opacity: 1 }], { delay: delayMs, duration: 1, fill: "both" });
+    el?.animate([{ opacity: 1 }, { opacity: 0 }], { delay: delayMs + durationMs, duration: durationMs / 2, fill: "forwards" });
   }, []);
   const start = points[0]!;
   return (
@@ -104,7 +111,7 @@ export function LfsrView({ params, step, stepIndex, animMs, focused }: Props) {
   const layout = lfsrLayout(params);
   const { box, regY, streamY, busY, busEndX, gateR, inputGate: ig, taps, entry } = layout;
   const w = params.width;
-  const levels = wireLevels(step);
+  const levels = wireLevels(params, step);
   const midY = regY + box / 2;
   const grouped = step.stream.length % 8 === 0 && step.stream.length > 0;
   const streamShift = -streamX(step.cursor, grouped);
@@ -114,8 +121,13 @@ export function LfsrView({ params, step, stepIndex, animMs, focused }: Props) {
     step.kind === "feedback" ? ["input"] : step.kind === "xor" ? layout.gates.map((g) => g.bit) : [],
   );
   const afterGate = step.kind === "feedback" ? "after-gate" : "";
-  const routeOf = (route: "input" | "msb" | number) =>
-    route === "input" ? layout.inputRoute : route === "msb" ? layout.msbRoute : layout.tapRoute(route);
+  const routeOf = (route: Particle["route"]) => {
+    if (route === "input") return layout.inputRoute;
+    if (route === "msb") return layout.msbRoute;
+    const [kind, i] = route.split("-");
+    return kind === "tap" ? layout.tapRoute(Number(i)) : layout.outRoute(Number(i));
+  };
+  const phaseMs = animMs * PHASE_SHARE;
   const target = focused ? PARAM_TARGET[focused] : undefined;
   const hl = (kind: typeof target) => (target === kind ? "param-hl" : "");
 
@@ -186,14 +198,23 @@ export function LfsrView({ params, step, stepIndex, animMs, focused }: Props) {
           className={`${afterGate} ${hl("taps")}`}
         />
       ))}
-      {taps.includes(0) ? null : (
+      {taps.includes(0) ? (
+        <Wire name="tap-out-0" points={layout.outRoute(0)} level={levels.tapOut[0]} className="after-gate" />
+      ) : (
         <text className="label" x={entry(0).x - 4} y={midY + 5}>
           0
         </text>
       )}
-      {layout.boxes.slice(1).map(({ bit, x }) => (
-        <line key={bit} className="wire" x1={layout.boxes[bit - 1]!.x} y1={midY} x2={x + box} y2={midY} />
-      ))}
+      {layout.boxes.slice(1).map(({ bit, x }) =>
+        taps.includes(bit) ? (
+          <g key={bit}>
+            <Wire name={`tap-in-${bit}`} points={layout.tapInRoute(bit)} level={levels.tapIn[bit]} />
+            <Wire name={`tap-out-${bit}`} points={layout.outRoute(bit)} level={levels.tapOut[bit]} className="after-gate" />
+          </g>
+        ) : (
+          <line key={bit} className="wire" x1={layout.boxes[bit - 1]!.x} y1={midY} x2={x + box} y2={midY} />
+        ),
+      )}
 
       <XorGate at={ig} r={gateR} id="input" active={activeGates.has("input")} highlight={false} />
       {layout.gates.map((g) => (
@@ -205,7 +226,8 @@ export function LfsrView({ params, step, stepIndex, animMs, focused }: Props) {
         const isMsb = bit === w - 1 && step.kind === "feedback";
         const flags = [isMsb && "msb", anim === "flip" && "hit", done && "done", hl("registers")];
         const classes = ["reg", ...flags].filter(Boolean).join(" ");
-        const style = { "--slide-from": `${layout.pitch}px` } as CSSProperties;
+        const slideFrom = (layout.boxes[bit - 1]?.x ?? entry(0).x) - x;
+        const style = { "--slide-from": `${slideFrom}px` } as CSSProperties;
         return (
           <g key={bit} className={classes} data-bit={bit} transform={`translate(${x} ${y})`}>
             <rect width={box} height={box} rx={6} />
@@ -230,13 +252,14 @@ export function LfsrView({ params, step, stepIndex, animMs, focused }: Props) {
         );
       })}
 
-      {particles(params, step).map(({ route, value }) => (
+      {particles(params, step).map(({ route, value, phase }) => (
         <ParticleDot
           key={`${route}-${stepIndex}`}
-          route={String(route)}
+          route={route}
           value={value}
           points={routeOf(route)}
-          durationMs={animMs * PARTICLE_SHARE}
+          delayMs={phase * phaseMs}
+          durationMs={phaseMs}
         />
       ))}
     </svg>

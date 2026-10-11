@@ -9,38 +9,44 @@ const stepOf = (steps: Step[], kind: Step["kind"]) => steps.find((s) => s.kind =
 describe("wireLevels", () => {
   it("feedback では入力線に bit、最上位ビット線に msb、フィードバック線に feedback が流れる", () => {
     const step = stepOf(trace({ ...plain3, init: 0b100 }, bits("0")), "feedback");
-    expect(wireLevels(step)).toEqual({ input: 0, msb: 1, feedback: 1 });
+    expect(wireLevels(plain3, step)).toEqual({ input: 0, msb: 1, feedback: 1, tapIn: {}, tapOut: {} });
   });
 
   it("shift ではフィードバック線にだけ feedback が流れる", () => {
     const step = stepOf(trace(plain3, bits("0")), "shift");
-    expect(wireLevels(step)).toEqual({ feedback: 0 });
+    expect(wireLevels(plain3, step)).toEqual({ feedback: 0, tapIn: {}, tapOut: {} });
   });
 
-  it("xor ではフィードバック線に 1 が流れる", () => {
-    expect(wireLevels(stepOf(trace(plain3, bits("1")), "xor"))).toEqual({ feedback: 1 });
+  it("xor ではフィードバック線に 1、タップの入力線にシフトで入った値、出力線に XOR の結果が流れる", () => {
+    // init 001 に 1 を投入: feedback 1、shift 後 010、xor 後 001。
+    const step = stepOf(trace({ ...plain3, init: 0b001 }, bits("1")), "xor");
+    expect(wireLevels(plain3, step)).toEqual({ feedback: 1, tapIn: { 1: 1 }, tapOut: { 0: 1, 1: 0 } });
   });
 
   it("クロック以外のステップではどの配線にも値が流れない", () => {
     const steps = trace({ ...plain3, xorout: 1 }, bits("1"));
-    for (const kind of ["init", "xorOut", "done"] as const) expect(wireLevels(stepOf(steps, kind))).toEqual({});
+    for (const kind of ["init", "xorOut", "done"] as const) {
+      expect(wireLevels(plain3, stepOf(steps, kind))).toEqual({ tapIn: {}, tapOut: {} });
+    }
   });
 });
 
 describe("particles", () => {
-  it("feedback では bit と msb の粒がそれぞれ入力ゲートへ向かう", () => {
+  it("feedback では前半に bit と msb の粒がそれぞれ入力ゲートへ向かう", () => {
     const step = stepOf(trace({ ...plain3, init: 0b100 }, bits("0")), "feedback");
     expect(particles(plain3, step)).toEqual([
-      { route: "input", value: 0 },
-      { route: "msb", value: 1 },
+      { route: "input", value: 0, phase: 0 },
+      { route: "msb", value: 1, phase: 0 },
     ]);
   });
 
-  it("xor では 1 の粒が poly の各タップへ向かう", () => {
-    const step = stepOf(trace(plain3, bits("1")), "xor");
+  it("xor では前半に 1 の粒が各タップへ向かい、後半に XOR の結果の粒がゲートから r[i] へ入る", () => {
+    const step = stepOf(trace({ ...plain3, init: 0b001 }, bits("1")), "xor");
     expect(particles(plain3, step)).toEqual([
-      { route: 0, value: 1 },
-      { route: 1, value: 1 },
+      { route: "tap-0", value: 1, phase: 0 },
+      { route: "tap-1", value: 1, phase: 0 },
+      { route: "out-0", value: 1, phase: 1 },
+      { route: "out-1", value: 0, phase: 1 },
     ]);
   });
 
