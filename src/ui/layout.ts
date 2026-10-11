@@ -4,7 +4,7 @@ export type Point = Readonly<{ x: number; y: number }>;
 
 /**
  * LFSR 図の配置（SVG 座標）。
- * boxes[i] が r[i] で、x は箱の左端。gates は r[i] と r[i-1] の間の下にある XOR ゲート中心（1 ≤ i）。
+ * boxes[i] が r[i] で、x は箱の左端。gates は poly[i] = 1 の r[i] の真下にある XOR ゲート中心。
  * taps はフィードバック線を受けるビット位置 i（poly[i] = 1）の昇順。
  */
 export type LfsrLayout = Readonly<{
@@ -19,7 +19,7 @@ export type LfsrLayout = Readonly<{
   inputGate: Point;
   /** フィードバックバスの右端の x。最も右のタップ（最小の i）。 */
   busEndX: number;
-  /** r[0] の入口（r[0] の右辺の中点から右）。フィードバック線はここから真横に r[0] へ入る。 */
+  /** r[0] の入口（r[0] の右辺の中点から右）。シフトで入る 0 はここから真横に r[0] へ入る。 */
   entry: (i: 0) => Point;
   boxes: readonly (Point & { bit: number })[];
   gates: readonly (Point & { bit: number })[];
@@ -28,11 +28,11 @@ export type LfsrLayout = Readonly<{
   inputRoute: readonly Point[];
   /** 最上位ビット線: r[width-1] の左辺から入力ゲートの右端まで。 */
   msbRoute: readonly Point[];
-  /** フィードバック線: 入力ゲートの下端からバスを通り、ゲートの下端（i = 0 では r[0] の入口）まで。 */
+  /** フィードバック線: 入力ゲートの下端からバスを通り、r[i] の真下のゲートの下端まで。 */
   tapRoute: (i: number) => readonly Point[];
-  /** タップの入力線: r[i-1] の下辺から下りてゲートの縁まで（1 ≤ i）。 */
+  /** タップの入力線（左の脚）: r[i] の下辺の左寄りから下りてゲートの縁まで。 */
   tapInRoute: (i: number) => readonly Point[];
-  /** タップの出力線: ゲートの縁から上がって r[i] の下辺まで。i = 0 では入口から r[0] の右辺まで。 */
+  /** タップの出力線（右の脚）: ゲートの縁から上がって r[i] の下辺の右寄りまで。 */
   outRoute: (i: number) => readonly Point[];
 }>;
 
@@ -41,12 +41,14 @@ const PITCH = 84;
 const GATE_X = 56;
 const FIRST_BOX_X = 120;
 const GATE_R = 13;
-/** r[0] の右辺からその入口までの長さ。結果の粒が真横から入るのが読める長さを取る。 */
+/** r[0] の右辺からその入口までの長さ。 */
 const ENTRY_WIRE = 32;
 /** 箱の下辺からタップのゲート中心までの高さ。 */
-const GATE_DROP = 40;
-/** 箱の下辺から真下へ伸ばしてから斜めにゲートへ向かう長さ。 */
-const STUB = 10;
+const GATE_DROP = 66;
+/** 左右の脚が箱の下辺に付く位置の、箱の中心からの横のずれ。 */
+const LEG_OFFSET = 16;
+/** 脚を箱の下辺から真下へ伸ばしてから斜めにゲートへ向かう長さ。 */
+const STUB = 18;
 
 /** from から center へ向かう線が、半径 r の円の縁と交わる点。 */
 function rim(center: Point, from: Point, r: number): Point {
@@ -65,24 +67,20 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
   const gateY = boxBottom + GATE_DROP;
   const busY = gateY + GATE_R + 24;
   const entry = (): Point => ({ x: boxX(0) + BOX + ENTRY_WIRE, y: midY });
-  const gate = (i: number): Point => ({ x: (boxX(i) + boxX(i - 1)) / 2 + BOX / 2, y: gateY });
-  const stub = (i: number): [Point, Point] => [
-    { x: boxX(i) + BOX / 2, y: boxBottom },
-    { x: boxX(i) + BOX / 2, y: boxBottom + STUB },
+  const gate = (i: number): Point => ({ x: boxX(i) + BOX / 2, y: gateY });
+  const leg = (i: number, side: -1 | 1): [Point, Point, Point] => {
+    const x = gate(i).x + side * LEG_OFFSET;
+    const bend = { x, y: boxBottom + STUB };
+    return [{ x, y: boxBottom }, bend, rim(gate(i), bend, GATE_R)];
+  };
+  const tapRoute = (i: number): Point[] => [
+    { x: GATE_X, y: midY + GATE_R },
+    { x: GATE_X, y: busY },
+    { x: gate(i).x, y: busY },
+    { x: gate(i).x, y: gateY + GATE_R },
   ];
-  const tapRoute = (i: number): Point[] => {
-    const end = i === 0 ? entry() : { x: gate(i).x, y: gateY + GATE_R };
-    return [{ x: GATE_X, y: midY + GATE_R }, { x: GATE_X, y: busY }, { x: end.x, y: busY }, end];
-  };
-  const tapInRoute = (i: number): Point[] => {
-    const [top, bend] = stub(i - 1);
-    return [top, bend, rim(gate(i), bend, GATE_R)];
-  };
-  const outRoute = (i: number): Point[] => {
-    if (i === 0) return [entry(), { x: boxX(0) + BOX, y: midY }];
-    const [top, bend] = stub(i);
-    return [rim(gate(i), bend, GATE_R), bend, top];
-  };
+  const tapInRoute = (i: number): Point[] => leg(i, -1);
+  const outRoute = (i: number): Point[] => leg(i, 1).reverse();
   const rightmostTap = taps[0];
   return {
     box: BOX,
@@ -93,10 +91,10 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
     viewWidth: entry().x + 24,
     viewHeight: busY + 24,
     inputGate: { x: GATE_X, y: midY },
-    busEndX: rightmostTap === undefined ? GATE_X : rightmostTap === 0 ? entry().x : gate(rightmostTap).x,
+    busEndX: rightmostTap === undefined ? GATE_X : gate(rightmostTap).x,
     entry,
     boxes: Array.from({ length: width }, (_, i) => ({ bit: i, x: boxX(i), y: regY })),
-    gates: taps.filter((i) => i >= 1).map((i) => ({ bit: i, ...gate(i) })),
+    gates: taps.map((i) => ({ bit: i, ...gate(i) })),
     taps,
     inputRoute: [{ x: GATE_X, y: streamY + 8 }, { x: GATE_X, y: midY - GATE_R }],
     msbRoute: [{ x: boxX(width - 1), y: midY }, { x: GATE_X + GATE_R, y: midY }],

@@ -12,16 +12,15 @@ describe("wireLevels", () => {
     expect(wireLevels(plain3, step)).toEqual({ input: 0, msb: 1, feedback: 1, tapIn: {}, tapOut: {} });
   });
 
-  it("shift ではフィードバック線に feedback、ゲートを通るタップの入力線と出力線にシフトで移る値が流れる", () => {
-    // init 001 に 1 を投入: shift 後 010。r1 には r0 の 1 がゲートを通って入る。
+  it("shift ではフィードバック線にだけ feedback が流れる", () => {
     const step = stepOf(trace({ ...plain3, init: 0b001 }, bits("1")), "shift");
-    expect(wireLevels(plain3, step)).toEqual({ feedback: 1, tapIn: { 1: 1 }, tapOut: { 1: 1 } });
+    expect(wireLevels(plain3, step)).toEqual({ feedback: 1, tapIn: {}, tapOut: {} });
   });
 
-  it("xor ではフィードバック線に 1、タップの入力線にシフトで入った値、出力線に XOR の結果が流れる", () => {
+  it("xor ではフィードバック線に 1、タップの入力線に XOR 前の r[i]、出力線に XOR の結果が流れる", () => {
     // init 001 に 1 を投入: feedback 1、shift 後 010、xor 後 001。
     const step = stepOf(trace({ ...plain3, init: 0b001 }, bits("1")), "xor");
-    expect(wireLevels(plain3, step)).toEqual({ feedback: 1, tapIn: { 1: 1 }, tapOut: { 0: 1, 1: 0 } });
+    expect(wireLevels(plain3, step)).toEqual({ feedback: 1, tapIn: { 0: 0, 1: 1 }, tapOut: { 0: 1, 1: 0 } });
   });
 
   it("クロック以外のステップではどの配線にも値が流れない", () => {
@@ -41,24 +40,21 @@ describe("particles", () => {
     ]);
   });
 
-  it("xor では前半に 1 の粒が各タップへ向かい、後半に XOR の結果の粒がゲートから r[i] へ入る", () => {
+  it("xor では前半に 1 の粒が各タップのゲートへ、r[i] の値が真下のゲートへ向かい、後半に結果の粒が r[i] へ戻る", () => {
     const step = stepOf(trace({ ...plain3, init: 0b001 }, bits("1")), "xor");
     expect(particles(plain3, step)).toEqual([
       { route: "tap-0", value: 1, phase: 0 },
       { route: "tap-1", value: 1, phase: 0 },
+      { route: "in-0", value: 0, phase: 0 },
+      { route: "in-1", value: 1, phase: 0 },
       { route: "out-0", value: 1, phase: 1 },
       { route: "out-1", value: 0, phase: 1 },
     ]);
   });
 
-  it("shift では、ゲートを通るタップの位置だけ、移る値の粒が r[i-1] からゲートを通って r[i] へ向かう", () => {
-    const step = stepOf(trace({ ...plain3, init: 0b001 }, bits("1")), "shift");
-    expect(particles(plain3, step)).toEqual([{ route: "pass-1", value: 1, phase: "both" }]);
-  });
-
-  it("クロック以外のステップでは粒を出さない", () => {
+  it("shift やクロック以外のステップでは粒を出さない", () => {
     const steps = trace(plain3, bits("1"));
-    for (const kind of ["init", "done"] as const) expect(particles(plain3, stepOf(steps, kind))).toEqual([]);
+    for (const kind of ["init", "shift", "done"] as const) expect(particles(plain3, stepOf(steps, kind))).toEqual([]);
   });
 });
 
