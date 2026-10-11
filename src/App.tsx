@@ -121,7 +121,7 @@ function Visualizer(props: VisualizerProps) {
             <span className="swatch param">水色 = 注目中のパラメータ</span>
           </span>
         </h2>
-        <LfsrView params={params} step={step} stepIndex={player.index} animMs={animMs} focused={focus.focused} />
+        <LfsrView params={params} step={step} next={steps[player.index + 1]} stepIndex={player.index} animMs={animMs} focused={focus.focused} />
       </section>
       <Controls
         player={player}

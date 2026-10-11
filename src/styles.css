@@ -244,6 +244,33 @@ h2 {
   transition-delay: calc(var(--anim-ms) * 0.4);
 }
 
+.upcoming circle {
+  fill: var(--bg);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 2;
+}
+
+.upcoming text {
+  font-size: 12px;
+  text-anchor: middle;
+}
+
+.upcoming.v1 circle {
+  stroke: var(--hot);
+}
+
+.upcoming.v1 text {
+  fill: var(--hot);
+}
+
+.upcoming.v0 circle {
+  stroke: var(--zero);
+}
+
+.upcoming.v0 text {
+  fill: var(--zero);
+}
+
 .particle circle {
   stroke-width: 2;
 }

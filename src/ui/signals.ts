@@ -58,3 +58,18 @@ export function particles(params: CrcParams, step: Step): Particle[] {
       return [];
   }
 }
+
+/**
+ * 次のステップ next で箱に入る値の控え（キーは r[i] の i）。
+ * next が shift なら全ての箱、xor ならタップの箱。それ以外では控えない。
+ */
+export function upcomingValues(params: CrcParams, next: Step | undefined): Partial<Record<number, Bit>> {
+  switch (next?.kind) {
+    case "shift":
+      return Object.fromEntries(next.reg.map((b, i) => [i, b]));
+    case "xor":
+      return Object.fromEntries(tapsOf(params).map((i) => [i, next.reg[i]!]));
+    default:
+      return {};
+  }
+}

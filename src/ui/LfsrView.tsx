@@ -2,7 +2,7 @@ import { useEffect, useRef, type CSSProperties } from "react";
 import { toRegister, type Bit, type CrcParams, type ParamName, type Step } from "../domain/trace";
 import { lfsrLayout, type Point } from "./layout";
 import { routeKeyframes } from "./motion";
-import { particles, wireLevels, type Particle } from "./signals";
+import { particles, upcomingValues, wireLevels, type Particle } from "./signals";
 
 const STREAM_PITCH = 22;
 const BYTE_GAP = 8;
@@ -87,6 +87,8 @@ function ParticleDot(props: { route: string; value: Bit; points: readonly Point[
 type Props = Readonly<{
   params: CrcParams;
   step: Step;
+  /** 次のステップ。箱に入る値の控えを出すのに使う。 */
+  next: Step | undefined;
   stepIndex: number;
   /** このステップのアニメーション時間。 */
   animMs: number;
@@ -107,7 +109,7 @@ const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
  * LFSR（ハードウェア表現）。描画は step だけで決まり、アニメーションは stepIndex ごとに再生し直す。
  * 値の流れは配線の色（wireLevels）と粒（particles）で示し、計算式の文字列は出さない。
  */
-export function LfsrView({ params, step, stepIndex, animMs, focused }: Props) {
+export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Props) {
   const layout = lfsrLayout(params);
   const { box, regY, streamY, busY, busEndX, gateR, inputGate: ig, taps, entry } = layout;
   const w = params.width;
@@ -252,6 +254,15 @@ export function LfsrView({ params, step, stepIndex, animMs, focused }: Props) {
         );
       })}
 
+      {Object.entries(upcomingValues(params, next)).map(([bit, value]) => {
+        const at = entry(Number(bit));
+        return (
+          <g key={bit} className={`upcoming v${value}`} data-bit={bit} transform={`translate(${at.x} ${at.y - gateR - 12})`}>
+            <circle r={9} />
+            <text y={4}>{value}</text>
+          </g>
+        );
+      })}
       {particles(params, step).map(({ route, value, phase }) => (
         <ParticleDot
           key={`${route}-${stepIndex}`}
