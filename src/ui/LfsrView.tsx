@@ -151,7 +151,7 @@ const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
  */
 export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Props) {
   const layout = lfsrLayout(params);
-  const { box, regY, streamY, busY, busEndX, gateR, inputGate: ig, feedbackBox: fb, taps, entry } = layout;
+  const { box, regY, streamY, gateR, inputGate: ig, feedbackBox: fb, taps, entry } = layout;
   const w = params.width;
   const levels = wireLevels(params, step);
   const midY = regY + box / 2;
@@ -240,13 +240,12 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
       <Wire key={`input-${stepIndex}`} {...wireProps("input", layout.inputRoute, levels.input)} />
       <Wire key={`msb-${stepIndex}`} {...wireProps("msb", layout.msbRoute, levels.msb)} />
       <Wire key={`result-${stepIndex}`} {...wireProps("result", layout.resultRoute, levels.result)} />
-      <Wire
-        name="feedback"
-        points={[{ x: ig.x, y: fb.y + fb.size / 2 }, { x: ig.x, y: busY }, { x: busEndX, y: busY }]}
-        level={levels.feedback}
-      />
       {taps.map((i) => (
-        <Wire key={i} name="feedback" points={layout.tapRoute(i).slice(2)} level={levels.feedback} className={hl("taps")} />
+        <Wire
+          key={`feedback-${i}-${stepIndex}`}
+          {...wireProps(`feedback-${i}`, layout.tapRoute(i), levels.feedback)}
+          className={hl("taps")}
+        />
       ))}
       <line className="wire" x1={entry(0).x} y1={midY} x2={layout.boxes[0]!.x + box} y2={midY} />
       {layout.boxes.slice(1).map(({ bit, x }) => (

@@ -31,12 +31,6 @@ describe("lfsrLayout", () => {
     expect(lfsrLayout({ width: 3, poly: 0b110 }).taps).toEqual([1, 2]);
   });
 
-  it("フィードバックバスは最も右のタップ（最小の i）のゲートまで伸びる", () => {
-    expect(layout.busEndX).toBe(bottom(r0).x);
-    const upper = lfsrLayout({ width: 3, poly: 0b110 });
-    expect(upper.busEndX).toBe(upper.gates.find((g) => g.bit === 1)!.x);
-  });
-
   it("r[0] の入口は r[0] の真横の右にあり、シフトで 0 がここから入る", () => {
     expect(layout.entry(0).y).toBe(r0.y + layout.box / 2);
     expect(layout.entry(0).x).toBeGreaterThan(r0.x + layout.box);

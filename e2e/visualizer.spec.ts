@@ -71,7 +71,7 @@ test("図は配線の色と動く粒で値の流れを示し、計算式の文�
   const particle = (route: string) => page.locator(`.lfsr .particle[data-route="${route}"]`);
   await expect(page.locator(".legend")).toContainText("⊕ = XOR（2 入力が異なれば 1）");
   await expect(page.locator(".lfsr .particle")).toHaveCount(0);
-  await expect(wire("feedback").first()).toHaveAttribute("data-level", "none");
+  await expect(wire("feedback-0")).toHaveAttribute("data-level", "none");
   await stepForward(page, 1); // msb 0 ⊕ bit 1 = feedback 1
   await expect(counter(page)).toHaveText("2 / 15");
   await expect(particle("input")).toHaveText("1");
@@ -83,12 +83,14 @@ test("図は配線の色と動く粒で値の流れを示し、計算式の文�
   await expect(wire("msb")).toHaveAttribute("data-level", "0");
   await expect(wire("result")).toHaveAttribute("data-level", "1");
   await expect(particle("result")).toHaveText("1");
-  await expect(wire("feedback").first()).toHaveAttribute("data-level", "none");
+  await expect(wire("feedback-0")).toHaveAttribute("data-level", "none");
   await expect(page.locator(".lfsr .fb-box .reg-bit")).toHaveText("1");
-  await stepForward(page, 1); // shift
+  await stepForward(page, 1); // shift: feedback は箱に留まり、まだゲートへ届かない
   await expect(wire("result")).toHaveAttribute("data-level", "none");
-  await expect(wire("feedback").first()).toHaveAttribute("data-level", "1");
+  await expect(wire("feedback-0")).toHaveAttribute("data-level", "none");
   await stepForward(page, 1); // xor
+  await expect(wire("feedback-0")).toHaveAttribute("data-level", "1");
+  await expect(wire("feedback-1")).toHaveAttribute("data-level", "1");
   await expect(counter(page)).toHaveText("4 / 15");
   await expect(page.locator(".lfsr .particle")).toHaveCount(6);
   await expect(page.locator(".lfsr .fb-box .reg-bit")).toHaveText("1");
@@ -217,7 +219,7 @@ test("フィードバックビットが 0 のシフトでは if が false と注
   await expect(counter(page)).toHaveText("6 / 15");
   await expect(page.locator(".code-line", { hasText: "if (feedback == 1)" })).toContainText("// false");
   await expect(page.locator(".code-line.skipped")).toContainText("crc ^= poly");
-  await expect(page.locator('.lfsr [data-wire="feedback"]').first()).toHaveAttribute("data-level", "0");
+  await expect(page.locator('.lfsr [data-wire="feedback-0"]')).toHaveAttribute("data-level", "none");
   await expect(page.locator(".lfsr .fb-box .reg-bit")).toHaveText("0");
 });
 
