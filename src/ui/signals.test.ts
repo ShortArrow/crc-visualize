@@ -62,8 +62,8 @@ describe("upcomingValues", () => {
   const at = (kind: Step["kind"]) => steps.findIndex((s) => s.kind === kind);
   const upcoming = (i: number) => upcomingValues(plain3, steps[i + 1]);
 
-  it("次が shift なら、全ての箱にシフト後の値を控える", () => {
-    expect(upcoming(at("feedback"))).toEqual({ 0: 0, 1: 1, 2: 0 });
+  it("次が shift なら、右端から新しく入る r[0] の値だけを控える", () => {
+    expect(upcoming(at("feedback"))).toEqual({ 0: 0 });
   });
 
   it("次が xor なら、タップの箱にだけ XOR 後の値を控える", () => {
