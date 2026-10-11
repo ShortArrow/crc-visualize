@@ -282,3 +282,20 @@ test("保存値が壊れていても既定の設定で開く", async ({ page }) 
   await expect(page.getByLabel("プリセット")).toHaveValue("CRC-3/TUTORIAL");
   await expect(counter(page)).toHaveText("1 / 15");
 });
+
+test("設定を変えると URL のクエリも書き換わる", async ({ page }) => {
+  await page.getByLabel("プリセット").selectOption("CRC-16/ARC");
+  await page.getByTitle("ループ再生（L）").click();
+  await expect.poll(() => new URL(page.url()).searchParams.get("poly")).toBe("0x8005");
+  const query = new URL(page.url()).searchParams;
+  expect(query.get("refin")).toBe("1");
+  expect(query.get("loop")).toBe("1");
+});
+
+test("URL のクエリにある設定で開き、保存値より優先する", async ({ page }) => {
+  await page.getByTitle("速度倍率").selectOption("4");
+  await page.goto("/?width=16&poly=0x8005&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789&loop=1");
+  await expect(page.getByLabel("プリセット")).toHaveValue("CRC-16/ARC");
+  await expect(page.getByTitle("ループ再生（L）")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTitle("速度倍率"), "URL に無い項目は保存値").toHaveValue("4");
+});

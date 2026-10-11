@@ -44,13 +44,53 @@ export function restoreSettings(raw: string | null, defaults: Settings): Setting
   } catch {
     parsed = undefined;
   }
-  const s = isRecord(parsed) ? parsed : {};
+  return validate(parsed, defaults);
+}
+
+/** 形の分からない値 v を設定として検証する。正しくない項目は defaults の値にする。 */
+function validate(v: unknown, defaults: Settings): Settings {
+  const s = isRecord(v) ? v : {};
   return {
     form: restoreForm(s.form, defaults.form),
     speedMode: pick(s.speedMode, oneOf(SPEED_MODES), defaults.speedMode),
     rate: pick(s.rate, oneOf<number>(RATES), defaults.rate),
     loop: pick(s.loop, isBoolean, defaults.loop),
   };
+}
+
+const TEXT_FIELDS = ["width", "poly", "init", "xorout", "inputMode", "input"] as const;
+const FLAG_FIELDS = ["refin", "refout"] as const;
+const flag = (b: boolean) => (b ? "1" : "0");
+const unflag = (v: string): unknown => (v === "1" ? true : v === "0" ? false : v);
+
+/** 設定を URL のクエリ文字列（先頭の ? は含まない）にする。真偽値は 1/0、速度モードは speed。 */
+export function settingsToQuery({ form, speedMode, rate, loop }: Settings): string {
+  const q = new URLSearchParams();
+  for (const k of TEXT_FIELDS) q.set(k, form[k]);
+  for (const k of FLAG_FIELDS) q.set(k, flag(form[k]));
+  q.set("speed", speedMode);
+  q.set("rate", String(rate));
+  q.set("loop", flag(loop));
+  return q.toString();
+}
+
+/** URL のクエリ search から設定を読む。クエリに無い項目と正しくない項目は base の値にする。 */
+export function settingsFromQuery(search: string, base: Settings): Settings {
+  const q = new URLSearchParams(search);
+  const has = (k: string) => q.has(k);
+  const get = (k: string) => q.get(k)!;
+  const form: Record<string, unknown> = { ...base.form };
+  for (const k of TEXT_FIELDS) if (has(k)) form[k] = get(k);
+  for (const k of FLAG_FIELDS) if (has(k)) form[k] = unflag(get(k));
+  return validate(
+    {
+      form,
+      speedMode: has("speed") ? get("speed") : base.speedMode,
+      rate: has("rate") ? Number(get("rate")) : base.rate,
+      loop: has("loop") ? unflag(get("loop")) : base.loop,
+    },
+    base,
+  );
 }
 
 /** localStorage から設定を読む。ストレージが使えない環境では defaults を返す。 */
@@ -69,4 +109,15 @@ export function saveSettings(settings: Settings): void {
   } catch {
     return;
   }
+}
+
+/** 起動時の設定。URL のクエリにある項目を、localStorage の保存値（無ければ defaults）より優先する。 */
+export function initialSettings(defaults: Settings): Settings {
+  return settingsFromQuery(location.search, loadSettings(defaults));
+}
+
+/** 設定を localStorage に保存し、履歴を増やさずに URL のクエリを書き換える。 */
+export function persistSettings(settings: Settings): void {
+  saveSettings(settings);
+  history.replaceState(history.state, "", `${location.pathname}?${settingsToQuery(settings)}${location.hash}`);
 }
