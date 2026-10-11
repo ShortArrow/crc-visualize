@@ -228,7 +228,7 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
         const isMsb = bit === w - 1 && step.kind === "feedback";
         const flags = [isMsb && "msb", anim === "flip" && "hit", done && "done", hl("registers")];
         const classes = ["reg", ...flags].filter(Boolean).join(" ");
-        const slideFrom = (layout.boxes[bit - 1]?.x ?? entry(0).x) - x;
+        const slideFrom = bit === 0 ? entry(0).x - (x + box / 2) : layout.boxes[bit - 1]!.x - x;
         const style = { "--slide-from": `${slideFrom}px` } as CSSProperties;
         return (
           <g key={bit} className={classes} data-bit={bit} transform={`translate(${x} ${y})`}>
@@ -254,10 +254,10 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
         );
       })}
 
-      {Object.entries(upcomingValues(params, next)).map(([bit, value]) => {
+      {Object.entries(upcomingValues(next)).map(([bit, value]) => {
         const at = entry(Number(bit));
         return (
-          <g key={bit} className={`upcoming v${value}`} data-bit={bit} transform={`translate(${at.x} ${at.y - gateR - 12})`}>
+          <g key={bit} className={`upcoming v${value}`} data-bit={bit} transform={`translate(${at.x} ${at.y})`}>
             <circle r={9} />
             <text y={4}>{value}</text>
           </g>

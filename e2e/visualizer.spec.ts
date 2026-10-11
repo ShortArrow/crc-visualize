@@ -96,22 +96,19 @@ test("図は配線の色と動く粒で値の流れを示し、計算式の文�
   await expect(page.locator(".lfsr")).not.toContainText("=");
 });
 
-test("次のステップで新しく箱に入る値だけを、箱の右隣に控えとして先に出す", async ({ page }) => {
+test("シフトで右端から入る値を、r0 の真横に控えとして先に出す", async ({ page }) => {
   const upcoming = page.locator(".lfsr .upcoming");
-  const valueAt = (bit: number) => page.locator(`.lfsr .upcoming[data-bit="${bit}"]`);
   await expect(upcoming).toHaveCount(0);
   await stepForward(page, 1); // 次は shift: r0 に 0 が入る
   await expect(counter(page)).toHaveText("2 / 15");
   await expect(upcoming).toHaveCount(1);
-  await expect(valueAt(0)).toHaveText("0");
-  await stepForward(page, 1); // 次は xor: 011
-  await expect(upcoming).toHaveCount(2);
-  await expect(valueAt(0)).toHaveText("1");
-  await expect(valueAt(1)).toHaveText("1");
-  const box = await reg(page, 1).locator("rect").boundingBox();
-  const hint = await valueAt(1).boundingBox();
-  expect(hint!.x, "値が入ってくる右側に出す").toBeGreaterThan(box!.x + box!.width);
-  await stepForward(page, 1); // 次は feedback
+  await expect(upcoming).toHaveAttribute("data-bit", "0");
+  await expect(upcoming).toHaveText("0");
+  const box = (await reg(page, 0).locator("rect").boundingBox())!;
+  const hint = (await upcoming.boundingBox())!;
+  expect(hint.x, "値が入ってくる右側に出す").toBeGreaterThan(box.x + box.width);
+  expect(hint.y + hint.height / 2, "箱の真横に出す").toBeCloseTo(box.y + box.height / 2, 0);
+  await stepForward(page, 1); // 次は xor: 結果の粒が見せるので控えない
   await expect(upcoming).toHaveCount(0);
 });
 
