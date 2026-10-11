@@ -16,6 +16,8 @@ npm run build      # dist/ に静的ファイルを出力
 
 キー操作: Space で再生 / 一時停止、← → で 1 ステップ移動、Home / End で先頭 / 末尾、L でループ再生の切り替え。
 
+設定（CRC パラメータ、入力、速度、ループ）はブラウザの localStorage に保存され、次に開いたときに復元される。
+
 ## 構成
 
 | ディレクトリ | 内容 |
@@ -23,3 +25,4 @@ npm run build      # dist/ に静的ファイルを出力
 | `src/domain` | CRC のステップ列生成 (`trace`)、フォームの検証 (`parseConfig`)、プリセット |
 | `src/playback` | 再生状態の遷移と速度ランプ |
 | `src/ui` | 擬似コードのハイライト、LFSR 図の配置、React コンポーネント |
+| `src/settings.ts` | 設定の保存と復元（localStorage） |

@@ -261,3 +261,24 @@ test("不正な設定では項目にエラーを出し、図を消す", async ({
   await expect(page.locator(".invalid-config")).toBeVisible();
   await expect(page.locator("svg.lfsr")).toHaveCount(0);
 });
+
+test("設定は再読み込みしても保持され、再生位置は先頭に戻る", async ({ page }) => {
+  await page.getByLabel("プリセット").selectOption("CRC-16/ARC");
+  await page.getByTitle("速度モード").selectOption("steady");
+  await page.getByTitle("速度倍率").selectOption("4");
+  await page.getByTitle("ループ再生（L）").click();
+  await page.keyboard.press("ArrowRight");
+  await page.reload();
+  await expect(page.getByLabel("プリセット")).toHaveValue("CRC-16/ARC");
+  await expect(page.getByTitle("速度モード")).toHaveValue("steady");
+  await expect(page.getByTitle("速度倍率")).toHaveValue("4");
+  await expect(page.getByTitle("ループ再生（L）")).toHaveAttribute("aria-pressed", "true");
+  await expect(counter(page)).toHaveText(/^1 \//);
+});
+
+test("保存値が壊れていても既定の設定で開く", async ({ page }) => {
+  await page.evaluate(() => localStorage.setItem("crc-visualize:settings:v1", "{broken"));
+  await page.reload();
+  await expect(page.getByLabel("プリセット")).toHaveValue("CRC-3/TUTORIAL");
+  await expect(counter(page)).toHaveText("1 / 15");
+});
