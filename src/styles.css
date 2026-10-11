@@ -388,11 +388,6 @@ h2 {
   stroke: var(--warn);
 }
 
-.reg.hit rect {
-  stroke: var(--hot);
-  fill: #3a2626;
-}
-
 .reg.done rect {
   stroke: var(--ok);
   fill: #213a2d;
@@ -430,7 +425,6 @@ h2 {
 
 .reg-bit.flip {
   animation: flip-in var(--anim-ms) ease-in-out both;
-  fill: var(--hot);
 }
 
 .reg-bit.flip-old {
