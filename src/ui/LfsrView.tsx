@@ -190,6 +190,7 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
   return (
     <svg
       className="lfsr"
+      data-step={step.kind}
       viewBox={`0 0 ${layout.viewWidth} ${layout.viewHeight}`}
       style={{ minWidth: layout.viewWidth * MIN_SCALE }}
       role="img"
