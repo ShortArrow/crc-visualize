@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { trace, type Bit, type CrcParams, type Step } from "../domain/trace";
-import { particles, wireLevels } from "./signals";
+import { particles, upcomingValues, wireLevels } from "./signals";
 
 const plain3: CrcParams = { width: 3, poly: 0b011, init: 0, refin: false, refout: false, xorout: 0 };
 const bits = (s: string): Bit[] => [...s].map((c) => (c === "1" ? 1 : 0));
@@ -53,5 +53,26 @@ describe("particles", () => {
   it("shift やクロック以外のステップでは粒を出さない", () => {
     const steps = trace(plain3, bits("1"));
     for (const kind of ["init", "shift", "done"] as const) expect(particles(plain3, stepOf(steps, kind))).toEqual([]);
+  });
+});
+
+describe("upcomingValues", () => {
+  // init 001 に 1 を投入: feedback 1、shift 後 010、xor 後 001。
+  const steps = trace({ ...plain3, init: 0b001 }, bits("1"));
+  const at = (kind: Step["kind"]) => steps.findIndex((s) => s.kind === kind);
+  const upcoming = (i: number) => upcomingValues(plain3, steps[i + 1]);
+
+  it("次が shift なら、全ての箱にシフト後の値を控える", () => {
+    expect(upcoming(at("feedback"))).toEqual({ 0: 0, 1: 1, 2: 0 });
+  });
+
+  it("次が xor なら、タップの箱にだけ XOR 後の値を控える", () => {
+    expect(upcoming(at("shift"))).toEqual({ 0: 1, 1: 0 });
+  });
+
+  it("次がそれ以外か、次が無ければ控えない", () => {
+    expect(upcoming(at("init"))).toEqual({});
+    expect(upcoming(at("xor"))).toEqual({});
+    expect(upcoming(steps.length - 1)).toEqual({});
   });
 });

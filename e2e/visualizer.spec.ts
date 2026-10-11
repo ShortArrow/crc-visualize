@@ -96,6 +96,25 @@ test("図は配線の色と動く粒で値の流れを示し、計算式の文�
   await expect(page.locator(".lfsr")).not.toContainText("=");
 });
 
+test("次のステップで箱に入る値を、箱の右隣に控えとして先に出す", async ({ page }) => {
+  const upcoming = page.locator(".lfsr .upcoming");
+  const valueAt = (bit: number) => page.locator(`.lfsr .upcoming[data-bit="${bit}"]`);
+  await expect(upcoming).toHaveCount(0);
+  await stepForward(page, 1); // 次は shift: 000
+  await expect(counter(page)).toHaveText("2 / 15");
+  await expect(upcoming).toHaveCount(3);
+  for (const bit of [0, 1, 2]) await expect(valueAt(bit)).toHaveText("0");
+  await stepForward(page, 1); // 次は xor: 011
+  await expect(upcoming).toHaveCount(2);
+  await expect(valueAt(0)).toHaveText("1");
+  await expect(valueAt(1)).toHaveText("1");
+  const box = await reg(page, 1).locator("rect").boundingBox();
+  const hint = await valueAt(1).boundingBox();
+  expect(hint!.x, "値が入ってくる右側に出す").toBeGreaterThan(box!.x + box!.width);
+  await stepForward(page, 1); // 次は feedback
+  await expect(upcoming).toHaveCount(0);
+});
+
 test("ゲートの色は計算中なら黄、それ以外はフィードバックビットによらず灰", async ({ page }) => {
   const YELLOW = "rgb(229, 192, 123)";
   const GRAY = "rgb(75, 80, 96)";
