@@ -60,14 +60,14 @@ describe("upcomingValues", () => {
   // init 001 に 1 を投入: feedback 1、shift 後 010、xor 後 001。
   const steps = trace({ ...plain3, init: 0b001 }, bits("1"));
   const at = (kind: Step["kind"]) => steps.findIndex((s) => s.kind === kind);
-  const upcoming = (i: number) => upcomingValues(plain3, steps[i + 1]);
+  const upcoming = (i: number) => upcomingValues(steps[i + 1]);
 
   it("次が shift なら、右端から新しく入る r[0] の値だけを控える", () => {
     expect(upcoming(at("feedback"))).toEqual({ 0: 0 });
   });
 
-  it("次が xor なら、タップの箱にだけ XOR 後の値を控える", () => {
-    expect(upcoming(at("shift"))).toEqual({ 0: 1, 1: 0 });
+  it("次が xor なら控えない（ゲートから箱へ入る結果の粒が見せる）", () => {
+    expect(upcoming(at("shift"))).toEqual({});
   });
 
   it("次がそれ以外か、次が無ければ控えない", () => {

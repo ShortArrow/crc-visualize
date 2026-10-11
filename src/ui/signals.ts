@@ -60,16 +60,13 @@ export function particles(params: CrcParams, step: Step): Particle[] {
 }
 
 /**
- * 次のステップ next で新しく箱に入る値の控え（キーは r[i] の i）。
- * next が shift なら右端から入る r[0]、xor なら値が変わるタップの箱。
- * 隣の箱からそのまま移るだけの値は既に見えているので控えない。
+ * 次のステップ next で新しく箱に入る値の控え（キーは r[i] の i）。next が shift のときの、右端から入る r[0] だけ。
+ * 隣の箱から移るだけの値は既に見えており、xor の結果はゲートから箱へ入る粒が見せるので控えない。
  */
-export function upcomingValues(params: CrcParams, next: Step | undefined): Partial<Record<number, Bit>> {
+export function upcomingValues(next: Step | undefined): Partial<Record<number, Bit>> {
   switch (next?.kind) {
     case "shift":
       return { 0: next.reg[0]! };
-    case "xor":
-      return Object.fromEntries(tapsOf(params).map((i) => [i, next.reg[i]!]));
     default:
       return {};
   }
