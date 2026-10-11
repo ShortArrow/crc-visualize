@@ -30,6 +30,11 @@ export function stepDurations(steps: readonly Step[], mode: SpeedMode): number[]
   });
 }
 
+/** 1 ステップのアニメーションの長さ（ms）。ステップ時間 stepMs（速度倍率で割った後）の 80% で、次のステップまでに描き終える。 */
+export function animationMs(stepMs: number): number {
+  return stepMs * 0.8;
+}
+
 /** 再生状態。index は表示中のステップ。 */
 export type Player = Readonly<{ index: number; playing: boolean }>;
 
