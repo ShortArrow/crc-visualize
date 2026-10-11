@@ -14,13 +14,21 @@ test.beforeEach(async ({ page }) => {
   await expect(counter(page)).toHaveText("1 / 15");
 });
 
-test("xor ステップでは poly の 1 のビットの箱が光り、XOR の行がハイライトされる", async ({ page }) => {
+test("xor ステップでは poly の 1 のビットの箱の値だけが裏返り、箱の色は変わらない", async ({ page }) => {
+  const look = (bit: number) =>
+    reg(page, bit).evaluate((el) => {
+      const rect = getComputedStyle(el.querySelector("rect")!);
+      const digit = getComputedStyle(el.querySelector(".reg-bit:not(.flip-old)")!);
+      return [rect.stroke, rect.fill, digit.fill].join(" ");
+    });
   await stepForward(page, 3);
   await expect(counter(page)).toHaveText("4 / 15");
   await expect(latestLog(page).locator(".log-title")).toHaveText("多項式と XOR");
   await expect(reg(page, 0)).toHaveClass(/\bhit\b/);
   await expect(reg(page, 1)).toHaveClass(/\bhit\b/);
   await expect(reg(page, 2)).not.toHaveClass(/\bhit\b/);
+  await expect.poll(() => look(0)).toBe(await look(2));
+  await expect.poll(() => look(1)).toBe(await look(2));
   await expect(activeLine(page)).toContainText("crc ^= poly");
   await expect(latestLog(page)).toContainText("0b011");
 });
