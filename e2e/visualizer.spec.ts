@@ -96,14 +96,14 @@ test("図は配線の色と動く粒で値の流れを示し、計算式の文�
   await expect(page.locator(".lfsr")).not.toContainText("=");
 });
 
-test("次のステップで箱に入る値を、箱の右隣に控えとして先に出す", async ({ page }) => {
+test("次のステップで新しく箱に入る値だけを、箱の右隣に控えとして先に出す", async ({ page }) => {
   const upcoming = page.locator(".lfsr .upcoming");
   const valueAt = (bit: number) => page.locator(`.lfsr .upcoming[data-bit="${bit}"]`);
   await expect(upcoming).toHaveCount(0);
-  await stepForward(page, 1); // 次は shift: 000
+  await stepForward(page, 1); // 次は shift: r0 に 0 が入る
   await expect(counter(page)).toHaveText("2 / 15");
-  await expect(upcoming).toHaveCount(3);
-  for (const bit of [0, 1, 2]) await expect(valueAt(bit)).toHaveText("0");
+  await expect(upcoming).toHaveCount(1);
+  await expect(valueAt(0)).toHaveText("0");
   await stepForward(page, 1); // 次は xor: 011
   await expect(upcoming).toHaveCount(2);
   await expect(valueAt(0)).toHaveText("1");
