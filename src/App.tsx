@@ -10,19 +10,19 @@ import { LfsrView } from "./ui/LfsrView";
 import { ParamHelp } from "./ui/ParamHelp";
 import type { ParamFocus } from "./ui/paramFocus";
 import { StepLog } from "./ui/StepLog";
-import { loadSettings, saveSettings, type Settings } from "./settings";
+import { initialSettings, persistSettings, type Settings } from "./settings";
 
 const CHECK_BITS = bitsFromBytes([...new TextEncoder().encode("123456789")]);
 const DEFAULT_SETTINGS: Settings = { form: formFromPreset(TUTORIAL), speedMode: "auto", rate: 1, loop: false };
 const sameBits = (a: readonly Bit[], b: readonly Bit[]) => a.length === b.length && a.every((x, i) => x === b[i]);
 
 export function App() {
-  const [restored] = useState(() => loadSettings(DEFAULT_SETTINGS));
+  const [restored] = useState(() => initialSettings(DEFAULT_SETTINGS));
   const [form, setForm] = useState<ConfigForm>(restored.form);
   const [speedMode, setSpeedMode] = useState<SpeedMode>(restored.speedMode);
   const [rate, setRate] = useState(restored.rate);
   const [loop, setLoop] = useState(restored.loop);
-  useEffect(() => saveSettings({ form, speedMode, rate, loop }), [form, speedMode, rate, loop]);
+  useEffect(() => persistSettings({ form, speedMode, rate, loop }), [form, speedMode, rate, loop]);
   const [focused, setFocused] = useState<ParamName | undefined>(undefined);
   const focus: ParamFocus = { focused, onFocus: setFocused };
   const config = useMemo(() => parseConfig(form), [form]);

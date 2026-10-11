@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { restoreSettings, type Settings } from "./settings";
+import { restoreSettings, settingsFromQuery, settingsToQuery, type Settings } from "./settings";
 
 const defaults: Settings = {
   form: { width: "3", poly: "0x3", init: "0x0", refin: false, refout: false, xorout: "0x0", inputMode: "bits", input: "10101" },
@@ -42,5 +42,33 @@ describe("restoreSettings", () => {
       rate: defaults.rate,
       loop: true,
     });
+  });
+});
+
+describe("settingsToQuery / settingsFromQuery", () => {
+  it("URL のクエリに書き出した設定を読み戻せる", () => {
+    expect(settingsFromQuery(settingsToQuery(saved), defaults)).toEqual(saved);
+  });
+
+  it("真偽値は 1/0、速度モードは speed として書き出す", () => {
+    const query = new URLSearchParams(settingsToQuery(saved));
+    expect(query.get("refin")).toBe("1");
+    expect(query.get("loop")).toBe("1");
+    expect(query.get("speed")).toBe("steady");
+    expect(query.get("inputMode")).toBe("text");
+  });
+
+  it("記号や日本語を含む入力値も読み戻せる", () => {
+    const tricky: Settings = { ...saved, form: { ...saved.form, input: "a&b=c ?#日本語" } };
+    expect(settingsFromQuery(settingsToQuery(tricky), defaults)).toEqual(tricky);
+  });
+
+  it("クエリに無い項目は基準の設定のままにする", () => {
+    expect(settingsFromQuery("?poly=0x7", saved)).toEqual({ ...saved, form: { ...saved.form, poly: "0x7" } });
+    expect(settingsFromQuery("", saved)).toEqual(saved);
+  });
+
+  it("正しくない項目は基準の設定のままにする", () => {
+    expect(settingsFromQuery("?refin=maybe&inputMode=octal&rate=3&speed=fast&loop=2", saved)).toEqual(saved);
   });
 });
