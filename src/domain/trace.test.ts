@@ -50,6 +50,11 @@ describe("trace", () => {
     expect(registerValue(xor!.reg)).toBe(0b011);
   });
 
+  it("shift は桁あふれで抜けた元の r[width-1] を持つ", () => {
+    const shifts = trace({ ...plain3, init: 0b100 }, bits("00")).filter((s) => s.kind === "shift");
+    expect(shifts.map((s) => s.dropped)).toEqual([1, 0]);
+  });
+
   it("fb = 0 のクロックには xor ステップを置かない", () => {
     const steps = trace({ ...plain3, init: 0b001 }, bits("0"));
     expect(steps.map((s) => s.kind)).toEqual(["init", "feedback", "shift", "done"]);

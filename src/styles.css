@@ -12,6 +12,8 @@
   --param: #56b6c2;
   --mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --anim-ms: 400ms;
+  /* ステップの始めに切り替わる表示の、目で追える最短の時間。 */
+  --snap-ms: 120ms;
   color-scheme: dark;
   font-variant-ligatures: none;
 }
@@ -227,7 +229,10 @@ h2 {
 .wire {
   stroke: #4b5060;
   stroke-width: 2;
-  transition: stroke var(--anim-ms);
+}
+
+.wire.trail {
+  stroke-dasharray: 1 1;
 }
 
 .wire[data-level="1"] {
@@ -238,10 +243,6 @@ h2 {
 
 .wire[data-level="0"] {
   stroke: var(--zero);
-}
-
-.wire.after-gate {
-  transition-delay: calc(var(--anim-ms) * 0.4);
 }
 
 .upcoming circle {
@@ -303,13 +304,36 @@ h2 {
   fill: var(--bg);
   stroke: #4b5060;
   stroke-width: 2;
-  transition: stroke var(--anim-ms);
 }
 
 .gate line {
   stroke: #4b5060;
   stroke-width: 2;
-  transition: stroke var(--anim-ms);
+}
+
+/* 入力の粒が届く（アニメーション時間の 40%）まで、計算に使うゲートも消灯のまま待つ。 */
+.gate.active circle {
+  animation: gate-wait-circle calc(var(--anim-ms) * 0.4) step-end;
+}
+
+.gate.active line {
+  animation: gate-wait-line calc(var(--anim-ms) * 0.4) step-end;
+}
+
+@keyframes gate-wait-circle {
+  from,
+  to {
+    fill: var(--bg);
+    stroke: #4b5060;
+    filter: none;
+  }
+}
+
+@keyframes gate-wait-line {
+  from,
+  to {
+    stroke: #4b5060;
+  }
 }
 
 .gate.active circle {
@@ -371,7 +395,7 @@ h2 {
   font-size: 16px;
   text-anchor: middle;
   fill: var(--fg);
-  transition: fill var(--anim-ms);
+  transition: fill var(--snap-ms);
 }
 
 .stream-bit.used {
@@ -407,8 +431,8 @@ h2 {
   stroke: #5c6370;
   stroke-width: 2;
   transition:
-    fill var(--anim-ms),
-    stroke var(--anim-ms);
+    fill var(--snap-ms),
+    stroke var(--snap-ms);
 }
 
 .reg.msb rect {
@@ -456,11 +480,25 @@ h2 {
 @keyframes slide {
   from {
     transform: translateX(var(--slide-from));
-    opacity: 0.3;
   }
   to {
     transform: translateX(0);
+  }
+}
+
+/* 桁あふれした元の最上位ビットが左へ抜けて消える。 */
+.reg-bit.drop {
+  animation: drop var(--anim-ms) ease-in both;
+}
+
+@keyframes drop {
+  from {
+    transform: translateX(0);
     opacity: 1;
+  }
+  to {
+    transform: translateX(-48px);
+    opacity: 0;
   }
 }
 
@@ -470,6 +508,15 @@ h2 {
 
 .reg-bit.flip-old {
   animation: flip-out var(--anim-ms) ease-in-out both;
+}
+
+/* 運ぶ粒の無い xorOut は、ステップの始めに裏返す。 */
+.reg-bit.flip-now {
+  animation: flip-in calc(var(--anim-ms) * 0.2) ease-in-out both;
+}
+
+.reg-bit.flip-now-old {
+  animation: flip-out calc(var(--anim-ms) * 0.2) ease-in-out both;
 }
 
 /* 結果の粒が届く（アニメーション時間の 80%）まで元の値を見せ、届いてから新しい値に裏返す。 */
@@ -514,8 +561,8 @@ h2 {
   border-left: 3px solid transparent;
   white-space: pre;
   transition:
-    background var(--anim-ms),
-    opacity var(--anim-ms);
+    background var(--snap-ms),
+    opacity var(--snap-ms);
 }
 
 .code-line .ln {
@@ -569,7 +616,7 @@ h2 {
 
 .log-entry.latest {
   border-left-color: var(--accent);
-  animation: log-in var(--anim-ms) ease-out;
+  animation: log-in calc(var(--snap-ms) * 2) ease-out;
 }
 
 @keyframes log-in {

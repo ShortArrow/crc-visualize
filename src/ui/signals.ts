@@ -62,6 +62,16 @@ export function particles(params: CrcParams, step: Step): Particle[] {
   }
 }
 
+/**
+ * 粒 route が通る配線の名前（LfsrView の data-wire）。その配線は粒の後ろから値の色に塗る。
+ * フィードバック線は前のステップから値が流れているので、"tap-i" には対応する配線を返さない。
+ */
+export function particleWire(route: Particle["route"]): string | undefined {
+  const [kind, n] = route.split("-");
+  if (kind === "in" || kind === "out") return `tap-${kind}-${n}`;
+  return kind === "tap" ? undefined : route;
+}
+
 /** step で feedback の箱が示す値。クロックの feedback から xor まで保ち、それ以外では undefined。 */
 export function heldFeedback(step: Step): Bit | undefined {
   switch (step.kind) {

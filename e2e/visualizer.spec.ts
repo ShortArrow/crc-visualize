@@ -123,6 +123,28 @@ test("シフトで右端から入る値を、r0 の真横に控えとして先�
   await expect(upcoming).toHaveCount(0);
 });
 
+test("1 ステップの中で、粒が届く前に結果を見せない", async ({ page }) => {
+  await page.goto("/?speed=steady&rate=0.25"); // 1 ステップ 2400 ms、前半と後半はそれぞれ 768 ms
+  await expect(counter(page)).toHaveText("1 / 15");
+  const trail = (name: string) =>
+    page.locator(`.lfsr [data-wire="${name}"] .trail`).evaluate((el) => parseFloat(getComputedStyle(el).strokeDashoffset));
+  const gate = () =>
+    page.locator('.gate[data-gate="input"] circle').evaluate((el) => getComputedStyle(el).stroke === "rgb(229, 192, 123)");
+  const fbShown = () =>
+    page.locator(".lfsr .fb-box .reg-bit").evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).d > 0.5);
+  await stepForward(page, 1); // feedback
+  expect(await trail("result"), "結果の粒が出発する前は結果線を塗らない").toBeGreaterThan(0.9);
+  expect(await gate(), "入力の粒が届く前はゲートを点けない").toBe(false);
+  expect(await fbShown(), "結果の粒が届く前は feedback の箱に値を出さない").toBe(false);
+  await expect.poll(trail.bind(null, "input"), { timeout: 3000 }).toBeLessThan(0.01);
+  await expect.poll(gate, { timeout: 3000 }).toBe(true);
+  await expect.poll(trail.bind(null, "result"), { timeout: 3000 }).toBeLessThan(0.01);
+  await expect.poll(fbShown, { timeout: 3000 }).toBe(true);
+  await stepForward(page, 1); // shift: 元の r[2] = 0 が左へ抜ける
+  await expect(page.locator('.reg[data-bit="2"] .drop')).toHaveText("0");
+  expect(await gate(), "次のステップの始めにゲートはすぐ消える").toBe(false);
+});
+
 test("ゲートの色は計算中なら黄、それ以外はフィードバックビットによらず灰", async ({ page }) => {
   const YELLOW = "rgb(229, 192, 123)";
   const GRAY = "rgb(75, 80, 96)";
