@@ -26,5 +26,8 @@ npm run build      # dist/ に静的ファイルを出力
 | `src/playback` | 再生状態の遷移と速度ランプ |
 | `src/ui` | 擬似コードのハイライト、LFSR 図の配置、React コンポーネント |
 | `src/settings.ts` | 設定の保存と復元（localStorage と URL のクエリ） |
+| `src/testing` | 単体テストで共有する入力とステップの用意 |
 | `e2e` | 機能ごとの E2E シナリオ。1 テスト 1 シナリオで、`given` / `when` / `then` の手順に分けて書く |
 | `e2e/support` | 画面をステップ・図・コード・経過の言葉で操作し観察するドライバ (`Visualizer`) |
+
+テストは単体・E2E とも 1 テスト 1 シナリオで、Given / When / Then に分けて書く。単体テストは `describe("<対象>")` の中に `describe("Given <前提>")` を置き、`it("When <操作>, Then <結果>")` とする。
