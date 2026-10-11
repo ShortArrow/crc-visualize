@@ -27,8 +27,6 @@ export function wireLevels(params: CrcParams, step: Step): WireLevels {
   switch (step.kind) {
     case "feedback":
       return { input: step.inBit, msb: step.msb, result: step.fb, tapIn: {}, tapOut: {} };
-    case "shift":
-      return { feedback: step.fb, tapIn: {}, tapOut: {} };
     case "xor": {
       const taps = tapsOf(params);
       const tapIn = Object.fromEntries(taps.map((i) => [i, (step.reg[i]! ^ 1) as Bit]));
@@ -64,12 +62,12 @@ export function particles(params: CrcParams, step: Step): Particle[] {
 
 /**
  * 粒 route が通る配線の名前（LfsrView の data-wire）。その配線は粒の後ろから値の色に塗る。
- * フィードバック線は前のステップから値が流れているので、"tap-i" には対応する配線を返さない。
+ * "feedback-i" は feedback の箱から r[i] の真下のゲートまでのフィードバック線。
  */
-export function particleWire(route: Particle["route"]): string | undefined {
+export function particleWire(route: Particle["route"]): string {
   const [kind, n] = route.split("-");
   if (kind === "in" || kind === "out") return `tap-${kind}-${n}`;
-  return kind === "tap" ? undefined : route;
+  return kind === "tap" ? `feedback-${n}` : route;
 }
 
 /** step で feedback の箱が示す値。クロックの feedback から xor まで保ち、それ以外では undefined。 */

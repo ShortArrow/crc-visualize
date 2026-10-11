@@ -12,9 +12,9 @@ describe("wireLevels", () => {
     expect(wireLevels(plain3, step)).toEqual({ input: 0, msb: 1, result: 1, tapIn: {}, tapOut: {} });
   });
 
-  it("shift ではフィードバック線にだけ feedback が流れる", () => {
+  it("shift ではどの配線にも値が流れない（feedback の値は箱に留まり、xor で粒が運ぶ）", () => {
     const step = stepOf(trace({ ...plain3, init: 0b001 }, bits("1")), "shift");
-    expect(wireLevels(plain3, step)).toEqual({ feedback: 1, tapIn: {}, tapOut: {} });
+    expect(wireLevels(plain3, step)).toEqual({ tapIn: {}, tapOut: {} });
   });
 
   it("xor ではフィードバック線に 1、タップの入力線に XOR 前の r[i]、出力線に XOR の結果が流れる", () => {
@@ -60,13 +60,13 @@ describe("particles", () => {
 });
 
 describe("particleWire", () => {
-  it("粒が通る配線の名前。フィードバック線は前のステップから値が流れているので粒の後ろから塗らない", () => {
+  it("粒が通る配線の名前", () => {
     expect(particleWire("input")).toBe("input");
     expect(particleWire("msb")).toBe("msb");
     expect(particleWire("result")).toBe("result");
     expect(particleWire("in-2")).toBe("tap-in-2");
     expect(particleWire("out-0")).toBe("tap-out-0");
-    expect(particleWire("tap-1")).toBeUndefined();
+    expect(particleWire("tap-1")).toBe("feedback-1");
   });
 });
 

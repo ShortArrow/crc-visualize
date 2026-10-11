@@ -19,8 +19,6 @@ export type LfsrLayout = Readonly<{
   inputGate: Point;
   /** 変数 feedback の値を示す箱。入力ゲートの真下にあり、x・y は中心、size は一辺。 */
   feedbackBox: Point & { size: number };
-  /** フィードバックバスの右端の x。最も右のタップ（最小の i）。 */
-  busEndX: number;
   /** r[0] の入口（r[0] の右辺の中点から右）。シフトで入る 0 はここから真横に r[0] へ入る。 */
   entry: (i: 0) => Point;
   boxes: readonly (Point & { bit: number })[];
@@ -88,7 +86,6 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
   ];
   const tapInRoute = (i: number): Point[] => leg(i, -1);
   const outRoute = (i: number): Point[] => leg(i, 1).reverse();
-  const rightmostTap = taps[0];
   return {
     box: BOX,
     regY,
@@ -99,7 +96,6 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
     viewHeight: busY + 24,
     inputGate: { x: GATE_X, y: midY },
     feedbackBox,
-    busEndX: rightmostTap === undefined ? GATE_X : gate(rightmostTap).x,
     entry,
     boxes: Array.from({ length: width }, (_, i) => ({ bit: i, x: boxX(i), y: regY })),
     gates: taps.map((i) => ({ bit: i, ...gate(i) })),
