@@ -12,9 +12,10 @@ describe("wireLevels", () => {
     expect(wireLevels(plain3, step)).toEqual({ input: 0, msb: 1, feedback: 1, tapIn: {}, tapOut: {} });
   });
 
-  it("shift ではフィードバック線にだけ feedback が流れる", () => {
-    const step = stepOf(trace(plain3, bits("0")), "shift");
-    expect(wireLevels(plain3, step)).toEqual({ feedback: 0, tapIn: {}, tapOut: {} });
+  it("shift ではフィードバック線に feedback、ゲートを通るタップの入力線と出力線にシフトで移る値が流れる", () => {
+    // init 001 に 1 を投入: shift 後 010。r1 には r0 の 1 がゲートを通って入る。
+    const step = stepOf(trace({ ...plain3, init: 0b001 }, bits("1")), "shift");
+    expect(wireLevels(plain3, step)).toEqual({ feedback: 1, tapIn: { 1: 1 }, tapOut: { 1: 1 } });
   });
 
   it("xor ではフィードバック線に 1、タップの入力線にシフトで入った値、出力線に XOR の結果が流れる", () => {
@@ -50,9 +51,14 @@ describe("particles", () => {
     ]);
   });
 
-  it("shift やクロック以外のステップでは粒を出さない", () => {
+  it("shift では、ゲートを通るタップの位置だけ、移る値の粒が r[i-1] からゲートを通って r[i] へ向かう", () => {
+    const step = stepOf(trace({ ...plain3, init: 0b001 }, bits("1")), "shift");
+    expect(particles(plain3, step)).toEqual([{ route: "pass-1", value: 1, phase: "both" }]);
+  });
+
+  it("クロック以外のステップでは粒を出さない", () => {
     const steps = trace(plain3, bits("1"));
-    for (const kind of ["init", "shift", "done"] as const) expect(particles(plain3, stepOf(steps, kind))).toEqual([]);
+    for (const kind of ["init", "done"] as const) expect(particles(plain3, stepOf(steps, kind))).toEqual([]);
   });
 });
 

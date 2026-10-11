@@ -14,23 +14,31 @@ export type WireLevels = Readonly<{
 
 /**
  * 配線に沿って動く粒。route は "input"（入力ストリーム → 入力ゲート）、"msb"（r[width-1] → 入力ゲート）、
- * "tap-i"（入力ゲート → フィードバック線 → r[i] の入口）、"out-i"（r[i] の入口 → r[i]）。
- * phase はアニメーションの前半（0）と後半（1）のどちらで動くか。
+ * "tap-i"（入力ゲート → フィードバック線 → タップ）、"out-i"（タップ → r[i]）、"pass-i"（r[i-1] → ゲート → r[i]）。
+ * phase はアニメーションの前半（0）、後半（1）、通し（"both"）のどれで動くか。
  */
-export type Particle = Readonly<{ route: `${"tap" | "out"}-${number}` | "input" | "msb"; value: Bit; phase: 0 | 1 }>;
+export type Particle = Readonly<{
+  route: `${"tap" | "out" | "pass"}-${number}` | "input" | "msb";
+  value: Bit;
+  phase: 0 | 1 | "both";
+}>;
 
 const tapsOf = (params: CrcParams) => toRegister(params.poly, params.width).flatMap((tap, i) => (tap === 1 ? [i] : []));
+/** r[i-1] と r[i] の間にゲートがあるタップ（1 ≤ i）。 */
+const gatedTaps = (params: CrcParams) => tapsOf(params).filter((i) => i >= 1);
 
 /** step で各配線に流れている値。 */
 export function wireLevels(params: CrcParams, step: Step): WireLevels {
   switch (step.kind) {
     case "feedback":
       return { input: step.inBit, msb: step.msb, feedback: step.fb, tapIn: {}, tapOut: {} };
-    case "shift":
-      return { feedback: step.fb, tapIn: {}, tapOut: {} };
+    case "shift": {
+      const passed = Object.fromEntries(gatedTaps(params).map((i) => [i, step.reg[i]!]));
+      return { feedback: step.fb, tapIn: passed, tapOut: passed };
+    }
     case "xor": {
       const hit = tapsOf(params);
-      const tapIn = Object.fromEntries(hit.filter((i) => i >= 1).map((i) => [i, (step.reg[i]! ^ 1) as Bit]));
+      const tapIn = Object.fromEntries(gatedTaps(params).map((i) => [i, (step.reg[i]! ^ 1) as Bit]));
       const tapOut = Object.fromEntries(hit.map((i) => [i, step.reg[i]!]));
       return { feedback: 1, tapIn, tapOut };
     }
@@ -47,6 +55,8 @@ export function particles(params: CrcParams, step: Step): Particle[] {
         { route: "input", value: step.inBit, phase: 0 },
         { route: "msb", value: step.msb, phase: 0 },
       ];
+    case "shift":
+      return gatedTaps(params).map((i): Particle => ({ route: `pass-${i}`, value: step.reg[i]!, phase: "both" }));
     case "xor": {
       const taps = tapsOf(params);
       return [
