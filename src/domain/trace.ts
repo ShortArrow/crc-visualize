@@ -36,7 +36,7 @@ export type Step = StepBase &
     | { kind: "init" }
     | { kind: "reflectIn"; byteIndex: number }
     | { kind: "feedback"; inBit: Bit; msb: Bit; fb: Bit }
-    | { kind: "shift"; fb: Bit }
+    | { kind: "shift"; fb: Bit; dropped: Bit }
     | { kind: "xor" }
     | { kind: "reflectOut" }
     | { kind: "xorOut" }
@@ -90,7 +90,7 @@ export function trace(params: CrcParams, input: readonly Bit[]): Step[] {
     const fb = (msb ^ inBit) as Bit;
     push({ kind: "feedback", inBit, msb, fb, reg, stream, cursor });
     reg = [0, ...reg.slice(0, width - 1)];
-    push({ kind: "shift", fb, reg, stream, cursor: cursor + 1 });
+    push({ kind: "shift", fb, dropped: msb, reg, stream, cursor: cursor + 1 });
     if (fb === 1) {
       reg = xorRegister(reg, poly);
       push({ kind: "xor", reg, stream, cursor: cursor + 1 });

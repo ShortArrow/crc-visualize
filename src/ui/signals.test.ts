@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { trace, type Bit, type CrcParams, type Step } from "../domain/trace";
-import { heldFeedback, particles, upcomingValues, wireLevels } from "./signals";
+import { heldFeedback, particleWire, particles, upcomingValues, wireLevels } from "./signals";
 
 const plain3: CrcParams = { width: 3, poly: 0b011, init: 0, refin: false, refout: false, xorout: 0 };
 const bits = (s: string): Bit[] => [...s].map((c) => (c === "1" ? 1 : 0));
@@ -56,6 +56,17 @@ describe("particles", () => {
   it("shift やクロック以外のステップでは粒を出さない", () => {
     const steps = trace(plain3, bits("1"));
     for (const kind of ["init", "shift", "done"] as const) expect(particles(plain3, stepOf(steps, kind))).toEqual([]);
+  });
+});
+
+describe("particleWire", () => {
+  it("粒が通る配線の名前。フィードバック線は前のステップから値が流れているので粒の後ろから塗らない", () => {
+    expect(particleWire("input")).toBe("input");
+    expect(particleWire("msb")).toBe("msb");
+    expect(particleWire("result")).toBe("result");
+    expect(particleWire("in-2")).toBe("tap-in-2");
+    expect(particleWire("out-0")).toBe("tap-out-0");
+    expect(particleWire("tap-1")).toBeUndefined();
   });
 });
 

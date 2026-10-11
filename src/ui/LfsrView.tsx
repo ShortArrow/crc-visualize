@@ -2,7 +2,7 @@ import { useEffect, useRef, type CSSProperties } from "react";
 import { toRegister, type Bit, type CrcParams, type ParamName, type Step } from "../domain/trace";
 import { lfsrLayout, type Point } from "./layout";
 import { routeKeyframes } from "./motion";
-import { heldFeedback, particles, upcomingValues, wireLevels, type Particle } from "./signals";
+import { heldFeedback, particleWire, particles, upcomingValues, wireLevels, type Particle } from "./signals";
 
 const STREAM_PITCH = 22;
 const BYTE_GAP = 8;
@@ -30,7 +30,7 @@ function boxAnimation(params: CrcParams, step: Step, bit: number): string | unde
     case "reflectOut":
       return "mirror";
     case "xorOut":
-      return toRegister(params.xorout, params.width)[bit] === 1 ? "flip" : undefined;
+      return toRegister(params.xorout, params.width)[bit] === 1 ? "flip-now" : undefined;
     default:
       return undefined;
   }
@@ -65,32 +65,55 @@ function FeedbackBox(props: { at: Point & { size: number }; value: Bit | undefin
   );
 }
 
-/** 値の流れる配線。level が undefined なら何も流れていない。 */
-function Wire(props: { name: string; points: readonly Point[]; level: Bit | undefined; className?: string }) {
-  const { name, points, level, className = "" } = props;
+/** 粒の進み方。粒と、粒の後ろから配線を塗る線とで共有する。 */
+type Travel = Readonly<{ delayMs: number; durationMs: number }>;
+
+const toPoints = (points: readonly Point[]) => points.map((p) => `${p.x},${p.y}`).join(" ");
+
+/**
+ * 値の流れる配線。level が undefined なら何も流れていない。
+ * travel があれば、配線は灰色のまま、粒と同じ進み方で始点から値の色に塗られていく。
+ */
+function Wire(props: { name: string; points: readonly Point[]; level: Bit | undefined; travel?: Travel | undefined; className?: string }) {
+  const { name, points, level, travel, className = "" } = props;
   return (
-    <polyline
-      className={`wire ${className}`}
-      data-wire={name}
-      data-level={level ?? "none"}
-      points={points.map((p) => `${p.x},${p.y}`).join(" ")}
-      fill="none"
-    />
+    <g data-wire={name} data-level={level ?? "none"}>
+      <polyline className={`wire ${className}`} data-level={travel ? "none" : (level ?? "none")} points={toPoints(points)} fill="none" />
+      {travel && level !== undefined ? <Trail points={points} level={level} travel={travel} /> : null}
+    </g>
   );
 }
+
+/** 粒の後ろから配線を塗る線。長さを 1 として、描く範囲を粒の進み方に合わせて伸ばす。 */
+function Trail(props: { points: readonly Point[]; level: Bit; travel: Travel }) {
+  const { points, level, travel } = props;
+  const ref = useRef<SVGPolylineElement>(null);
+  useEffect(() => {
+    ref.current?.animate([{ strokeDashoffset: "1" }, { strokeDashoffset: "0" }], {
+      delay: travel.delayMs,
+      duration: travel.durationMs,
+      easing: "ease-in-out",
+      fill: "both",
+    });
+  }, []);
+  return <polyline ref={ref} className="wire trail" data-level={level} pathLength={1} points={toPoints(points)} fill="none" />;
+}
+
+/** 粒が届いてから消えきるまでの時間。届いた値は配線・ゲート・箱が引き継ぐので、すぐ消す。 */
+const VANISH_MS = 60;
 
 /**
  * 経路 points に沿って動く値の粒。delayMs までは見えず、durationMs で終点に届いたら消える。
  * 届いた値は配線の色が引き継ぐ。
  */
-function ParticleDot(props: { route: string; value: Bit; points: readonly Point[]; delayMs: number; durationMs: number }) {
+function ParticleDot(props: { route: string; value: Bit; points: readonly Point[] } & Travel) {
   const { route, value, points, delayMs, durationMs } = props;
   const ref = useRef<SVGGElement>(null);
   useEffect(() => {
     const el = ref.current;
     el?.animate(routeKeyframes(points), { delay: delayMs, duration: durationMs, easing: "ease-in-out", fill: "both" });
     el?.animate([{ opacity: 0 }, { opacity: 1 }], { delay: delayMs, duration: 1, fill: "both" });
-    el?.animate([{ opacity: 1 }, { opacity: 0 }], { delay: delayMs + durationMs, duration: durationMs / 2, fill: "forwards" });
+    el?.animate([{ opacity: 1 }, { opacity: 0 }], { delay: delayMs + durationMs, duration: VANISH_MS, fill: "forwards" });
   }, []);
   const start = points[0]!;
   return (
@@ -150,6 +173,17 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
     return layout.outRoute(i);
   };
   const phaseMs = animMs * PHASE_SHARE;
+  const moving = particles(params, step);
+  const travelOf = (wire: string): Travel | undefined => {
+    const p = moving.find((m) => particleWire(m.route) === wire);
+    return p && { delayMs: p.phase * phaseMs, durationMs: phaseMs };
+  };
+  const wireProps = (name: string, points: readonly Point[], level: Bit | undefined) => ({
+    name,
+    points,
+    level,
+    travel: travelOf(name),
+  });
   const target = focused ? PARAM_TARGET[focused] : undefined;
   const hl = (kind: typeof target) => (target === kind ? "param-hl" : "");
 
@@ -203,9 +237,9 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
         入力ビット（{step.cursor}/{step.stream.length}）
       </text>
 
-      <Wire name="input" points={layout.inputRoute} level={levels.input} />
-      <Wire name="msb" points={layout.msbRoute} level={levels.msb} />
-      <Wire name="result" points={layout.resultRoute} level={levels.result} className="after-gate" />
+      <Wire key={`input-${stepIndex}`} {...wireProps("input", layout.inputRoute, levels.input)} />
+      <Wire key={`msb-${stepIndex}`} {...wireProps("msb", layout.msbRoute, levels.msb)} />
+      <Wire key={`result-${stepIndex}`} {...wireProps("result", layout.resultRoute, levels.result)} />
       <Wire
         name="feedback"
         points={[{ x: ig.x, y: fb.y + fb.size / 2 }, { x: ig.x, y: busY }, { x: busEndX, y: busY }]}
@@ -220,8 +254,8 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
       ))}
       {taps.map((i) => (
         <g key={i}>
-          <Wire name={`tap-in-${i}`} points={layout.tapInRoute(i)} level={levels.tapIn[i]} />
-          <Wire name={`tap-out-${i}`} points={layout.outRoute(i)} level={levels.tapOut[i]} className="after-gate" />
+          <Wire key={`tap-in-${i}-${stepIndex}`} {...wireProps(`tap-in-${i}`, layout.tapInRoute(i), levels.tapIn[i])} />
+          <Wire key={`tap-out-${i}-${stepIndex}`} {...wireProps(`tap-out-${i}`, layout.outRoute(i), levels.tapOut[i])} />
         </g>
       ))}
 
@@ -241,9 +275,14 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
         return (
           <g key={bit} className={classes} data-bit={bit} transform={`translate(${x} ${y})`}>
             <rect width={box} height={box} rx={6} />
-            {anim === "flip" ? (
-              <text key={`old-${stepIndex}`} className="reg-bit flip-old" x={box / 2} y={box / 2 + 8}>
+            {anim === "flip" || anim === "flip-now" ? (
+              <text key={`old-${stepIndex}`} className={`reg-bit ${anim}-old`} x={box / 2} y={box / 2 + 8}>
                 {step.reg[bit]! ^ 1}
+              </text>
+            ) : null}
+            {step.kind === "shift" && bit === w - 1 ? (
+              <text key={`drop-${stepIndex}`} className="reg-bit drop" x={box / 2} y={box / 2 + 8}>
+                {step.dropped}
               </text>
             ) : null}
             <text
@@ -271,7 +310,7 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
           </g>
         );
       })}
-      {particles(params, step).map(({ route, value, phase }) => (
+      {moving.map(({ route, value, phase }) => (
         <ParticleDot
           key={`${route}-${stepIndex}`}
           route={route}
