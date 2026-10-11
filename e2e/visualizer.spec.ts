@@ -134,14 +134,18 @@ test("1 ステップの中で、粒が届く前に結果を見せない", async 
     page.locator('.gate[data-gate="input"] circle').evaluate((el) => getComputedStyle(el).stroke === "rgb(229, 192, 123)");
   const fbShown = () =>
     page.locator(".lfsr .fb-box .reg-bit").evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).d > 0.5);
+  const fbRed = () =>
+    page.locator(".lfsr .fb-box rect").evaluate((el) => getComputedStyle(el).stroke === "rgb(255, 92, 92)");
   await stepForward(page, 1); // feedback
   expect(await trail("result"), "結果の粒が出発する前は結果線を塗らない").toBeGreaterThan(0.9);
   expect(await gate(), "入力の粒が届く前はゲートを点けない").toBe(false);
   expect(await fbShown(), "結果の粒が届く前は feedback の箱に値を出さない").toBe(false);
+  expect(await fbRed(), "結果の粒が届く前は feedback の箱を値の色にしない").toBe(false);
   await expect.poll(trail.bind(null, "input"), { timeout: 3000 }).toBeLessThan(0.01);
   await expect.poll(gate, { timeout: 3000 }).toBe(true);
   await expect.poll(trail.bind(null, "result"), { timeout: 3000 }).toBeLessThan(0.01);
   await expect.poll(fbShown, { timeout: 3000 }).toBe(true);
+  await expect.poll(fbRed, { timeout: 3000 }).toBe(true);
   await stepForward(page, 1); // shift: 元の r[2] = 0 が左へ抜ける
   await expect(page.locator('.reg[data-bit="2"] .drop')).toHaveText("0");
   expect(await gate(), "次のステップの始めにゲートはすぐ消える").toBe(false);
@@ -221,6 +225,7 @@ test("フィードバックビットが 0 のシフトでは if が false と注
   await expect(page.locator(".code-line.skipped")).toContainText("crc ^= poly");
   await expect(page.locator('.lfsr [data-wire="feedback-0"]')).toHaveAttribute("data-level", "none");
   await expect(page.locator(".lfsr .fb-box .reg-bit")).toHaveText("0");
+  await expect(page.locator(".lfsr .fb-box")).toHaveAttribute("data-level", "0");
 });
 
 test("完了するとレジスタが緑になり、入力の後ろに CRC を連結して表示する", async ({ page }) => {

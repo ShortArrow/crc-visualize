@@ -48,12 +48,12 @@ function XorGate(props: { at: Point; r: number; id: "input" | number; active: bo
   );
 }
 
-/** 変数 feedback の値を示す箱。feedback ステップでは結果の粒が届いた時点で値が入る。 */
+/** 変数 feedback の値を示す箱。値の色で塗り、feedback ステップでは結果の粒が届いた時点で値と色が入る。 */
 function FeedbackBox(props: { at: Point & { size: number }; value: Bit | undefined; arriving: boolean; stepIndex: number }) {
   const { at, value, arriving, stepIndex } = props;
   const half = at.size / 2;
   return (
-    <g className="fb-box" transform={`translate(${at.x} ${at.y})`}>
+    <g className={`fb-box ${arriving ? "arriving" : ""}`} data-level={value ?? "none"} transform={`translate(${at.x} ${at.y})`}>
       <rect x={-half} y={-half} width={at.size} height={at.size} rx={5} />
       <text key={arriving ? `flip-${stepIndex}` : "static"} className={`reg-bit ${arriving ? "flip" : ""}`} y={7}>
         {value ?? ""}

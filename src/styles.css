@@ -469,6 +469,34 @@ h2 {
   font-size: 18px;
 }
 
+.fb-box[data-level="1"] rect {
+  fill: #3a2626;
+  stroke: var(--hot);
+  filter: url(#glow);
+}
+
+.fb-box[data-level="1"] .reg-bit {
+  fill: var(--hot);
+}
+
+.fb-box[data-level="0"] rect {
+  stroke: var(--zero);
+}
+
+/* 結果の粒が届く（アニメーション時間の 80%）まで、箱は値の色にしない。 */
+.fb-box.arriving rect {
+  animation: fb-wait calc(var(--anim-ms) * 0.8) step-end;
+}
+
+@keyframes fb-wait {
+  from,
+  to {
+    fill: #2c313a;
+    stroke: #5c6370;
+    filter: none;
+  }
+}
+
 .fb-box .reg-name {
   text-anchor: end;
 }
