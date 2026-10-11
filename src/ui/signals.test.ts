@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { trace, type Bit, type CrcParams, type Step } from "../domain/trace";
-import { particles, upcomingValues, wireLevels } from "./signals";
+import { heldFeedback, particles, upcomingValues, wireLevels } from "./signals";
 
 const plain3: CrcParams = { width: 3, poly: 0b011, init: 0, refin: false, refout: false, xorout: 0 };
 const bits = (s: string): Bit[] => [...s].map((c) => (c === "1" ? 1 : 0));
 const stepOf = (steps: Step[], kind: Step["kind"]) => steps.find((s) => s.kind === kind)!;
 
 describe("wireLevels", () => {
-  it("feedback では入力線に bit、最上位ビット線に msb、フィードバック線に feedback が流れる", () => {
+  it("feedback では入力線に bit、最上位ビット線に msb、結果線に feedback が流れ、フィードバック線にはまだ流れない", () => {
     const step = stepOf(trace({ ...plain3, init: 0b100 }, bits("0")), "feedback");
-    expect(wireLevels(plain3, step)).toEqual({ input: 0, msb: 1, feedback: 1, tapIn: {}, tapOut: {} });
+    expect(wireLevels(plain3, step)).toEqual({ input: 0, msb: 1, result: 1, tapIn: {}, tapOut: {} });
   });
 
   it("shift ではフィードバック線にだけ feedback が流れる", () => {
@@ -32,11 +32,12 @@ describe("wireLevels", () => {
 });
 
 describe("particles", () => {
-  it("feedback では前半に bit と msb の粒がそれぞれ入力ゲートへ向かう", () => {
+  it("feedback では前半に bit と msb の粒がそれぞれ入力ゲートへ向かい、後半に結果の粒が feedback の箱へ向かう", () => {
     const step = stepOf(trace({ ...plain3, init: 0b100 }, bits("0")), "feedback");
     expect(particles(plain3, step)).toEqual([
       { route: "input", value: 0, phase: 0 },
       { route: "msb", value: 1, phase: 0 },
+      { route: "result", value: 1, phase: 1 },
     ]);
   });
 
@@ -55,6 +56,23 @@ describe("particles", () => {
   it("shift やクロック以外のステップでは粒を出さない", () => {
     const steps = trace(plain3, bits("1"));
     for (const kind of ["init", "shift", "done"] as const) expect(particles(plain3, stepOf(steps, kind))).toEqual([]);
+  });
+});
+
+describe("heldFeedback", () => {
+  it("クロックの間は feedback の値を保ち、それ以外のステップでは空", () => {
+    const steps = trace({ ...plain3, init: 0b001, xorout: 1 }, bits("10"));
+    const held = steps.map((s) => [s.kind, heldFeedback(s)]);
+    expect(held).toEqual([
+      ["init", undefined],
+      ["feedback", 1],
+      ["shift", 1],
+      ["xor", 1],
+      ["feedback", 0],
+      ["shift", 0],
+      ["xorOut", undefined],
+      ["done", undefined],
+    ]);
   });
 });
 

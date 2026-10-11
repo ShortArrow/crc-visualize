@@ -17,6 +17,8 @@ export type LfsrLayout = Readonly<{
   viewWidth: number;
   viewHeight: number;
   inputGate: Point;
+  /** 変数 feedback の値を示す箱。入力ゲートの真下にあり、x・y は中心、size は一辺。 */
+  feedbackBox: Point & { size: number };
   /** フィードバックバスの右端の x。最も右のタップ（最小の i）。 */
   busEndX: number;
   /** r[0] の入口（r[0] の右辺の中点から右）。シフトで入る 0 はここから真横に r[0] へ入る。 */
@@ -26,9 +28,11 @@ export type LfsrLayout = Readonly<{
   taps: readonly number[];
   /** 入力線: 入力ストリームの下から入力ゲートの上端まで。 */
   inputRoute: readonly Point[];
+  /** 結果線: 入力ゲートの下端から feedback の箱の上辺まで。 */
+  resultRoute: readonly Point[];
   /** 最上位ビット線: r[width-1] の左辺から入力ゲートの右端まで。 */
   msbRoute: readonly Point[];
-  /** フィードバック線: 入力ゲートの下端からバスを通り、r[i] の真下のゲートの下端まで。 */
+  /** フィードバック線: feedback の箱の下辺からバスを通り、r[i] の真下のゲートの下端まで。 */
   tapRoute: (i: number) => readonly Point[];
   /** タップの入力線（左の脚）: r[i] の下辺の左寄りから下りてゲートの縁まで。 */
   tapInRoute: (i: number) => readonly Point[];
@@ -38,9 +42,11 @@ export type LfsrLayout = Readonly<{
 
 const BOX = 48;
 const PITCH = 84;
-const GATE_X = 56;
-const FIRST_BOX_X = 120;
+/** 入力ゲートの x。左に feedback の箱の名前を書く余白を取る。 */
+const GATE_X = 96;
+const FIRST_BOX_X = 160;
 const GATE_R = 13;
+const FB_BOX = 30;
 /** r[0] の右辺からその入口までの長さ。 */
 const ENTRY_WIRE = 32;
 /** 箱の下辺からタップのゲート中心までの高さ。 */
@@ -66,6 +72,7 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
   const boxBottom = regY + BOX;
   const gateY = boxBottom + GATE_DROP;
   const busY = gateY + GATE_R + 24;
+  const feedbackBox = { x: GATE_X, y: (midY + GATE_R + busY) / 2, size: FB_BOX };
   const entry = (): Point => ({ x: boxX(0) + BOX + ENTRY_WIRE, y: midY });
   const gate = (i: number): Point => ({ x: boxX(i) + BOX / 2, y: gateY });
   const leg = (i: number, side: -1 | 1): [Point, Point, Point] => {
@@ -74,7 +81,7 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
     return [{ x, y: boxBottom }, bend, rim(gate(i), bend, GATE_R)];
   };
   const tapRoute = (i: number): Point[] => [
-    { x: GATE_X, y: midY + GATE_R },
+    { x: GATE_X, y: feedbackBox.y + FB_BOX / 2 },
     { x: GATE_X, y: busY },
     { x: gate(i).x, y: busY },
     { x: gate(i).x, y: gateY + GATE_R },
@@ -91,12 +98,14 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
     viewWidth: entry().x + 24,
     viewHeight: busY + 24,
     inputGate: { x: GATE_X, y: midY },
+    feedbackBox,
     busEndX: rightmostTap === undefined ? GATE_X : gate(rightmostTap).x,
     entry,
     boxes: Array.from({ length: width }, (_, i) => ({ bit: i, x: boxX(i), y: regY })),
     gates: taps.map((i) => ({ bit: i, ...gate(i) })),
     taps,
     inputRoute: [{ x: GATE_X, y: streamY + 8 }, { x: GATE_X, y: midY - GATE_R }],
+    resultRoute: [{ x: GATE_X, y: midY + GATE_R }, { x: GATE_X, y: feedbackBox.y - FB_BOX / 2 }],
     msbRoute: [{ x: boxX(width - 1), y: midY }, { x: GATE_X + GATE_R, y: midY }],
     tapRoute,
     tapInRoute,

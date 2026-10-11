@@ -435,6 +435,20 @@ h2 {
   fill: var(--muted);
 }
 
+.fb-box rect {
+  fill: #2c313a;
+  stroke: #5c6370;
+  stroke-width: 2;
+}
+
+.fb-box .reg-bit {
+  font-size: 18px;
+}
+
+.fb-box .reg-name {
+  text-anchor: end;
+}
+
 .reg-bit.slide {
   animation: slide var(--anim-ms) ease-in-out;
 }

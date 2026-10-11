@@ -42,6 +42,22 @@ describe("lfsrLayout", () => {
     expect(layout.entry(0).x).toBeGreaterThan(r0.x + layout.box);
   });
 
+  it("feedback の箱は入力ゲートの真下、フィードバックバスより上にあり、左に名前を書く余白がある", () => {
+    const { feedbackBox: fb, inputGate } = layout;
+    expect(fb.x).toBe(inputGate.x);
+    expect(fb.y - fb.size / 2).toBeGreaterThan(inputGate.y + layout.gateR);
+    expect(fb.y + fb.size / 2).toBeLessThan(layout.busY);
+    expect(fb.x - fb.size / 2).toBeGreaterThanOrEqual(64);
+  });
+
+  it("結果線は入力ゲートの下端から feedback の箱の上辺まで", () => {
+    const { feedbackBox: fb, inputGate } = layout;
+    expect(layout.resultRoute).toEqual([
+      { x: inputGate.x, y: inputGate.y + layout.gateR },
+      { x: fb.x, y: fb.y - fb.size / 2 },
+    ]);
+  });
+
   it("入力 XOR は r[width-1] の左にある", () => {
     expect(layout.inputGate.x).toBeLessThan(layout.boxes[2]!.x);
   });
@@ -58,10 +74,11 @@ describe("lfsrLayout", () => {
     expect(layout.msbRoute.at(-1)).toEqual({ x: layout.inputGate.x + layout.gateR, y: layout.inputGate.y });
   });
 
-  it("タップへの経路は入力ゲートの下端からバスを通り、ゲートの下端で終わる", () => {
+  it("タップへの経路は feedback の箱の下辺からバスを通り、ゲートの下端で終わる", () => {
+    const fb = layout.feedbackBox;
     for (const gate of layout.gates) {
       const route = layout.tapRoute(gate.bit);
-      expect(route[0]).toEqual({ x: layout.inputGate.x, y: layout.inputGate.y + layout.gateR });
+      expect(route[0]).toEqual({ x: fb.x, y: fb.y + fb.size / 2 });
       expect(route.at(-1)).toEqual({ x: gate.x, y: gate.y + layout.gateR });
       expect(route.every((p) => p.y <= layout.busY)).toBe(true);
     }
