@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { trace, type Bit, type CrcParams } from "../domain/trace";
-import { FAST_MS, SLOW_MS, STEADY_MS, initialPlayer, stepDurations, updatePlayer } from "./playback";
+import { FAST_MS, SLOW_MS, STEADY_MS, animationMs, initialPlayer, stepDurations, updatePlayer } from "./playback";
 
 const plain3: CrcParams = { width: 3, poly: 0b011, init: 0, refin: false, refout: false, xorout: 0 };
 const bits = (s: string): Bit[] => [...s].map((c) => (c === "1" ? 1 : 0));
@@ -83,5 +83,12 @@ describe("updatePlayer", () => {
 
   it("reset は先頭で停止に戻す", () => {
     expect(updatePlayer(at(3, true), { type: "reset" }, len)).toEqual(at(0));
+  });
+});
+
+describe("animationMs", () => {
+  it("ステップ時間の 80% で、速度倍率を下げると上限なく長くなる", () => {
+    expect(animationMs(FAST_MS)).toBe(FAST_MS * 0.8);
+    expect(animationMs(SLOW_MS / 0.25)).toBe((SLOW_MS / 0.25) * 0.8);
   });
 });

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { parseConfig, type ConfigForm } from "./domain/parse";
 import { findPreset, TUTORIAL } from "./domain/presets";
 import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "./domain/trace";
-import { initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
+import { animationMs, initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
 import { CodeView } from "./ui/CodeView";
 import { ConfigPanel, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
@@ -90,7 +90,7 @@ function Visualizer(props: VisualizerProps) {
   const send = (msg: PlayerMsg) => setPlayer((p) => updatePlayer(p, msg, steps.length));
   const step = steps[player.index]!;
   const stepMs = durations[player.index]! / rate;
-  const animMs = Math.min(stepMs * 0.8, 600);
+  const animMs = animationMs(stepMs);
 
   useEffect(() => {
     if (!player.playing) return;
