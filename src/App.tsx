@@ -11,6 +11,7 @@ import { LfsrView } from "./ui/LfsrView";
 import { NamesPage } from "./ui/NamesPage";
 import { ParamHelp } from "./ui/ParamHelp";
 import type { ParamFocus } from "./ui/paramFocus";
+import type { FieldName } from "./ui/paramInfo";
 import { parseRoute, namesHash, type Route } from "./ui/route";
 import { StepLog } from "./ui/StepLog";
 import { initialSettings, persistSettings, type Settings } from "./settings";
@@ -29,6 +30,7 @@ export function App() {
   useEffect(() => persistSettings({ form, speedMode, rate, loop, wide }), [form, speedMode, rate, loop, wide]);
   const [focused, setFocused] = useState<ParamName | undefined>(undefined);
   const focus: ParamFocus = { focused, onFocus: setFocused };
+  const [hoveredField, setHoveredField] = useState<FieldName | undefined>(undefined);
   const config = useMemo(() => parseConfig(form), [form]);
   const preset = config.ok ? findPreset(config.params) : undefined;
   const route = useRoute();
@@ -72,8 +74,9 @@ export function App() {
             errors={config.ok ? {} : config.errors}
             onChange={setForm}
             focus={focus}
+            onFieldHover={setHoveredField}
           />
-          <ParamHelp focused={focused} params={config.ok ? config.params : undefined} />
+          <ParamHelp topic={focused ?? hoveredField} params={config.ok ? config.params : undefined} />
           {config.ok ? (
             <Visualizer
               key={JSON.stringify([config.params, config.bits])}

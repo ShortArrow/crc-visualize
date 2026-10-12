@@ -4,7 +4,7 @@ import { PRESETS, type InputMode, type Preset } from "../domain/presets";
 import { presetLabel } from "./presetLabel";
 import type { ParamName } from "../domain/trace";
 import { focusHandlers, type ParamFocus } from "./paramFocus";
-import { PARAM_INFO } from "./paramInfo";
+import { FIELD_INFO, type FieldName } from "./paramInfo";
 
 /** プリセットをフォームの値にする。 */
 export function formFromPreset({ params, input }: Preset): ConfigForm {
@@ -27,39 +27,41 @@ type Props = Readonly<{
   errors: Partial<Record<ConfigField, string>>;
   onChange: (form: ConfigForm) => void;
   focus: ParamFocus;
+  /** パラメータ以外の項目にマウスかフォーカスが乗ったとき、その項目（離れたら undefined）を知らせる。 */
+  onFieldHover: (field: FieldName | undefined) => void;
 }>;
 
 const CUSTOM = "";
 
 /** CRC パラメータと入力の設定パネル。 */
-export function ConfigPanel({ form, presetName, errors, onChange, focus }: Props) {
+export function ConfigPanel({ form, presetName, errors, onChange, focus, onFieldHover }: Props) {
   const set = <K extends keyof ConfigForm>(key: K, value: ConfigForm[K]) => onChange({ ...form, [key]: value });
   const paramField = (param: ParamName, control: ReactNode, className = "") => {
     const error = errors[param as ConfigField];
     const classes = [className, error && "invalid", focus.focused === param && "hl"].filter(Boolean).join(" ");
     return (
       <label className={classes} data-param={param} {...focusHandlers(focus, param)}>
-        <span>
-          {PARAM_INFO[param].title} <span className="param-name">{param}</span>
-        </span>
+        <span className="param-name">{param}</span>
         {control}
         {error ? <small className="error">{error}</small> : null}
       </label>
     );
   };
+  const hover = (field: FieldName) => ({
+    onMouseEnter: () => onFieldHover(field),
+    onMouseLeave: () => onFieldHover(undefined),
+    onFocus: () => onFieldHover(field),
+    onBlur: () => onFieldHover(undefined),
+  });
   const text = (key: "width" | "poly" | "init" | "xorout") =>
     paramField(key, <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />);
   const check = (key: "refin" | "refout") =>
-    paramField(
-      key,
-      <input type="checkbox" checked={form[key]} onChange={(e) => set(key, e.target.checked)} />,
-      "check-field",
-    );
+    paramField(key, <input type="checkbox" checked={form[key]} onChange={(e) => set(key, e.target.checked)} />, "check-field");
 
   return (
     <form className="config" onSubmit={(e) => e.preventDefault()}>
-      <label>
-        <span>プリセット</span>
+      <label data-field="preset" {...hover("preset")}>
+        <span>{FIELD_INFO.preset.label}</span>
         <select
           value={presetName ?? CUSTOM}
           onChange={(e) => {
@@ -68,7 +70,7 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus }: Props
           }}
         >
           <option value={CUSTOM} disabled>
-            プリセットなし
+            custom
           </option>
           {PRESETS.map((p) => (
             <option key={p.name} value={p.name}>
@@ -83,16 +85,16 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus }: Props
       {check("refin")}
       {check("refout")}
       {text("xorout")}
-      <label>
-        <span>入力形式</span>
+      <label data-field="inputMode" {...hover("inputMode")}>
+        <span>{FIELD_INFO.inputMode.label}</span>
         <select value={form.inputMode} onChange={(e) => set("inputMode", e.target.value as InputMode)}>
-          <option value="bits">2 進数</option>
-          <option value="hex">16 進数</option>
-          <option value="text">文字列（UTF-8）</option>
+          <option value="bits">bits</option>
+          <option value="hex">hex</option>
+          <option value="text">text (UTF-8)</option>
         </select>
       </label>
-      <label className={`input-field ${errors.input ? "invalid" : ""}`}>
-        <span>入力</span>
+      <label className={`input-field ${errors.input ? "invalid" : ""}`} data-field="input" {...hover("input")}>
+        <span>{FIELD_INFO.input.label}</span>
         <input value={form.input} spellCheck={false} onChange={(e) => set("input", e.target.value)} />
         {errors.input ? <small className="error">{errors.input}</small> : null}
       </label>

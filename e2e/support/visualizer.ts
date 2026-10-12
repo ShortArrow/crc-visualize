@@ -125,8 +125,7 @@ export class Visualizer {
     feedbackShown: () =>
       this.page.locator(".lfsr .fb-box .reg-bit").evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).d > 0.5),
     /** feedback の箱が値 1 の色（赤）で塗られているか。 */
-    feedbackRed: () =>
-      this.page.locator(".lfsr .fb-box rect").evaluate((el, r) => getComputedStyle(el).stroke === r, RED),
+    feedbackRed: () => this.page.locator(".lfsr .fb-box rect").evaluate((el, r) => getComputedStyle(el).stroke === r, RED),
   };
 
   readonly code = {
@@ -142,12 +141,19 @@ export class Visualizer {
     entries: () => this.page.locator(".log-entry"),
     latest: () => this.page.locator(".log-entry.latest"),
     titleSize: (i: number) =>
-      this.page.locator(".log-entry").nth(i).locator(".log-title").evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+      this.page
+        .locator(".log-entry")
+        .nth(i)
+        .locator(".log-title")
+        .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
   };
 
   readonly settings = {
-    preset: () => this.page.getByLabel("プリセット"),
-    field: (label: string) => this.page.getByLabel(label, { exact: true }),
+    preset: () => this.page.locator('label[data-field="preset"] select'),
+    /** 設定パネルの項目名。 */
+    labels: () => this.page.locator(".config label > span:first-child"),
+    /** パラメータ以外の項目（preset・inputMode・input）の入力欄。 */
+    field: (name: "preset" | "inputMode" | "input") => this.page.locator(`label[data-field="${name}"] :is(input, select)`),
     param: (name: string) => this.page.locator(`label[data-param="${name}"]`),
     help: () => this.page.locator(".param-help"),
     currentHelp: () => this.page.locator(".param-help .current"),
@@ -158,7 +164,6 @@ export class Visualizer {
     query: () => new URL(this.page.url()).searchParams,
     widthToggle: () => this.page.locator(".width-toggle"),
     /** 内容（main）の横幅と画面の横幅（px）。 */
-    widths: () =>
-      this.page.locator("main").evaluate((el) => ({ content: el.getBoundingClientRect().width, view: innerWidth })),
+    widths: () => this.page.locator("main").evaluate((el) => ({ content: el.getBoundingClientRect().width, view: innerWidth })),
   };
 }

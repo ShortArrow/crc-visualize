@@ -52,7 +52,7 @@ test.describe("再生", () => {
       await v.goTo("xor");
       return v;
     });
-    await when("入力を 1 に変える", () => v.settings.field("入力").fill("1"));
+    await when("入力を 1 に変える", () => v.settings.field("input").fill("1"));
     await then("新しいステップ列の先頭にいる", async () => {
       await expect(v.counter).toHaveText("1 / 5");
     });
