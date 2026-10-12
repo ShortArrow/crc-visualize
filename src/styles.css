@@ -35,6 +35,10 @@ main {
   padding: 16px 24px 32px;
 }
 
+main.wide {
+  max-width: none;
+}
+
 header h1 {
   margin: 0;
   font-size: 1.4rem;
@@ -44,6 +48,27 @@ header .title {
   display: flex;
   align-items: baseline;
   gap: 24px;
+}
+
+/* 横幅のモードの切替。見出しの右端に置く。 */
+.width-toggle {
+  align-self: center;
+  margin-left: auto;
+  width: 32px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.width-toggle:hover,
+.width-toggle[aria-pressed="true"] {
+  color: var(--accent);
 }
 
 /* ページの切替 */

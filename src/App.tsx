@@ -1,3 +1,4 @@
+import { FoldHorizontal, UnfoldHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { parseConfig, type ConfigForm } from "./domain/parse";
 import { findPreset, TUTORIAL } from "./domain/presets";
@@ -15,7 +16,7 @@ import { StepLog } from "./ui/StepLog";
 import { initialSettings, persistSettings, type Settings } from "./settings";
 
 const CHECK_BITS = bitsFromBytes([...new TextEncoder().encode("123456789")]);
-const DEFAULT_SETTINGS: Settings = { form: formFromPreset(TUTORIAL), speedMode: "auto", rate: 1, loop: false };
+const DEFAULT_SETTINGS: Settings = { form: formFromPreset(TUTORIAL), speedMode: "auto", rate: 1, loop: false, wide: false };
 const sameBits = (a: readonly Bit[], b: readonly Bit[]) => a.length === b.length && a.every((x, i) => x === b[i]);
 
 export function App() {
@@ -24,7 +25,8 @@ export function App() {
   const [speedMode, setSpeedMode] = useState<SpeedMode>(restored.speedMode);
   const [rate, setRate] = useState(restored.rate);
   const [loop, setLoop] = useState(restored.loop);
-  useEffect(() => persistSettings({ form, speedMode, rate, loop }), [form, speedMode, rate, loop]);
+  const [wide, setWide] = useState(restored.wide);
+  useEffect(() => persistSettings({ form, speedMode, rate, loop, wide }), [form, speedMode, rate, loop, wide]);
   const [focused, setFocused] = useState<ParamName | undefined>(undefined);
   const focus: ParamFocus = { focused, onFocus: setFocused };
   const config = useMemo(() => parseConfig(form), [form]);
@@ -32,7 +34,7 @@ export function App() {
   const route = useRoute();
 
   return (
-    <main>
+    <main className={wide ? "wide" : ""}>
       <header>
         <div className="title">
           <h1>CRC 可視化</h1>
@@ -44,6 +46,15 @@ export function App() {
               名前の規則
             </a>
           </nav>
+          <button
+            type="button"
+            className="width-toggle"
+            title={wide ? "横幅を制限する" : "横幅いっぱいに広げる"}
+            aria-pressed={wide}
+            onClick={() => setWide(!wide)}
+          >
+            {wide ? <FoldHorizontal size={18} /> : <UnfoldHorizontal size={18} />}
+          </button>
         </div>
         <p>
           {route.page === "names"
