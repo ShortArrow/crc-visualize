@@ -514,9 +514,9 @@ h2 {
   }
 }
 
-/* 桁あふれした元の最上位ビットが左へ抜けて消える。 */
+/* 桁あふれした元の最上位ビットが、隣の箱へ移る値と同じ距離と緩急で左へ抜けて消える。 */
 .reg-bit.drop {
-  animation: drop var(--anim-ms) ease-in both;
+  animation: drop var(--anim-ms) ease-in-out both;
 }
 
 @keyframes drop {
@@ -525,7 +525,7 @@ h2 {
     opacity: 1;
   }
   to {
-    transform: translateX(-48px);
+    transform: translateX(var(--drop-to));
     opacity: 0;
   }
 }

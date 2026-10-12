@@ -9,6 +9,8 @@ export type Point = Readonly<{ x: number; y: number }>;
  */
 export type LfsrLayout = Readonly<{
   box: number;
+  /** 隣り合う箱の左辺の距離。shift で値が隣の箱へ移るときの移動量。 */
+  pitch: number;
   regY: number;
   streamY: number;
   busY: number;
@@ -88,6 +90,7 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
   const outRoute = (i: number): Point[] => leg(i, 1).reverse();
   return {
     box: BOX,
+    pitch: PITCH,
     regY,
     streamY,
     busY,
