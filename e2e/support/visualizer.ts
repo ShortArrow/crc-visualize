@@ -88,6 +88,19 @@ export class Visualizer {
     /** shift で桁あふれして左へ抜ける値。 */
     dropped: () => this.page.locator(".reg .drop"),
     upcoming: () => this.page.locator(".lfsr .upcoming"),
+    /** shift で隣の箱から r[bit] へ滑り込む値。 */
+    sliding: (bit: number) => this.page.locator(`.reg[data-bit="${bit}"] .reg-bit.slide`),
+    /** target のアニメーションを止め、始めから progress（0〜1）の時点までに横へ動いた距離（px、左が負）。 */
+    travelX: (target: Locator, progress: number) =>
+      target.evaluate((el, p) => {
+        const [anim] = el.getAnimations();
+        anim!.pause();
+        const duration = anim!.effect!.getComputedTiming().duration as number;
+        anim!.currentTime = 0;
+        const start = el.getBoundingClientRect().x;
+        anim!.currentTime = duration * p;
+        return el.getBoundingClientRect().x - start;
+      }, progress),
     feedbackBox: () => this.page.locator(".lfsr .fb-box"),
     feedbackValue: () => this.page.locator(".lfsr .fb-box .reg-bit"),
     /** feedback の箱に値が見えているか（裏返しの途中でない）。 */

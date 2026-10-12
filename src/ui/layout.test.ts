@@ -17,6 +17,11 @@ describe("lfsrLayout", () => {
     expect(r1.x).toBeLessThan(r0.x);
   });
 
+  it("Given width 3、poly 0x3, When 箱の間隔を求める, Then 隣り合う箱の左辺の距離に等しい", () => {
+    expect(layout.pitch).toBe(r0.x - r1.x);
+    expect(layout.pitch).toBe(r1.x - r2.x);
+  });
+
   it("Given width 3、poly 0x3, When ゲートを置く, Then poly[i] = 1 の各 r[i]（i = 0 を含む）の真下、フィードバック線より上に置く", () => {
     expect(layout.gates.map((g) => g.bit)).toEqual([0, 1]);
     for (const gate of layout.gates) {
