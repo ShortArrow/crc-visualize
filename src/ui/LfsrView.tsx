@@ -104,7 +104,7 @@ const VANISH_MS = 60;
 
 /**
  * 経路 points に沿って動く値の粒。delayMs までは見えず、durationMs で終点に届いたら消える。
- * 届いた値は配線の色が引き継ぐ。
+ * 届いた値は配線の色が引き継ぐ。アニメーションが始まる前の描画では見えない。
  */
 function ParticleDot(props: { route: string; value: Bit; points: readonly Point[] } & Travel) {
   const { route, value, points, delayMs, durationMs } = props;
@@ -117,7 +117,7 @@ function ParticleDot(props: { route: string; value: Bit; points: readonly Point[
   }, []);
   const start = points[0]!;
   return (
-    <g ref={ref} className={`particle v${value}`} data-route={route} style={{ transform: `translate(${start.x}px, ${start.y}px)` }}>
+    <g ref={ref} className={`particle v${value}`} data-route={route} style={{ transform: `translate(${start.x}px, ${start.y}px)`, opacity: 0 }}>
       <circle r={10} />
       <text y={5}>{value}</text>
     </g>

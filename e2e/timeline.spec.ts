@@ -31,6 +31,22 @@ test.describe("1 ステップの中の時間の流れ", () => {
     });
   });
 
+  test("粒が動き出す前の最初の描画でも、粒やこれから塗る配線を見せない", async ({ page }) => {
+    const v = await given("ゆっくり再生する設定で開いている", () => Visualizer.open(page, SLOW));
+    await when("feedback ステップへ進み、粒と配線の塗りのアニメーションが始まる前の状態にする", async () => {
+      await v.goTo("feedback");
+      await v.diagram.withoutMotion();
+    });
+    await then("どの粒も見えず、入力線・最上位ビット線・結果線は塗られていない", async () => {
+      for (const particle of await v.diagram.particles().all()) {
+        expect(await particle.evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
+      }
+      for (const wire of ["input", "msb", "result"]) {
+        expect(await v.diagram.painted(wire)).toBe(0);
+      }
+    });
+  });
+
   test("次のステップの始めに、前のステップの表示を持ち越さない", async ({ page }) => {
     const v = await given("ゆっくり再生する設定で、入力ゲートが点いた feedback ステップにいる", async () => {
       const v = await Visualizer.open(page, SLOW);
