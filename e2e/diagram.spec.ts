@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { given, then, Visualizer, when } from "./support/visualizer";
+import { expect } from "@playwright/test";
+import { given, test, then, when } from "./support/scenario";
+import { Visualizer } from "./support/visualizer";
 
 test.describe("図の値の流れ（CRC-3/TUTORIAL、1 番目のクロックは feedback 1）", () => {
   test("フィードバックビットの計算では、入力ビットと最上位ビットが入力ゲートで合流し、結果が feedback の箱に入る", async ({ page }) => {

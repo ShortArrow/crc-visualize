@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { given, then, Visualizer, when } from "./support/visualizer";
+import { expect } from "@playwright/test";
+import { given, test, then, when } from "./support/scenario";
+import { Visualizer } from "./support/visualizer";
 
 /** 一定速度 ×0.25: 1 ステップ 2400 ms、粒が前半・後半それぞれを進む時間は 768 ms。 */
 const SLOW = "?speed=steady&rate=0.25";

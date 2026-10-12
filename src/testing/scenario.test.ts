@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { scenarioViolation } from "./scenario";
+import { scenarioStepsViolation, scenarioViolation, type StepKeyword } from "./scenario";
 
 describe("scenarioViolation", () => {
   it("Given 対象の describe 直下のテスト, When 名前が Given・When・Then の順にそろう, Then 違反なし", () => {
@@ -28,4 +28,37 @@ describe("scenarioViolation", () => {
       expect(violation).toMatch(/describe\("<対象>"\) の直下/);
     },
   );
+});
+
+describe("scenarioStepsViolation", () => {
+  it.each<StepKeyword[][]>([
+    [["Given", "When", "Then"]],
+    [["Given", "When", "Then", "Then"]],
+    [["Given", "Then", "When", "Then"]],
+    [["Given", "When", "Then", "When", "Then", "Then"]],
+  ])("Given 対象の describe 直下のテスト, When 手順が %j, Then 違反なし", (steps) => {
+    const violation = scenarioStepsViolation(["対象"], steps);
+
+    expect(violation).toBeUndefined();
+  });
+
+  it.each<StepKeyword[][]>([
+    [[]],
+    [["When", "Then"]],
+    [["Given", "Given", "When", "Then"]],
+    [["Given", "When"]],
+    [["Given", "When", "When", "Then"]],
+    [["Given", "When", "Then", "When"]],
+    [["Given"]],
+  ])("Given 対象の describe 直下のテスト, When 手順が %j, Then 手順の並びの違反になる", (steps) => {
+    const violation = scenarioStepsViolation(["対象"], steps);
+
+    expect(violation).toMatch(/Given 1 つ/);
+  });
+
+  it("Given describe の外のテスト, When 手順はそろう, Then 入れ子の違反になる", () => {
+    const violation = scenarioStepsViolation([], ["Given", "When", "Then"]);
+
+    expect(violation).toMatch(/describe\("<対象>"\) の直下/);
+  });
 });

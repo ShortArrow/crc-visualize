@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { given, then, Visualizer, when } from "./support/visualizer";
+import { expect } from "@playwright/test";
+import { given, test, then, when } from "./support/scenario";
+import { Visualizer } from "./support/visualizer";
 
 const PARAMS = ["width", "poly", "init", "refin", "refout", "xorout"];
 
@@ -86,15 +87,19 @@ test.describe("設定の検証と表記", () => {
         return `${clone.textContent} ${titles}`;
       });
     for (const preset of ["CRC-3/TUTORIAL", "CRC-32/ISO-HDLC"]) {
-      await when(`${preset} の先頭 6 ステップを順に表示する`, async () => {
+      const texts = await when(`${preset} を選び、先頭 6 ステップを順に表示する`, async () => {
         await v.settings.preset().selectOption(preset);
+        const seen: string[] = [];
         for (let i = 0; i < 6; i++) {
-          await then(`${i + 1} ステップ目の文に fb や「日本語(」が無い`, async () => {
-            const text = await visibleText();
-            expect(text).not.toMatch(/\bfb\b/);
-            expect(text).not.toMatch(/[ぁ-んァ-ヶー一-龠] ?\(/);
-          });
+          seen.push(await visibleText());
           await v.stepForward();
+        }
+        return seen;
+      });
+      await then("どのステップの文にも fb や「日本語(」が無い", async () => {
+        for (const text of texts) {
+          expect(text).not.toMatch(/\bfb\b/);
+          expect(text).not.toMatch(/[ぁ-んァ-ヶー一-龠] ?\(/);
         }
       });
     }

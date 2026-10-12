@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { given, then, TUTORIAL_STEPS, Visualizer, when } from "./support/visualizer";
+import { expect } from "@playwright/test";
+import { given, test, then, when } from "./support/scenario";
+import { TUTORIAL_STEPS, Visualizer } from "./support/visualizer";
 
 test.describe("設定の保持と共有", () => {
   test("設定は再読み込みしても保たれ、再生位置は先頭に戻る", async ({ page }) => {
