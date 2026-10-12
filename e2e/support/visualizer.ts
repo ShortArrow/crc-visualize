@@ -1,11 +1,4 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
-
-/** 前提を整える手順。Playwright の報告に "Given ..." として出る。 */
-export const given = <T>(title: string, body: () => Promise<T>) => test.step(`Given ${title}`, body);
-/** 振る舞いを起こす操作。報告に "When ..." として出る。 */
-export const when = <T>(title: string, body: () => Promise<T>) => test.step(`When ${title}`, body);
-/** 期待する状態の確認。報告に "Then ..." として出る。 */
-export const then = <T>(title: string, body: () => Promise<T>) => test.step(`Then ${title}`, body);
+import { expect, type Locator, type Page } from "@playwright/test";
 
 export type StepKind = "init" | "reflectIn" | "feedback" | "shift" | "xor" | "reflectOut" | "xorOut" | "done";
 

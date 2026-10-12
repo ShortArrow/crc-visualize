@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { given, then, TUTORIAL_STEPS, Visualizer, when } from "./support/visualizer";
+import { expect } from "@playwright/test";
+import { given, test, then, when } from "./support/scenario";
+import { TUTORIAL_STEPS, Visualizer } from "./support/visualizer";
 
 test.describe("再生", () => {
   test("再生すると末尾まで進んで停止する", async ({ page }) => {

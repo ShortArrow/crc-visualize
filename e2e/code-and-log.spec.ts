@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { given, then, Visualizer, when } from "./support/visualizer";
+import { expect } from "@playwright/test";
+import { given, test, then, when } from "./support/scenario";
+import { Visualizer } from "./support/visualizer";
 
 test.describe("擬似コード", () => {
   test("xor ステップでは crc ^= poly の行が現在行になる", async ({ page }) => {
