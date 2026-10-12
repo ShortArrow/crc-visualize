@@ -25,17 +25,50 @@ test.describe("パラメータの説明と強調", () => {
     });
   });
 
-  test("設定項目は日本語名で示し、注目中のパラメータの説明・別名・注記を出す", async ({ page }) => {
+  test("設定項目は英語だけで示し、マウスを乗せると説明欄に日本語名と説明を出す", async ({ page }) => {
     const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await then("poly は日本語名で示され、説明欄は使い方を案内する", async () => {
-      await expect(v.settings.param("poly")).toContainText("生成多項式");
-      await expect(v.settings.currentHelp()).toContainText("マウスを乗せると、説明と別名を表示します");
+    await then("項目名はどれも英語で、説明欄は使い方を案内する", async () => {
+      await expect(v.settings.labels()).toHaveText([
+        "preset",
+        "width",
+        "poly",
+        "init",
+        "refin",
+        "refout",
+        "xorout",
+        "input mode",
+        "input",
+      ]);
+      await expect(v.settings.currentHelp()).toContainText("マウスを乗せると、日本語名と説明を表示します");
     });
-    await when("CRC-16/ARC を選び、poly にマウスを乗せる", async () => {
+    await when("preset にマウスを乗せる", () =>
+      v.settings
+        .labels()
+        .filter({ hasText: /^preset$/ })
+        .hover(),
+    );
+    await then("説明欄に日本語名プリセットと説明を出す", async () => {
+      await expect(v.settings.currentHelp()).toContainText("プリセット");
+    });
+    await when("input mode にマウスを乗せる", () =>
+      v.settings
+        .labels()
+        .filter({ hasText: /^input mode$/ })
+        .hover(),
+    );
+    await then("説明欄に日本語名入力形式を出す", async () => {
+      await expect(v.settings.currentHelp()).toContainText("入力形式");
+    });
+  });
+
+  test("パラメータにマウスを乗せると、説明欄に日本語名・説明・別名・注記を出す", async ({ page }) => {
+    const v = await given("CRC-16/ARC を選んでいる", async () => {
+      const v = await Visualizer.open(page);
       await v.settings.preset().selectOption("CRC-16/ARC");
-      await v.settings.param("poly").hover();
+      return v;
     });
-    await then("説明・別名と、右送りの反転表記の値を出す", async () => {
+    await when("poly にマウスを乗せる", () => v.settings.param("poly").hover());
+    await then("生成多項式の説明・別名と、右送りの反転表記の値を出す", async () => {
       await expect(v.settings.currentHelp()).toContainText("生成多項式");
       await expect(v.settings.currentHelp()).toContainText("別名");
       await expect(v.settings.currentHelp()).toContainText("0xA001");
@@ -57,7 +90,9 @@ test.describe("パラメータの説明と強調", () => {
         await when(`${param} にマウスを乗せる`, () => v.settings.param(param).hover());
         await then(`${param} の説明が見切れず、高さが変わらない`, async () => {
           await expect(v.settings.currentHelp()).toHaveAttribute("data-param", param);
-          const { scroll, client } = await v.settings.help().evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
+          const { scroll, client } = await v.settings
+            .help()
+            .evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
           expect(scroll).toBeLessThanOrEqual(client);
           expect((await v.settings.help().boundingBox())!.height).toBe(idleHeight);
         });

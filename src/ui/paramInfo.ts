@@ -14,8 +14,7 @@ export const PARAM_INFO: Record<ParamName, ParamInfo> = {
   },
   poly: {
     title: "生成多項式",
-    summary:
-      "最上位の x^width の項を除いた係数を、x^(width-1) から x^0 の順に並べた値。ここでは反転していない通常表記で書く。",
+    summary: "最上位の x^width の項を除いた係数を、x^(width-1) から x^0 の順に並べた値。ここでは反転していない通常表記で書く。",
     aliases: ["多項式", "通常表記（normal）", "polynomial"],
   },
   init: {
@@ -37,6 +36,30 @@ export const PARAM_INFO: Record<ParamName, ParamInfo> = {
     title: "最終 XOR 値",
     summary: "最後に CRC と XOR する値。0 なら値は変わらない。",
     aliases: ["出力 XOR", "final XOR", "XorOut"],
+  },
+};
+
+/** パラメータ以外の設定項目。項目名は英語で示し、日本語名と説明は説明欄に出す。 */
+export type FieldName = "preset" | "inputMode" | "input";
+
+/** 説明欄で説明する項目。 */
+export type HelpTopic = ParamName | FieldName;
+
+export const FIELD_INFO: Record<FieldName, Readonly<{ label: string; title: string; summary: string }>> = {
+  preset: {
+    label: "preset",
+    title: "プリセット",
+    summary: "名前の付いた CRC の設定。選ぶと 6 つのパラメータと、検査値を確かめる入力 123456789 を入れる。",
+  },
+  inputMode: {
+    label: "input mode",
+    title: "入力形式",
+    summary: "入力の書き方。bits は 0 と 1 の並び、hex は 16 進のバイト列、text は文字列を UTF-8 のバイト列にしたもの。",
+  },
+  input: {
+    label: "input",
+    title: "入力",
+    summary: "CRC を計算するデータ。入力形式に従って書き、先頭のビットから順にレジスタへ投入する。",
   },
 };
 
