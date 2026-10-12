@@ -64,6 +64,9 @@ export const PRESETS: readonly Preset[] = [
   preset("CRC-32/ISCSI", 32, 0x1edc6f41, 0xffffffff, true, 0xffffffff, 0xe3069283, ["CRC-32C", "CRC-32/CASTAGNOLI", "CRC-32/NVME"]),
 ];
 
+/** reveng カタログにあるプリセット。教材用の TUTORIAL を除く。 */
+export const CATALOGUE: readonly Preset[] = PRESETS.filter((p) => p !== TUTORIAL);
+
 const sameParams = (a: CrcParams, b: CrcParams) =>
   a.width === b.width &&
   a.poly === b.poly &&
