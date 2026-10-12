@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { ConfigField, ConfigForm } from "../domain/parse";
 import { PRESETS, type InputMode, type Preset } from "../domain/presets";
+import { presetLabel } from "./presetLabel";
 import type { ParamName } from "../domain/trace";
 import { focusHandlers, type ParamFocus } from "./paramFocus";
 import { PARAM_INFO } from "./paramInfo";
@@ -71,7 +72,7 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus }: Props
           </option>
           {PRESETS.map((p) => (
             <option key={p.name} value={p.name}>
-              {p.name}
+              {presetLabel(p)}
             </option>
           ))}
         </select>

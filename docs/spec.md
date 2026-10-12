@@ -16,7 +16,8 @@ LFSR（ハードウェア）の動きと、ビット単位 CRC 実装（ソフ�
 プリセットは reveng カタログの検査値（check、入力 `"123456789"` の CRC）を持ち、計算の正しさの基準にする。
 
 - 教材用 `CRC-3/TUTORIAL`（width=3, poly=0x3, init=0, refin=false, refout=false, xorout=0, 入力ビット `10101`, CRC=`101`）
-- CRC-3/GSM, CRC-4/G-704, CRC-5/USB, CRC-7/MMC, CRC-8/SMBUS, CRC-8/MAXIM-DOW, CRC-16/ARC, CRC-16/IBM-3740, CRC-16/XMODEM, CRC-16/KERMIT, CRC-32/ISO-HDLC, CRC-32/BZIP2
+- CRC-3/GSM, CRC-4/G-704, CRC-5/USB, CRC-7/MMC, CRC-8/SMBUS, CRC-8/MAXIM-DOW, CRC-8/AUTOSAR, CRC-8/SAE-J1850, CRC-16/ARC, CRC-16/MODBUS, CRC-16/USB, CRC-16/IBM-3740, CRC-16/XMODEM, CRC-16/KERMIT, CRC-16/IBM-SDLC, CRC-16/SPI-FUJITSU, CRC-16/GENIBUS, CRC-32/ISO-HDLC, CRC-32/BZIP2, CRC-32/MPEG-2, CRC-32/ISCSI
+- 選択肢には正式名に続けて、reveng カタログの別名から資料でよく使われるものを最大 3 つ、全角括弧で添える（例: CRC-16/KERMIT（CCITT、CCITT-TRUE、CRC-CCITT））。同じ「CRC-幅/」で始まる別名はその接頭辞を省く。
 
 ## 2. 入力
 
@@ -182,7 +183,7 @@ return crc;
   - 定着した略語: CRC、LFSR、XOR、UTF-8、LSB、MSB
   - Rocksoft モデルのパラメータ名: `width`、`poly`、`init`、`refin`、`refout`、`xorout`。設定パネルと擬似コードで同じ綴りを使う。
   - 擬似コードと図の式に出る識別子: `crc`、`feedback`、`msb`、`bit`、`byte`、`mask`、`r0` など
-  - キー名とプリセットの正式名
+  - キー名とプリセットの正式名・別名
   - 説明欄の別名。資料で使われる呼び名をそのまま載せるため、英語やカタカナも使う。
 - カタカナ語は次に限る: ビット、バイト、レジスタ、シフト、フィードバック、ステップ、プリセット、ループ、ハードウェア、ソフトウェア
 - 括弧は全角（）を使う。擬似コードと式の中は除く。

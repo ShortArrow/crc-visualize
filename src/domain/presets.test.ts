@@ -16,3 +16,25 @@ describe("findPreset", () => {
     expect(PRESETS.every((p) => findPreset(p.params) === p)).toBe(true);
   });
 });
+
+describe("PRESETS", () => {
+  it("Given 全てのプリセット, When 正式名と別名を集める, Then どの名前も 1 つのプリセットにしか付いていない", () => {
+    const names = PRESETS.flatMap((p) => [p.name, ...p.aliases]);
+
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it.each([
+    "CRC-8/AUTOSAR",
+    "CRC-8/SAE-J1850",
+    "CRC-16/IBM-SDLC",
+    "CRC-16/SPI-FUJITSU",
+    "CRC-16/GENIBUS",
+    "CRC-16/MODBUS",
+    "CRC-16/USB",
+    "CRC-32/ISCSI",
+    "CRC-32/MPEG-2",
+  ])("Given プリセットの一覧, When %s を探す, Then 見つかる", (name) => {
+    expect(PRESETS.map((p) => p.name)).toContain(name);
+  });
+});
