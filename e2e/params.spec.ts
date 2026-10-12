@@ -67,6 +67,19 @@ test.describe("パラメータの説明と強調", () => {
 });
 
 test.describe("設定の検証と表記", () => {
+  test("プリセットの選択肢は正式名に別名を添え、別名で探した設定を選べる", async ({ page }) => {
+    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
+    await when("別名 CCITT-TRUE が添えられた選択肢を選ぶ", async () => {
+      const option = v.settings.preset().locator("option", { hasText: "CCITT-TRUE" });
+      await expect(option).toHaveText("CRC-16/KERMIT（CCITT、CCITT-TRUE、CRC-CCITT）");
+      await v.settings.preset().selectOption({ label: (await option.textContent())! });
+    });
+    await then("CRC-16/KERMIT のパラメータになる", async () => {
+      await expect(v.settings.param("poly").locator("input")).toHaveValue("0x1021");
+      await expect(v.settings.param("refin").locator("input")).toBeChecked();
+    });
+  });
+
   test("不正な設定では項目にエラーを出し、図を消す", async ({ page }) => {
     const v = await given("既定の設定で開いている", () => Visualizer.open(page));
     await when("width に 0 を入れる", () => page.getByLabel("width").fill("0"));
