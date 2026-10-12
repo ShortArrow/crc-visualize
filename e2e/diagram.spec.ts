@@ -117,6 +117,18 @@ test.describe("レジスタの箱", () => {
     });
   });
 
+  test("shift で左へ抜ける値は入力ゲートに入らず、届く前に消えきる", async ({ page }) => {
+    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
+    await when("shift ステップへ進む", () => v.goTo("shift"));
+    await then("抜ける値が見えている間は、入力ゲートの右端より右にある", async () => {
+      const gate = await v.diagram.gateEdges("input");
+      for (let progress = 0; progress <= 1; progress += 0.05) {
+        const frame = await v.diagram.frameAt(v.diagram.dropped(), progress);
+        if (frame.opacity > 0) expect(frame.left, `progress ${progress.toFixed(2)}`).toBeGreaterThan(gate.right);
+      }
+    });
+  });
+
   test("shift で左へ抜ける値と右端から入る値は、隣の箱へ移る値と同じ速さで動く", async ({ page }) => {
     const v = await given("既定の設定で開いている", () => Visualizer.open(page));
     await when("shift ステップへ進む", () => v.goTo("shift"));

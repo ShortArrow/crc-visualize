@@ -98,17 +98,27 @@ export class Visualizer {
     upcoming: () => this.page.locator(".lfsr .upcoming"),
     /** shift で隣の箱から r[bit] へ滑り込む値。 */
     sliding: (bit: number) => this.page.locator(`.reg[data-bit="${bit}"] .reg-bit.slide`),
-    /** target のアニメーションを止め、始めから progress（0〜1）の時点までに横へ動いた距離（px、左が負）。 */
-    travelX: (target: Locator, progress: number) =>
+    /** target のアニメーションを止めて progress（0〜1）の時点に合わせ、その時点の左右の端（px）と不透明度を返す。 */
+    frameAt: (target: Locator, progress: number) =>
       target.evaluate((el, p) => {
-        const [anim] = el.getAnimations();
-        anim!.pause();
-        const duration = anim!.effect!.getComputedTiming().duration as number;
-        anim!.currentTime = 0;
-        const start = el.getBoundingClientRect().x;
-        anim!.currentTime = duration * p;
-        return el.getBoundingClientRect().x - start;
+        const anims = el.getAnimations();
+        const duration = anims[0]!.effect!.getComputedTiming().duration as number;
+        anims.forEach((a) => {
+          a.pause();
+          a.currentTime = duration * p;
+        });
+        const { left, right } = el.getBoundingClientRect();
+        return { left, right, opacity: Number(getComputedStyle(el).opacity) };
       }, progress),
+    /** target が始めから progress（0〜1）の時点までに横へ動いた距離（px、左が負）。 */
+    travelX: async (target: Locator, progress: number) =>
+      (await this.diagram.frameAt(target, progress)).left - (await this.diagram.frameAt(target, 0)).left,
+    /** ゲートの円の左右の端（px）。 */
+    gateEdges: (id: "input" | number) =>
+      this.page.locator(`.gate[data-gate="${id}"] circle`).evaluate((el) => {
+        const { left, right } = el.getBoundingClientRect();
+        return { left, right };
+      }),
     feedbackBox: () => this.page.locator(".lfsr .fb-box"),
     feedbackValue: () => this.page.locator(".lfsr .fb-box .reg-bit"),
     /** feedback の箱に値が見えているか（裏返しの途中でない）。 */
