@@ -516,18 +516,30 @@ h2 {
   }
 }
 
-/* 桁あふれした元の最上位ビットが、隣の箱へ移る値と同じ距離と緩急で左へ抜けて消える。 */
+/*
+ * 桁あふれした元の最上位ビットが、隣の箱へ移る値と同じ距離と緩急で左へ抜ける。
+ * 左隣は箱ではなく入力ゲートなので、半分の時間（箱の左辺を出たあたり）で消えきり、ゲートには入らない。
+ */
 .reg-bit.drop {
-  animation: drop var(--anim-ms) ease-in-out both;
+  animation:
+    drop-move var(--anim-ms) ease-in-out both,
+    drop-fade calc(var(--anim-ms) / 2) linear both;
 }
 
-@keyframes drop {
+@keyframes drop-move {
   from {
     transform: translateX(0);
-    opacity: 1;
   }
   to {
     transform: translateX(var(--drop-to));
+  }
+}
+
+@keyframes drop-fade {
+  from {
+    opacity: 1;
+  }
+  to {
     opacity: 0;
   }
 }
