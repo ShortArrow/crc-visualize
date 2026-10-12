@@ -117,14 +117,14 @@ test.describe("レジスタの箱", () => {
     });
   });
 
-  test("shift で左へ抜ける値は、隣の箱へ移る値と同じ速さで動く", async ({ page }) => {
+  test("shift で左へ抜ける値と右端から入る値は、隣の箱へ移る値と同じ速さで動く", async ({ page }) => {
     const v = await given("既定の設定で開いている", () => Visualizer.open(page));
     await when("shift ステップへ進む", () => v.goTo("shift"));
-    await then("途中のどの時点でも、r2 から抜ける値と r0 から r1 へ移る値の動いた距離が等しい", async () => {
+    await then("途中のどの時点でも、r2 から抜ける値・右端から r0 へ入る値・r0 から r1 へ移る値の動いた距離が等しい", async () => {
       for (const progress of [0.25, 0.5, 0.9]) {
-        const dropped = await v.diagram.travelX(v.diagram.dropped(), progress);
         const sliding = await v.diagram.travelX(v.diagram.sliding(1), progress);
-        expect(dropped).toBeCloseTo(sliding, 0);
+        expect(await v.diagram.travelX(v.diagram.dropped(), progress)).toBeCloseTo(sliding, 0);
+        expect(await v.diagram.travelX(v.diagram.sliding(0), progress)).toBeCloseTo(sliding, 0);
       }
     });
   });

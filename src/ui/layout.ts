@@ -21,7 +21,7 @@ export type LfsrLayout = Readonly<{
   inputGate: Point;
   /** 変数 feedback の値を示す箱。入力ゲートの真下にあり、x・y は中心、size は一辺。 */
   feedbackBox: Point & { size: number };
-  /** r[0] の入口（r[0] の右辺の中点から右）。シフトで入る 0 はここから真横に r[0] へ入る。 */
+  /** r[0] の入口。r[0] の中心から箱の間隔だけ右で、隣に箱があるときの位置。シフトで入る 0 はここから真横に r[0] へ入る。 */
   entry: (i: 0) => Point;
   boxes: readonly (Point & { bit: number })[];
   gates: readonly (Point & { bit: number })[];
@@ -47,8 +47,6 @@ const GATE_X = 96;
 const FIRST_BOX_X = 160;
 const GATE_R = 13;
 const FB_BOX = 30;
-/** r[0] の右辺からその入口までの長さ。 */
-const ENTRY_WIRE = 32;
 /** 箱の下辺からタップのゲート中心までの高さ。 */
 const GATE_DROP = 66;
 /** 左右の脚が箱の下辺に付く位置の、箱の中心からの横のずれ。 */
@@ -73,7 +71,7 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
   const gateY = boxBottom + GATE_DROP;
   const busY = gateY + GATE_R + 24;
   const feedbackBox = { x: GATE_X, y: (midY + GATE_R + busY) / 2, size: FB_BOX };
-  const entry = (): Point => ({ x: boxX(0) + BOX + ENTRY_WIRE, y: midY });
+  const entry = (): Point => ({ x: boxX(0) + BOX / 2 + PITCH, y: midY });
   const gate = (i: number): Point => ({ x: boxX(i) + BOX / 2, y: gateY });
   const leg = (i: number, side: -1 | 1): [Point, Point, Point] => {
     const x = gate(i).x + side * LEG_OFFSET;

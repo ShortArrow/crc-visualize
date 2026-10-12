@@ -36,9 +36,9 @@ describe("lfsrLayout", () => {
     expect(layout.taps).toEqual([0, 1]);
   });
 
-  it("Given width 3、poly 0x3, When r0 の入口を置く, Then r0 の真横の右にある", () => {
+  it("Given width 3、poly 0x3, When r0 の入口を置く, Then r0 の真横の右、r0 の中心から箱の間隔だけ離れた位置にある", () => {
     expect(layout.entry(0).y).toBe(r0.y + layout.box / 2);
-    expect(layout.entry(0).x).toBeGreaterThan(r0.x + layout.box);
+    expect(layout.entry(0).x).toBe(r0.x + layout.box / 2 + layout.pitch);
   });
 
   it("Given width 3、poly 0x3, When 入力ゲートを置く, Then r2 の左にある", () => {
