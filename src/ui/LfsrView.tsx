@@ -37,7 +37,7 @@ function boxAnimation(params: CrcParams, step: Step, bit: number): string | unde
 }
 
 /** XOR ゲート（⊕）。id は "input" か入口にあるレジスタの番号。active はこのステップで計算に使われていること。 */
-function XorGate(props: { at: Point; r: number; id: "input" | number; active: boolean; highlight: boolean }) {
+export function XorGate(props: { at: Point; r: number; id: "input" | number; active: boolean; highlight: boolean }) {
   const { at, r, id, active, highlight } = props;
   return (
     <g className={`gate ${active ? "active" : ""} ${highlight ? "param-hl" : ""}`} data-gate={id} transform={`translate(${at.x} ${at.y})`}>

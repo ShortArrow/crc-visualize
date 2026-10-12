@@ -7,8 +7,10 @@ import { CodeView } from "./ui/CodeView";
 import { ConfigPanel, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { LfsrView } from "./ui/LfsrView";
+import { NamesPage } from "./ui/NamesPage";
 import { ParamHelp } from "./ui/ParamHelp";
 import type { ParamFocus } from "./ui/paramFocus";
+import { parseRoute, namesHash, type Route } from "./ui/route";
 import { StepLog } from "./ui/StepLog";
 import { initialSettings, persistSettings, type Settings } from "./settings";
 
@@ -27,34 +29,72 @@ export function App() {
   const focus: ParamFocus = { focused, onFocus: setFocused };
   const config = useMemo(() => parseConfig(form), [form]);
   const preset = config.ok ? findPreset(config.params) : undefined;
+  const route = useRoute();
 
   return (
     <main>
       <header>
-        <h1>CRC 可視化</h1>
-        <p>LFSR の 1 クロックと、ビット単位 CRC 実装の 1 行を同期させて表示します。</p>
+        <div className="title">
+          <h1>CRC 可視化</h1>
+          <nav className="pages">
+            <a href="#" className={route.page === "visualizer" ? "current" : ""}>
+              可視化
+            </a>
+            <a href={namesHash()} className={route.page === "names" ? "current" : ""}>
+              名前の規則
+            </a>
+          </nav>
+        </div>
+        <p>
+          {route.page === "names"
+            ? "プリセットの名前の付け方と、パラメータの呼び名の違いを示します。"
+            : "LFSR の 1 クロックと、ビット単位 CRC 実装の 1 行を同期させて表示します。"}
+        </p>
       </header>
-      <ConfigPanel form={form} presetName={preset?.name} errors={config.ok ? {} : config.errors} onChange={setForm} focus={focus} />
-      <ParamHelp focused={focused} params={config.ok ? config.params : undefined} />
-      {config.ok ? (
-        <Visualizer
-          key={JSON.stringify([config.params, config.bits])}
-          params={config.params}
-          bits={config.bits}
-          check={preset && sameBits(config.bits, CHECK_BITS) ? preset.check : undefined}
-          speedMode={speedMode}
-          rate={rate}
-          loop={loop}
-          focus={focus}
-          onSpeedMode={setSpeedMode}
-          onRate={setRate}
-          onLoop={setLoop}
-        />
+      {route.page === "names" ? (
+        <NamesPage target={route.param} />
       ) : (
-        <p className="invalid-config">設定に誤りがあります。赤い項目を直してください。</p>
+        <>
+          <ConfigPanel
+            form={form}
+            presetName={preset?.name}
+            errors={config.ok ? {} : config.errors}
+            onChange={setForm}
+            focus={focus}
+          />
+          <ParamHelp focused={focused} params={config.ok ? config.params : undefined} />
+          {config.ok ? (
+            <Visualizer
+              key={JSON.stringify([config.params, config.bits])}
+              params={config.params}
+              bits={config.bits}
+              check={preset && sameBits(config.bits, CHECK_BITS) ? preset.check : undefined}
+              speedMode={speedMode}
+              rate={rate}
+              loop={loop}
+              focus={focus}
+              onSpeedMode={setSpeedMode}
+              onRate={setRate}
+              onLoop={setLoop}
+            />
+          ) : (
+            <p className="invalid-config">設定に誤りがあります。赤い項目を直してください。</p>
+          )}
+        </>
       )}
     </main>
   );
+}
+
+/** URL のフラグメントが指すページ。フラグメントが変わるたびに読み直す。 */
+function useRoute(): Route {
+  const [route, setRoute] = useState(() => parseRoute(location.hash));
+  useEffect(() => {
+    const onHash = () => setRoute(parseRoute(location.hash));
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  return route;
 }
 
 type VisualizerProps = Readonly<{
@@ -125,7 +165,14 @@ function Visualizer(props: VisualizerProps) {
             <span className="swatch param">水色 = 注目中のパラメータ</span>
           </span>
         </h2>
-        <LfsrView params={params} step={step} next={steps[player.index + 1]} stepIndex={player.index} animMs={animMs} focused={focus.focused} />
+        <LfsrView
+          params={params}
+          step={step}
+          next={steps[player.index + 1]}
+          stepIndex={player.index}
+          animMs={animMs}
+          focused={focus.focused}
+        />
       </section>
       <Controls
         player={player}

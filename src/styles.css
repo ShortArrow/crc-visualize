@@ -40,6 +40,35 @@ header h1 {
   font-size: 1.4rem;
 }
 
+header .title {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+}
+
+/* ページの切替 */
+.pages {
+  display: flex;
+  gap: 4px;
+}
+
+.pages a {
+  padding: 2px 10px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.pages a:hover {
+  color: var(--fg);
+}
+
+.pages a.current {
+  background: rgb(97 175 239 / 0.15);
+  color: var(--accent);
+}
+
 header p {
   margin: 4px 0 12px;
   color: var(--muted);
@@ -849,5 +878,201 @@ h2 {
 
 .param-help-aliases,
 .param-help-note {
+  color: var(--muted);
+}
+
+/* 名前の規則のページ */
+.names-page {
+  display: grid;
+  gap: 12px;
+}
+
+.names-page .note {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+}
+
+.name-parts .parts {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 12px;
+  font-family: var(--mono);
+}
+
+.name-parts .part {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.name-parts .part b {
+  padding: 4px 10px;
+  border-bottom: 3px solid;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.name-parts .part small {
+  max-width: 22em;
+  color: var(--muted);
+  font-family: system-ui, "Segoe UI", "Hiragino Sans", sans-serif;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.name-parts [data-part="head"] b {
+  border-color: var(--muted);
+}
+
+.name-parts [data-part="width"] b {
+  border-color: var(--param);
+  color: var(--param);
+}
+
+.name-parts [data-part="origin"] b {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.name-parts .sep {
+  padding-top: 4px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 1.8rem;
+}
+
+.names-page table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.names-page caption {
+  padding: 4px 0;
+  color: var(--fg);
+  font-family: var(--mono);
+  text-align: left;
+}
+
+.names-page th,
+.names-page td {
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.names-page thead th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.names-page h2 code {
+  text-transform: none;
+}
+
+.param-table th,
+.param-table td:nth-child(2) {
+  white-space: nowrap;
+}
+
+.names-page tbody th {
+  font-family: var(--mono);
+  font-weight: 500;
+}
+
+.families {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 24px;
+}
+
+.families h2,
+.families .note {
+  flex-basis: 100%;
+}
+
+.family td {
+  font-family: var(--mono);
+}
+
+.family td.differs {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.aliases {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 32px;
+}
+
+.aliases h2 {
+  flex-basis: 100%;
+}
+
+.alias-index tbody td {
+  font-family: var(--mono);
+}
+
+.param-table tr.target {
+  background: rgb(86 182 194 / 0.15);
+  box-shadow: inset 3px 0 0 var(--param);
+}
+
+/* パラメータ名の別名の図 */
+.param-map {
+  max-width: 760px;
+  max-height: none;
+  overflow: visible;
+}
+
+.param-map .leader {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.param-map .arrow-head {
+  fill: #4b5060;
+}
+
+.param-map .callout-name {
+  fill: var(--accent);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.param-map .callout.hovered .callout-name {
+  fill: var(--param);
+  text-decoration: underline;
+}
+
+.param-map .wire.output.param-hl + text {
+  fill: var(--param);
+}
+
+.hover-card .card {
+  display: grid;
+  gap: 2px;
+  padding: 6px 10px;
+  border: 1px solid var(--param);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--fg);
+  font-family: system-ui, "Segoe UI", "Hiragino Sans", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.hover-card.above {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.hover-card .card span {
   color: var(--muted);
 }
