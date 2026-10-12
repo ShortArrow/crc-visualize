@@ -231,8 +231,10 @@ h2 {
   stroke-width: 2;
 }
 
+/* 粒の後ろから塗る配線。塗りのアニメーションが始まる前は塗らない。 */
 .wire.trail {
   stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
 }
 
 .wire[data-level="1"] {

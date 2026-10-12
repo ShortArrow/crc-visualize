@@ -71,6 +71,14 @@ export class Visualizer {
       this.page
         .locator(`.lfsr [data-wire="${name}"] .trail`)
         .evaluate((el) => 1 - parseFloat(getComputedStyle(el).strokeDashoffset)),
+    /** 粒と配線の塗りのアニメーション（WAAPI）を取り除き、それらが始まる前の最初の描画の状態にする。 */
+    withoutMotion: () =>
+      this.page.evaluate(() =>
+        document
+          .getAnimations()
+          .filter((a) => !(a instanceof CSSAnimation) && !(a instanceof CSSTransition))
+          .forEach((a) => a.cancel()),
+      ),
     particles: () => this.page.locator(".lfsr .particle"),
     particle: (route: string) => this.page.locator(`.lfsr .particle[data-route="${route}"]`),
     gate: (id: "input" | number) => this.page.locator(`.gate[data-gate="${id}"]`),
