@@ -270,8 +270,7 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
         const isMsb = bit === w - 1 && step.kind === "feedback";
         const flags = [isMsb && "msb", anim === "flip" && "hit", done && "done", hl("registers")];
         const classes = ["reg", ...flags].filter(Boolean).join(" ");
-        const slideFrom = bit === 0 ? entry(0).x - (x + box / 2) : layout.pitch;
-        const style = { "--slide-from": `${slideFrom}px` } as CSSProperties;
+        const style = { "--slide-from": `${layout.pitch}px` } as CSSProperties;
         return (
           <g key={bit} className={classes} data-bit={bit} transform={`translate(${x} ${y})`}>
             <rect width={box} height={box} rx={6} />
