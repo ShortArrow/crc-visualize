@@ -156,5 +156,9 @@ export class Visualizer {
     loop: () => this.page.getByTitle("ループ再生（L）"),
     play: () => this.page.getByTitle("再生 / 一時停止（Space）"),
     query: () => new URL(this.page.url()).searchParams,
+    widthToggle: () => this.page.locator(".width-toggle"),
+    /** 内容（main）の横幅と画面の横幅（px）。 */
+    widths: () =>
+      this.page.locator("main").evaluate((el) => ({ content: el.getBoundingClientRect().width, view: innerWidth })),
   };
 }
