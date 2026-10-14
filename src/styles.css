@@ -1684,3 +1684,18 @@ button.bit-cell:hover {
   gap: 8px;
   margin: 8px 0;
 }
+
+.sent-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sent-row .part {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sent-row .part-label {
+  align-self: stretch;
+}

@@ -68,4 +68,21 @@ test.describe("冗長", () => {
       await expect(r.counts()).toContainText("1/32");
     });
   });
+
+  test("本文が短くても、本文と CRC の見出しは重ならない", async ({ page }) => {
+    const r = await given("本文 1 ビットの x⁴ + x³ + x² + x + 1 の冗長のページを開いている", () =>
+      RedundancyPage.open(page, "#redundancy/width=4/poly=0xF"),
+    );
+    await then("どちらの見出しも文字が枠からはみ出さない", async () => {
+      for (const part of ["message", "crc"] as const) {
+        const overflow = await r.partLabel(part).evaluate((el) => el.scrollWidth - el.clientWidth);
+        expect(overflow).toBeLessThanOrEqual(0);
+      }
+    });
+    await then("本文の見出しの右端は CRC の見出しの左端より左にある", async () => {
+      const message = await r.partLabel("message").boundingBox();
+      const crc = await r.partLabel("crc").boundingBox();
+      expect(message!.x + message!.width).toBeLessThanOrEqual(crc!.x);
+    });
+  });
 });

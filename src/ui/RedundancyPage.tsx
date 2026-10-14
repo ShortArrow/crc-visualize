@@ -24,14 +24,19 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
       <h2>{m.redundancy.heading}</h2>
       <section>
         <h3>{m.redundancy.whatSection}</h3>
-        <div className="bit-row sent-row" style={rowStyle}>
-          <BitCells bits={sent} width={generator.width} />
-          <span className="part-label message" style={{ gridColumn: `span ${k}` }}>
-            {m.redundancy.message(k)}
-          </span>
-          <span className="part-label crc" style={{ gridColumn: `span ${generator.width}` }}>
-            {m.redundancy.crc(generator.width)}
-          </span>
+        <div className="sent-row">
+          <div className="part">
+            <div className="bit-row" style={{ "--bits": k } as CSSProperties}>
+              <BitCells bits={sent} width={generator.width} range={[0, k]} />
+            </div>
+            <span className="part-label message">{m.redundancy.message(k)}</span>
+          </div>
+          <div className="part">
+            <div className="bit-row" style={{ "--bits": generator.width } as CSSProperties}>
+              <BitCells bits={sent} width={generator.width} range={[k, n]} />
+            </div>
+            <span className="part-label crc">{m.redundancy.crc(generator.width)}</span>
+          </div>
         </div>
         <p className="note">{m.redundancy.whatNote}</p>
       </section>
@@ -83,14 +88,20 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
 type CellsProps = Readonly<{
   bits: readonly Bit[];
   width: number;
+  range?: readonly [from: number, to: number];
   flipped?: readonly Bit[];
   onFlip?: (i: number) => void;
 }>;
 
-/** ビットを最高次から 1 つずつ並べる。末尾の width ビットを CRC とし、onFlip を渡すと各ビットを選んで反転できる。 */
-function BitCells({ bits, width, flipped, onFlip }: CellsProps) {
+/**
+ * ビットを最高次から 1 つずつ並べる。末尾の width ビットを CRC とし、onFlip を渡すと各ビットを選んで反転できる。
+ * range を渡すと、bits のうち from 番目から to 番目の手前までだけを並べる。
+ */
+function BitCells({ bits, width, range = [0, bits.length], flipped, onFlip }: CellsProps) {
   const n = bits.length;
-  return bits.map((bit, i) => {
+  const [from, to] = range;
+  return bits.slice(from, to).map((bit, offset) => {
+    const i = from + offset;
     const className = ["bit-cell", i < n - width ? "message" : "crc", bit ? "one" : "", flipped?.[i] ? "flipped" : ""].join(" ");
     const title = powerText(n - 1 - i);
     return onFlip ? (
