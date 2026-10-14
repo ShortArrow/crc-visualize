@@ -5,7 +5,7 @@ import type { StepKind } from "../domain/trace";
  * 関数の項目は、数や値を差し込んで文を作る。
  */
 export const ja = {
-  pages: { visualizer: "可視化", names: "名前の規則", narrow: "絞り込み", cyclic: "巡回" },
+  pages: { visualizer: "可視化", names: "名前の規則", narrow: "絞り込み", cyclic: "巡回", redundancy: "冗長" },
   workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", language: "表示言語" },
   settings: {
     heading: "設定",
@@ -187,6 +187,36 @@ export const ja = {
     explain: (n: number) =>
       `輪の長さも、状態が x^0 に戻るまでの回数も n = ${n}。x^n を g(x) で割った余りは 1 なので、回り込んだビットの x^n を x^0 に置き換えても余りは変わらない。だから符号語を回しても符号語のままで、この性質を持つ符号を巡回符号と呼ぶ。`,
     shortened: "実際の CRC はふつう n より短い入力に使う。巡回符号の先頭を 0 と見なして短くしたもの（短縮巡回符号）にあたる。",
+  },
+  redundancy: {
+    heading: "なぜ「冗長」検査か",
+    whatSection: "何が冗長か",
+    sent: "送った符号語",
+    message: (k: number) => `本文 ${k} ビット`,
+    crc: (w: number) => `CRC ${w} ビット`,
+    whatNote:
+      "CRC のビットは本文から計算で決まり、新しい情報は何も持たない。この余分なビットのおかげで、受け取った側が g(x) で割って確かめられる。",
+    spaceSection: "符号語は並び全体の一部",
+    allWords: (n: number) => `${n} ビットの並び`,
+    codewords: "g(x) で割り切れる符号語",
+    ratio: "符号語の割合",
+    spaceNote: (w: number) => `壊れた並びが偶然どれかの符号語になる割合はおよそ 1/2^${w}。width を増やすほど見逃しにくくなる。`,
+    gridLegend: "緑 = 符号語、黄の枠 = 受け取った並び",
+    checkSection: "壊して確かめる",
+    received: "受け取った並び（ビットを選ぶと反転）",
+    error: "誤り e（送った並び XOR 受け取った並び）",
+    burst: "誤りの長さ",
+    remainder: "g(x) で割った余り",
+    remainderNote: "受け取った並びの余りは、e を g(x) で割った余りに等しい。",
+    verdict: {
+      clean: "誤りなし",
+      detected: "誤りを見つけた（余りが 0 でない）",
+      missed: "見逃した（壊れた並びも符号語なので余りが 0）",
+    },
+    reset: "元に戻す",
+    missedExample: "見逃す例",
+    guarantee: (w: number) =>
+      `1 ビットの誤りと、長さ ${w} 以下の誤りは必ず見つかる。見逃すのは e が g(x) で割り切れるときだけ。「見逃す例」は e を g(x) そのものにしたもので、長さは ${w + 1}。`,
   },
   /** 一覧の区切り。 */
   listSeparator: "、",

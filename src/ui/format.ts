@@ -13,9 +13,13 @@ export const toHex = (reg: Register): string =>
 export const bitsToString = (bits: readonly Bit[]): string => bits.join("");
 
 const SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+const superscript = (d: number): string => [...String(d)].map((c) => SUPERSCRIPTS[Number(c)]).join("");
 
 /** x の d 乗を上付きの指数で書く（"x³"）。指数が 0 や 1 でも省かない。 */
-export const powerText = (d: number): string => `x${[...String(d)].map((c) => SUPERSCRIPTS[Number(c)]).join("")}`;
+export const powerText = (d: number): string => `x${superscript(d)}`;
+
+/** 2 の d 乗を、上付きの指数とその値で書く（"2⁷ = 128"）。 */
+export const powerOfTwoText = (d: number): string => `2${superscript(d)} = ${2 ** d}`;
 
 const term = (d: number): string => (d === 0 ? "1" : d === 1 ? "x" : powerText(d));
 

@@ -85,3 +85,14 @@ describe("巡回のページのフラグメント", () => {
     });
   });
 });
+
+describe("冗長のページのフラグメント", () => {
+  it("Given フラグメント #redundancy, When ページを決める, Then 既定の生成多項式の冗長のページ", () => {
+    expect(parseRoute("#redundancy")).toEqual({ page: "redundancy", generator: { width: 3, poly: 0x3 } });
+  });
+
+  it("Given 生成多項式, When 冗長のページのフラグメントにする, Then 読み戻せる", () => {
+    expect(generatorHash("redundancy", { width: 4, poly: 0x3 })).toBe("#redundancy/width=4/poly=0x3");
+    expect(parseRoute("#redundancy/width=4/poly=0x3")).toEqual({ page: "redundancy", generator: { width: 4, poly: 0x3 } });
+  });
+});

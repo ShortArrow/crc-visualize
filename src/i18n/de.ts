@@ -2,7 +2,13 @@ import type { Messages } from "./ja";
 
 /** ドイツ語の画面の文。 */
 export const de: Messages = {
-  pages: { visualizer: "Visualisierung", names: "Namensregeln", narrow: "Eingrenzen", cyclic: "Zyklisch" },
+  pages: {
+    visualizer: "Visualisierung",
+    names: "Namensregeln",
+    narrow: "Eingrenzen",
+    cyclic: "Zyklisch",
+    redundancy: "Redundanz",
+  },
   workbench: { sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)", language: "Sprache" },
   settings: {
     heading: "Einstellungen",
@@ -192,6 +198,37 @@ export const de: Messages = {
       `Die Länge des Rings und die Anzahl der Schritte, bis der Zustand zu x^0 zurückkehrt, sind beide n = ${n}. Da x^n mod g(x) gleich 1 ist, ändert sich der Rest nicht, wenn man beim herumlaufenden Bit x^n durch x^0 ersetzt. Ein gedrehtes Codewort bleibt also ein Codewort; Codes mit dieser Eigenschaft heißen zyklische Codes.`,
     shortened:
       "Echte CRCs werden meist auf Eingaben angewendet, die kürzer als n sind. Das ist ein verkürzter zyklischer Code: ein zyklischer Code, dessen führende Bits als 0 gelten.",
+  },
+  redundancy: {
+    heading: "Warum „Redundanz“-Prüfung?",
+    whatSection: "Was redundant ist",
+    sent: "Gesendetes Codewort",
+    message: (k: number) => `Nachricht ${k} Bits`,
+    crc: (w: number) => `CRC ${w} Bits`,
+    whatNote:
+      "Die CRC-Bits werden aus der Nachricht berechnet und tragen keine neue Information. Erst diese zusätzlichen Bits erlauben dem Empfänger, die Daten durch Division durch g(x) zu prüfen.",
+    spaceSection: "Codewörter sind nur ein Teil aller Bitfolgen",
+    allWords: (n: number) => `${n}-Bit-Folgen`,
+    codewords: "Durch g(x) teilbare Codewörter",
+    ratio: "Anteil der Codewörter",
+    spaceNote: (w: number) =>
+      `Eine beschädigte Folge ist zufällig mit einer Wahrscheinlichkeit von etwa 1/2^${w} ein Codewort. Je größer width, desto seltener wird ein Fehler übersehen.`,
+    gridLegend: "grün = Codewort, gelber Rand = empfangene Folge",
+    checkSection: "Beschädigen und prüfen",
+    received: "Empfangene Folge (Bit auswählen, um es zu kippen)",
+    error: "Fehler e (gesendet XOR empfangen)",
+    burst: "Fehlerlänge",
+    remainder: "Rest modulo g(x)",
+    remainderNote: "Der Rest der empfangenen Folge ist gleich dem Rest von e modulo g(x).",
+    verdict: {
+      clean: "Kein Fehler",
+      detected: "Fehler erkannt (Rest ist nicht 0)",
+      missed: "Fehler übersehen (die beschädigte Folge ist ebenfalls ein Codewort, daher ist der Rest 0)",
+    },
+    reset: "Zurücksetzen",
+    missedExample: "Übersehenes Beispiel",
+    guarantee: (w: number) =>
+      `Jeder 1-Bit-Fehler und jeder Fehler der Länge ${w} oder weniger wird erkannt. Übersehen wird ein Fehler nur, wenn e durch g(x) teilbar ist. Das übersehene Beispiel setzt e auf g(x) selbst, mit der Länge ${w + 1}.`,
   },
   listSeparator: ", ",
 };

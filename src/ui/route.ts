@@ -13,9 +13,9 @@ export type Route =
   | Readonly<{ page: GeneratorPage; generator: Generator }>;
 
 /** 一覧から生成多項式を選んで見るページ。 */
-export type GeneratorPage = "cyclic";
+export type GeneratorPage = "cyclic" | "redundancy";
 
-const GENERATOR_PAGES: readonly string[] = ["cyclic"] satisfies GeneratorPage[];
+const GENERATOR_PAGES: readonly string[] = ["cyclic", "redundancy"] satisfies GeneratorPage[];
 
 /** 名前の規則のページのフラグメント。param を渡すとその行を指す。 */
 export const namesHash = (param?: ParamName): string => (param ? `#names/${param}` : "#names");

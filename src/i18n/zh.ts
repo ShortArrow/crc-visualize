@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** 中国語（簡体字）の画面の文。 */
 export const zh: Messages = {
-  pages: { visualizer: "可视化", names: "命名规则", narrow: "筛选", cyclic: "循环" },
+  pages: { visualizer: "可视化", names: "命名规则", narrow: "筛选", cyclic: "循环", redundancy: "冗余" },
   workbench: { sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）", language: "显示语言" },
   settings: {
     heading: "设置",
@@ -181,6 +181,35 @@ export const zh: Messages = {
     explain: (n: number) =>
       `环的长度与状态回到 x^0 所需的次数都是 n = ${n}。由于 x^n 除以 g(x) 的余数为 1，把绕回的比特的 x^n 换成 x^0 后余数不变。因此码字旋转后仍是码字，具有这种性质的码称为循环码。`,
     shortened: "实际的 CRC 通常用于比 n 短的输入。这相当于把循环码开头的比特视为 0 而缩短的码（缩短循环码）。",
+  },
+  redundancy: {
+    heading: "为什么叫“冗余”校验",
+    whatSection: "什么是冗余",
+    sent: "发送的码字",
+    message: (k: number) => `消息 ${k} 比特`,
+    crc: (w: number) => `CRC ${w} 比特`,
+    whatNote: "CRC 的比特由消息计算得出，不带任何新信息。正是这些多余的比特，让接收方能用 g(x) 去除来校验。",
+    spaceSection: "码字只是全部比特串的一小部分",
+    allWords: (n: number) => `${n} 比特的比特串`,
+    codewords: "能被 g(x) 整除的码字",
+    ratio: "码字所占比例",
+    spaceNote: (w: number) => `损坏的比特串恰好变成某个码字的概率约为 1/2^${w}。width 越大，越不容易漏检。`,
+    gridLegend: "绿色 = 码字，黄框 = 接收的比特串",
+    checkSection: "破坏后校验",
+    received: "接收的比特串（选择比特即可翻转）",
+    error: "错误 e（发送的比特串 XOR 接收的比特串）",
+    burst: "错误长度",
+    remainder: "除以 g(x) 的余数",
+    remainderNote: "接收的比特串的余数，等于 e 除以 g(x) 的余数。",
+    verdict: {
+      clean: "无错误",
+      detected: "检测到错误（余数不为 0）",
+      missed: "漏检（损坏的比特串也是码字，所以余数为 0）",
+    },
+    reset: "还原",
+    missedExample: "漏检示例",
+    guarantee: (w: number) =>
+      `1 比特错误和长度不超过 ${w} 的错误一定能检测到。只有当 e 能被 g(x) 整除时才会漏检。“漏检示例”把 e 设为 g(x) 本身，长度为 ${w + 1}。`,
   },
   listSeparator: "、",
 };

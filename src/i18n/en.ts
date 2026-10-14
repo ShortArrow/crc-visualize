@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** 英語の画面の文。 */
 export const en: Messages = {
-  pages: { visualizer: "Visualizer", names: "Naming", narrow: "Narrow down", cyclic: "Cyclic" },
+  pages: { visualizer: "Visualizer", names: "Naming", narrow: "Narrow down", cyclic: "Cyclic", redundancy: "Redundancy" },
   workbench: { sidebarToggle: "Toggle sidebar (Ctrl+B)", language: "Language" },
   settings: {
     heading: "Settings",
@@ -190,6 +190,37 @@ export const en: Messages = {
       `The ring length and the number of steps until the state returns to x^0 are both n = ${n}. Since x^n mod g(x) is 1, replacing the wrapped bit's x^n with x^0 does not change the remainder. So a rotated codeword is still a codeword; codes with this property are called cyclic codes.`,
     shortened:
       "Real CRCs are usually applied to inputs shorter than n. That is a shortened cyclic code: a cyclic code whose leading bits are taken as 0.",
+  },
+  redundancy: {
+    heading: 'Why a "redundancy" check?',
+    whatSection: "What is redundant",
+    sent: "Sent codeword",
+    message: (k: number) => `message ${k} bits`,
+    crc: (w: number) => `CRC ${w} bits`,
+    whatNote:
+      "The CRC bits are computed from the message and carry no new information. These extra bits are what let the receiver check the data by dividing by g(x).",
+    spaceSection: "Codewords are a small part of all bit strings",
+    allWords: (n: number) => `${n}-bit strings`,
+    codewords: "Codewords divisible by g(x)",
+    ratio: "Share of codewords",
+    spaceNote: (w: number) =>
+      `A corrupted string happens to be some codeword with a probability of about 1/2^${w}. A larger width makes errors harder to miss.`,
+    gridLegend: "green = codeword, yellow outline = received string",
+    checkSection: "Break it and check",
+    received: "Received string (select a bit to flip it)",
+    error: "Error e (sent XOR received)",
+    burst: "Error length",
+    remainder: "Remainder mod g(x)",
+    remainderNote: "The remainder of the received string equals the remainder of e mod g(x).",
+    verdict: {
+      clean: "No error",
+      detected: "Error detected (remainder is not 0)",
+      missed: "Error missed (the corrupted string is also a codeword, so the remainder is 0)",
+    },
+    reset: "Undo",
+    missedExample: "Missed example",
+    guarantee: (w: number) =>
+      `Every 1-bit error and every error of length ${w} or less is detected. An error is missed only when e is divisible by g(x). The missed example sets e to g(x) itself, of length ${w + 1}.`,
   },
   listSeparator: ", ",
 };
