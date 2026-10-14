@@ -4,13 +4,18 @@ import { PARAM_NAMES, type ParamName } from "../domain/trace";
 
 /**
  * URL のフラグメントが指すページ。param は名前の規則のページで強調するパラメータの行、
- * path は絞り込みのページの固定の道筋（候補に収める前の、書かれたとおりのもの）、generator は巡回のページの生成多項式。
+ * path は絞り込みのページの固定の道筋（候補に収める前の、書かれたとおりのもの）、generator は生成多項式を選んで見るページの生成多項式。
  */
 export type Route =
   | Readonly<{ page: "visualizer" }>
   | Readonly<{ page: "names"; param?: ParamName }>
   | Readonly<{ page: "narrow"; path: NarrowPath }>
-  | Readonly<{ page: "cyclic"; generator: Generator }>;
+  | Readonly<{ page: GeneratorPage; generator: Generator }>;
+
+/** 一覧から生成多項式を選んで見るページ。 */
+export type GeneratorPage = "cyclic";
+
+const GENERATOR_PAGES: readonly string[] = ["cyclic"] satisfies GeneratorPage[];
 
 /** 名前の規則のページのフラグメント。param を渡すとその行を指す。 */
 export const namesHash = (param?: ParamName): string => (param ? `#names/${param}` : "#names");
@@ -19,9 +24,11 @@ export const namesHash = (param?: ParamName): string => (param ? `#names/${param
 export const narrowHash = ({ fixed, open }: NarrowPath): string =>
   ["#narrow", ...fixed.map((c) => `${c.param}=${formatValue(c.param, c.value)}`), ...(open ? [open] : [])].join("/");
 
-/** 巡回のページのフラグメント。 */
-export const cyclicHash = ({ width, poly }: Generator): string =>
-  `#cyclic/width=${formatValue("width", width)}/poly=${formatValue("poly", poly)}`;
+/** 生成多項式を選んで見るページ page で、生成多項式 g を指すフラグメント。 */
+export const generatorHash = (page: GeneratorPage, { width, poly }: Generator): string =>
+  `#${page}/width=${formatValue("width", width)}/poly=${formatValue("poly", poly)}`;
+
+const isGeneratorPage = (page: string | undefined): page is GeneratorPage => GENERATOR_PAGES.includes(page ?? "");
 
 const isParam = (name: string | undefined): name is ParamName => PARAM_NAMES.includes(name as ParamName);
 
@@ -29,7 +36,7 @@ const isParam = (name: string | undefined): name is ParamName => PARAM_NAMES.inc
 export function parseRoute(hash: string): Route {
   const [page, ...rest] = hash.replace(/^#/, "").split("/");
   if (page === "narrow") return { page: "narrow", path: parseNarrowPath(rest) };
-  if (page === "cyclic") return { page: "cyclic", generator: parseGenerator(rest) ?? DEFAULT_GENERATOR };
+  if (isGeneratorPage(page)) return { page, generator: parseGenerator(rest) ?? DEFAULT_GENERATOR };
   if (page !== "names") return { page: "visualizer" };
   return isParam(rest[0]) ? { page: "names", param: rest[0] } : { page: "names" };
 }

@@ -165,6 +165,7 @@ export const zh: Messages = {
     none: "暂无",
     status: (n: number) => `筛选：候选 ${n}`,
   },
+  generators: "生成多项式",
   cyclic: {
     heading: "为什么叫“循环”冗余校验",
     wordRing: "码字环",
@@ -180,7 +181,6 @@ export const zh: Messages = {
     explain: (n: number) =>
       `环的长度与状态回到 x^0 所需的次数都是 n = ${n}。由于 x^n 除以 g(x) 的余数为 1，把绕回的比特的 x^n 换成 x^0 后余数不变。因此码字旋转后仍是码字，具有这种性质的码称为循环码。`,
     shortened: "实际的 CRC 通常用于比 n 短的输入。这相当于把循环码开头的比特视为 0 而缩短的码（缩短循环码）。",
-    generators: "生成多项式",
   },
   listSeparator: "、",
 };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cyclicHash, narrowHash, parseRoute } from "./route";
+import { generatorHash, narrowHash, parseRoute } from "./route";
 
 describe("parseRoute", () => {
   it.each(["", "#", "#other"])("Given フラグメント %j, When ページを決める, Then 可視化のページ", (hash) => {
@@ -78,7 +78,10 @@ describe("巡回のページのフラグメント", () => {
   );
 
   it("Given 生成多項式, When フラグメントにする, Then width は 10 進、poly は大文字の 16 進で書き、読み戻せる", () => {
-    expect(cyclicHash({ width: 4, poly: 0xf })).toBe("#cyclic/width=4/poly=0xF");
-    expect(parseRoute(cyclicHash({ width: 5, poly: 0x5 }))).toEqual({ page: "cyclic", generator: { width: 5, poly: 0x5 } });
+    expect(generatorHash("cyclic", { width: 4, poly: 0xf })).toBe("#cyclic/width=4/poly=0xF");
+    expect(parseRoute(generatorHash("cyclic", { width: 5, poly: 0x5 }))).toEqual({
+      page: "cyclic",
+      generator: { width: 5, poly: 0x5 },
+    });
   });
 });
