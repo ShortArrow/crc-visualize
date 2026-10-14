@@ -1202,3 +1202,117 @@ h2 {
 .hover-card .card span {
   color: var(--muted);
 }
+
+/* 絞り込みのページ */
+.narrow-page {
+  height: 100%;
+  padding: 12px;
+  overflow: auto;
+}
+
+.narrow-page .note {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+}
+
+.narrow-node {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.narrow-node .count {
+  color: var(--muted);
+}
+
+.split-by {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.split-by a {
+  padding: 1px 8px;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.split-by a:hover {
+  border-color: var(--accent);
+}
+
+.split-by a[aria-current="true"] {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.branches {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 0 14px;
+  list-style: none;
+  border-left: 1px solid var(--border);
+}
+
+.branch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.branch > a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.branch > a::before {
+  content: "└ ";
+  color: var(--muted);
+}
+
+.branch > a:hover {
+  color: var(--accent);
+}
+
+.branch.on-path > a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.branch > .narrow-node {
+  flex-basis: 100%;
+  margin: 2px 0 6px 14px;
+}
+
+.branch .preset-name {
+  color: var(--muted);
+}
+
+.narrow-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.narrow-result .preset-name {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.narrow-fixed,
+.narrow-candidates {
+  margin: 0;
+  padding: 0 0 0 4px;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  list-style: none;
+}
