@@ -5,7 +5,14 @@ import type { StepKind } from "../domain/trace";
  * 関数の項目は、数や値を差し込んで文を作る。
  */
 export const ja = {
-  pages: { visualizer: "可視化", names: "名前の規則", narrow: "絞り込み", cyclic: "巡回", redundancy: "冗長" },
+  pages: {
+    visualizer: "可視化",
+    names: "名前の規則",
+    narrow: "絞り込み",
+    cyclic: "巡回",
+    redundancy: "冗長",
+    equivalence: "置き換え",
+  },
   workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", language: "表示言語" },
   settings: {
     heading: "設定",
@@ -217,6 +224,93 @@ export const ja = {
     missedExample: "見逃す例",
     guarantee: (w: number) =>
       `1 ビットの誤りと、長さ ${w} 以下の誤りは必ず見つかる。見逃すのは e が g(x) で割り切れるときだけ。「見逃す例」は e を g(x) そのものにしたもので、長さは ${w + 1}。`,
+  },
+  equivalence: {
+    heading: "置き換え",
+    note: "パラメータどうしの関係。計算例は、今の設定と入力（可視化のページと同じもの）で求めた値。",
+    sameSection: "同じ CRC になる置き換え",
+    left: "元の設定",
+    right: "置き換え",
+    why: "理由",
+    example: "今の設定での計算例",
+    match: "一致",
+    prefix: "前置き P",
+    items: {
+      refin: {
+        title: "入力の反転",
+        left: "refin = true",
+        right: "refin = false にして、入力の各バイトのビットの並びを反転しておく",
+        why: "refin は各バイトを LSB から入れること。先にバイトの中の並びを逆にしてから MSB から入れても、レジスタに入る順は同じになる。",
+      },
+      refout: {
+        title: "出力の反転",
+        left: "refout = true",
+        right: "refout = false にして、出た CRC に xorout を XOR し直してからビットの並びを反転し、もう一度 xorout を XOR する",
+        why: "refout は最終 XOR の前にレジスタを反転すること。xorout を一度外してから反転し、付け直せば同じになる。",
+      },
+      rightShift: {
+        title: "右送りの実装",
+        left: "refin = refout = true",
+        right:
+          "反転をせず、右へシフトするレジスタで計算する。poly と init はビットの並びを反転した値を使い、各バイトを LSB から入れて最下位ビットで分ける",
+        why: "入力も出力も反転するなら、レジスタ全体を左右逆に置いて計算したのと同じ。左右逆のレジスタは右へシフトし、poly も左右逆の値になる。",
+      },
+      initPrefix: {
+        title: "初期値と前置き",
+        left: "init = I",
+        right: "init = 0 にして、入力の前に width ビットの前置き P を足す（P(x)·x^width ≡ I (mod g(x))）",
+        why: "init = 0 のレジスタに P を入れ終えると、レジスタの値は I になる。init = 0 だと入力の前に 0 をいくつ足しても CRC が変わらないので、0 でない init で先頭の 0 の増減も見つけられるようにしている。",
+      },
+      affine: {
+        title: "初期値と最終 XOR の分",
+        left: "init・xorout",
+        right: "init = xorout = 0 で計算した CRC に、同じ長さの全て 0 の入力の CRC（元の設定）を XOR する",
+        why: "CRC の計算は XOR だけでできているので、長さの同じ入力 a、b について crc(a ⊕ b) = crc(a) ⊕ crc(b) ⊕ crc(0…0) が成り立つ。init と xorout の効き目は、入力の長さだけで決まる定数になる。",
+      },
+    },
+    reasons: {
+      notBytes: "入力が 8 ビットの倍数でないので、バイトごとに反転できない",
+      notReflected: "refin と refout が両方 true ではないので当てはまらない",
+      evenPoly: "poly の最下位ビットが 0 なので x で割れず、前置きが求まらない",
+    },
+    inferSection: "分かっていることから分かること",
+    known: "分かっていること",
+    follows: "分かること",
+    rows: [
+      {
+        known: "refin = refout = true",
+        follows:
+          "右送りの実装で、入出力を反転せずに計算できる。その実装のコードには、poly と init はビットの並びを反転した値で書かれる",
+      },
+      {
+        known: "refin = refout = false",
+        follows: "左送りの実装で、入出力を反転せずに計算できる。コードには poly と init がそのまま書かれる",
+      },
+      { known: "refin ≠ refout", follows: "右送りでも左送りでも、どこかで別にビットの並びを反転する処理が要る" },
+      {
+        known: "実装のコードが右送り（1 ビット右へシフトし、最下位ビットで分かれる）",
+        follows:
+          "入出力の反転を別に書いていなければ refin = refout = true。コードの poly の定数をビット反転すると通常表記の poly になる",
+      },
+      {
+        known: "実装のコードが左送り（1 ビット左へシフトし、最上位ビットで分かれる）",
+        follows: "入出力の反転を別に書いていなければ refin = refout = false。コードの poly の定数はそのまま通常表記",
+      },
+      {
+        known: "コードの poly の定数の最下位ビットが 0",
+        follows: "通常表記の poly は最下位ビットが 1（生成多項式の定数項）なので、この定数は反転した値で、実装は右送り",
+      },
+    ],
+    current: "今の設定では",
+    direction: {
+      right: "右送りの実装で、入出力を反転せずに計算できる",
+      left: "左送りの実装で、入出力を反転せずに計算できる",
+      mixed: "右送りでも左送りでも、別にビットの並びを反転する処理が要る",
+    },
+    codeConstants: (poly: string, init: string) => `実装のコードには poly = ${poly}、init = ${init} と書かれる`,
+    ambiguous: "この poly はビットを反転した値も最下位ビットが 1 なので、定数だけでは通常表記か反転した値か決まらない",
+    settings: "今の設定",
+    openVisualizer: "可視化のページで設定を変える",
   },
   /** 一覧の区切り。 */
   listSeparator: "、",

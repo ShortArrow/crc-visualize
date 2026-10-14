@@ -1,4 +1,4 @@
-import { BookOpen, Cpu, ListTree, PanelLeft, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowRightLeft, BookOpen, Cpu, ListTree, PanelLeft, RefreshCw, ShieldCheck } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { useMessages } from "../i18n/I18n";
 import { LOCALE_NAMES, LOCALES, type Locale } from "../i18n/locale";
@@ -75,6 +75,15 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
           aria-label={m.pages.redundancy}
         >
           <ShieldCheck size={ICON_SIZE} />
+        </a>
+        <a
+          href="#equivalence"
+          className={route.page === "equivalence" ? "current" : ""}
+          data-page="equivalence"
+          title={m.pages.equivalence}
+          aria-label={m.pages.equivalence}
+        >
+          <ArrowRightLeft size={ICON_SIZE} />
         </a>
         <button
           type="button"

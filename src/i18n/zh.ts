@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** 中国語（簡体字）の画面の文。 */
 export const zh: Messages = {
-  pages: { visualizer: "可视化", names: "命名规则", narrow: "筛选", cyclic: "循环", redundancy: "冗余" },
+  pages: { visualizer: "可视化", names: "命名规则", narrow: "筛选", cyclic: "循环", redundancy: "冗余", equivalence: "等价替换" },
   workbench: { sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）", language: "显示语言" },
   settings: {
     heading: "设置",
@@ -210,6 +210,87 @@ export const zh: Messages = {
     missedExample: "漏检示例",
     guarantee: (w: number) =>
       `1 比特错误和长度不超过 ${w} 的错误一定能检测到。只有当 e 能被 g(x) 整除时才会漏检。“漏检示例”把 e 设为 g(x) 本身，长度为 ${w + 1}。`,
+  },
+  equivalence: {
+    heading: "等价替换",
+    note: "参数之间的关系。计算示例使用当前的设置和输入（与可视化页面相同）求得。",
+    sameSection: "得到相同 CRC 的替换",
+    left: "原设置",
+    right: "替换",
+    why: "原因",
+    example: "当前设置下的计算示例",
+    match: "一致",
+    prefix: "前缀 P",
+    items: {
+      refin: {
+        title: "输入反转",
+        left: "refin = true",
+        right: "改为 refin = false，并预先把输入每个字节的比特顺序反转",
+        why: "refin 表示每个字节从 LSB 开始输入。先把字节内的顺序反转再从 MSB 开始输入，进入寄存器的顺序相同。",
+      },
+      refout: {
+        title: "输出反转",
+        left: "refout = true",
+        right: "改为 refout = false，对得到的 CRC 再异或一次 xorout，反转比特顺序，再异或 xorout",
+        why: "refout 是在最终异或之前反转寄存器。先去掉 xorout，反转后再加上，结果相同。",
+      },
+      rightShift: {
+        title: "右移实现",
+        left: "refin = refout = true",
+        right: "不做反转，用右移的寄存器计算。poly 和 init 使用比特顺序反转后的值，每个字节从 LSB 输入，按最低位分支",
+        why: "输入和输出都反转，相当于把整个寄存器左右翻转来计算。翻转后的寄存器向右移位，poly 也成为翻转后的值。",
+      },
+      initPrefix: {
+        title: "初始值与前缀",
+        left: "init = I",
+        right: "改为 init = 0，在输入前加上 width 比特的前缀 P（P(x)·x^width ≡ I (mod g(x))）",
+        why: "向初值为 0 的寄存器输入 P 后，寄存器的值为 I。init = 0 时，在输入前加多少个 0 都不改变 CRC，因此用非 0 的 init 来检测开头 0 的增减。",
+      },
+      affine: {
+        title: "初始值与最终异或的贡献",
+        left: "init、xorout",
+        right: "用 init = xorout = 0 计算的 CRC，再异或同样长度的全 0 输入的 CRC（原设置）",
+        why: "CRC 的计算只由异或构成，因此对长度相同的输入 a、b，有 crc(a ⊕ b) = crc(a) ⊕ crc(b) ⊕ crc(0…0)。init 与 xorout 的作用是只由输入长度决定的常数。",
+      },
+    },
+    reasons: {
+      notBytes: "输入不是 8 比特的倍数，无法按字节反转",
+      notReflected: "refin 和 refout 不都是 true，不适用",
+      evenPoly: "poly 的最低位为 0，无法除以 x，求不出前缀",
+    },
+    inferSection: "由已知可推出的事",
+    known: "已知",
+    follows: "可推出",
+    rows: [
+      {
+        known: "refin = refout = true",
+        follows: "可以用右移实现、不反转输入输出来计算。该实现的代码中 poly 和 init 写成比特顺序反转后的值",
+      },
+      { known: "refin = refout = false", follows: "可以用左移实现、不反转输入输出来计算。代码中 poly 和 init 原样写出" },
+      { known: "refin ≠ refout", follows: "无论右移还是左移，都需要在某处另外反转比特顺序" },
+      {
+        known: "实现代码是右移（右移 1 比特，按最低位分支）",
+        follows: "若没有另外反转输入输出，则 refin = refout = true。把代码中的 poly 常数反转比特即得到常规写法的 poly",
+      },
+      {
+        known: "实现代码是左移（左移 1 比特，按最高位分支）",
+        follows: "若没有另外反转输入输出，则 refin = refout = false。代码中的 poly 常数就是常规写法",
+      },
+      {
+        known: "代码中 poly 常数的最低位为 0",
+        follows: "常规写法的 poly 最低位一定是 1（生成多项式的常数项），所以这个常数是反转后的值，实现是右移",
+      },
+    ],
+    current: "当前设置下",
+    direction: {
+      right: "可以用右移实现、不反转输入输出来计算",
+      left: "可以用左移实现、不反转输入输出来计算",
+      mixed: "无论右移还是左移，都需要另外反转比特顺序",
+    },
+    codeConstants: (poly: string, init: string) => `实现代码中写作 poly = ${poly}、init = ${init}`,
+    ambiguous: "这个 poly 反转比特后的值最低位也是 1，仅凭常数无法判断是常规写法还是反转后的值",
+    settings: "当前设置",
+    openVisualizer: "在可视化页面修改设置",
   },
   listSeparator: "、",
 };

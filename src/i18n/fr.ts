@@ -2,7 +2,14 @@ import type { Messages } from "./ja";
 
 /** フランス語の画面の文。 */
 export const fr: Messages = {
-  pages: { visualizer: "Visualisation", names: "Nomenclature", narrow: "Affiner", cyclic: "Cyclique", redundancy: "Redondance" },
+  pages: {
+    visualizer: "Visualisation",
+    names: "Nomenclature",
+    narrow: "Affiner",
+    cyclic: "Cyclique",
+    redundancy: "Redondance",
+    equivalence: "Équivalences",
+  },
   workbench: { sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)", language: "Langue" },
   settings: {
     heading: "Paramètres",
@@ -223,6 +230,101 @@ export const fr: Messages = {
     missedExample: "Exemple manqué",
     guarantee: (w: number) =>
       `Toute erreur d’1 bit et toute erreur de longueur ${w} ou moins est détectée. Une erreur n’est manquée que si e est divisible par g(x). L’exemple manqué prend e égal à g(x), de longueur ${w + 1}.`,
+  },
+  equivalence: {
+    heading: "Équivalences",
+    note: "Comment les paramètres sont liés entre eux. Les exemples sont calculés avec les réglages et l’entrée actuels (les mêmes que sur la page de visualisation).",
+    sameSection: "Substitutions qui donnent le même CRC",
+    left: "Réglage d’origine",
+    right: "Substitution",
+    why: "Pourquoi",
+    example: "Exemple avec les réglages actuels",
+    match: "identique",
+    prefix: "préfixe P",
+    items: {
+      refin: {
+        title: "Entrée reflétée",
+        left: "refin = true",
+        right: "refin = false, en inversant d’abord l’ordre des bits de chaque octet d’entrée",
+        why: "refin signifie que chaque octet entre en commençant par le LSB. Inverser d’abord l’ordre dans chaque octet puis commencer par le MSB fait entrer les bits dans le registre dans le même ordre.",
+      },
+      refout: {
+        title: "Sortie reflétée",
+        left: "refout = true",
+        right:
+          "refout = false ; puis refaire un XOR du CRC avec xorout, inverser l’ordre de ses bits et refaire un XOR avec xorout",
+        why: "refout inverse le registre avant le XOR final. Retirer xorout, inverser puis réappliquer xorout donne le même résultat.",
+      },
+      rightShift: {
+        title: "Implémentation à décalage à droite",
+        left: "refin = refout = true",
+        right:
+          "Sans réflexion ; un registre qui décale à droite, avec poly et init inversés, chaque octet entrant par le LSB et le choix se faisant sur le bit de poids faible",
+        why: "Refléter l’entrée et la sortie revient à calculer avec tout le registre en miroir. Un registre en miroir décale à droite, et son poly est lui aussi en miroir.",
+      },
+      initPrefix: {
+        title: "Valeur initiale comme préfixe",
+        left: "init = I",
+        right: "init = 0, en ajoutant avant l’entrée un préfixe P de width bits (P(x)·x^width ≡ I (mod g(x)))",
+        why: "Faire entrer P dans un registre parti de 0 laisse la valeur I. Avec init = 0, ajouter des 0 devant l’entrée ne change pas le CRC ; un init non nul permet de détecter des 0 initiaux ajoutés ou perdus.",
+      },
+      affine: {
+        title: "Ce qu’apportent init et xorout",
+        left: "init, xorout",
+        right:
+          "Le CRC avec init = xorout = 0, combiné par XOR avec le CRC (réglage d’origine) d’une entrée de 0 de même longueur",
+        why: "Le CRC n’est fait que de XOR ; pour des entrées a et b de même longueur, crc(a ⊕ b) = crc(a) ⊕ crc(b) ⊕ crc(0…0). L’effet d’init et de xorout est une constante qui ne dépend que de la longueur.",
+      },
+    },
+    reasons: {
+      notBytes: "L’entrée n’est pas un multiple de 8 bits, on ne peut pas l’inverser octet par octet",
+      notReflected: "Ne s’applique pas car refin et refout ne valent pas tous deux true",
+      evenPoly: "Le bit de poids faible de poly vaut 0, on ne peut pas diviser par x et il n’existe pas de préfixe",
+    },
+    inferSection: "Ce que l’on déduit de ce que l’on sait",
+    known: "Ce que l’on sait",
+    follows: "Ce que l’on en déduit",
+    rows: [
+      {
+        known: "refin = refout = true",
+        follows:
+          "Une implémentation à décalage à droite le calcule sans refléter l’entrée ni la sortie. Son code écrit poly et init inversés",
+      },
+      {
+        known: "refin = refout = false",
+        follows:
+          "Une implémentation à décalage à gauche le calcule sans refléter l’entrée ni la sortie. Son code écrit poly et init tels quels",
+      },
+      {
+        known: "refin ≠ refout",
+        follows: "Qu’elle décale à droite ou à gauche, l’implémentation doit inverser les bits séparément quelque part",
+      },
+      {
+        known: "Le code décale à droite (1 bit, choix sur le bit de poids faible)",
+        follows:
+          "S’il ne reflète pas l’entrée ou la sortie à part, refin = refout = true. Inverser les bits de la constante poly donne le poly normal",
+      },
+      {
+        known: "Le code décale à gauche (1 bit, choix sur le bit de poids fort)",
+        follows: "S’il ne reflète pas l’entrée ou la sortie à part, refin = refout = false. La constante poly est le poly normal",
+      },
+      {
+        known: "Le bit de poids faible de la constante poly du code vaut 0",
+        follows:
+          "Un poly normal a toujours son bit de poids faible à 1 (le terme constant du générateur) ; cette constante est donc inversée et le code décale à droite",
+      },
+    ],
+    current: "Avec les réglages actuels",
+    direction: {
+      right: "Une implémentation à décalage à droite le calcule sans refléter l’entrée ni la sortie",
+      left: "Une implémentation à décalage à gauche le calcule sans refléter l’entrée ni la sortie",
+      mixed: "Qu’elle décale à droite ou à gauche, l’implémentation doit inverser les bits séparément",
+    },
+    codeConstants: (poly: string, init: string) => `Le code de l’implémentation écrit poly = ${poly} et init = ${init}`,
+    ambiguous:
+      "La forme inversée de ce poly a aussi son bit de poids faible à 1 ; la constante seule ne dit pas si elle est normale ou inversée",
+    settings: "Réglages actuels",
+    openVisualizer: "Modifier les réglages sur la page de visualisation",
   },
   listSeparator: ", ",
 };

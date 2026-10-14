@@ -10,6 +10,7 @@ export type Route =
   | Readonly<{ page: "visualizer" }>
   | Readonly<{ page: "names"; param?: ParamName }>
   | Readonly<{ page: "narrow"; path: NarrowPath }>
+  | Readonly<{ page: "equivalence" }>
   | Readonly<{ page: GeneratorPage; generator: Generator }>;
 
 /** 一覧から生成多項式を選んで見るページ。 */
@@ -35,6 +36,7 @@ const isParam = (name: string | undefined): name is ParamName => PARAM_NAMES.inc
 /** フラグメント hash（"#names/poly" など）からページを決める。 */
 export function parseRoute(hash: string): Route {
   const [page, ...rest] = hash.replace(/^#/, "").split("/");
+  if (page === "equivalence") return { page: "equivalence" };
   if (page === "narrow") return { page: "narrow", path: parseNarrowPath(rest) };
   if (isGeneratorPage(page)) return { page, generator: parseGenerator(rest) ?? DEFAULT_GENERATOR };
   if (page !== "names") return { page: "visualizer" };

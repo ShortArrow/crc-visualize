@@ -16,6 +16,7 @@ import { logEntries } from "./ui/log";
 import { NamesPage, NamesToc } from "./ui/NamesPage";
 import { CyclicPage } from "./ui/CyclicPage";
 import { RedundancyPage } from "./ui/RedundancyPage";
+import { EquivalencePage, EquivalenceSidebar } from "./ui/EquivalencePage";
 import { GeneratorSidebar, generatorStatus } from "./ui/GeneratorSidebar";
 import { NarrowPage, NarrowSidebar } from "./ui/NarrowPage";
 import { ParamHelp } from "./ui/ParamHelp";
@@ -127,6 +128,12 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     return frame(<GeneratorSidebar page={page} generator={generator} />)(
       page === "cyclic" ? <CyclicPage key={key} generator={generator} /> : <RedundancyPage key={key} generator={generator} />,
       <span>{generatorStatus(generator)}</span>,
+    );
+  }
+  if (route.page === "equivalence") {
+    return frame(<EquivalenceSidebar config={config} />)(
+      <EquivalencePage config={config} />,
+      <span>{config.ok ? (preset?.name ?? "custom") : m.settings.invalidStatus}</span>,
     );
   }
   if (!config.ok) {
