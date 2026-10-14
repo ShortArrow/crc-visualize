@@ -1,5 +1,4 @@
-import { FoldHorizontal, UnfoldHorizontal } from "lucide-react";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { parseConfig, type ConfigForm } from "./domain/parse";
 import { findPreset, TUTORIAL } from "./domain/presets";
 import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "./domain/trace";
@@ -8,17 +7,24 @@ import { CodeView } from "./ui/CodeView";
 import { ConfigPanel, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { LfsrView } from "./ui/LfsrView";
-import { NamesPage } from "./ui/NamesPage";
+import { logEntries } from "./ui/log";
+import { NamesPage, NamesToc } from "./ui/NamesPage";
 import { ParamHelp } from "./ui/ParamHelp";
 import type { ParamFocus } from "./ui/paramFocus";
 import type { FieldName } from "./ui/paramInfo";
-import { parseRoute, namesHash, type Route } from "./ui/route";
+import { parseRoute, type Route } from "./ui/route";
+import { Splitter } from "./ui/Splitter";
 import { StepLog } from "./ui/StepLog";
+import { Workbench } from "./ui/Workbench";
+import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
 import { initialSettings, persistSettings, type Settings } from "./settings";
 
 const CHECK_BITS = bitsFromBytes([...new TextEncoder().encode("123456789")]);
-const DEFAULT_SETTINGS: Settings = { form: formFromPreset(TUTORIAL), speedMode: "auto", rate: 1, loop: false, wide: false };
+const DEFAULT_SETTINGS: Settings = { form: formFromPreset(TUTORIAL), speedMode: "auto", rate: 1, loop: false };
 const sameBits = (a: readonly Bit[], b: readonly Bit[]) => a.length === b.length && a.every((x, i) => x === b[i]);
+
+/** エディタ領域とステータスバーの中身を受け取り、画面の枠に収める。 */
+type Frame = (editor: ReactNode, status: ReactNode) => ReactNode;
 
 export function App() {
   const [restored] = useState(() => initialSettings(DEFAULT_SETTINGS));
@@ -26,8 +32,8 @@ export function App() {
   const [speedMode, setSpeedMode] = useState<SpeedMode>(restored.speedMode);
   const [rate, setRate] = useState(restored.rate);
   const [loop, setLoop] = useState(restored.loop);
-  const [wide, setWide] = useState(restored.wide);
-  useEffect(() => persistSettings({ form, speedMode, rate, loop, wide }), [form, speedMode, rate, loop, wide]);
+  useEffect(() => persistSettings({ form, speedMode, rate, loop }), [form, speedMode, rate, loop]);
+  const [layout, setLayout] = useLayout();
   const [focused, setFocused] = useState<ParamName | undefined>(undefined);
   const focus: ParamFocus = { focused, onFocus: setFocused };
   const [hoveredField, setHoveredField] = useState<FieldName | undefined>(undefined);
@@ -35,69 +41,70 @@ export function App() {
   const preset = config.ok ? findPreset(config.params) : undefined;
   const route = useRoute();
 
-  return (
-    <main className={wide ? "wide" : ""}>
-      <header>
-        <div className="title">
-          <h1>CRC 可視化</h1>
-          <nav className="pages">
-            <a href="#" className={route.page === "visualizer" ? "current" : ""}>
-              可視化
-            </a>
-            <a href={namesHash()} className={route.page === "names" ? "current" : ""}>
-              名前の規則
-            </a>
-          </nav>
-          <button
-            type="button"
-            className="width-toggle"
-            title={wide ? "横幅を制限する" : "横幅いっぱいに広げる"}
-            aria-pressed={wide}
-            onClick={() => setWide(!wide)}
-          >
-            {wide ? <FoldHorizontal size={18} /> : <UnfoldHorizontal size={18} />}
-          </button>
-        </div>
-        <p>
-          {route.page === "names"
-            ? "プリセットの名前の付け方と、パラメータの呼び名の違いを示します。"
-            : "LFSR の 1 クロックと、ビット単位 CRC 実装の 1 行を同期させて表示します。"}
-        </p>
-      </header>
-      {route.page === "names" ? (
-        <NamesPage target={route.param} />
-      ) : (
-        <>
-          <ConfigPanel
-            form={form}
-            presetName={preset?.name}
-            errors={config.ok ? {} : config.errors}
-            onChange={setForm}
-            focus={focus}
-            onFieldHover={setHoveredField}
-          />
-          <ParamHelp topic={focused ?? hoveredField} params={config.ok ? config.params : undefined} />
-          {config.ok ? (
-            <Visualizer
-              key={JSON.stringify([config.params, config.bits])}
-              params={config.params}
-              bits={config.bits}
-              check={preset && sameBits(config.bits, CHECK_BITS) ? preset.check : undefined}
-              speedMode={speedMode}
-              rate={rate}
-              loop={loop}
-              focus={focus}
-              onSpeedMode={setSpeedMode}
-              onRate={setRate}
-              onLoop={setLoop}
-            />
-          ) : (
-            <p className="invalid-config">設定に誤りがあります。赤い項目を直してください。</p>
-          )}
-        </>
-      )}
-    </main>
+  const settingsSidebar = (
+    <>
+      <h2>設定</h2>
+      <ConfigPanel
+        form={form}
+        presetName={preset?.name}
+        errors={config.ok ? {} : config.errors}
+        onChange={setForm}
+        focus={focus}
+        onFieldHover={setHoveredField}
+      />
+      <ParamHelp topic={focused ?? hoveredField} params={config.ok ? config.params : undefined} />
+    </>
   );
+  const frame =
+    (sidebar: ReactNode): Frame =>
+    (editor, status) => (
+      <Workbench route={route} layout={layout} onLayout={setLayout} sidebar={sidebar} editor={editor} status={status} />
+    );
+
+  if (route.page === "names") {
+    return frame(<NamesToc />)(<NamesPage target={route.param} />, <span>名前の規則</span>);
+  }
+  if (!config.ok) {
+    return frame(settingsSidebar)(
+      <p className="invalid-config">設定に誤りがあります。赤い項目を直してください。</p>,
+      <span>設定に誤りがあります</span>,
+    );
+  }
+  return (
+    <Visualizer
+      key={JSON.stringify([config.params, config.bits])}
+      params={config.params}
+      bits={config.bits}
+      presetName={preset?.name ?? "custom"}
+      check={preset && sameBits(config.bits, CHECK_BITS) ? preset.check : undefined}
+      speedMode={speedMode}
+      rate={rate}
+      loop={loop}
+      focus={focus}
+      layout={layout}
+      frame={frame(settingsSidebar)}
+      onSpeedMode={setSpeedMode}
+      onRate={setRate}
+      onLoop={setLoop}
+      onLayout={setLayout}
+    />
+  );
+}
+
+/** 画面割り。localStorage から復元して今の画面に収め、変えるたびに保存する。Ctrl+B（⌘+B）でサイドバーを開閉する。 */
+function useLayout(): [PaneLayout, (layout: PaneLayout) => void] {
+  const [layout, setLayout] = useState(() => fitLayout(loadLayout(), innerWidth));
+  useEffect(() => saveLayout(layout), [layout]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "b") return;
+      e.preventDefault();
+      setLayout((l) => ({ ...l, sidebarOpen: !l.sidebarOpen }));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  return [layout, setLayout];
 }
 
 /** URL のフラグメントが指すページ。フラグメントが変わるたびに読み直す。 */
@@ -114,14 +121,18 @@ function useRoute(): Route {
 type VisualizerProps = Readonly<{
   params: CrcParams;
   bits: Bit[];
+  presetName: string;
   check: number | undefined;
   speedMode: SpeedMode;
   rate: number;
   loop: boolean;
   focus: ParamFocus;
+  layout: PaneLayout;
+  frame: Frame;
   onSpeedMode: (mode: SpeedMode) => void;
   onRate: (rate: number) => void;
   onLoop: (loop: boolean) => void;
+  onLayout: (layout: PaneLayout) => void;
 }>;
 
 const isEditable = (target: EventTarget | null) =>
@@ -137,7 +148,11 @@ const KEY_MSG: Record<string, PlayerMsg> = {
 
 /** 1 つの設定に対するステップ列と再生状態。設定が変わると key で作り直され、先頭・停止に戻る。 */
 function Visualizer(props: VisualizerProps) {
-  const { params, bits, check, speedMode, rate, loop, focus, onSpeedMode, onRate, onLoop } = props;
+  const { params, bits, presetName, check, speedMode, rate, loop, focus, layout, frame, onSpeedMode, onRate, onLoop, onLayout } =
+    props;
+  const split = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLElement>(null);
+  const ratioIn = (el: HTMLElement | null, f: (rect: DOMRect) => number) => (el ? f(el.getBoundingClientRect()) : 0.5);
   const steps = useMemo(() => trace(params, bits), [params, bits]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const [player, setPlayer] = useState(initialPlayer);
@@ -165,29 +180,10 @@ function Visualizer(props: VisualizerProps) {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  return (
+  const [latest] = logEntries(steps, player.index, 1);
+
+  return frame(
     <div className="visualizer" style={{ "--anim-ms": `${animMs}ms` } as CSSProperties}>
-      <section className="pane hardware">
-        <h2>
-          ハードウェア（LFSR）
-          <span className="legend">
-            ⊕ = XOR（2 入力が異なれば 1）
-            <span className="swatch hot">赤 = 値 1</span>
-            <span className="swatch zero">白 = 値 0</span>
-            <span className="swatch warn">黄 = 計算中</span>
-            <span className="swatch ok">緑 = CRC</span>
-            <span className="swatch param">水色 = 注目中のパラメータ</span>
-          </span>
-        </h2>
-        <LfsrView
-          params={params}
-          step={step}
-          next={steps[player.index + 1]}
-          stepIndex={player.index}
-          animMs={animMs}
-          focused={focus.focused}
-        />
-      </section>
       <Controls
         player={player}
         length={steps.length}
@@ -199,16 +195,68 @@ function Visualizer(props: VisualizerProps) {
         onRate={onRate}
         onLoop={onLoop}
       />
-      <section className="pane software">
-        <div>
-          <h2>ソフトウェア</h2>
-          <CodeView params={params} step={step} focus={focus} />
-        </div>
-        <div>
-          <h2>経過</h2>
-          <StepLog steps={steps} current={player.index} input={bits} check={check} />
-        </div>
-      </section>
-    </div>
+      <div
+        className="viz-split"
+        ref={split}
+        style={{ gridTemplateRows: `minmax(0, ${1 - layout.panelRatio}fr) auto minmax(0, ${layout.panelRatio}fr)` }}
+      >
+        <section className="hardware">
+          <h2>
+            ハードウェア（LFSR）
+            <span className="legend">
+              ⊕ = XOR（2 入力が異なれば 1）
+              <span className="swatch hot">赤 = 値 1</span>
+              <span className="swatch zero">白 = 値 0</span>
+              <span className="swatch warn">黄 = 計算中</span>
+              <span className="swatch ok">緑 = CRC</span>
+              <span className="swatch param">水色 = 注目中のパラメータ</span>
+            </span>
+          </h2>
+          <LfsrView
+            params={params}
+            step={step}
+            next={steps[player.index + 1]}
+            stepIndex={player.index}
+            animMs={animMs}
+            focused={focus.focused}
+          />
+        </section>
+        <Splitter
+          axis="y"
+          name="panel"
+          onMove={(y) =>
+            onLayout(fitLayout({ ...layout, panelRatio: ratioIn(split.current, (r) => (r.bottom - y) / r.height) }, innerWidth))
+          }
+        />
+        <section
+          className="panel"
+          ref={panel}
+          style={{ gridTemplateColumns: `minmax(0, ${layout.codeRatio}fr) auto minmax(0, ${1 - layout.codeRatio}fr)` }}
+        >
+          <div className="software">
+            <h2>ソフトウェア</h2>
+            <CodeView params={params} step={step} focus={focus} />
+          </div>
+          <Splitter
+            axis="x"
+            name="code"
+            onMove={(x) =>
+              onLayout(fitLayout({ ...layout, codeRatio: ratioIn(panel.current, (r) => (x - r.left) / r.width) }, innerWidth))
+            }
+          />
+          <div className="log-pane">
+            <h2>経過</h2>
+            <StepLog steps={steps} current={player.index} input={bits} check={check} />
+          </div>
+        </section>
+      </div>
+    </div>,
+    <>
+      <span className="status-preset">{presetName}</span>
+      <span className="status-step">{latest!.title}</span>
+      <span className="status-crc">
+        crc = {latest!.bin} {latest!.hex}
+      </span>
+    </>,
   );
 }

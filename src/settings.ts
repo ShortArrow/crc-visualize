@@ -3,11 +3,8 @@ import type { InputMode } from "./domain/presets";
 import type { SpeedMode } from "./playback/playback";
 import { RATES } from "./ui/Controls";
 
-/**
- * 次に開いたときに復元する設定。再生位置は含めない。
- * wide は内容を画面の横幅いっぱいに使うか。見る人の画面に合わせる設定なので URL のクエリには載せない。
- */
-export type Settings = Readonly<{ form: ConfigForm; speedMode: SpeedMode; rate: number; loop: boolean; wide: boolean }>;
+/** 次に開いたときに復元する設定。再生位置は含めない。 */
+export type Settings = Readonly<{ form: ConfigForm; speedMode: SpeedMode; rate: number; loop: boolean }>;
 
 /** localStorage のキー。保存形式を変えるときは版を上げる。 */
 export const SETTINGS_KEY = "crc-visualize:settings:v1";
@@ -58,7 +55,6 @@ function validate(v: unknown, defaults: Settings): Settings {
     speedMode: pick(s.speedMode, oneOf(SPEED_MODES), defaults.speedMode),
     rate: pick(s.rate, oneOf<number>(RATES), defaults.rate),
     loop: pick(s.loop, isBoolean, defaults.loop),
-    wide: pick(s.wide, isBoolean, defaults.wide),
   };
 }
 
@@ -92,7 +88,6 @@ export function settingsFromQuery(search: string, base: Settings): Settings {
       speedMode: has("speed") ? get("speed") : base.speedMode,
       rate: has("rate") ? Number(get("rate")) : base.rate,
       loop: has("loop") ? unflag(get("loop")) : base.loop,
-      wide: base.wide,
     },
     base,
   );

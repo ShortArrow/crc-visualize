@@ -24,7 +24,7 @@ npm run build      # dist/ に静的ファイルを出力
 |---|---|
 | `src/domain` | CRC のステップ列生成 (`trace`)、フォームの検証 (`parseConfig`)、プリセットとその名前の一族・別名 (`naming`) |
 | `src/playback` | 再生状態の遷移と速度ランプ |
-| `src/ui` | 擬似コードのハイライト、LFSR 図の配置、ページの切替 (`route`)、React コンポーネント（可視化と名前の規則のページ） |
+| `src/ui` | 擬似コードのハイライト、LFSR 図の配置、ページの切替 (`route`)、VS Code 風の画面の枠 (`Workbench`) と画面割りの保存 (`panes`)、React コンポーネント（可視化と名前の規則のページ） |
 | `src/settings.ts` | 設定の保存と復元（localStorage と URL のクエリ） |
 | `src/testing` | 単体テストで共有する入力とステップの用意、テストの書き方の確認 (`setup.ts`) |
 | `e2e` | 機能ごとの E2E シナリオ。1 テスト 1 シナリオで、`given` / `when` / `then` の手順に分けて書く |

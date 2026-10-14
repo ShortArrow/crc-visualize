@@ -10,13 +10,13 @@ test.describe("ページの切替", () => {
       await v.settings.preset().selectOption("CRC-16/KERMIT");
       return v;
     });
-    await when("名前の規則に切り替える", () => page.locator(".pages a", { hasText: "名前の規則" }).click());
+    await when("アクティビティバーで名前の規則に切り替える", () => v.workbench.pageLink("名前の規則").click());
     await then("URL のフラグメントが #names になり、名前の規則のページが出る", async () => {
       expect(new URL(page.url()).hash).toBe("#names");
       await expect(page.locator(".names-page")).toBeVisible();
       await expect(page.locator(".lfsr:not(.param-map)")).toHaveCount(0);
     });
-    await when("可視化に切り替える", () => page.locator(".pages a", { hasText: "可視化" }).click());
+    await when("アクティビティバーで可視化に切り替える", () => v.workbench.pageLink("可視化").click());
     await then("CRC-16/KERMIT のまま可視化のページが出る", async () => {
       await expect(v.settings.preset()).toHaveValue("CRC-16/KERMIT");
     });
@@ -52,9 +52,7 @@ test.describe("名前の規則", () => {
       await expect(n.aliasRow("CRC-32C").locator("td")).toHaveText("CRC-32/ISCSI");
     });
     await then("CRC-16-CCITT は KERMIT・IBM-3740・XMODEM のどれかとする", async () => {
-      await expect(n.aliasRow("CRC-16-CCITT").locator("td")).toHaveText(
-        "CRC-16/KERMIT、CRC-16/IBM-3740、CRC-16/XMODEM のどれか",
-      );
+      await expect(n.aliasRow("CRC-16-CCITT").locator("td")).toHaveText("CRC-16/KERMIT、CRC-16/IBM-3740、CRC-16/XMODEM のどれか");
     });
   });
 });

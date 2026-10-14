@@ -128,7 +128,7 @@ test.describe("設定の検証と表記", () => {
   test("画面の文に独自の略語や、日本語の直後の半角括弧を使わない", async ({ page }) => {
     const v = await given("既定の設定で開いている", () => Visualizer.open(page));
     const visibleText = () =>
-      page.locator("main").evaluate((main) => {
+      page.locator(".workbench").evaluate((main) => {
         const clone = main.cloneNode(true) as HTMLElement;
         clone.querySelectorAll("pre.code, select").forEach((el) => el.remove());
         const titles = [...main.querySelectorAll("[title]")].map((el) => el.getAttribute("title")).join(" ");
