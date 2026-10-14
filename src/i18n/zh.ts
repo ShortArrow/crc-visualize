@@ -2,7 +2,15 @@ import type { Messages } from "./ja";
 
 /** 中国語（簡体字）の画面の文。 */
 export const zh: Messages = {
-  pages: { visualizer: "可视化", names: "命名规则", narrow: "筛选", cyclic: "循环", redundancy: "冗余", equivalence: "等价替换" },
+  pages: {
+    visualizer: "可视化",
+    names: "命名规则",
+    narrow: "筛选",
+    cyclic: "循环",
+    redundancy: "冗余",
+    check: "校验",
+    equivalence: "等价替换",
+  },
   workbench: { sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）", language: "显示语言" },
   settings: {
     heading: "设置",
@@ -293,6 +301,43 @@ export const zh: Messages = {
     },
     codeConstants: (poly: string, init: string) => `实现代码中写作 poly = ${poly}、init = ${init}`,
     ambiguous: "这个 poly 反转比特后的值最低位也是 1，仅凭常数无法判断是常规写法还是反转后的值",
+  },
+  check: {
+    heading: "为什么叫“校验”",
+    note: "接收方实际上如何校验。数值使用当前的设置和输入（与可视化页面相同）求得。",
+    frameSection: "发送的比特串",
+    frameNote:
+      "在消息后附上其 CRC 发送。refin 和 refout 为 true 的 CRC 从低位字节开始附加。选择比特即可翻转（视为在传输中损坏）。",
+    message: "消息",
+    crc: "CRC",
+    reset: "还原",
+    methodsSection: "校验方法",
+    recheck: {
+      title: "1. 重新计算后比较",
+      note: "计算接收到的消息的 CRC，与接收到的 CRC 比较。",
+      computed: "消息的 CRC",
+      received: "接收到的 CRC",
+    },
+    whole: {
+      title: "2. 整个码字一起计算",
+      note: "用同样的设置计算整个接收比特串。没有错误时，结果是只由设置决定、与消息无关的常数（余式）。xorout 为 0 且不反转时余式为 0。因为与常数比较，电路无需区分消息和 CRC 就能校验。",
+      value: "整个比特串的 CRC",
+      residue: "余式",
+      notApplicable: "refin 和 refout 不同，附加的 CRC 与寄存器的排列对不上，结果不是常数",
+    },
+    ok: "无错误",
+    ng: "有错误",
+    sameVerdict: "在都适用时，两种判定总是相同。",
+    checkSection: "校验值",
+    catalogue: "目录中的校验值（check）",
+    computedCheck: "用 123456789 计算的 CRC",
+    checkNote: "校验值不是用来发现错误的，而是确认实现是否正确的标准。用自己的实现计算输入 123456789，得到这个值就说明设置正确。",
+    custom: "不是预设，没有目录中的校验值。",
+    limitsSection: "CRC 校验不了的事",
+    limits: [
+      "CRC 只告诉你有错误，不会纠正。发现错误后需要请求重发等其他机制。",
+      "如果改写消息的一方也重新附上 CRC，就无法识破。防范蓄意篡改应使用哈希或 MAC。",
+    ],
   },
   listSeparator: "、",
 };

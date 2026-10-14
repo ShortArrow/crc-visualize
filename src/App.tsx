@@ -17,6 +17,7 @@ import { NamesPage, NamesToc } from "./ui/NamesPage";
 import { CyclicPage } from "./ui/CyclicPage";
 import { RedundancyPage } from "./ui/RedundancyPage";
 import { EquivalencePage } from "./ui/EquivalencePage";
+import { CheckPage } from "./ui/CheckPage";
 import { CurrentSettingsSidebar } from "./ui/CurrentSettingsSidebar";
 import { GeneratorSidebar, generatorStatus } from "./ui/GeneratorSidebar";
 import { NarrowPage, NarrowSidebar } from "./ui/NarrowPage";
@@ -131,9 +132,13 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       <span>{generatorStatus(generator)}</span>,
     );
   }
-  if (route.page === "equivalence") {
+  if (route.page === "equivalence" || route.page === "check") {
     return frame(<CurrentSettingsSidebar config={config} />)(
-      <EquivalencePage config={config} />,
+      route.page === "check" ? (
+        <CheckPage key={JSON.stringify(config)} config={config} preset={preset} />
+      ) : (
+        <EquivalencePage config={config} />
+      ),
       <span>{config.ok ? (preset?.name ?? "custom") : m.settings.invalidStatus}</span>,
     );
   }

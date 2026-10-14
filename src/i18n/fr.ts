@@ -8,6 +8,7 @@ export const fr: Messages = {
     narrow: "Affiner",
     cyclic: "Cyclique",
     redundancy: "Redondance",
+    check: "Contrôle",
     equivalence: "Équivalences",
   },
   workbench: { sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)", language: "Langue" },
@@ -327,6 +328,45 @@ export const fr: Messages = {
     codeConstants: (poly: string, init: string) => `Le code de l’implémentation écrit poly = ${poly} et init = ${init}`,
     ambiguous:
       "La forme inversée de ce poly a aussi son bit de poids faible à 1 ; la constante seule ne dit pas si elle est normale ou inversée",
+  },
+  check: {
+    heading: "Pourquoi un « contrôle » ?",
+    note: "Comment le récepteur vérifie réellement les données. Les valeurs sont calculées avec les réglages et l’entrée actuels (les mêmes que sur la page de visualisation).",
+    frameSection: "Suite envoyée",
+    frameNote:
+      "Le message est envoyé suivi de son CRC. Les CRC avec refin et refout à true sont ajoutés octet de poids faible en premier. Sélectionnez un bit pour l’inverser (comme s’il avait été abîmé en route).",
+    message: "message",
+    crc: "CRC",
+    reset: "Annuler",
+    methodsSection: "Façons de vérifier",
+    recheck: {
+      title: "1. Recalculer et comparer",
+      note: "Calculer le CRC du message reçu et le comparer au CRC reçu.",
+      computed: "CRC du message",
+      received: "CRC reçu",
+    },
+    whole: {
+      title: "2. Faire passer le mot de code entier",
+      note: "Calculer le CRC de toute la suite reçue avec les mêmes réglages. Sans erreur, c’est une constante qui ne dépend que des réglages, pas du message (le résidu). Avec xorout à 0 et sans réflexion, le résidu vaut 0. Comme on compare à une constante, un circuit peut vérifier sans distinguer message et CRC.",
+      value: "CRC de toute la suite",
+      residue: "Résidu",
+      notApplicable:
+        "refin et refout diffèrent ; le CRC ajouté ne s’aligne pas sur le registre et le résultat n’est pas constant",
+    },
+    ok: "Aucune erreur",
+    ng: "Erreur",
+    sameVerdict: "Quand les deux s’appliquent, les deux verdicts concordent toujours.",
+    checkSection: "Valeur de contrôle",
+    catalogue: "Valeur de contrôle du catalogue (check)",
+    computedCheck: "CRC calculé sur 123456789",
+    checkNote:
+      "La valeur de contrôle ne sert pas à trouver des erreurs, mais à vérifier une implémentation. Si votre implémentation donne cette valeur pour l’entrée 123456789, les réglages sont bons.",
+    custom: "Ce n’est pas un préréglage ; il n’y a pas de valeur de contrôle du catalogue.",
+    limitsSection: "Ce qu’un CRC ne peut pas contrôler",
+    limits: [
+      "Un CRC signale seulement qu’il y a une erreur ; il ne la corrige pas. Il faut un autre mécanisme, comme demander un renvoi.",
+      "Si celui qui modifie le message recalcule aussi le CRC, la modification passe inaperçue. Contre une altération volontaire, on utilise un hachage ou un MAC.",
+    ],
   },
   listSeparator: ", ",
 };

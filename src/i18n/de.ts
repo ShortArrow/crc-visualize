@@ -8,6 +8,7 @@ export const de: Messages = {
     narrow: "Eingrenzen",
     cyclic: "Zyklisch",
     redundancy: "Redundanz",
+    check: "Prüfung",
     equivalence: "Äquivalenzen",
   },
   workbench: { sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)", language: "Sprache" },
@@ -325,6 +326,45 @@ export const de: Messages = {
     codeConstants: (poly: string, init: string) => `Der Code der Implementierung schreibt poly = ${poly} und init = ${init}`,
     ambiguous:
       "Auch die gespiegelte Form dieses poly hat das niedrigste Bit 1, daher verrät die Konstante allein nicht, ob sie normal oder gespiegelt ist",
+  },
+  check: {
+    heading: "Warum „Prüfung“?",
+    note: "Wie der Empfänger die Daten tatsächlich prüft. Die Werte werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (wie auf der Visualisierungsseite).",
+    frameSection: "Gesendete Bitfolge",
+    frameNote:
+      "Die Nachricht wird gefolgt von ihrem CRC gesendet. CRCs mit refin und refout true werden mit dem niedrigsten Byte zuerst angehängt. Ein Bit auswählen, um es zu kippen (als wäre es unterwegs beschädigt worden).",
+    message: "Nachricht",
+    crc: "CRC",
+    reset: "Zurücksetzen",
+    methodsSection: "Arten der Prüfung",
+    recheck: {
+      title: "1. Neu berechnen und vergleichen",
+      note: "Den CRC der empfangenen Nachricht berechnen und mit dem empfangenen CRC vergleichen.",
+      computed: "CRC der Nachricht",
+      received: "Empfangener CRC",
+    },
+    whole: {
+      title: "2. Das ganze Codewort durchrechnen",
+      note: "Den CRC der ganzen empfangenen Folge mit denselben Einstellungen berechnen. Ohne Fehler ergibt sich eine Konstante, die nur von den Einstellungen abhängt, nicht von der Nachricht (der Rest). Mit xorout 0 und ohne Spiegelung ist der Rest 0. Da mit einer Konstanten verglichen wird, kann Hardware prüfen, ohne Nachricht und CRC zu unterscheiden.",
+      value: "CRC der ganzen Folge",
+      residue: "Rest",
+      notApplicable:
+        "refin und refout unterscheiden sich, daher passt der angehängte CRC nicht zum Register und das Ergebnis ist nicht konstant",
+    },
+    ok: "Kein Fehler",
+    ng: "Fehler",
+    sameVerdict: "Wo beide gelten, stimmen die beiden Ergebnisse immer überein.",
+    checkSection: "Prüfwert",
+    catalogue: "Prüfwert aus dem Katalog (check)",
+    computedCheck: "Aus 123456789 berechneter CRC",
+    checkNote:
+      "Der Prüfwert dient nicht dazu, Fehler zu finden, sondern eine Implementierung zu überprüfen. Liefert die eigene Implementierung diesen Wert für die Eingabe 123456789, stimmen die Einstellungen.",
+    custom: "Keine Voreinstellung, daher gibt es keinen Prüfwert aus dem Katalog.",
+    limitsSection: "Was ein CRC nicht prüfen kann",
+    limits: [
+      "Ein CRC meldet nur, dass ein Fehler vorliegt; er behebt ihn nicht. Dafür braucht es einen anderen Mechanismus, etwa eine erneute Übertragung.",
+      "Wer die Nachricht ändert und den CRC neu berechnet, bleibt unbemerkt. Gegen absichtliche Manipulation verwendet man einen Hash oder MAC.",
+    ],
   },
   listSeparator: ", ",
 };
