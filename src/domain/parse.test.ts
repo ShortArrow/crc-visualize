@@ -39,15 +39,15 @@ describe("parseConfig", () => {
   });
 
   it("Given width 3, When poly を 0・0x8（2^3）・0x7 にする, Then 0 と 2^width 以上だけが不正", () => {
-    expect(errorsOf(form({ poly: "0" }))).toHaveProperty("poly");
-    expect(errorsOf(form({ poly: "0x8" }))).toHaveProperty("poly");
+    expect(errorsOf(form({ poly: "0" })).poly).toEqual({ code: "zero" });
+    expect(errorsOf(form({ poly: "0x8" })).poly).toEqual({ code: "tooWide", width: 3 });
     expect(errorsOf(form({ poly: "0x7" }))).not.toHaveProperty("poly");
   });
 
   it("Given width 3, When init を 2^width 以上、xorout を 16 進でない文字にする, Then 両方とも不正", () => {
     expect(errorsOf(form({ init: "0x8", xorout: "0xg" }))).toMatchObject({
-      init: expect.any(String),
-      xorout: expect.any(String),
+      init: { code: "tooWide", width: 3 },
+      xorout: { code: "notHex" },
     });
   });
 
@@ -60,7 +60,7 @@ describe("parseConfig", () => {
   });
 
   it("Given 入力形式 hex, When 桁数を奇数にする, Then 入力は不正", () => {
-    expect(errorsOf(form({ inputMode: "hex", input: "abc" }))).toHaveProperty("input");
+    expect(errorsOf(form({ inputMode: "hex", input: "abc" })).input).toEqual({ code: "oddHex" });
   });
 
   it("Given 入力形式 text, When é を入れる, Then UTF-8 のバイト列になる", () => {
@@ -76,7 +76,7 @@ describe("parseConfig", () => {
 
   it("Given 入力形式 bits, When 256 ビットと 257 ビットを入れる, Then 256 ビットまでが正しい", () => {
     expect(errorsOf(form({ input: "1".repeat(256) }))).not.toHaveProperty("input");
-    expect(errorsOf(form({ input: "1".repeat(257) }))).toHaveProperty("input");
+    expect(errorsOf(form({ input: "1".repeat(257) })).input).toEqual({ code: "tooLong", max: 256 });
   });
 
   it("Given refin あり, When ビット長を 5 と 8 にする, Then 8 の倍数でなければ不正", () => {

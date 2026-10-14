@@ -7,6 +7,11 @@ export class NamesPage {
   /** query（"?poly=0x7" など）と fragment（"#names/poly" など）を付けて開く。 */
   static async open(page: Page, fragment = "#names", query = ""): Promise<NamesPage> {
     await page.goto(`/${query}${fragment}`);
+    return NamesPage.shown(page);
+  }
+
+  /** 開いている名前の規則のページを捉える。 */
+  static async shown(page: Page): Promise<NamesPage> {
     const n = new NamesPage(page);
     await expect(n.root).toBeVisible();
     return n;

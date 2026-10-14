@@ -1,0 +1,175 @@
+import type { Messages } from "./ja";
+
+/** フランス語の画面の文。 */
+export const fr: Messages = {
+  pages: { visualizer: "Visualisation", names: "Nomenclature", narrow: "Affiner" },
+  workbench: { sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)", language: "Langue" },
+  settings: {
+    heading: "Paramètres",
+    invalid: "Les paramètres contiennent des erreurs. Corrigez les champs en rouge.",
+    invalidStatus: "Paramètres invalides",
+  },
+  errors: {
+    widthRange: "Saisissez un entier de 1 à 32",
+    notHex: "Saisissez un nombre hexadécimal",
+    tooWide: (width: number) => `Saisissez une valeur qui tient sur ${width} bits`,
+    zero: "0 n’est pas autorisé",
+    notBits: "Utilisez uniquement 0 et 1",
+    oddHex: "Saisissez deux chiffres par octet",
+    tooLong: (max: number) => `L’entrée est limitée à ${max} bits`,
+    refinBytes: "Avec refin, saisissez des octets entiers (multiples de 8 bits)",
+  },
+  controls: {
+    first: "Début (Home)",
+    prev: "Reculer d’une étape (←)",
+    playPause: "Lecture / pause (Space)",
+    play: "Lecture",
+    pause: "Pause",
+    next: "Avancer d’une étape (→)",
+    last: "Fin (End)",
+    loop: "Boucle (L)",
+    speedMode: "Mode de vitesse",
+    auto: "Automatique (lent au début)",
+    steady: "Constant",
+    rate: "Multiplicateur de vitesse",
+  },
+  visualizer: {
+    hardware: "Matériel (LFSR)",
+    legend: {
+      xor: "⊕ = XOR (1 si les deux entrées diffèrent)",
+      one: "rouge = valeur 1",
+      zero: "blanc = valeur 0",
+      busy: "jaune = calcul en cours",
+      crc: "vert = CRC",
+      param: "cyan = paramètre ciblé",
+    },
+    software: "Logiciel",
+    log: "Déroulement",
+    inputBits: (cursor: number, total: number) => `Bits d’entrée (${cursor}/${total})`,
+  },
+  steps: {
+    init: "Initialisation",
+    reflectIn: "Refléter l’octet d’entrée (refin)",
+    feedback: "Calcul du bit de rétroaction",
+    shift: "Décalage",
+    xor: "XOR avec le polynôme",
+    reflectOut: "Refléter la sortie (refout)",
+    xorOut: "XOR final (xorout)",
+    done: "Terminé",
+  },
+  log: {
+    byteNo: (n: number) => `octet ${n}`,
+    willXor: "feedback = 1, donc XOR avec poly ensuite",
+    noXor: "feedback = 0, donc pas de XOR",
+    inputBit: (n: number) => `bit d’entrée ${n}`,
+    inputPlusCrc: "entrée + CRC",
+    check: (hex: string, match: boolean) => `valeur de contrôle ${hex} : ${match ? "concordante" : "non concordante"}`,
+  },
+  code: {
+    refinOff: "non exécuté car refin vaut false",
+    refoutOff: "non exécuté car refout vaut false",
+    xoroutZero: "aucun changement car xorout vaut 0",
+  },
+  help: {
+    idle: "Survolez un paramètre des réglages ou du code pour afficher son nom et sa description.",
+    aliases: (list: string) => `Autres noms : ${list}`,
+    reflectedPoly: (hex: string) => `Forme reflétée (la valeur écrite dans les implémentations à décalage à droite) : ${hex}`,
+    shiftRight: "refin et refout valent tous deux true : une implémentation à décalage à droite (depuis le LSB) peut le calculer",
+    shiftLeft: "refin et refout valent tous deux false : une implémentation à décalage à gauche (depuis le MSB) peut le calculer",
+    shiftMixed:
+      "refin et refout diffèrent : qu’elle décale à droite ou à gauche, l’implémentation doit inverser les bits séparément à un moment donné",
+  },
+  params: {
+    width: {
+      title: "Largeur",
+      summary: "Le nombre de bits du CRC. Il est égal au nombre de registres et au degré du polynôme générateur.",
+      aliases: ["taille du CRC", "degré du polynôme", "width"],
+    },
+    poly: {
+      title: "Polynôme générateur",
+      summary:
+        "Les coefficients de x^(width-1) à x^0, sans le terme de tête x^width. Écrit ici sous forme normale (non reflétée).",
+      aliases: ["polynôme", "forme normale", "polynomial"],
+    },
+    init: {
+      title: "Valeur initiale",
+      summary: "La valeur chargée dans le registre avant d’y faire entrer le premier bit.",
+      aliases: ["valeur initiale du CRC", "initial value"],
+    },
+    refin: {
+      title: "Entrée reflétée",
+      summary:
+        "Si true, chaque octet d’entrée entre en commençant par le LSB. Cela revient à inverser l’ordre des bits de l’octet puis à commencer par le MSB.",
+      aliases: ["réflexion de l’entrée", "LSB d’abord (si true)", "reflected input"],
+    },
+    refout: {
+      title: "Sortie reflétée",
+      summary: "Si true, l’ordre des bits de tout le registre est inversé avant le XOR final.",
+      aliases: ["réflexion de la sortie", "reflected output"],
+    },
+    xorout: {
+      title: "Valeur du XOR final",
+      summary: "La valeur combinée par XOR avec le CRC à la fin. Avec 0, rien ne change.",
+      aliases: ["XOR de sortie", "final XOR", "XorOut"],
+    },
+  },
+  fields: {
+    preset: {
+      title: "Préréglage",
+      summary:
+        "Une configuration de CRC nommée. La choisir remplit les 6 paramètres et l’entrée 123456789 qui sert à vérifier la valeur de contrôle.",
+    },
+    inputMode: {
+      title: "Format d’entrée",
+      summary:
+        "La façon d’écrire l’entrée : bits est une suite de 0 et de 1, hex des octets en hexadécimal, text une chaîne convertie en octets UTF-8.",
+    },
+    input: {
+      title: "Entrée",
+      summary:
+        "Les données dont on calcule le CRC. Écrites selon le format d’entrée, elles entrent dans le registre bit par bit à partir du premier.",
+    },
+  },
+  names: {
+    toc: "Sommaire",
+    sections: {
+      parts: "Anatomie d’un nom",
+      families: "Familles partageant un poly",
+      aliases: "Table des alias",
+      paramMap: "Alias des paramètres",
+      paramTable: "Table des noms de paramètres",
+    },
+    parts: {
+      head: "contrôle de redondance cyclique",
+      width: "largeur",
+      origin: "la norme, le produit ou l’organisme qui l’a utilisé en premier",
+      note: "Les noms officiels du catalogue reveng ont cette forme ; la largeur et la seconde partie désignent ensemble une configuration.",
+    },
+    families: {
+      note: "Même avec la même largeur et le même poly, un init, refin/refout ou xorout différent donne un autre CRC. Les valeurs qui diffèrent du premier membre sont mises en évidence.",
+      caption: (width: number, poly: string) => `largeur ${width}, poly ${poly}`,
+      name: "Nom officiel",
+    },
+    aliases: {
+      ambiguous: "Noms dont le sens dépend de qui les emploie",
+      oneOf: (names: string) => `l’un de ${names}`,
+      alias: "Alias",
+      name: "Nom officiel",
+    },
+    paramMap: {
+      note: "Survolez un nom pour voir où il agit et ses autres noms ; sélectionnez-le pour aller à sa ligne dans la table ci-dessous.",
+    },
+    paramTable: { param: "Paramètre", title: "Nom", meaning: "Signification", aliases: "Alias" },
+  },
+  narrow: {
+    heading: "Affiner",
+    note: "Choisissez un paramètre pour séparer selon ses valeurs, puis une branche pour réduire les candidats. Quand il n’en reste qu’un, ouvrez-le dans la visualisation.",
+    candidates: (n: number) => `${n} candidats`,
+    splitBy: "Séparer par :",
+    open: "Ouvrir dans la visualisation",
+    fixed: "Valeurs fixées",
+    none: "Aucune pour l’instant",
+    status: (n: number) => `Affiner : ${n} candidats`,
+  },
+  listSeparator: ", ",
+};

@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
-import type { ConfigField, ConfigForm } from "../domain/parse";
+import type { ConfigError, ConfigField, ConfigForm } from "../domain/parse";
 import { PRESETS, type InputMode, type Preset } from "../domain/presets";
 import { presetLabel } from "./presetLabel";
 import type { ParamName } from "../domain/trace";
 import { focusHandlers, type ParamFocus } from "./paramFocus";
-import { FIELD_INFO, type FieldName } from "./paramInfo";
+import { useMessages } from "../i18n/I18n";
+import { errorText } from "../i18n/messages";
+import { FIELD_LABELS, type FieldName } from "./paramInfo";
 
 /** プリセットをフォームの値にする。 */
 export function formFromPreset({ params, input }: Preset): ConfigForm {
@@ -24,7 +26,7 @@ export function formFromPreset({ params, input }: Preset): ConfigForm {
 type Props = Readonly<{
   form: ConfigForm;
   presetName: string | undefined;
-  errors: Partial<Record<ConfigField, string>>;
+  errors: Partial<Record<ConfigField, ConfigError>>;
   onChange: (form: ConfigForm) => void;
   focus: ParamFocus;
   /** パラメータ以外の項目にマウスかフォーカスが乗ったとき、その項目（離れたら undefined）を知らせる。 */
@@ -35,6 +37,7 @@ const CUSTOM = "";
 
 /** CRC パラメータと入力の設定パネル。 */
 export function ConfigPanel({ form, presetName, errors, onChange, focus, onFieldHover }: Props) {
+  const m = useMessages();
   const set = <K extends keyof ConfigForm>(key: K, value: ConfigForm[K]) => onChange({ ...form, [key]: value });
   const paramField = (param: ParamName, control: ReactNode, className = "") => {
     const error = errors[param as ConfigField];
@@ -43,7 +46,7 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus, onField
       <label className={classes} data-param={param} {...focusHandlers(focus, param)}>
         <span className="param-name">{param}</span>
         {control}
-        {error ? <small className="error">{error}</small> : null}
+        {error ? <small className="error">{errorText(m, error)}</small> : null}
       </label>
     );
   };
@@ -61,7 +64,7 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus, onField
   return (
     <form className="config" onSubmit={(e) => e.preventDefault()}>
       <label data-field="preset" {...hover("preset")}>
-        <span>{FIELD_INFO.preset.label}</span>
+        <span>{FIELD_LABELS.preset}</span>
         <select
           value={presetName ?? CUSTOM}
           onChange={(e) => {
@@ -86,7 +89,7 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus, onField
       {check("refout")}
       {text("xorout")}
       <label data-field="inputMode" {...hover("inputMode")}>
-        <span>{FIELD_INFO.inputMode.label}</span>
+        <span>{FIELD_LABELS.inputMode}</span>
         <select value={form.inputMode} onChange={(e) => set("inputMode", e.target.value as InputMode)}>
           <option value="bits">bits</option>
           <option value="hex">hex</option>
@@ -94,9 +97,9 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus, onField
         </select>
       </label>
       <label className={`input-field ${errors.input ? "invalid" : ""}`} data-field="input" {...hover("input")}>
-        <span>{FIELD_INFO.input.label}</span>
+        <span>{FIELD_LABELS.input}</span>
         <input value={form.input} spellCheck={false} onChange={(e) => set("input", e.target.value)} />
-        {errors.input ? <small className="error">{errors.input}</small> : null}
+        {errors.input ? <small className="error">{errorText(m, errors.input)}</small> : null}
       </label>
     </form>
   );

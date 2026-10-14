@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PARAM_NAMES, type ParamName } from "../domain/trace";
 import { lfsrLayout, type Point } from "./layout";
 import { XorGate } from "./LfsrView";
-import { PARAM_INFO } from "./paramInfo";
+import { useMessages } from "../i18n/I18n";
 import { namesHash } from "./route";
 
 const layout = lfsrLayout({ width: 3, poly: 0b011 });
@@ -128,9 +128,10 @@ export function ParamMap() {
   );
 }
 
-/** パラメータ名に添える、日本語名と別名の札。図の下半分にある名前では、はみ出さないよう名前の上に出す。 */
+/** パラメータ名に添える、表示言語での名前と別名の札。図の下半分にある名前では、はみ出さないよう名前の上に出す。 */
 function HoverCard({ param, at }: { param: ParamName; at: Point }) {
-  const info = PARAM_INFO[param];
+  const m = useMessages();
+  const info = m.params[param];
   const above = at.y > layout.viewHeight / 2;
   return (
     <foreignObject
@@ -142,7 +143,7 @@ function HoverCard({ param, at }: { param: ParamName; at: Point }) {
     >
       <div className="card" data-param={param}>
         <strong>{info.title}</strong>
-        <span>{info.aliases.join("、")}</span>
+        <span>{info.aliases.join(m.listSeparator)}</span>
       </div>
     </foreignObject>
   );

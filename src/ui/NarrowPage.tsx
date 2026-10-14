@@ -1,5 +1,6 @@
 import { branches, formatValue, matching, splittingParams, type NarrowPath } from "../domain/narrow";
 import type { Preset } from "../domain/presets";
+import { useMessages } from "../i18n/I18n";
 import { narrowHash } from "./route";
 
 type Props = Readonly<{
@@ -10,10 +11,11 @@ type Props = Readonly<{
 
 /** 値を 1 つずつ固定してプリセットの候補を 1 つに絞る木。path は presets に収めたもの。 */
 export function NarrowPage({ presets, path, onOpen }: Props) {
+  const m = useMessages();
   return (
     <div className="narrow-page">
-      <h2>絞り込み</h2>
-      <p className="note">パラメータを 1 つ選んで値ごとに分け、枝を選んで候補を減らす。1 つに決まったら可視化で開ける。</p>
+      <h2>{m.narrow.heading}</h2>
+      <p className="note">{m.narrow.note}</p>
       <NarrowNode presets={presets} path={path} depth={0} onOpen={onOpen} />
     </div>
   );
@@ -23,6 +25,7 @@ type NodeProps = Props & Readonly<{ depth: number }>;
 
 /** 根から depth 番目の節。分けるパラメータの選択肢と、その値ごとの枝を出し、道筋の枝の先に次の節を出す。 */
 function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
+  const m = useMessages();
   const prefix = path.fixed.slice(0, depth);
   const candidates = matching(presets, prefix);
   const param = path.fixed[depth]?.param ?? (depth === path.fixed.length ? path.open : undefined);
@@ -32,16 +35,16 @@ function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
       <div className="narrow-node narrow-result" data-depth={depth}>
         <span className="preset-name">{only.name}</span>
         <button type="button" className="narrow-open" onClick={() => onOpen(only)}>
-          可視化で開く
+          {m.narrow.open}
         </button>
       </div>
     );
   }
   return (
     <div className="narrow-node" data-depth={depth}>
-      <span className="count">候補 {candidates.length}</span>
+      <span className="count">{m.narrow.candidates(candidates.length)}</span>
       <nav className="split-by">
-        分ける:
+        {m.narrow.splitBy}
         {splittingParams(candidates).map((p) => (
           <a key={p} href={narrowHash({ fixed: prefix, open: p })} data-param={p} aria-current={p === param ? "true" : undefined}>
             {p}
@@ -73,11 +76,12 @@ function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
 
 /** サイドバーに置く、固定した値と残りの候補。候補が 1 つなら可視化で開ける。 */
 export function NarrowSidebar({ presets, path, onOpen }: Props) {
+  const m = useMessages();
   const candidates = matching(presets, path.fixed);
   const [only] = candidates;
   return (
     <>
-      <h2>固定した値</h2>
+      <h2>{m.narrow.fixed}</h2>
       {path.fixed.length ? (
         <ul className="narrow-fixed">
           {path.fixed.map(({ param, value }) => (
@@ -87,9 +91,9 @@ export function NarrowSidebar({ presets, path, onOpen }: Props) {
           ))}
         </ul>
       ) : (
-        <p className="note">まだ無い</p>
+        <p className="note">{m.narrow.none}</p>
       )}
-      <h2>候補 {candidates.length}</h2>
+      <h2>{m.narrow.candidates(candidates.length)}</h2>
       <ul className="narrow-candidates">
         {candidates.map((p) => (
           <li key={p.name}>{p.name}</li>
@@ -97,7 +101,7 @@ export function NarrowSidebar({ presets, path, onOpen }: Props) {
       </ul>
       {candidates.length === 1 && only ? (
         <button type="button" onClick={() => onOpen(only)}>
-          可視化で開く
+          {m.narrow.open}
         </button>
       ) : null}
     </>

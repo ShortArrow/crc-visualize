@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNod
 import { parseConfig, type ConfigForm } from "./domain/parse";
 import { fitPath, matching } from "./domain/narrow";
 import { CATALOGUE, findPreset, TUTORIAL, type Preset } from "./domain/presets";
+import { MessagesProvider, useMessages } from "./i18n/I18n";
+import { pickLocale, type Locale } from "./i18n/locale";
+import { MESSAGES } from "./i18n/messages";
 import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "./domain/trace";
 import { animationMs, initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
 import { CodeView } from "./ui/CodeView";
@@ -22,7 +25,13 @@ import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
 import { initialSettings, persistSettings, type Settings } from "./settings";
 
 const CHECK_BITS = bitsFromBytes([...new TextEncoder().encode("123456789")]);
-const DEFAULT_SETTINGS: Settings = { form: formFromPreset(TUTORIAL), speedMode: "auto", rate: 1, loop: false };
+const DEFAULT_SETTINGS: Settings = {
+  form: formFromPreset(TUTORIAL),
+  speedMode: "auto",
+  rate: 1,
+  loop: false,
+  locale: pickLocale(navigator.languages),
+};
 const sameBits = (a: readonly Bit[], b: readonly Bit[]) => a.length === b.length && a.every((x, i) => x === b[i]);
 
 /** エディタ領域とステータスバーの中身を受け取り、画面の枠に収める。 */
@@ -30,11 +39,27 @@ type Frame = (editor: ReactNode, status: ReactNode) => ReactNode;
 
 export function App() {
   const [restored] = useState(() => initialSettings(DEFAULT_SETTINGS));
+  const [locale, setLocale] = useState<Locale>(restored.locale);
+  return (
+    <MessagesProvider value={MESSAGES[locale]}>
+      <Screen restored={restored} locale={locale} onLocale={setLocale} />
+    </MessagesProvider>
+  );
+}
+
+type ScreenProps = Readonly<{ restored: Settings; locale: Locale; onLocale: (locale: Locale) => void }>;
+
+/** 表示言語の中で、ページと画面の枠を組み立てる。 */
+function Screen({ restored, locale, onLocale }: ScreenProps) {
   const [form, setForm] = useState<ConfigForm>(restored.form);
   const [speedMode, setSpeedMode] = useState<SpeedMode>(restored.speedMode);
   const [rate, setRate] = useState(restored.rate);
   const [loop, setLoop] = useState(restored.loop);
-  useEffect(() => persistSettings({ form, speedMode, rate, loop }), [form, speedMode, rate, loop]);
+  useEffect(() => persistSettings({ form, speedMode, rate, loop, locale }), [form, speedMode, rate, loop, locale]);
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+  const m = useMessages();
   const [layout, setLayout] = useLayout();
   const [focused, setFocused] = useState<ParamName | undefined>(undefined);
   const focus: ParamFocus = { focused, onFocus: setFocused };
@@ -45,7 +70,7 @@ export function App() {
 
   const settingsSidebar = (
     <>
-      <h2>設定</h2>
+      <h2>{m.settings.heading}</h2>
       <ConfigPanel
         form={form}
         presetName={preset?.name}
@@ -60,11 +85,20 @@ export function App() {
   const frame =
     (sidebar: ReactNode): Frame =>
     (editor, status) => (
-      <Workbench route={route} layout={layout} onLayout={setLayout} sidebar={sidebar} editor={editor} status={status} />
+      <Workbench
+        route={route}
+        layout={layout}
+        onLayout={setLayout}
+        locale={locale}
+        onLocale={onLocale}
+        sidebar={sidebar}
+        editor={editor}
+        status={status}
+      />
     );
 
   if (route.page === "names") {
-    return frame(<NamesToc />)(<NamesPage target={route.param} />, <span>名前の規則</span>);
+    return frame(<NamesToc />)(<NamesPage target={route.param} />, <span>{m.pages.names}</span>);
   }
   if (route.page === "narrow") {
     const path = fitPath(CATALOGUE, route.path);
@@ -75,13 +109,13 @@ export function App() {
     const props = { presets: CATALOGUE, path, onOpen: open };
     return frame(<NarrowSidebar {...props} />)(
       <NarrowPage {...props} />,
-      <span>絞り込み: 候補 {matching(CATALOGUE, path.fixed).length}</span>,
+      <span>{m.narrow.status(matching(CATALOGUE, path.fixed).length)}</span>,
     );
   }
   if (!config.ok) {
     return frame(settingsSidebar)(
-      <p className="invalid-config">設定に誤りがあります。赤い項目を直してください。</p>,
-      <span>設定に誤りがあります</span>,
+      <p className="invalid-config">{m.settings.invalid}</p>,
+      <span>{m.settings.invalidStatus}</span>,
     );
   }
   return (
@@ -164,6 +198,7 @@ const KEY_MSG: Record<string, PlayerMsg> = {
 function Visualizer(props: VisualizerProps) {
   const { params, bits, presetName, check, speedMode, rate, loop, focus, layout, frame, onSpeedMode, onRate, onLoop, onLayout } =
     props;
+  const m = useMessages();
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const ratioIn = (el: HTMLElement | null, f: (rect: DOMRect) => number) => (el ? f(el.getBoundingClientRect()) : 0.5);
@@ -194,7 +229,7 @@ function Visualizer(props: VisualizerProps) {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  const [latest] = logEntries(steps, player.index, 1);
+  const [latest] = logEntries(steps, player.index, 1, m);
 
   return frame(
     <div className="visualizer" style={{ "--anim-ms": `${animMs}ms` } as CSSProperties}>
@@ -216,14 +251,14 @@ function Visualizer(props: VisualizerProps) {
       >
         <section className="hardware">
           <h2>
-            ハードウェア（LFSR）
+            {m.visualizer.hardware}
             <span className="legend">
-              ⊕ = XOR（2 入力が異なれば 1）
-              <span className="swatch hot">赤 = 値 1</span>
-              <span className="swatch zero">白 = 値 0</span>
-              <span className="swatch warn">黄 = 計算中</span>
-              <span className="swatch ok">緑 = CRC</span>
-              <span className="swatch param">水色 = 注目中のパラメータ</span>
+              {m.visualizer.legend.xor}
+              <span className="swatch hot">{m.visualizer.legend.one}</span>
+              <span className="swatch zero">{m.visualizer.legend.zero}</span>
+              <span className="swatch warn">{m.visualizer.legend.busy}</span>
+              <span className="swatch ok">{m.visualizer.legend.crc}</span>
+              <span className="swatch param">{m.visualizer.legend.param}</span>
             </span>
           </h2>
           <LfsrView
@@ -248,7 +283,7 @@ function Visualizer(props: VisualizerProps) {
           style={{ gridTemplateColumns: `minmax(0, ${layout.codeRatio}fr) auto minmax(0, ${1 - layout.codeRatio}fr)` }}
         >
           <div className="software">
-            <h2>ソフトウェア</h2>
+            <h2>{m.visualizer.software}</h2>
             <CodeView params={params} step={step} focus={focus} />
           </div>
           <Splitter
@@ -259,7 +294,7 @@ function Visualizer(props: VisualizerProps) {
             }
           />
           <div className="log-pane">
-            <h2>経過</h2>
+            <h2>{m.visualizer.log}</h2>
             <StepLog steps={steps} current={player.index} input={bits} check={check} />
           </div>
         </section>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import { toRegister, type Bit, type CrcParams, type ParamName, type Step } from "../domain/trace";
+import { useMessages } from "../i18n/I18n";
 import { lfsrLayout, type Point } from "./layout";
 import { routeKeyframes } from "./motion";
 import { heldFeedback, particleWire, particles, upcomingValues, wireLevels, type Particle } from "./signals";
@@ -40,7 +41,11 @@ function boxAnimation(params: CrcParams, step: Step, bit: number): string | unde
 export function XorGate(props: { at: Point; r: number; id: "input" | number; active: boolean; highlight: boolean }) {
   const { at, r, id, active, highlight } = props;
   return (
-    <g className={`gate ${active ? "active" : ""} ${highlight ? "param-hl" : ""}`} data-gate={id} transform={`translate(${at.x} ${at.y})`}>
+    <g
+      className={`gate ${active ? "active" : ""} ${highlight ? "param-hl" : ""}`}
+      data-gate={id}
+      transform={`translate(${at.x} ${at.y})`}
+    >
       <circle r={r} />
       <line x1={-r} x2={r} y1={0} y2={0} />
       <line x1={0} x2={0} y1={-r} y2={r} />
@@ -74,11 +79,22 @@ const toPoints = (points: readonly Point[]) => points.map((p) => `${p.x},${p.y}`
  * 値の流れる配線。level が undefined なら何も流れていない。
  * travel があれば、配線は灰色のまま、粒と同じ進み方で始点から値の色に塗られていく。
  */
-function Wire(props: { name: string; points: readonly Point[]; level: Bit | undefined; travel?: Travel | undefined; className?: string }) {
+function Wire(props: {
+  name: string;
+  points: readonly Point[];
+  level: Bit | undefined;
+  travel?: Travel | undefined;
+  className?: string;
+}) {
   const { name, points, level, travel, className = "" } = props;
   return (
     <g data-wire={name} data-level={level ?? "none"}>
-      <polyline className={`wire ${className}`} data-level={travel ? "none" : (level ?? "none")} points={toPoints(points)} fill="none" />
+      <polyline
+        className={`wire ${className}`}
+        data-level={travel ? "none" : (level ?? "none")}
+        points={toPoints(points)}
+        fill="none"
+      />
       {travel && level !== undefined ? <Trail points={points} level={level} travel={travel} /> : null}
     </g>
   );
@@ -117,7 +133,12 @@ function ParticleDot(props: { route: string; value: Bit; points: readonly Point[
   }, []);
   const start = points[0]!;
   return (
-    <g ref={ref} className={`particle v${value}`} data-route={route} style={{ transform: `translate(${start.x}px, ${start.y}px)`, opacity: 0 }}>
+    <g
+      ref={ref}
+      className={`particle v${value}`}
+      data-route={route}
+      style={{ transform: `translate(${start.x}px, ${start.y}px)`, opacity: 0 }}
+    >
       <circle r={10} />
       <text y={5}>{value}</text>
     </g>
@@ -150,6 +171,7 @@ const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
  * 値の流れは配線の色（wireLevels）と粒（particles）で示し、計算式の文字列は出さない。
  */
 export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Props) {
+  const m = useMessages();
   const layout = lfsrLayout(params);
   const { box, regY, streamY, gateR, inputGate: ig, feedbackBox: fb, taps, entry } = layout;
   const w = params.width;
@@ -235,7 +257,7 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
         </g>
       </g>
       <text className="label" x={8} y={streamY - 22}>
-        入力ビット（{step.cursor}/{step.stream.length}）
+        {m.visualizer.inputBits(step.cursor, step.stream.length)}
       </text>
 
       <Wire key={`input-${stepIndex}`} {...wireProps("input", layout.inputRoute, levels.input)} />

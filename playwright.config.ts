@@ -9,6 +9,7 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}/`,
     channel: "chrome",
+    locale: "ja-JP",
     viewport: { width: 1366, height: 1000 },
   },
   webServer: {

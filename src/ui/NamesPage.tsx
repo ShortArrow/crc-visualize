@@ -3,29 +3,31 @@ import { AMBIGUOUS_NAMES, aliasIndex, polyFamilies, splitPresetName } from "../d
 import { CATALOGUE } from "../domain/presets";
 import { PARAM_NAMES, type ParamName } from "../domain/trace";
 import { ParamMap } from "./ParamMap";
-import { PARAM_INFO } from "./paramInfo";
+import { useMessages } from "../i18n/I18n";
+import type { Messages } from "../i18n/messages";
 
 const EXAMPLE = "CRC-16/KERMIT";
 
-/** 名前の規則のページの節。目次と各節の id に使う。 */
-const SECTIONS = [
-  { id: "names-parts", title: "名前の分解" },
-  { id: "names-families", title: "同じ poly の一族" },
-  { id: "names-aliases", title: "別名の対応表" },
-  { id: "names-param-map", title: "パラメータ名の別名" },
-  { id: "names-param-table", title: "パラメータ名の対応表" },
-] as const;
+/** 名前の規則のページの節の id と、辞書での見出しの項目。目次と各節の id に使う。 */
+const SECTIONS: readonly Readonly<{ id: string; key: keyof Messages["names"]["sections"] }>[] = [
+  { id: "names-parts", key: "parts" },
+  { id: "names-families", key: "families" },
+  { id: "names-aliases", key: "aliases" },
+  { id: "names-param-map", key: "paramMap" },
+  { id: "names-param-table", key: "paramTable" },
+];
 
 /** サイドバーに置く目次。選ぶとエディタ領域のその節へ移る。フラグメントはページの切替に使うので変えない。 */
 export function NamesToc() {
+  const m = useMessages();
   return (
     <>
-      <h2>目次</h2>
+      <h2>{m.names.toc}</h2>
       <ul className="toc">
-        {SECTIONS.map(({ id, title }) => (
+        {SECTIONS.map(({ id, key }) => (
           <li key={id}>
             <button type="button" onClick={() => document.getElementById(id)?.scrollIntoView({ block: "start" })}>
-              {title}
+              {m.names.sections[key]}
             </button>
           </li>
         ))}
@@ -33,6 +35,10 @@ export function NamesToc() {
     </>
   );
 }
+/** text の中の識別子 word を code で囲む。見出しの大文字化を識別子に及ぼさないため。 */
+const withCode = (text: string, word: string) =>
+  text.split(word).flatMap((part, i) => (i === 0 ? [part] : [<code key={i}>{word}</code>, part]));
+
 const hexOf = (value: number, width: number) =>
   `0x${value
     .toString(16)
@@ -41,14 +47,15 @@ const hexOf = (value: number, width: number) =>
 
 /** プリセットの名前の付け方と、パラメータの呼び名の違いを示すページ。target は強調するパラメータの行。 */
 export function NamesPage({ target }: { target: ParamName | undefined }) {
+  const m = useMessages();
   return (
     <div className="names-page">
       <NameParts />
       <Families />
       <Aliases />
       <section className="pane" id="names-param-map">
-        <h2>パラメータ名の別名</h2>
-        <p className="note">名前にマウスを乗せると効く場所と別名を示し、選ぶと下の表のその行へ移ります。</p>
+        <h2>{m.names.sections.paramMap}</h2>
+        <p className="note">{m.names.paramMap.note}</p>
         <ParamMap />
       </section>
       <ParamTable target={target} />
@@ -57,50 +64,46 @@ export function NamesPage({ target }: { target: ParamName | undefined }) {
 }
 
 function NameParts() {
+  const m = useMessages();
   const { head, width, origin } = splitPresetName(EXAMPLE);
   return (
     <section className="pane name-parts" id="names-parts">
-      <h2>名前の分解</h2>
+      <h2>{m.names.sections.parts}</h2>
       <div className="parts">
         <span className="part" data-part="head">
           <b>{head}</b>
-          <small>巡回冗長検査</small>
+          <small>{m.names.parts.head}</small>
         </span>
         <span className="sep">-</span>
         <span className="part" data-part="width">
           <b>{width}</b>
           <small>
-            幅 <code>width</code>
+            {m.names.parts.width} <code>width</code>
           </small>
         </span>
         <span className="sep">/</span>
         <span className="part" data-part="origin">
           <b>{origin}</b>
-          <small>最初に使われた規格・製品・団体などの名前</small>
+          <small>{m.names.parts.origin}</small>
         </span>
       </div>
-      <p className="note">reveng カタログの正式名はこの形で、幅と後半の名前の組で 1 つの設定を指します。</p>
+      <p className="note">{m.names.parts.note}</p>
     </section>
   );
 }
 
 function Families() {
+  const m = useMessages();
   return (
     <section className="pane families" id="names-families">
-      <h2>
-        同じ <code>poly</code> の一族
-      </h2>
-      <p className="note">
-        幅と poly が同じでも、init・refin/refout・xorout の違いで別の CRC になります。一族の先頭と違う値を強調します。
-      </p>
+      <h2>{withCode(m.names.sections.families, "poly")}</h2>
+      <p className="note">{m.names.families.note}</p>
       {polyFamilies(CATALOGUE).map(({ width, poly, rows }) => (
         <table key={`${width}-${poly}`} className="family" data-poly={hexOf(poly, width)}>
-          <caption>
-            幅 {width}・poly {hexOf(poly, width)}
-          </caption>
+          <caption>{m.names.families.caption(width, hexOf(poly, width))}</caption>
           <thead>
             <tr>
-              <th>正式名</th>
+              <th>{m.names.families.name}</th>
               <th>init</th>
               <th>refin / refout</th>
               <th>xorout</th>
@@ -129,16 +132,17 @@ function Families() {
 }
 
 function Aliases() {
+  const m = useMessages();
   return (
     <section className="pane aliases" id="names-aliases">
-      <h2>別名の対応表</h2>
+      <h2>{m.names.sections.aliases}</h2>
       <table className="ambiguous">
-        <caption>流儀によって指すものが割れる呼び名</caption>
+        <caption>{m.names.aliases.ambiguous}</caption>
         <tbody>
           {AMBIGUOUS_NAMES.map(({ alias, candidates }) => (
             <tr key={alias} data-alias={alias}>
               <th>{alias}</th>
-              <td>{candidates.join("、")} のどれか</td>
+              <td>{m.names.aliases.oneOf(candidates.join(m.listSeparator))}</td>
             </tr>
           ))}
         </tbody>
@@ -146,8 +150,8 @@ function Aliases() {
       <table className="alias-index">
         <thead>
           <tr>
-            <th>別名</th>
-            <th>正式名</th>
+            <th>{m.names.aliases.alias}</th>
+            <th>{m.names.aliases.name}</th>
           </tr>
         </thead>
         <tbody>
@@ -164,25 +168,26 @@ function Aliases() {
 }
 
 function ParamTable({ target }: { target: ParamName | undefined }) {
+  const m = useMessages();
   const rows = useRef(new Map<ParamName, HTMLTableRowElement>());
   useEffect(() => {
     if (target) rows.current.get(target)?.scrollIntoView({ block: "center" });
   }, [target]);
   return (
     <section className="pane param-table" id="names-param-table">
-      <h2>パラメータ名の対応表</h2>
+      <h2>{m.names.sections.paramTable}</h2>
       <table>
         <thead>
           <tr>
-            <th>パラメータ名</th>
-            <th>日本語名</th>
-            <th>意味</th>
-            <th>別名</th>
+            <th>{m.names.paramTable.param}</th>
+            <th>{m.names.paramTable.title}</th>
+            <th>{m.names.paramTable.meaning}</th>
+            <th>{m.names.paramTable.aliases}</th>
           </tr>
         </thead>
         <tbody>
           {PARAM_NAMES.map((param) => {
-            const info = PARAM_INFO[param];
+            const info = m.params[param];
             return (
               <tr
                 key={param}
@@ -197,7 +202,7 @@ function ParamTable({ target }: { target: ParamName | undefined }) {
                 </th>
                 <td>{info.title}</td>
                 <td>{info.summary}</td>
-                <td>{info.aliases.join("、")}</td>
+                <td>{info.aliases.join(m.listSeparator)}</td>
               </tr>
             );
           })}

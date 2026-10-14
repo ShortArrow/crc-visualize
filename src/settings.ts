@@ -1,10 +1,11 @@
 import type { ConfigForm } from "./domain/parse";
 import type { InputMode } from "./domain/presets";
+import { isLocale, type Locale } from "./i18n/locale";
 import type { SpeedMode } from "./playback/playback";
 import { RATES } from "./ui/Controls";
 
 /** 次に開いたときに復元する設定。再生位置は含めない。 */
-export type Settings = Readonly<{ form: ConfigForm; speedMode: SpeedMode; rate: number; loop: boolean }>;
+export type Settings = Readonly<{ form: ConfigForm; speedMode: SpeedMode; rate: number; loop: boolean; locale: Locale }>;
 
 /** localStorage のキー。保存形式を変えるときは版を上げる。 */
 export const SETTINGS_KEY = "crc-visualize:settings:v1";
@@ -55,6 +56,7 @@ function validate(v: unknown, defaults: Settings): Settings {
     speedMode: pick(s.speedMode, oneOf(SPEED_MODES), defaults.speedMode),
     rate: pick(s.rate, oneOf<number>(RATES), defaults.rate),
     loop: pick(s.loop, isBoolean, defaults.loop),
+    locale: pick(s.locale, isLocale, defaults.locale),
   };
 }
 
@@ -63,14 +65,15 @@ const FLAG_FIELDS = ["refin", "refout"] as const;
 const flag = (b: boolean) => (b ? "1" : "0");
 const unflag = (v: string): unknown => (v === "1" ? true : v === "0" ? false : v);
 
-/** 設定を URL のクエリ文字列（先頭の ? は含まない）にする。真偽値は 1/0、速度モードは speed。 */
-export function settingsToQuery({ form, speedMode, rate, loop }: Settings): string {
+/** 設定を URL のクエリ文字列（先頭の ? は含まない）にする。真偽値は 1/0、速度モードは speed、表示言語は lang。 */
+export function settingsToQuery({ form, speedMode, rate, loop, locale }: Settings): string {
   const q = new URLSearchParams();
   for (const k of TEXT_FIELDS) q.set(k, form[k]);
   for (const k of FLAG_FIELDS) q.set(k, flag(form[k]));
   q.set("speed", speedMode);
   q.set("rate", String(rate));
   q.set("loop", flag(loop));
+  q.set("lang", locale);
   return q.toString();
 }
 
@@ -88,6 +91,7 @@ export function settingsFromQuery(search: string, base: Settings): Settings {
       speedMode: has("speed") ? get("speed") : base.speedMode,
       rate: has("rate") ? Number(get("rate")) : base.rate,
       loop: has("loop") ? unflag(get("loop")) : base.loop,
+      locale: has("lang") ? get("lang") : base.locale,
     },
     base,
   );

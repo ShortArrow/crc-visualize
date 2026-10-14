@@ -1,4 +1,5 @@
 import type { CrcParams, Step } from "../domain/trace";
+import { useMessages } from "../i18n/I18n";
 import { codeLines, type CodePart } from "./code";
 import { focusHandlers, type ParamFocus } from "./paramFocus";
 
@@ -21,9 +22,10 @@ type Props = Readonly<{ params: CrcParams; step: Step; focus: ParamFocus }>;
 
 /** 擬似コード（ソフトウェア表現）。現在のステップの行をハイライトし、パラメータをチップで示す。 */
 export function CodeView({ params, step, focus }: Props) {
+  const m = useMessages();
   return (
     <pre className="code">
-      {codeLines(params, step).map((line, i) => {
+      {codeLines(params, step, m).map((line, i) => {
         const flags = [line.active && "active", line.skipped && "skipped", line.disabled && "disabled"];
         return (
           <div key={i} className={["code-line", ...flags].filter(Boolean).join(" ")}>

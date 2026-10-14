@@ -6,7 +6,7 @@ import { Visualizer } from "./support/visualizer";
 test.describe("絞り込み", () => {
   test("値を 1 つずつ固定して 1 つのアルゴリズムに決め、可視化で開く", async ({ page }) => {
     const v = await given("可視化のページを開いている", () => Visualizer.open(page));
-    await when("アクティビティバーで絞り込みに切り替える", () => v.workbench.pageLink("絞り込み").click());
+    await when("アクティビティバーで絞り込みに切り替える", () => v.workbench.pageLink("narrow").click());
     const n = await then("全 21 の候補から始まる", async () => {
       const n = await NarrowPage.shown(page);
       expect(n.hash()).toBe("#narrow");
