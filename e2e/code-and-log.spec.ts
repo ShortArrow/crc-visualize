@@ -44,9 +44,13 @@ test.describe("経過", () => {
       await expect(entries.nth(3)).toContainText("初期化");
     });
     await then("最新の行だけ大きく、古い行も薄めずに出す", async () => {
+      await expect.poll(async () => (await v.log.titleSize(1)) - (await v.log.titleSize(3))).toBe(0);
       expect(await v.log.titleSize(0)).toBeGreaterThan(await v.log.titleSize(1));
-      expect(await v.log.titleSize(1)).toBe(await v.log.titleSize(3));
-      const opacity = (i: number) => v.log.entries().nth(i).evaluate((el) => getComputedStyle(el).opacity);
+      const opacity = (i: number) =>
+        v.log
+          .entries()
+          .nth(i)
+          .evaluate((el) => getComputedStyle(el).opacity);
       expect(await opacity(1)).toBe("1");
       expect(await opacity(3)).toBe("1");
       expect(await page.locator(".log").evaluate((el) => getComputedStyle(el).maskImage)).toBe("none");
@@ -55,6 +59,24 @@ test.describe("経過", () => {
     await then("最新の行は shift になる", async () => {
       await expect(v.log.entries()).toHaveCount(3);
       await expect(v.log.entries().nth(0)).toContainText("シフト");
+    });
+  });
+
+  test("ステップが進むと、最新だった行は文字が小さくなりながら下へ送られ、戻すと逆に動く", async ({ page }) => {
+    const v = await given("xor ステップまで進めている", async () => {
+      const v = await Visualizer.open(page);
+      await v.goTo("xor");
+      return v;
+    });
+    const forward = await when("1 ステップ進めた直後", () => v.log.motionAfter("ArrowRight"));
+    await then("最新だった 2 行目は文字が小さくなり、2 行目以降は下へ滑る", async () => {
+      expect(forward[1]).toEqual({ moving: true, resizing: true });
+      expect(forward.slice(2).every((e) => e.moving)).toBe(true);
+    });
+    const back = await when("1 ステップ戻した直後", () => v.log.motionAfter("ArrowLeft"));
+    await then("新たに最新になった先頭の行は文字が大きくなり、残りの行は上へ滑る", async () => {
+      expect(back[0]).toEqual({ moving: true, resizing: true });
+      expect(back.slice(1).every((e) => e.moving)).toBe(true);
     });
   });
 
