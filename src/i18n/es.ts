@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** スペイン語の画面の文。 */
 export const es: Messages = {
-  pages: { visualizer: "Visualizador", names: "Nomenclatura", narrow: "Filtrar" },
+  pages: { visualizer: "Visualizador", names: "Nomenclatura", narrow: "Filtrar", cyclic: "Cíclico" },
   workbench: { sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)", language: "Idioma" },
   settings: {
     heading: "Configuración",
@@ -175,6 +175,26 @@ export const es: Messages = {
     fixed: "Valores fijados",
     none: "Ninguno todavía",
     status: (n: number) => `Filtrar: ${n} candidatos`,
+  },
+  cyclic: {
+    heading: "¿Por qué comprobación de redundancia «cíclica»?",
+    wordRing: "Anillo de la palabra de código",
+    wordNote:
+      "Una palabra de código (el mensaje seguido de su CRC) dispuesta en sentido horario con x^0 arriba. Girarla una vez equivale a multiplicarla por x.",
+    stateRing: "Anillo de estados",
+    stateNote:
+      "Los estados del registro cuando empieza en 1 y recibe continuamente el bit de entrada 0. El estado j es x^j mod g(x).",
+    forward: "Multiplicar por x (girar una vez)",
+    back: "Dividir por x (girar una vez hacia atrás)",
+    rotated: (k: number) => `giros k = ${k}`,
+    word: "Bits girados",
+    remainder: "Resto módulo g(x)",
+    crcBit: "borde verde = bits añadidos como CRC",
+    explain: (n: number) =>
+      `La longitud del anillo y el número de pasos hasta que el estado vuelve a x^0 son ambos n = ${n}. Como x^n mod g(x) es 1, sustituir x^n por x^0 en el bit que da la vuelta no cambia el resto. Por eso una palabra de código girada sigue siendo una palabra de código; los códigos con esta propiedad se llaman códigos cíclicos.`,
+    shortened:
+      "Los CRC reales suelen aplicarse a entradas más cortas que n. Eso es un código cíclico acortado: un código cíclico cuyos bits iniciales se toman como 0.",
+    generators: "Polinomios generadores",
   },
   listSeparator: ", ",
 };

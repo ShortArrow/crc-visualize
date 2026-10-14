@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** ドイツ語の画面の文。 */
 export const de: Messages = {
-  pages: { visualizer: "Visualisierung", names: "Namensregeln", narrow: "Eingrenzen" },
+  pages: { visualizer: "Visualisierung", names: "Namensregeln", narrow: "Eingrenzen", cyclic: "Zyklisch" },
   workbench: { sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)", language: "Sprache" },
   settings: {
     heading: "Einstellungen",
@@ -172,6 +172,26 @@ export const de: Messages = {
     fixed: "Festgelegte Werte",
     none: "Noch keine",
     status: (n: number) => `Eingrenzen: ${n} Kandidaten`,
+  },
+  cyclic: {
+    heading: "Warum „zyklische“ Redundanzprüfung?",
+    wordRing: "Ring des Codeworts",
+    wordNote:
+      "Ein Codewort (Nachricht gefolgt von ihrem CRC), im Uhrzeigersinn angeordnet, x^0 oben. Einmal drehen heißt mit x multiplizieren.",
+    stateRing: "Ring der Zustände",
+    stateNote:
+      "Die Registerzustände, wenn es bei 1 beginnt und fortlaufend das Eingabebit 0 erhält. Der j-te Zustand ist x^j mod g(x).",
+    forward: "Mit x multiplizieren (einmal drehen)",
+    back: "Durch x teilen (einmal zurückdrehen)",
+    rotated: (k: number) => `Drehungen k = ${k}`,
+    word: "Gedrehte Bits",
+    remainder: "Rest modulo g(x)",
+    crcBit: "grüner Rand = als CRC angehängte Bits",
+    explain: (n: number) =>
+      `Die Länge des Rings und die Anzahl der Schritte, bis der Zustand zu x^0 zurückkehrt, sind beide n = ${n}. Da x^n mod g(x) gleich 1 ist, ändert sich der Rest nicht, wenn man beim herumlaufenden Bit x^n durch x^0 ersetzt. Ein gedrehtes Codewort bleibt also ein Codewort; Codes mit dieser Eigenschaft heißen zyklische Codes.`,
+    shortened:
+      "Echte CRCs werden meist auf Eingaben angewendet, die kürzer als n sind. Das ist ein verkürzter zyklischer Code: ein zyklischer Code, dessen führende Bits als 0 gelten.",
+    generators: "Generatorpolynome",
   },
   listSeparator: ", ",
 };

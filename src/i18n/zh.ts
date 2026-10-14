@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** 中国語（簡体字）の画面の文。 */
 export const zh: Messages = {
-  pages: { visualizer: "可视化", names: "命名规则", narrow: "筛选" },
+  pages: { visualizer: "可视化", names: "命名规则", narrow: "筛选", cyclic: "循环" },
   workbench: { sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）", language: "显示语言" },
   settings: {
     heading: "设置",
@@ -164,6 +164,23 @@ export const zh: Messages = {
     fixed: "已固定的值",
     none: "暂无",
     status: (n: number) => `筛选：候选 ${n}`,
+  },
+  cyclic: {
+    heading: "为什么叫“循环”冗余校验",
+    wordRing: "码字环",
+    wordNote: "在消息后附上 CRC 得到的码字，以 x^0 为顶端顺时针排列。旋转一次相当于乘以 x。",
+    stateRing: "状态环",
+    stateNote: "寄存器从 1 开始、持续输入比特 0 时的状态。第 j 个状态是 x^j 除以 g(x) 的余数。",
+    forward: "乘以 x（旋转一次）",
+    back: "除以 x（反向旋转一次）",
+    rotated: (k: number) => `旋转次数 k = ${k}`,
+    word: "旋转后的比特串",
+    remainder: "除以 g(x) 的余数",
+    crcBit: "绿框 = 作为 CRC 附加的比特",
+    explain: (n: number) =>
+      `环的长度与状态回到 x^0 所需的次数都是 n = ${n}。由于 x^n 除以 g(x) 的余数为 1，把绕回的比特的 x^n 换成 x^0 后余数不变。因此码字旋转后仍是码字，具有这种性质的码称为循环码。`,
+    shortened: "实际的 CRC 通常用于比 n 短的输入。这相当于把循环码开头的比特视为 0 而缩短的码（缩短循环码）。",
+    generators: "生成多项式",
   },
   listSeparator: "、",
 };

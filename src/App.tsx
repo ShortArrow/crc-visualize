@@ -14,6 +14,7 @@ import { Controls } from "./ui/Controls";
 import { LfsrView } from "./ui/LfsrView";
 import { logEntries } from "./ui/log";
 import { NamesPage, NamesToc } from "./ui/NamesPage";
+import { CyclicPage, CyclicSidebar, cyclicStatus } from "./ui/CyclicPage";
 import { NarrowPage, NarrowSidebar } from "./ui/NarrowPage";
 import { ParamHelp } from "./ui/ParamHelp";
 import type { ParamFocus } from "./ui/paramFocus";
@@ -116,6 +117,13 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     return frame(<NarrowSidebar {...props} />)(
       <NarrowPage {...props} />,
       <span>{m.narrow.status(matching(CATALOGUE, path.fixed).length)}</span>,
+    );
+  }
+  if (route.page === "cyclic") {
+    const { generator } = route;
+    return frame(<CyclicSidebar generator={generator} />)(
+      <CyclicPage key={`${generator.width}/${generator.poly}`} generator={generator} />,
+      <span>{cyclicStatus(generator)}</span>,
     );
   }
   if (!config.ok) {

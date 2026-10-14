@@ -5,7 +5,7 @@ import type { StepKind } from "../domain/trace";
  * 関数の項目は、数や値を差し込んで文を作る。
  */
 export const ja = {
-  pages: { visualizer: "可視化", names: "名前の規則", narrow: "絞り込み" },
+  pages: { visualizer: "可視化", names: "名前の規則", narrow: "絞り込み", cyclic: "巡回" },
   workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", language: "表示言語" },
   settings: {
     heading: "設定",
@@ -169,6 +169,23 @@ export const ja = {
     fixed: "固定した値",
     none: "まだ無い",
     status: (n: number) => `絞り込み: 候補 ${n}`,
+  },
+  cyclic: {
+    heading: "なぜ「巡回」冗長検査か",
+    wordRing: "符号語の輪",
+    wordNote: "本文の後ろに CRC を付けた符号語を、x^0 を真上に時計回りに並べた。1 回回すと x を掛けたことになる。",
+    stateRing: "状態の輪",
+    stateNote: "レジスタに 1 を入れ、入力ビット 0 を送り続けたときの状態。j 回目は x^j を g(x) で割った余り。",
+    forward: "x を掛ける（1 回回す）",
+    back: "x で割る（1 回戻す）",
+    rotated: (k: number) => `回した数 k = ${k}`,
+    word: "回したビット列",
+    remainder: "g(x) で割った余り",
+    crcBit: "緑の縁 = CRC として付けたビット",
+    explain: (n: number) =>
+      `輪の長さも、状態が x^0 に戻るまでの回数も n = ${n}。x^n を g(x) で割った余りは 1 なので、回り込んだビットの x^n を x^0 に置き換えても余りは変わらない。だから符号語を回しても符号語のままで、この性質を持つ符号を巡回符号と呼ぶ。`,
+    shortened: "実際の CRC はふつう n より短い入力に使う。巡回符号の先頭を 0 と見なして短くしたもの（短縮巡回符号）にあたる。",
+    generators: "生成多項式",
   },
   /** 一覧の区切り。 */
   listSeparator: "、",

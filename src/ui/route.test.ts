@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { narrowHash, parseRoute } from "./route";
+import { cyclicHash, narrowHash, parseRoute } from "./route";
 
 describe("parseRoute", () => {
   it.each(["", "#", "#other"])("Given フラグメント %j, When ページを決める, Then 可視化のページ", (hash) => {
@@ -58,5 +58,27 @@ describe("narrowHash", () => {
 
   it("Given 空の道筋, When フラグメントにする, Then #narrow", () => {
     expect(narrowHash({ fixed: [] })).toBe("#narrow");
+  });
+});
+
+describe("巡回のページのフラグメント", () => {
+  it("Given フラグメント #cyclic, When ページを決める, Then 既定の生成多項式の巡回のページ", () => {
+    expect(parseRoute("#cyclic")).toEqual({ page: "cyclic", generator: { width: 3, poly: 0x3 } });
+  });
+
+  it("Given フラグメント #cyclic/width=4/poly=0xF, When ページを決める, Then その生成多項式", () => {
+    expect(parseRoute("#cyclic/width=4/poly=0xF")).toEqual({ page: "cyclic", generator: { width: 4, poly: 0xf } });
+  });
+
+  it.each(["#cyclic/width=4/poly=0x5", "#cyclic/width=x/poly=0x3", "#cyclic/poly=0x3"])(
+    "Given 一覧に無いか解釈できないフラグメント %j, When ページを決める, Then 既定の生成多項式",
+    (hash) => {
+      expect(parseRoute(hash)).toEqual({ page: "cyclic", generator: { width: 3, poly: 0x3 } });
+    },
+  );
+
+  it("Given 生成多項式, When フラグメントにする, Then width は 10 進、poly は大文字の 16 進で書き、読み戻せる", () => {
+    expect(cyclicHash({ width: 4, poly: 0xf })).toBe("#cyclic/width=4/poly=0xF");
+    expect(parseRoute(cyclicHash({ width: 5, poly: 0x5 }))).toEqual({ page: "cyclic", generator: { width: 5, poly: 0x5 } });
   });
 });
