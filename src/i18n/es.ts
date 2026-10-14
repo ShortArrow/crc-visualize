@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** スペイン語の画面の文。 */
 export const es: Messages = {
-  pages: { visualizer: "Visualizador", names: "Nomenclatura", narrow: "Filtrar", cyclic: "Cíclico" },
+  pages: { visualizer: "Visualizador", names: "Nomenclatura", narrow: "Filtrar", cyclic: "Cíclico", redundancy: "Redundancia" },
   workbench: { sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)", language: "Idioma" },
   settings: {
     heading: "Configuración",
@@ -195,6 +195,37 @@ export const es: Messages = {
       `La longitud del anillo y el número de pasos hasta que el estado vuelve a x^0 son ambos n = ${n}. Como x^n mod g(x) es 1, sustituir x^n por x^0 en el bit que da la vuelta no cambia el resto. Por eso una palabra de código girada sigue siendo una palabra de código; los códigos con esta propiedad se llaman códigos cíclicos.`,
     shortened:
       "Los CRC reales suelen aplicarse a entradas más cortas que n. Eso es un código cíclico acortado: un código cíclico cuyos bits iniciales se toman como 0.",
+  },
+  redundancy: {
+    heading: "¿Por qué comprobación de «redundancia»?",
+    whatSection: "Qué es redundante",
+    sent: "Palabra de código enviada",
+    message: (k: number) => `mensaje ${k} bits`,
+    crc: (w: number) => `CRC ${w} bits`,
+    whatNote:
+      "Los bits del CRC se calculan a partir del mensaje y no aportan información nueva. Gracias a estos bits de más, el receptor puede comprobar los datos dividiendo por g(x).",
+    spaceSection: "Las palabras de código son una parte de todas las cadenas",
+    allWords: (n: number) => `cadenas de ${n} bits`,
+    codewords: "Palabras de código divisibles por g(x)",
+    ratio: "Proporción de palabras de código",
+    spaceNote: (w: number) =>
+      `Una cadena dañada coincide por azar con alguna palabra de código con una probabilidad de aproximadamente 1/2^${w}. Cuanto mayor es width, más difícil es que un error pase inadvertido.`,
+    gridLegend: "verde = palabra de código, borde amarillo = cadena recibida",
+    checkSection: "Dañar y comprobar",
+    received: "Cadena recibida (selecciona un bit para invertirlo)",
+    error: "Error e (enviada XOR recibida)",
+    burst: "Longitud del error",
+    remainder: "Resto módulo g(x)",
+    remainderNote: "El resto de la cadena recibida es igual al resto de e módulo g(x).",
+    verdict: {
+      clean: "Sin error",
+      detected: "Error detectado (el resto no es 0)",
+      missed: "Error no detectado (la cadena dañada también es palabra de código, así que el resto es 0)",
+    },
+    reset: "Deshacer",
+    missedExample: "Ejemplo no detectado",
+    guarantee: (w: number) =>
+      `Todo error de 1 bit y todo error de longitud ${w} o menos se detecta. Un error pasa inadvertido solo cuando e es divisible por g(x). El ejemplo no detectado pone e igual a g(x), de longitud ${w + 1}.`,
   },
   listSeparator: ", ",
 };

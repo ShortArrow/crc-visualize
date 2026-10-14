@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { polynomialText, powerText } from "./format";
+import { polynomialText, powerOfTwoText, powerText } from "./format";
 
 describe("polynomialText", () => {
   it.each([
@@ -19,5 +19,14 @@ describe("powerText", () => {
     [30, "x³⁰"],
   ])("Given 次数 %i, When x の累乗を書く, Then %s", (d, text) => {
     expect(powerText(d)).toBe(text);
+  });
+});
+
+describe("powerOfTwoText", () => {
+  it.each([
+    [7, "2⁷ = 128"],
+    [31, "2³¹ = 2147483648"],
+  ])("Given 指数 %i, When 2 の累乗を書く, Then %s", (d, text) => {
+    expect(powerOfTwoText(d)).toBe(text);
   });
 });

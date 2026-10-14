@@ -1529,3 +1529,158 @@ h2 {
 .generator-list .count {
   opacity: 0.7;
 }
+
+/* 冗長のページ */
+.redundancy-page {
+  height: 100%;
+  padding: 12px;
+  overflow: auto;
+}
+
+.redundancy-page section {
+  margin-bottom: 20px;
+}
+
+.redundancy-page h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.redundancy-page .note {
+  max-width: 720px;
+  margin: 6px 0;
+  font-size: 0.85rem;
+}
+
+.bit-row {
+  display: grid;
+  grid-template-columns: repeat(var(--bits), 26px);
+  gap: 2px;
+  font-family: var(--mono);
+}
+
+.bit-cell {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  padding: 0;
+  color: var(--bg);
+  background: var(--zero);
+  border: 2px solid transparent;
+  border-radius: 3px;
+  font: inherit;
+}
+
+.bit-cell.one {
+  background: var(--hot);
+}
+
+.bit-cell.crc {
+  border-color: var(--ok);
+}
+
+button.bit-cell {
+  cursor: pointer;
+}
+
+button.bit-cell:hover {
+  outline: 1px solid var(--accent);
+}
+
+.bit-cell.flipped {
+  box-shadow: 0 0 0 2px var(--warn);
+}
+
+.part-label {
+  font-size: 0.75rem;
+  text-align: center;
+  white-space: nowrap;
+  border-top: 1px solid currentColor;
+}
+
+.part-label.message {
+  color: var(--hot);
+}
+
+.part-label.crc {
+  color: var(--ok);
+}
+
+.row-label {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.space-counts,
+.check-result {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 4px 12px;
+  margin: 8px 0;
+}
+
+.space-counts dt,
+.check-result dt {
+  color: var(--muted);
+}
+
+.space-counts dd,
+.check-result dd {
+  margin: 0;
+  font-family: var(--mono);
+}
+
+.word-grid-figure {
+  margin: 8px 0;
+}
+
+.word-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), 14px);
+  gap: 3px;
+}
+
+.word-dot {
+  width: 14px;
+  height: 14px;
+  background: var(--border);
+  border-radius: 50%;
+}
+
+.word-dot.codeword {
+  background: var(--ok);
+}
+
+.word-dot.received {
+  box-shadow: 0 0 0 2px var(--warn);
+}
+
+.verdict {
+  display: inline-block;
+  margin: 4px 0;
+  padding: 2px 10px;
+  font-weight: 600;
+  border-radius: 3px;
+}
+
+.verdict[data-verdict="clean"] {
+  color: var(--bg);
+  background: var(--muted);
+}
+
+.verdict[data-verdict="detected"] {
+  color: var(--bg);
+  background: var(--ok);
+}
+
+.verdict[data-verdict="missed"] {
+  color: var(--bg);
+  background: var(--hot);
+}
+
+.check-actions {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}

@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** フランス語の画面の文。 */
 export const fr: Messages = {
-  pages: { visualizer: "Visualisation", names: "Nomenclature", narrow: "Affiner", cyclic: "Cyclique" },
+  pages: { visualizer: "Visualisation", names: "Nomenclature", narrow: "Affiner", cyclic: "Cyclique", redundancy: "Redondance" },
   workbench: { sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)", language: "Langue" },
   settings: {
     heading: "Paramètres",
@@ -192,6 +192,37 @@ export const fr: Messages = {
       `La longueur de l’anneau et le nombre de pas avant que l’état revienne à x^0 valent tous deux n = ${n}. Comme x^n mod g(x) vaut 1, remplacer x^n par x^0 pour le bit qui fait le tour ne change pas le reste. Un mot de code tourné reste donc un mot de code ; les codes ayant cette propriété sont appelés codes cycliques.`,
     shortened:
       "Les CRC réels s’appliquent le plus souvent à des entrées plus courtes que n. C’est un code cyclique raccourci : un code cyclique dont les premiers bits sont pris égaux à 0.",
+  },
+  redundancy: {
+    heading: "Pourquoi un contrôle de « redondance » ?",
+    whatSection: "Ce qui est redondant",
+    sent: "Mot de code envoyé",
+    message: (k: number) => `message ${k} bits`,
+    crc: (w: number) => `CRC ${w} bits`,
+    whatNote:
+      "Les bits du CRC sont calculés à partir du message et n’apportent aucune information nouvelle. Ce sont ces bits en plus qui permettent au récepteur de vérifier les données en divisant par g(x).",
+    spaceSection: "Les mots de code ne sont qu’une partie de toutes les suites",
+    allWords: (n: number) => `suites de ${n} bits`,
+    codewords: "Mots de code divisibles par g(x)",
+    ratio: "Proportion de mots de code",
+    spaceNote: (w: number) =>
+      `Une suite abîmée tombe par hasard sur un mot de code avec une probabilité d’environ 1/2^${w}. Plus width est grand, plus une erreur est difficile à manquer.`,
+    gridLegend: "vert = mot de code, bord jaune = suite reçue",
+    checkSection: "Abîmer et vérifier",
+    received: "Suite reçue (sélectionnez un bit pour l’inverser)",
+    error: "Erreur e (envoyée XOR reçue)",
+    burst: "Longueur de l’erreur",
+    remainder: "Reste modulo g(x)",
+    remainderNote: "Le reste de la suite reçue est égal au reste de e modulo g(x).",
+    verdict: {
+      clean: "Aucune erreur",
+      detected: "Erreur détectée (le reste n’est pas 0)",
+      missed: "Erreur manquée (la suite abîmée est aussi un mot de code, donc le reste vaut 0)",
+    },
+    reset: "Annuler",
+    missedExample: "Exemple manqué",
+    guarantee: (w: number) =>
+      `Toute erreur d’1 bit et toute erreur de longueur ${w} ou moins est détectée. Une erreur n’est manquée que si e est divisible par g(x). L’exemple manqué prend e égal à g(x), de longueur ${w + 1}.`,
   },
   listSeparator: ", ",
 };

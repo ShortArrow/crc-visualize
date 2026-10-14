@@ -15,6 +15,7 @@ import { LfsrView } from "./ui/LfsrView";
 import { logEntries } from "./ui/log";
 import { NamesPage, NamesToc } from "./ui/NamesPage";
 import { CyclicPage } from "./ui/CyclicPage";
+import { RedundancyPage } from "./ui/RedundancyPage";
 import { GeneratorSidebar, generatorStatus } from "./ui/GeneratorSidebar";
 import { NarrowPage, NarrowSidebar } from "./ui/NarrowPage";
 import { ParamHelp } from "./ui/ParamHelp";
@@ -120,10 +121,11 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       <span>{m.narrow.status(matching(CATALOGUE, path.fixed).length)}</span>,
     );
   }
-  if (route.page === "cyclic") {
-    const { generator } = route;
-    return frame(<GeneratorSidebar page="cyclic" generator={generator} />)(
-      <CyclicPage key={`${generator.width}/${generator.poly}`} generator={generator} />,
+  if (route.page === "cyclic" || route.page === "redundancy") {
+    const { page, generator } = route;
+    const key = `${generator.width}/${generator.poly}`;
+    return frame(<GeneratorSidebar page={page} generator={generator} />)(
+      page === "cyclic" ? <CyclicPage key={key} generator={generator} /> : <RedundancyPage key={key} generator={generator} />,
       <span>{generatorStatus(generator)}</span>,
     );
   }
