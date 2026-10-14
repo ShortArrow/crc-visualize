@@ -814,18 +814,11 @@ h2 {
   padding-left: 8px;
   border-left: 2px solid var(--border);
   font-size: 0.8rem;
+  transition: border-left-color var(--log-ms) ease-out;
 }
 
 .log-entry.latest {
   border-left-color: var(--accent);
-  animation: log-in calc(var(--snap-ms) * 2) ease-out;
-}
-
-@keyframes log-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
 }
 
 .log-head {
@@ -833,6 +826,14 @@ h2 {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 10px;
+}
+
+.log-title,
+.log-crc,
+.log-detail {
+  transition:
+    font-size var(--log-ms) ease-out,
+    color var(--log-ms) ease-out;
 }
 
 .log-title {

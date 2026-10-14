@@ -150,6 +150,24 @@ export class Visualizer {
         .nth(i)
         .locator(".log-title")
         .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+    /**
+     * 経過の前の動きが終わってから key（ArrowRight など）でステップを動かし、その直後の描画で各行が動いているかを返す。
+     * moving は行の位置の移動（WAAPI）、resizing は見出しの文字の大きさの変化（CSS の遷移）。
+     */
+    motionAfter: (key: string) =>
+      this.page.evaluate(async (k) => {
+        const log = document.querySelector(".log")!;
+        await Promise.all(log.getAnimations({ subtree: true }).map((a) => a.finished));
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: k }));
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        return [...document.querySelectorAll(".log-entry")].map((el) => ({
+          moving: el.getAnimations().some((a) => !(a instanceof CSSAnimation) && !(a instanceof CSSTransition)),
+          resizing: el
+            .querySelector(".log-title")!
+            .getAnimations()
+            .some((a) => a instanceof CSSTransition && a.transitionProperty === "font-size"),
+        }));
+      }, key),
   };
 
   readonly workbench = {
