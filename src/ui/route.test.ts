@@ -96,3 +96,9 @@ describe("冗長のページのフラグメント", () => {
     expect(parseRoute("#redundancy/width=4/poly=0x3")).toEqual({ page: "redundancy", generator: { width: 4, poly: 0x3 } });
   });
 });
+
+describe("置き換えのページのフラグメント", () => {
+  it.each(["#equivalence", "#equivalence/foo"])("Given フラグメント %j, When ページを決める, Then 置き換えのページ", (hash) => {
+    expect(parseRoute(hash)).toEqual({ page: "equivalence" });
+  });
+});

@@ -2,7 +2,14 @@ import type { Messages } from "./ja";
 
 /** 英語の画面の文。 */
 export const en: Messages = {
-  pages: { visualizer: "Visualizer", names: "Naming", narrow: "Narrow down", cyclic: "Cyclic", redundancy: "Redundancy" },
+  pages: {
+    visualizer: "Visualizer",
+    names: "Naming",
+    narrow: "Narrow down",
+    cyclic: "Cyclic",
+    redundancy: "Redundancy",
+    equivalence: "Equivalences",
+  },
   workbench: { sidebarToggle: "Toggle sidebar (Ctrl+B)", language: "Language" },
   settings: {
     heading: "Settings",
@@ -221,6 +228,96 @@ export const en: Messages = {
     missedExample: "Missed example",
     guarantee: (w: number) =>
       `Every 1-bit error and every error of length ${w} or less is detected. An error is missed only when e is divisible by g(x). The missed example sets e to g(x) itself, of length ${w + 1}.`,
+  },
+  equivalence: {
+    heading: "Equivalences",
+    note: "How the parameters relate to each other. The examples are computed with the current settings and input (the same as on the visualizer page).",
+    sameSection: "Substitutions that give the same CRC",
+    left: "Original setting",
+    right: "Substitute",
+    why: "Why",
+    example: "Example with the current settings",
+    match: "match",
+    prefix: "prefix P",
+    items: {
+      refin: {
+        title: "Reflected input",
+        left: "refin = true",
+        right: "refin = false, with the bit order of each input byte reversed beforehand",
+        why: "refin means each byte enters LSB first. Reversing the bits within each byte first and then feeding MSB first puts the bits into the register in the same order.",
+      },
+      refout: {
+        title: "Reflected output",
+        left: "refout = true",
+        right: "refout = false, then XOR the CRC with xorout again, reverse its bit order, and XOR with xorout once more",
+        why: "refout reverses the register before the final XOR. Removing xorout, reversing, and applying xorout again gives the same result.",
+      },
+      rightShift: {
+        title: "Right-shift implementation",
+        left: "refin = refout = true",
+        right:
+          "No reflection; use a register that shifts right, with poly and init bit-reversed, feeding each byte LSB first and branching on the lowest bit",
+        why: "Reflecting both input and output is the same as computing with the whole register mirrored. A mirrored register shifts right, and its poly is mirrored too.",
+      },
+      initPrefix: {
+        title: "Initial value as a prefix",
+        left: "init = I",
+        right: "init = 0, with a width-bit prefix P added before the input (P(x)·x^width ≡ I (mod g(x)))",
+        why: "Feeding P into a register that starts at 0 leaves the value I. With init = 0, adding any number of 0 bits before the input does not change the CRC; a non-zero init lets the CRC catch added or lost leading 0 bits.",
+      },
+      affine: {
+        title: "What init and xorout add",
+        left: "init, xorout",
+        right: "The CRC with init = xorout = 0, XORed with the CRC (original setting) of an all-zero input of the same length",
+        why: "The CRC is built only from XORs, so for inputs a and b of the same length, crc(a ⊕ b) = crc(a) ⊕ crc(b) ⊕ crc(0…0). The effect of init and xorout is a constant that depends only on the input length.",
+      },
+    },
+    reasons: {
+      notBytes: "The input is not a multiple of 8 bits, so it cannot be reversed byte by byte",
+      notReflected: "Does not apply because refin and refout are not both true",
+      evenPoly: "The lowest bit of poly is 0, so x cannot be divided out and no prefix exists",
+    },
+    inferSection: "What follows from what you know",
+    known: "What you know",
+    follows: "What follows",
+    rows: [
+      {
+        known: "refin = refout = true",
+        follows:
+          "A right-shift implementation computes it without reflecting input or output. Its code writes poly and init bit-reversed",
+      },
+      {
+        known: "refin = refout = false",
+        follows:
+          "A left-shift implementation computes it without reflecting input or output. Its code writes poly and init as they are",
+      },
+      { known: "refin ≠ refout", follows: "Whether shifting right or left, a separate bit reversal is needed somewhere" },
+      {
+        known: "The code shifts right (1 bit right, branching on the lowest bit)",
+        follows:
+          "Unless it reflects input or output separately, refin = refout = true. Reversing the bits of the poly constant gives the normal poly",
+      },
+      {
+        known: "The code shifts left (1 bit left, branching on the highest bit)",
+        follows: "Unless it reflects input or output separately, refin = refout = false. The poly constant is the normal poly",
+      },
+      {
+        known: "The lowest bit of the poly constant in the code is 0",
+        follows:
+          "A normal poly always has lowest bit 1 (the constant term of the generator), so this constant is bit-reversed and the code shifts right",
+      },
+    ],
+    current: "With the current settings",
+    direction: {
+      right: "A right-shift implementation computes it without reflecting input or output",
+      left: "A left-shift implementation computes it without reflecting input or output",
+      mixed: "Whether shifting right or left, a separate bit reversal is needed",
+    },
+    codeConstants: (poly: string, init: string) => `The implementation's code writes poly = ${poly} and init = ${init}`,
+    ambiguous:
+      "The bit-reversed form of this poly also has lowest bit 1, so the constant alone does not tell whether it is normal or reversed",
+    settings: "Current settings",
+    openVisualizer: "Change the settings on the visualizer page",
   },
   listSeparator: ", ",
 };

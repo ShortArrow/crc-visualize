@@ -8,6 +8,7 @@ export const de: Messages = {
     narrow: "Eingrenzen",
     cyclic: "Zyklisch",
     redundancy: "Redundanz",
+    equivalence: "Äquivalenzen",
   },
   workbench: { sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)", language: "Sprache" },
   settings: {
@@ -229,6 +230,99 @@ export const de: Messages = {
     missedExample: "Übersehenes Beispiel",
     guarantee: (w: number) =>
       `Jeder 1-Bit-Fehler und jeder Fehler der Länge ${w} oder weniger wird erkannt. Übersehen wird ein Fehler nur, wenn e durch g(x) teilbar ist. Das übersehene Beispiel setzt e auf g(x) selbst, mit der Länge ${w + 1}.`,
+  },
+  equivalence: {
+    heading: "Äquivalenzen",
+    note: "Wie die Parameter zusammenhängen. Die Beispiele werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (wie auf der Visualisierungsseite).",
+    sameSection: "Ersetzungen mit demselben CRC",
+    left: "Ursprüngliche Einstellung",
+    right: "Ersetzung",
+    why: "Warum",
+    example: "Beispiel mit den aktuellen Einstellungen",
+    match: "gleich",
+    prefix: "Präfix P",
+    items: {
+      refin: {
+        title: "Gespiegelte Eingabe",
+        left: "refin = true",
+        right: "refin = false, wobei vorher die Bitreihenfolge jedes Eingabebytes umgedreht wird",
+        why: "refin heißt, dass jedes Byte mit dem LSB zuerst eingeht. Dreht man zuerst die Reihenfolge innerhalb jedes Bytes um und gibt dann mit dem MSB zuerst ein, gelangen die Bits in derselben Reihenfolge ins Register.",
+      },
+      refout: {
+        title: "Gespiegelte Ausgabe",
+        left: "refout = true",
+        right:
+          "refout = false; danach den CRC erneut mit xorout verknüpfen, seine Bitreihenfolge umdrehen und noch einmal mit xorout verknüpfen",
+        why: "refout spiegelt das Register vor dem abschließenden XOR. xorout entfernen, spiegeln und xorout wieder anwenden ergibt dasselbe.",
+      },
+      rightShift: {
+        title: "Implementierung mit Rechtsschieben",
+        left: "refin = refout = true",
+        right:
+          "Ohne Spiegelung; ein nach rechts schiebendes Register mit gespiegeltem poly und init, das jedes Byte mit dem LSB zuerst aufnimmt und nach dem niedrigsten Bit verzweigt",
+        why: "Ein- und Ausgabe zu spiegeln ist dasselbe, wie mit dem ganzen Register gespiegelt zu rechnen. Ein gespiegeltes Register schiebt nach rechts, und sein poly ist ebenfalls gespiegelt.",
+      },
+      initPrefix: {
+        title: "Startwert als Präfix",
+        left: "init = I",
+        right: "init = 0, mit einem width-Bit-Präfix P vor der Eingabe (P(x)·x^width ≡ I (mod g(x)))",
+        why: "Gibt man P in ein Register mit Startwert 0 ein, bleibt der Wert I. Mit init = 0 ändern beliebig viele vorangestellte 0-Bits den CRC nicht; ein init ungleich 0 macht hinzugekommene oder verlorene führende Nullen erkennbar.",
+      },
+      affine: {
+        title: "Was init und xorout beitragen",
+        left: "init, xorout",
+        right:
+          "Der CRC mit init = xorout = 0, per XOR verknüpft mit dem CRC (ursprüngliche Einstellung) einer gleich langen Eingabe aus lauter Nullen",
+        why: "Der CRC besteht nur aus XOR, daher gilt für gleich lange Eingaben a und b: crc(a ⊕ b) = crc(a) ⊕ crc(b) ⊕ crc(0…0). Die Wirkung von init und xorout ist eine Konstante, die nur von der Eingabelänge abhängt.",
+      },
+    },
+    reasons: {
+      notBytes: "Die Eingabe ist kein Vielfaches von 8 Bits und lässt sich nicht byteweise umdrehen",
+      notReflected: "Gilt nicht, weil refin und refout nicht beide true sind",
+      evenPoly: "Das niedrigste Bit von poly ist 0, daher lässt sich x nicht herausdividieren und es gibt kein Präfix",
+    },
+    inferSection: "Was aus dem Bekannten folgt",
+    known: "Bekannt",
+    follows: "Daraus folgt",
+    rows: [
+      {
+        known: "refin = refout = true",
+        follows:
+          "Eine Implementierung mit Rechtsschieben berechnet ihn ohne Spiegelung von Ein- und Ausgabe. Ihr Code schreibt poly und init gespiegelt",
+      },
+      {
+        known: "refin = refout = false",
+        follows:
+          "Eine Implementierung mit Linksschieben berechnet ihn ohne Spiegelung von Ein- und Ausgabe. Ihr Code schreibt poly und init unverändert",
+      },
+      { known: "refin ≠ refout", follows: "Ob nach rechts oder links geschoben wird, irgendwo ist eine eigene Bitumkehr nötig" },
+      {
+        known: "Der Code schiebt nach rechts (1 Bit, Verzweigung nach dem niedrigsten Bit)",
+        follows:
+          "Spiegelt er Ein- und Ausgabe nicht gesondert, ist refin = refout = true. Die Bitumkehr der poly-Konstante ergibt das normale poly",
+      },
+      {
+        known: "Der Code schiebt nach links (1 Bit, Verzweigung nach dem höchsten Bit)",
+        follows:
+          "Spiegelt er Ein- und Ausgabe nicht gesondert, ist refin = refout = false. Die poly-Konstante ist das normale poly",
+      },
+      {
+        known: "Das niedrigste Bit der poly-Konstante im Code ist 0",
+        follows:
+          "Ein normales poly hat immer das niedrigste Bit 1 (das konstante Glied des Generators), also ist diese Konstante gespiegelt und der Code schiebt nach rechts",
+      },
+    ],
+    current: "Mit den aktuellen Einstellungen",
+    direction: {
+      right: "Eine Implementierung mit Rechtsschieben berechnet ihn ohne Spiegelung von Ein- und Ausgabe",
+      left: "Eine Implementierung mit Linksschieben berechnet ihn ohne Spiegelung von Ein- und Ausgabe",
+      mixed: "Ob nach rechts oder links geschoben wird, eine eigene Bitumkehr ist nötig",
+    },
+    codeConstants: (poly: string, init: string) => `Der Code der Implementierung schreibt poly = ${poly} und init = ${init}`,
+    ambiguous:
+      "Auch die gespiegelte Form dieses poly hat das niedrigste Bit 1, daher verrät die Konstante allein nicht, ob sie normal oder gespiegelt ist",
+    settings: "Aktuelle Einstellungen",
+    openVisualizer: "Einstellungen auf der Visualisierungsseite ändern",
   },
   listSeparator: ", ",
 };

@@ -2,7 +2,14 @@ import type { Messages } from "./ja";
 
 /** スペイン語の画面の文。 */
 export const es: Messages = {
-  pages: { visualizer: "Visualizador", names: "Nomenclatura", narrow: "Filtrar", cyclic: "Cíclico", redundancy: "Redundancia" },
+  pages: {
+    visualizer: "Visualizador",
+    names: "Nomenclatura",
+    narrow: "Filtrar",
+    cyclic: "Cíclico",
+    redundancy: "Redundancia",
+    equivalence: "Equivalencias",
+  },
   workbench: { sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)", language: "Idioma" },
   settings: {
     heading: "Configuración",
@@ -226,6 +233,101 @@ export const es: Messages = {
     missedExample: "Ejemplo no detectado",
     guarantee: (w: number) =>
       `Todo error de 1 bit y todo error de longitud ${w} o menos se detecta. Un error pasa inadvertido solo cuando e es divisible por g(x). El ejemplo no detectado pone e igual a g(x), de longitud ${w + 1}.`,
+  },
+  equivalence: {
+    heading: "Equivalencias",
+    note: "Cómo se relacionan los parámetros entre sí. Los ejemplos se calculan con la configuración y la entrada actuales (las mismas que en el visualizador).",
+    sameSection: "Sustituciones que dan el mismo CRC",
+    left: "Configuración original",
+    right: "Sustitución",
+    why: "Por qué",
+    example: "Ejemplo con la configuración actual",
+    match: "coincide",
+    prefix: "prefijo P",
+    items: {
+      refin: {
+        title: "Entrada reflejada",
+        left: "refin = true",
+        right: "refin = false, invirtiendo antes el orden de bits de cada byte de entrada",
+        why: "refin significa que cada byte entra empezando por el LSB. Si primero se invierte el orden dentro de cada byte y luego se introduce desde el MSB, los bits entran en el registro en el mismo orden.",
+      },
+      refout: {
+        title: "Salida reflejada",
+        left: "refout = true",
+        right:
+          "refout = false; después se hace XOR del CRC con xorout, se invierte su orden de bits y se vuelve a hacer XOR con xorout",
+        why: "refout invierte el registro antes del XOR final. Quitar xorout, invertir y volver a aplicar xorout da el mismo resultado.",
+      },
+      rightShift: {
+        title: "Implementación con desplazamiento a la derecha",
+        left: "refin = refout = true",
+        right:
+          "Sin reflexiones; un registro que desplaza a la derecha, con poly e init invertidos, introduciendo cada byte desde el LSB y decidiendo por el bit más bajo",
+        why: "Reflejar entrada y salida equivale a calcular con todo el registro en espejo. Un registro en espejo desplaza a la derecha, y su poly también queda en espejo.",
+      },
+      initPrefix: {
+        title: "Valor inicial como prefijo",
+        left: "init = I",
+        right: "init = 0, añadiendo antes de la entrada un prefijo P de width bits (P(x)·x^width ≡ I (mod g(x)))",
+        why: "Al introducir P en un registro que empieza en 0, queda el valor I. Con init = 0, añadir ceros delante de la entrada no cambia el CRC; un init distinto de 0 permite detectar ceros iniciales añadidos o perdidos.",
+      },
+      affine: {
+        title: "Lo que aportan init y xorout",
+        left: "init, xorout",
+        right:
+          "El CRC con init = xorout = 0, combinado por XOR con el CRC (configuración original) de una entrada de ceros de la misma longitud",
+        why: "El CRC se construye solo con XOR, así que para entradas a y b de igual longitud, crc(a ⊕ b) = crc(a) ⊕ crc(b) ⊕ crc(0…0). El efecto de init y xorout es una constante que solo depende de la longitud.",
+      },
+    },
+    reasons: {
+      notBytes: "La entrada no es múltiplo de 8 bits, así que no se puede invertir byte a byte",
+      notReflected: "No se aplica porque refin y refout no son ambos true",
+      evenPoly: "El bit más bajo de poly es 0, así que no se puede dividir por x y no existe prefijo",
+    },
+    inferSection: "Lo que se deduce de lo que sabes",
+    known: "Lo que sabes",
+    follows: "Lo que se deduce",
+    rows: [
+      {
+        known: "refin = refout = true",
+        follows:
+          "Una implementación con desplazamiento a la derecha lo calcula sin reflejar entrada ni salida. Su código escribe poly e init invertidos",
+      },
+      {
+        known: "refin = refout = false",
+        follows:
+          "Una implementación con desplazamiento a la izquierda lo calcula sin reflejar entrada ni salida. Su código escribe poly e init tal cual",
+      },
+      {
+        known: "refin ≠ refout",
+        follows: "Desplace a la derecha o a la izquierda, hace falta invertir bits aparte en algún punto",
+      },
+      {
+        known: "El código desplaza a la derecha (1 bit, decidiendo por el bit más bajo)",
+        follows:
+          "Si no refleja entrada ni salida aparte, refin = refout = true. Invertir los bits de la constante poly da el poly normal",
+      },
+      {
+        known: "El código desplaza a la izquierda (1 bit, decidiendo por el bit más alto)",
+        follows: "Si no refleja entrada ni salida aparte, refin = refout = false. La constante poly es el poly normal",
+      },
+      {
+        known: "El bit más bajo de la constante poly del código es 0",
+        follows:
+          "Un poly normal siempre tiene el bit más bajo a 1 (el término constante del generador), así que la constante está invertida y el código desplaza a la derecha",
+      },
+    ],
+    current: "Con la configuración actual",
+    direction: {
+      right: "Una implementación con desplazamiento a la derecha lo calcula sin reflejar entrada ni salida",
+      left: "Una implementación con desplazamiento a la izquierda lo calcula sin reflejar entrada ni salida",
+      mixed: "Desplace a la derecha o a la izquierda, hace falta invertir bits aparte",
+    },
+    codeConstants: (poly: string, init: string) => `El código de la implementación escribe poly = ${poly} e init = ${init}`,
+    ambiguous:
+      "La forma invertida de este poly también tiene el bit más bajo a 1, así que la constante sola no indica si es normal o invertida",
+    settings: "Configuración actual",
+    openVisualizer: "Cambiar la configuración en el visualizador",
   },
   listSeparator: ", ",
 };
