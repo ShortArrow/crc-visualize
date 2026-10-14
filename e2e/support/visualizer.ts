@@ -148,6 +148,35 @@ export class Visualizer {
         .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
   };
 
+  readonly workbench = {
+    /** アクティビティバーのページの切替。 */
+    pageLink: (name: "可視化" | "名前の規則") => this.page.locator(`.activity a[title="${name}"]`),
+    sidebar: () => this.page.locator(".sidebar"),
+    sidebarToggle: () => this.page.locator(".activity .sidebar-toggle"),
+    statusbar: () => this.page.locator(".statusbar"),
+    splitter: (name: "sidebar" | "panel" | "code") => this.page.locator(`[data-splitter="${name}"]`),
+    /** ページ自体の縦横のはみ出し（px）。0 ならページはスクロールしない。 */
+    pageOverflow: () =>
+      this.page.evaluate(() => {
+        const root = document.scrollingElement!;
+        return { x: root.scrollWidth - root.clientWidth, y: root.scrollHeight - root.clientHeight };
+      }),
+    /** name の境界を、つかんだ位置から (dx, dy) だけドラッグする。 */
+    drag: async (name: "sidebar" | "panel" | "code", dx: number, dy: number) => {
+      const box = (await this.page.locator(`[data-splitter="${name}"]`).boundingBox())!;
+      const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+      await this.page.mouse.move(x, y);
+      await this.page.mouse.down();
+      await this.page.mouse.move(x + dx, y + dy, { steps: 5 });
+      await this.page.mouse.up();
+    },
+    /** 要素の大きさ（px）。 */
+    size: async (selector: string) => {
+      const box = (await this.page.locator(selector).boundingBox())!;
+      return { width: box.width, height: box.height };
+    },
+  };
+
   readonly settings = {
     preset: () => this.page.locator('label[data-field="preset"] select'),
     /** 設定パネルの項目名。 */
@@ -162,8 +191,5 @@ export class Visualizer {
     loop: () => this.page.getByTitle("ループ再生（L）"),
     play: () => this.page.getByTitle("再生 / 一時停止（Space）"),
     query: () => new URL(this.page.url()).searchParams,
-    widthToggle: () => this.page.locator(".width-toggle"),
-    /** 内容（main）の横幅と画面の横幅（px）。 */
-    widths: () => this.page.locator("main").evaluate((el) => ({ content: el.getBoundingClientRect().width, view: innerWidth })),
   };
 }

@@ -6,24 +6,13 @@ const defaults: Settings = {
   speedMode: "auto",
   rate: 1,
   loop: false,
-  wide: false,
 };
 
 const saved: Settings = {
-  form: {
-    width: "16",
-    poly: "0x8005",
-    init: "0x0",
-    refin: true,
-    refout: true,
-    xorout: "0x0",
-    inputMode: "text",
-    input: "123456789",
-  },
+  form: { width: "16", poly: "0x8005", init: "0x0", refin: true, refout: true, xorout: "0x0", inputMode: "text", input: "123456789" },
   speedMode: "steady",
   rate: 4,
   loop: true,
-  wide: true,
 };
 
 describe("restoreSettings", () => {
@@ -35,12 +24,9 @@ describe("restoreSettings", () => {
     expect(restoreSettings(JSON.stringify(saved), defaults)).toEqual(saved);
   });
 
-  it.each(["{broken", "42"])(
-    "Given JSON として読めない、または設定の形でない保存値 %j, When 復元する, Then 既定値になる",
-    (raw) => {
-      expect(restoreSettings(raw, defaults)).toEqual(defaults);
-    },
-  );
+  it.each(["{broken", "42"])("Given JSON として読めない、または設定の形でない保存値 %j, When 復元する, Then 既定値になる", (raw) => {
+    expect(restoreSettings(raw, defaults)).toEqual(defaults);
+  });
 
   it("Given 形や値の範囲が正しくない項目を含む保存値, When 復元する, Then その項目だけ既定値に戻す", () => {
     const raw = JSON.stringify({
@@ -48,7 +34,6 @@ describe("restoreSettings", () => {
       speedMode: "fast",
       rate: 3,
       loop: true,
-      wide: "yes",
     });
 
     expect(restoreSettings(raw, defaults)).toEqual({
@@ -56,21 +41,13 @@ describe("restoreSettings", () => {
       speedMode: defaults.speedMode,
       rate: defaults.rate,
       loop: true,
-      wide: defaults.wide,
     });
   });
 });
 
 describe("settingsToQuery / settingsFromQuery", () => {
-  it("Given 設定, When クエリに書き出して基準の設定の上に読み戻す, Then 元の設定になる", () => {
-    expect(settingsFromQuery(settingsToQuery(saved), { ...defaults, wide: saved.wide })).toEqual(saved);
-  });
-
-  it("Given 横幅いっぱいのモードの設定, When クエリに書き出して読み戻す, Then 横幅のモードは載らず基準のまま", () => {
-    const query = settingsToQuery(saved);
-
-    expect(new URLSearchParams(query).has("wide")).toBe(false);
-    expect(settingsFromQuery(query, defaults).wide).toBe(defaults.wide);
+  it("Given 設定, When クエリに書き出して読み戻す, Then 元の設定になる", () => {
+    expect(settingsFromQuery(settingsToQuery(saved), defaults)).toEqual(saved);
   });
 
   it("Given 設定, When クエリに書き出す, Then 真偽値は 1/0、速度モードは speed になる", () => {
@@ -85,7 +62,7 @@ describe("settingsToQuery / settingsFromQuery", () => {
   it("Given 記号や日本語を含む入力値, When クエリに書き出して読み戻す, Then 元の入力値になる", () => {
     const tricky: Settings = { ...saved, form: { ...saved.form, input: "a&b=c ?#日本語" } };
 
-    expect(settingsFromQuery(settingsToQuery(tricky), saved)).toEqual(tricky);
+    expect(settingsFromQuery(settingsToQuery(tricky), defaults)).toEqual(tricky);
   });
 
   it("Given 基準の設定, When 一部の項目だけのクエリを読む, Then クエリに無い項目は基準のまま", () => {

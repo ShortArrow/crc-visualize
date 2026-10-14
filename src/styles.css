@@ -29,75 +29,154 @@ body {
   font-family: system-ui, "Segoe UI", "Hiragino Sans", sans-serif;
 }
 
-main {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 16px 24px 32px;
+/* 画面の枠（VS Code 風）。ページ自体はスクロールさせず、各領域の中だけをスクロールする。 */
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
 }
 
-main.wide {
-  max-width: none;
+.workbench {
+  display: grid;
+  grid-template-columns: 48px var(--sidebar-width) auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) 24px;
+  height: 100%;
 }
 
-header h1 {
-  margin: 0;
-  font-size: 1.4rem;
+.workbench.sidebar-closed {
+  grid-template-columns: 48px minmax(0, 1fr);
 }
 
-header .title {
+.workbench > .splitter {
+  grid-row: 1;
+  grid-column: 3;
+}
+
+.activity {
+  grid-row: 1;
   display: flex;
-  align-items: baseline;
-  gap: 24px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  background: #18191b;
+  border-right: 1px solid var(--border);
 }
 
-/* 横幅のモードの切替。見出しの右端に置く。 */
-.width-toggle {
-  align-self: center;
-  margin-left: auto;
-  width: 32px;
-  height: 28px;
-  display: inline-flex;
+.activity a,
+.activity button {
+  display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--panel);
+  width: 40px;
+  height: 40px;
   color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
   cursor: pointer;
 }
 
-.width-toggle:hover,
-.width-toggle[aria-pressed="true"] {
-  color: var(--accent);
-}
-
-/* ページの切替 */
-.pages {
-  display: flex;
-  gap: 4px;
-}
-
-.pages a {
-  padding: 2px 10px;
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 0.9rem;
-  text-decoration: none;
-}
-
-.pages a:hover {
+.activity a:hover,
+.activity button:hover {
   color: var(--fg);
 }
 
-.pages a.current {
-  background: rgb(97 175 239 / 0.15);
+.activity a.current {
+  color: var(--fg);
+  border-left-color: var(--accent);
+}
+
+.activity .sidebar-toggle {
+  margin-top: auto;
+}
+
+.activity .sidebar-toggle[aria-pressed="true"] {
   color: var(--accent);
 }
 
-header p {
-  margin: 4px 0 12px;
-  color: var(--muted);
-  font-size: 0.9rem;
+.sidebar {
+  grid-row: 1;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 10px 12px;
+  overflow: auto;
+  background: var(--panel);
+}
+
+.editor {
+  grid-row: 1;
+  grid-column: -2;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.statusbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 12px;
+  background: #1f4f78;
+  color: #e6edf3;
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* 領域の境界。ドラッグで動かす。 */
+.splitter {
+  position: relative;
+  background: var(--border);
+  touch-action: none;
+}
+
+.splitter-x {
+  width: 1px;
+  cursor: col-resize;
+}
+
+.splitter-y {
+  height: 1px;
+  cursor: row-resize;
+}
+
+.splitter::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: 1;
+}
+
+.splitter:hover,
+.splitter:active {
+  background: var(--accent);
+}
+
+.toc {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc button {
+  width: 100%;
+  padding: 4px 6px;
+  background: none;
+  color: var(--fg);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.toc button:hover {
+  background: rgb(97 175 239 / 0.12);
 }
 
 h2 {
@@ -111,14 +190,24 @@ h2 {
 
 /* 設定パネル */
 .config {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  align-items: flex-start;
-  padding: 12px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+.config label[data-field] {
+  grid-column: 1 / -1;
+}
+
+/* サイドバーの 2 列では、真偽値の refin と refout を同じ行に並べる。 */
+.config [data-param="refin"],
+.config [data-param="refout"] {
+  order: 1;
+}
+
+.config [data-field="inputMode"],
+.config [data-field="input"] {
+  order: 2;
 }
 
 .config label {
@@ -132,8 +221,6 @@ h2 {
 .config label.check-field {
   flex-direction: row;
   align-items: center;
-  align-self: center;
-  margin-top: 16px;
 }
 
 .config input:not([type="checkbox"]),
@@ -148,17 +235,10 @@ h2 {
   font-size: 0.9rem;
 }
 
-.config input:not([type="checkbox"]) {
-  width: 8.5em;
-}
-
-.config .input-field {
-  flex: 1;
-  min-width: 16em;
-}
-
-.config .input-field input {
+.config input:not([type="checkbox"]),
+.config select {
   width: 100%;
+  min-width: 0;
 }
 
 .config .invalid input {
@@ -174,13 +254,6 @@ h2 {
   color: var(--hot);
 }
 
-/* ペイン */
-.visualizer {
-  display: grid;
-  gap: 12px;
-  margin-top: 12px;
-}
-
 .pane {
   padding: 12px;
   background: var(--panel);
@@ -188,19 +261,46 @@ h2 {
   border-radius: 8px;
 }
 
-.hardware {
-  overflow-x: auto;
-}
-
-.software {
+/* 可視化のエディタ領域 */
+.visualizer {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 16px;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
 }
 
-.software > div {
+.visualizer .controls {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.viz-split {
+  display: grid;
+  min-height: 0;
+}
+
+.hardware {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  padding: 10px 12px;
+  overflow: hidden;
+}
+
+.panel {
+  display: grid;
+  min-height: 0;
+}
+
+.panel > .software,
+.panel > .log-pane {
   min-width: 0;
-  overflow-x: auto;
+  min-height: 0;
+  padding: 10px 12px;
+  overflow: auto;
+}
+
+.invalid-config {
+  padding: 16px;
 }
 
 /* 再生コントロール */
@@ -271,7 +371,8 @@ h2 {
 .lfsr {
   display: block;
   width: 100%;
-  max-height: 340px;
+  height: 100%;
+  min-height: 0;
   font-family: var(--mono);
 }
 
@@ -909,7 +1010,11 @@ h2 {
 /* 名前の規則のページ */
 .names-page {
   display: grid;
+  align-content: start;
   gap: 12px;
+  height: 100%;
+  padding: 12px;
+  overflow: auto;
 }
 
 .names-page .note {
@@ -1050,6 +1155,7 @@ h2 {
 /* パラメータ名の別名の図 */
 .param-map {
   max-width: 760px;
+  height: auto;
   max-height: none;
   overflow: visible;
 }

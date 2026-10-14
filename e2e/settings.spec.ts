@@ -64,23 +64,4 @@ test.describe("設定の保持と共有", () => {
       await expect(v.settings.rate()).toHaveValue("4");
     });
   });
-
-  test("横幅いっぱいのモードに切り替えると内容が画面の横幅いっぱいに広がり、再読み込みしても保たれ、URL には載らない", async ({ page }) => {
-    const v = await given("既定の横幅の制限ありで開いている", () => Visualizer.open(page));
-    await then("内容の横幅は 1280px までに制限される", async () => {
-      expect((await v.settings.widths()).content).toBe(1280);
-    });
-    await when("横幅いっぱいに切り替える", () => v.settings.widthToggle().click());
-    await then("内容が画面の横幅いっぱいに広がり、クエリに横幅のモードは無い", async () => {
-      const { content, view } = await v.settings.widths();
-      expect(content).toBeGreaterThan(1280);
-      expect(content).toBeGreaterThanOrEqual(view - 20);
-      expect(v.settings.query().has("wide")).toBe(false);
-    });
-    await when("再読み込みする", () => page.reload());
-    await then("横幅いっぱいのまま", async () => {
-      await expect(v.settings.widthToggle()).toHaveAttribute("aria-pressed", "true");
-      expect((await v.settings.widths()).content).toBeGreaterThan(1280);
-    });
-  });
 });

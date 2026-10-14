@@ -6,6 +6,33 @@ import { ParamMap } from "./ParamMap";
 import { PARAM_INFO } from "./paramInfo";
 
 const EXAMPLE = "CRC-16/KERMIT";
+
+/** 名前の規則のページの節。目次と各節の id に使う。 */
+const SECTIONS = [
+  { id: "names-parts", title: "名前の分解" },
+  { id: "names-families", title: "同じ poly の一族" },
+  { id: "names-aliases", title: "別名の対応表" },
+  { id: "names-param-map", title: "パラメータ名の別名" },
+  { id: "names-param-table", title: "パラメータ名の対応表" },
+] as const;
+
+/** サイドバーに置く目次。選ぶとエディタ領域のその節へ移る。フラグメントはページの切替に使うので変えない。 */
+export function NamesToc() {
+  return (
+    <>
+      <h2>目次</h2>
+      <ul className="toc">
+        {SECTIONS.map(({ id, title }) => (
+          <li key={id}>
+            <button type="button" onClick={() => document.getElementById(id)?.scrollIntoView({ block: "start" })}>
+              {title}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
 const hexOf = (value: number, width: number) =>
   `0x${value
     .toString(16)
@@ -19,7 +46,7 @@ export function NamesPage({ target }: { target: ParamName | undefined }) {
       <NameParts />
       <Families />
       <Aliases />
-      <section className="pane">
+      <section className="pane" id="names-param-map">
         <h2>パラメータ名の別名</h2>
         <p className="note">名前にマウスを乗せると効く場所と別名を示し、選ぶと下の表のその行へ移ります。</p>
         <ParamMap />
@@ -32,7 +59,7 @@ export function NamesPage({ target }: { target: ParamName | undefined }) {
 function NameParts() {
   const { head, width, origin } = splitPresetName(EXAMPLE);
   return (
-    <section className="pane name-parts">
+    <section className="pane name-parts" id="names-parts">
       <h2>名前の分解</h2>
       <div className="parts">
         <span className="part" data-part="head">
@@ -59,7 +86,7 @@ function NameParts() {
 
 function Families() {
   return (
-    <section className="pane families">
+    <section className="pane families" id="names-families">
       <h2>
         同じ <code>poly</code> の一族
       </h2>
@@ -103,7 +130,7 @@ function Families() {
 
 function Aliases() {
   return (
-    <section className="pane aliases">
+    <section className="pane aliases" id="names-aliases">
       <h2>別名の対応表</h2>
       <table className="ambiguous">
         <caption>流儀によって指すものが割れる呼び名</caption>
@@ -142,7 +169,7 @@ function ParamTable({ target }: { target: ParamName | undefined }) {
     if (target) rows.current.get(target)?.scrollIntoView({ block: "center" });
   }, [target]);
   return (
-    <section className="pane param-table">
+    <section className="pane param-table" id="names-param-table">
       <h2>パラメータ名の対応表</h2>
       <table>
         <thead>
