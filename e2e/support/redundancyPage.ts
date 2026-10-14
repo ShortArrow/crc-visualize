@@ -26,6 +26,11 @@ export class RedundancyPage {
     return this.root.locator(`.sent-row .bit-cell${part ? `.${part}` : ""}`);
   }
 
+  /** 送った符号語の、本文（message）か CRC（crc）の見出し。 */
+  partLabel(part: "message" | "crc"): Locator {
+    return this.root.locator(`.sent-row .part-label.${part}`);
+  }
+
   /** 並びの数と符号語の数。 */
   counts(): Locator {
     return this.root.locator(".space-counts");
