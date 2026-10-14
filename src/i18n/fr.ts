@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** フランス語の画面の文。 */
 export const fr: Messages = {
-  pages: { visualizer: "Visualisation", names: "Nomenclature", narrow: "Affiner" },
+  pages: { visualizer: "Visualisation", names: "Nomenclature", narrow: "Affiner", cyclic: "Cyclique" },
   workbench: { sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)", language: "Langue" },
   settings: {
     heading: "Paramètres",
@@ -172,6 +172,26 @@ export const fr: Messages = {
     fixed: "Valeurs fixées",
     none: "Aucune pour l’instant",
     status: (n: number) => `Affiner : ${n} candidats`,
+  },
+  cyclic: {
+    heading: "Pourquoi un contrôle de redondance « cyclique » ?",
+    wordRing: "Anneau du mot de code",
+    wordNote:
+      "Un mot de code (le message suivi de son CRC) disposé dans le sens horaire, x^0 en haut. Le tourner une fois revient à le multiplier par x.",
+    stateRing: "Anneau des états",
+    stateNote:
+      "Les états du registre quand il part de 1 et reçoit sans cesse le bit d’entrée 0. Le j-ième état est x^j mod g(x).",
+    forward: "Multiplier par x (tourner une fois)",
+    back: "Diviser par x (tourner une fois en arrière)",
+    rotated: (k: number) => `rotations k = ${k}`,
+    word: "Bits tournés",
+    remainder: "Reste modulo g(x)",
+    crcBit: "bord vert = bits ajoutés comme CRC",
+    explain: (n: number) =>
+      `La longueur de l’anneau et le nombre de pas avant que l’état revienne à x^0 valent tous deux n = ${n}. Comme x^n mod g(x) vaut 1, remplacer x^n par x^0 pour le bit qui fait le tour ne change pas le reste. Un mot de code tourné reste donc un mot de code ; les codes ayant cette propriété sont appelés codes cycliques.`,
+    shortened:
+      "Les CRC réels s’appliquent le plus souvent à des entrées plus courtes que n. C’est un code cyclique raccourci : un code cyclique dont les premiers bits sont pris égaux à 0.",
+    generators: "Polynômes générateurs",
   },
   listSeparator: ", ",
 };

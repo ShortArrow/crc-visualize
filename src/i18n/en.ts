@@ -2,7 +2,7 @@ import type { Messages } from "./ja";
 
 /** 英語の画面の文。 */
 export const en: Messages = {
-  pages: { visualizer: "Visualizer", names: "Naming", narrow: "Narrow down" },
+  pages: { visualizer: "Visualizer", names: "Naming", narrow: "Narrow down", cyclic: "Cyclic" },
   workbench: { sidebarToggle: "Toggle sidebar (Ctrl+B)", language: "Language" },
   settings: {
     heading: "Settings",
@@ -172,6 +172,24 @@ export const en: Messages = {
     fixed: "Fixed values",
     none: "None yet",
     status: (n: number) => `Narrow down: ${n} candidates`,
+  },
+  cyclic: {
+    heading: 'Why a "cyclic" redundancy check?',
+    wordRing: "Codeword ring",
+    wordNote: "A codeword (message followed by its CRC) laid out clockwise with x^0 at the top. One rotation multiplies it by x.",
+    stateRing: "State ring",
+    stateNote: "The register states when it starts at 1 and keeps receiving input bit 0. The j-th state is x^j mod g(x).",
+    forward: "Multiply by x (rotate once)",
+    back: "Divide by x (rotate back once)",
+    rotated: (k: number) => `rotations k = ${k}`,
+    word: "Rotated bits",
+    remainder: "Remainder mod g(x)",
+    crcBit: "green outline = bits appended as the CRC",
+    explain: (n: number) =>
+      `The ring length and the number of steps until the state returns to x^0 are both n = ${n}. Since x^n mod g(x) is 1, replacing the wrapped bit's x^n with x^0 does not change the remainder. So a rotated codeword is still a codeword; codes with this property are called cyclic codes.`,
+    shortened:
+      "Real CRCs are usually applied to inputs shorter than n. That is a shortened cyclic code: a cyclic code whose leading bits are taken as 0.",
+    generators: "Generator polynomials",
   },
   listSeparator: ", ",
 };

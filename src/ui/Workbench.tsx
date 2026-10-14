@@ -1,4 +1,4 @@
-import { BookOpen, Cpu, ListTree, PanelLeft } from "lucide-react";
+import { BookOpen, Cpu, ListTree, PanelLeft, RefreshCw } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { useMessages } from "../i18n/I18n";
 import { LOCALE_NAMES, LOCALES, type Locale } from "../i18n/locale";
@@ -57,6 +57,15 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
           aria-label={m.pages.narrow}
         >
           <ListTree size={ICON_SIZE} />
+        </a>
+        <a
+          href="#cyclic"
+          className={route.page === "cyclic" ? "current" : ""}
+          data-page="cyclic"
+          title={m.pages.cyclic}
+          aria-label={m.pages.cyclic}
+        >
+          <RefreshCw size={ICON_SIZE} />
         </a>
         <button
           type="button"
