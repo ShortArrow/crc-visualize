@@ -7,7 +7,8 @@ import { pickLocale, type Locale } from "./i18n/locale";
 import { MESSAGES } from "./i18n/messages";
 import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "./domain/trace";
 import { animationMs, initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
-import { CodeView } from "./ui/CodeView";
+import type { CodeLang } from "./ui/code";
+import { CodeLangSelect, CodeView } from "./ui/CodeView";
 import { ConfigPanel, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { LfsrView } from "./ui/LfsrView";
@@ -30,6 +31,7 @@ const DEFAULT_SETTINGS: Settings = {
   speedMode: "auto",
   rate: 1,
   loop: false,
+  codeLang: "pseudo",
   locale: pickLocale(navigator.languages),
 };
 const sameBits = (a: readonly Bit[], b: readonly Bit[]) => a.length === b.length && a.every((x, i) => x === b[i]);
@@ -55,7 +57,11 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   const [speedMode, setSpeedMode] = useState<SpeedMode>(restored.speedMode);
   const [rate, setRate] = useState(restored.rate);
   const [loop, setLoop] = useState(restored.loop);
-  useEffect(() => persistSettings({ form, speedMode, rate, loop, locale }), [form, speedMode, rate, loop, locale]);
+  const [codeLang, setCodeLang] = useState<CodeLang>(restored.codeLang);
+  useEffect(
+    () => persistSettings({ form, speedMode, rate, loop, codeLang, locale }),
+    [form, speedMode, rate, loop, codeLang, locale],
+  );
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
@@ -128,12 +134,14 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       speedMode={speedMode}
       rate={rate}
       loop={loop}
+      codeLang={codeLang}
       focus={focus}
       layout={layout}
       frame={frame(settingsSidebar)}
       onSpeedMode={setSpeedMode}
       onRate={setRate}
       onLoop={setLoop}
+      onCodeLang={setCodeLang}
       onLayout={setLayout}
     />
   );
@@ -174,12 +182,14 @@ type VisualizerProps = Readonly<{
   speedMode: SpeedMode;
   rate: number;
   loop: boolean;
+  codeLang: CodeLang;
   focus: ParamFocus;
   layout: PaneLayout;
   frame: Frame;
   onSpeedMode: (mode: SpeedMode) => void;
   onRate: (rate: number) => void;
   onLoop: (loop: boolean) => void;
+  onCodeLang: (lang: CodeLang) => void;
   onLayout: (layout: PaneLayout) => void;
 }>;
 
@@ -196,8 +206,8 @@ const KEY_MSG: Record<string, PlayerMsg> = {
 
 /** 1 つの設定に対するステップ列と再生状態。設定が変わると key で作り直され、先頭・停止に戻る。 */
 function Visualizer(props: VisualizerProps) {
-  const { params, bits, presetName, check, speedMode, rate, loop, focus, layout, frame, onSpeedMode, onRate, onLoop, onLayout } =
-    props;
+  const { params, bits, presetName, check, speedMode, rate, loop, codeLang, focus, layout, frame } = props;
+  const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout } = props;
   const m = useMessages();
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
@@ -283,8 +293,11 @@ function Visualizer(props: VisualizerProps) {
           style={{ gridTemplateColumns: `minmax(0, ${layout.codeRatio}fr) auto minmax(0, ${1 - layout.codeRatio}fr)` }}
         >
           <div className="software">
-            <h2>{m.visualizer.software}</h2>
-            <CodeView params={params} step={step} focus={focus} />
+            <h2>
+              {m.visualizer.software}
+              <CodeLangSelect value={codeLang} onChange={onCodeLang} />
+            </h2>
+            <CodeView params={params} step={step} focus={focus} lang={codeLang} />
           </div>
           <Splitter
             axis="x"

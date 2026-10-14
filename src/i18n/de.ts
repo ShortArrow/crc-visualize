@@ -66,6 +66,8 @@ export const de: Messages = {
     check: (hex: string, match: boolean) => `Prüfwert ${hex} ${match ? "stimmt überein" : "stimmt nicht überein"}`,
   },
   code: {
+    pseudo: "Pseudocode",
+    language: "Programmiersprache",
     refinOff: "wird nicht ausgeführt, da refin false ist",
     refoutOff: "wird nicht ausgeführt, da refout false ist",
     xoroutZero: "keine Änderung, da xorout 0 ist",

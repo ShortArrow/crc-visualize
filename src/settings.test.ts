@@ -6,6 +6,7 @@ const defaults: Settings = {
   speedMode: "auto",
   rate: 1,
   loop: false,
+  codeLang: "pseudo",
   locale: "ja",
 };
 
@@ -23,6 +24,7 @@ const saved: Settings = {
   speedMode: "steady",
   rate: 4,
   loop: true,
+  codeLang: "haskell",
   locale: "de",
 };
 
@@ -48,6 +50,7 @@ describe("restoreSettings", () => {
       speedMode: "fast",
       rate: 3,
       loop: true,
+      codeLang: "cobol",
       locale: "ru",
     });
 
@@ -56,6 +59,7 @@ describe("restoreSettings", () => {
       speedMode: defaults.speedMode,
       rate: defaults.rate,
       loop: true,
+      codeLang: defaults.codeLang,
       locale: defaults.locale,
     });
   });
@@ -66,13 +70,14 @@ describe("settingsToQuery / settingsFromQuery", () => {
     expect(settingsFromQuery(settingsToQuery(saved), defaults)).toEqual(saved);
   });
 
-  it("Given 設定, When クエリに書き出す, Then 真偽値は 1/0、速度モードは speed、表示言語は lang になる", () => {
+  it("Given 設定, When クエリに書き出す, Then 真偽値は 1/0、速度モードは speed、コードの言語は code、表示言語は lang になる", () => {
     const query = new URLSearchParams(settingsToQuery(saved));
 
     expect(query.get("refin")).toBe("1");
     expect(query.get("loop")).toBe("1");
     expect(query.get("speed")).toBe("steady");
     expect(query.get("inputMode")).toBe("text");
+    expect(query.get("code")).toBe("haskell");
     expect(query.get("lang")).toBe("de");
   });
 
@@ -88,6 +93,6 @@ describe("settingsToQuery / settingsFromQuery", () => {
   });
 
   it("Given 基準の設定, When 正しくない値のクエリを読む, Then その項目は基準のまま", () => {
-    expect(settingsFromQuery("?refin=maybe&inputMode=octal&rate=3&speed=fast&loop=2&lang=ko", saved)).toEqual(saved);
+    expect(settingsFromQuery("?refin=maybe&inputMode=octal&rate=3&speed=fast&loop=2&lang=ko&code=cobol", saved)).toEqual(saved);
   });
 });

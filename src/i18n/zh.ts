@@ -66,6 +66,8 @@ export const zh: Messages = {
     check: (hex: string, match: boolean) => `校验值 ${hex} ${match ? "一致" : "不一致"}`,
   },
   code: {
+    pseudo: "伪代码",
+    language: "代码语言",
     refinOff: "refin 为 false，因此不执行",
     refoutOff: "refout 为 false，因此不执行",
     xoroutZero: "xorout 为 0，因此值不变",

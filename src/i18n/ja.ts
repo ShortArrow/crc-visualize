@@ -69,6 +69,8 @@ export const ja = {
     check: (hex: string, match: boolean) => `検査値 ${hex} ${match ? "と一致" : "と不一致"}`,
   },
   code: {
+    pseudo: "擬似コード",
+    language: "コードの言語",
     refinOff: "refin が false なので実行しない",
     refoutOff: "refout が false なので実行しない",
     xoroutZero: "xorout が 0 なので値は変わらない",

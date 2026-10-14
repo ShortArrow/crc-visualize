@@ -2,16 +2,25 @@ import type { ConfigForm } from "./domain/parse";
 import type { InputMode } from "./domain/presets";
 import { isLocale, type Locale } from "./i18n/locale";
 import type { SpeedMode } from "./playback/playback";
+import { CODE_LANGS, type CodeLang } from "./ui/codeLangs";
 import { RATES } from "./ui/Controls";
 
 /** 次に開いたときに復元する設定。再生位置は含めない。 */
-export type Settings = Readonly<{ form: ConfigForm; speedMode: SpeedMode; rate: number; loop: boolean; locale: Locale }>;
+export type Settings = Readonly<{
+  form: ConfigForm;
+  speedMode: SpeedMode;
+  rate: number;
+  loop: boolean;
+  codeLang: CodeLang;
+  locale: Locale;
+}>;
 
 /** localStorage のキー。保存形式を変えるときは版を上げる。 */
 export const SETTINGS_KEY = "crc-visualize:settings:v1";
 
 const INPUT_MODES: readonly InputMode[] = ["bits", "hex", "text"];
 const SPEED_MODES: readonly SpeedMode[] = ["auto", "steady"];
+const CODE_LANG_IDS = Object.keys(CODE_LANGS) as CodeLang[];
 
 type Fields = Readonly<Record<string, unknown>>;
 const isRecord = (v: unknown): v is Fields => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -56,6 +65,7 @@ function validate(v: unknown, defaults: Settings): Settings {
     speedMode: pick(s.speedMode, oneOf(SPEED_MODES), defaults.speedMode),
     rate: pick(s.rate, oneOf<number>(RATES), defaults.rate),
     loop: pick(s.loop, isBoolean, defaults.loop),
+    codeLang: pick(s.codeLang, oneOf(CODE_LANG_IDS), defaults.codeLang),
     locale: pick(s.locale, isLocale, defaults.locale),
   };
 }
@@ -65,14 +75,15 @@ const FLAG_FIELDS = ["refin", "refout"] as const;
 const flag = (b: boolean) => (b ? "1" : "0");
 const unflag = (v: string): unknown => (v === "1" ? true : v === "0" ? false : v);
 
-/** 設定を URL のクエリ文字列（先頭の ? は含まない）にする。真偽値は 1/0、速度モードは speed、表示言語は lang。 */
-export function settingsToQuery({ form, speedMode, rate, loop, locale }: Settings): string {
+/** 設定を URL のクエリ文字列（先頭の ? は含まない）にする。真偽値は 1/0、速度モードは speed、コードの言語は code、表示言語は lang。 */
+export function settingsToQuery({ form, speedMode, rate, loop, codeLang, locale }: Settings): string {
   const q = new URLSearchParams();
   for (const k of TEXT_FIELDS) q.set(k, form[k]);
   for (const k of FLAG_FIELDS) q.set(k, flag(form[k]));
   q.set("speed", speedMode);
   q.set("rate", String(rate));
   q.set("loop", flag(loop));
+  q.set("code", codeLang);
   q.set("lang", locale);
   return q.toString();
 }
@@ -91,6 +102,7 @@ export function settingsFromQuery(search: string, base: Settings): Settings {
       speedMode: has("speed") ? get("speed") : base.speedMode,
       rate: has("rate") ? Number(get("rate")) : base.rate,
       loop: has("loop") ? unflag(get("loop")) : base.loop,
+      codeLang: has("code") ? get("code") : base.codeLang,
       locale: has("lang") ? get("lang") : base.locale,
     },
     base,
