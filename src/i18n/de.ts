@@ -231,6 +231,10 @@ export const de: Messages = {
     guarantee: (w: number) =>
       `Jeder 1-Bit-Fehler und jeder Fehler der Länge ${w} oder weniger wird erkannt. Übersehen wird ein Fehler nur, wenn e durch g(x) teilbar ist. Das übersehene Beispiel setzt e auf g(x) selbst, mit der Länge ${w + 1}.`,
   },
+  currentSettings: {
+    heading: "Aktuelle Einstellungen",
+    openVisualizer: "Einstellungen auf der Visualisierungsseite ändern",
+  },
   equivalence: {
     heading: "Äquivalenzen",
     note: "Wie die Parameter zusammenhängen. Die Beispiele werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (wie auf der Visualisierungsseite).",
@@ -321,8 +325,6 @@ export const de: Messages = {
     codeConstants: (poly: string, init: string) => `Der Code der Implementierung schreibt poly = ${poly} und init = ${init}`,
     ambiguous:
       "Auch die gespiegelte Form dieses poly hat das niedrigste Bit 1, daher verrät die Konstante allein nicht, ob sie normal oder gespiegelt ist",
-    settings: "Aktuelle Einstellungen",
-    openVisualizer: "Einstellungen auf der Visualisierungsseite ändern",
   },
   listSeparator: ", ",
 };

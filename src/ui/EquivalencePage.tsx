@@ -1,7 +1,6 @@
 import { codeConstants, equivalences, initPrefix, shiftDirection, type Equivalence } from "../domain/equivalence";
 import type { ConfigResult } from "../domain/parse";
-import { PARAM_NAMES, reflectValue, toRegister, type CrcParams } from "../domain/trace";
-import { formatValue } from "../domain/narrow";
+import { reflectValue, toRegister, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { bitsToString, toHex } from "./format";
 
@@ -103,32 +102,5 @@ function CurrentInference({ params }: Readonly<{ params: CrcParams }>) {
       )}
       {reflectValue(params.poly, params.width) & 1 ? <p className="note">{e.ambiguous}</p> : null}
     </div>
-  );
-}
-
-/** サイドバーに置く、今の設定と可視化のページへのリンク。 */
-export function EquivalenceSidebar({ config }: Readonly<{ config: ConfigResult }>) {
-  const m = useMessages();
-  return (
-    <>
-      <h2>{m.equivalence.settings}</h2>
-      {config.ok ? (
-        <dl className="equivalence-settings">
-          {PARAM_NAMES.map((param) => (
-            <div key={param}>
-              <dt>{param}</dt>
-              <dd>{formatValue(param, config.params[param])}</dd>
-            </div>
-          ))}
-          <div>
-            <dt>input</dt>
-            <dd className="input-bits">{bitsToString(config.bits)}</dd>
-          </div>
-        </dl>
-      ) : (
-        <p className="note">{m.settings.invalidStatus}</p>
-      )}
-      <a href="#">{m.equivalence.openVisualizer}</a>
-    </>
   );
 }

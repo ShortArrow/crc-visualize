@@ -231,6 +231,10 @@ export const fr: Messages = {
     guarantee: (w: number) =>
       `Toute erreur d’1 bit et toute erreur de longueur ${w} ou moins est détectée. Une erreur n’est manquée que si e est divisible par g(x). L’exemple manqué prend e égal à g(x), de longueur ${w + 1}.`,
   },
+  currentSettings: {
+    heading: "Réglages actuels",
+    openVisualizer: "Modifier les réglages sur la page de visualisation",
+  },
   equivalence: {
     heading: "Équivalences",
     note: "Comment les paramètres sont liés entre eux. Les exemples sont calculés avec les réglages et l’entrée actuels (les mêmes que sur la page de visualisation).",
@@ -323,8 +327,6 @@ export const fr: Messages = {
     codeConstants: (poly: string, init: string) => `Le code de l’implémentation écrit poly = ${poly} et init = ${init}`,
     ambiguous:
       "La forme inversée de ce poly a aussi son bit de poids faible à 1 ; la constante seule ne dit pas si elle est normale ou inversée",
-    settings: "Réglages actuels",
-    openVisualizer: "Modifier les réglages sur la page de visualisation",
   },
   listSeparator: ", ",
 };
