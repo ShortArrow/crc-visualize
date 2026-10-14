@@ -1133,14 +1133,9 @@ h2 {
 }
 
 .aliases {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 8px 32px;
-}
-
-.aliases h2 {
-  flex-basis: 100%;
+  display: grid;
+  justify-items: start;
+  gap: 12px;
 }
 
 .alias-index tbody td {
