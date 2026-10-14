@@ -172,7 +172,7 @@ export class Visualizer {
 
   readonly workbench = {
     /** アクティビティバーのページの切替。 */
-    pageLink: (name: "visualizer" | "names" | "narrow" | "cyclic" | "redundancy" | "equivalence") =>
+    pageLink: (name: "visualizer" | "names" | "narrow" | "cyclic" | "redundancy" | "check" | "equivalence") =>
       this.page.locator(`.activity a[data-page="${name}"]`),
     /** ステータスバーの表示言語の選択。 */
     localeSelect: () => this.page.locator(".statusbar .locale-select"),

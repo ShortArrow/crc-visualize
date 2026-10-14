@@ -102,3 +102,9 @@ describe("置き換えのページのフラグメント", () => {
     expect(parseRoute(hash)).toEqual({ page: "equivalence" });
   });
 });
+
+describe("検査のページのフラグメント", () => {
+  it("Given フラグメント #check, When ページを決める, Then 検査のページ", () => {
+    expect(parseRoute("#check")).toEqual({ page: "check" });
+  });
+});

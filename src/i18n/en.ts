@@ -8,6 +8,7 @@ export const en: Messages = {
     narrow: "Narrow down",
     cyclic: "Cyclic",
     redundancy: "Redundancy",
+    check: "Check",
     equivalence: "Equivalences",
   },
   workbench: { sidebarToggle: "Toggle sidebar (Ctrl+B)", language: "Language" },
@@ -320,6 +321,45 @@ export const en: Messages = {
     codeConstants: (poly: string, init: string) => `The implementation's code writes poly = ${poly} and init = ${init}`,
     ambiguous:
       "The bit-reversed form of this poly also has lowest bit 1, so the constant alone does not tell whether it is normal or reversed",
+  },
+  check: {
+    heading: 'Why a "check"?',
+    note: "How the receiver actually checks the data. Values are computed with the current settings and input (the same as on the visualizer page).",
+    frameSection: "Sent bit string",
+    frameNote:
+      "The message is sent followed by its CRC. CRCs with refin and refout true are appended lowest byte first. Select a bit to flip it (as if it were corrupted in transit).",
+    message: "message",
+    crc: "CRC",
+    reset: "Undo",
+    methodsSection: "Ways to check",
+    recheck: {
+      title: "1. Recompute and compare",
+      note: "Compute the CRC of the received message and compare it with the received CRC.",
+      computed: "CRC of the message",
+      received: "Received CRC",
+    },
+    whole: {
+      title: "2. Run the whole codeword through",
+      note: "Compute the CRC of the whole received string with the same settings. Without errors it is a constant that depends only on the settings, not on the message (the residue). With xorout 0 and no reflection the residue is 0. Because it is compared with a constant, hardware can check without telling the message and CRC apart.",
+      value: "CRC of the whole string",
+      residue: "Residue",
+      notApplicable:
+        "refin and refout differ, so the appended CRC does not line up with the register and the result is not constant",
+    },
+    ok: "No error",
+    ng: "Error",
+    sameVerdict: "Where both apply, the two verdicts always agree.",
+    checkSection: "Check value",
+    catalogue: "Catalogue check value (check)",
+    computedCheck: "CRC computed from 123456789",
+    checkNote:
+      "The check value is not for finding errors; it is a way to verify an implementation. If your implementation gives this value for the input 123456789, the settings are right.",
+    custom: "Not a preset, so there is no catalogue check value.",
+    limitsSection: "What a CRC cannot check",
+    limits: [
+      "A CRC only tells you there is an error; it does not fix it. Another mechanism, such as asking for a resend, is needed.",
+      "If whoever changes the message also recomputes the CRC, the change goes unnoticed. Use a hash or MAC against deliberate tampering.",
+    ],
   },
   listSeparator: ", ",
 };

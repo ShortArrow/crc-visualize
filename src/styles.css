@@ -1819,3 +1819,108 @@ button.bit-cell:hover {
   margin: 0;
   word-break: break-all;
 }
+
+/* 検査のページ */
+.check-page {
+  height: 100%;
+  padding: 12px;
+  overflow: auto;
+}
+
+.check-page > .note,
+.check-page .note {
+  max-width: 760px;
+  font-size: 0.85rem;
+}
+
+.check-page h3 {
+  margin: 20px 0 8px;
+  font-size: 1rem;
+}
+
+.frame-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 760px;
+  font-family: var(--mono);
+}
+
+.frame-row .bit-cell {
+  width: 18px;
+  height: 20px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.frame-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0;
+}
+
+.frame-legend .part-label {
+  padding: 0 4px;
+}
+
+.methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.method {
+  flex: 1 1 320px;
+  max-width: 374px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.method h4 {
+  margin: 0 0 6px;
+  color: var(--accent);
+}
+
+.method dl,
+.check-values {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 4px 12px;
+  margin: 6px 0;
+  font-size: 0.85rem;
+}
+
+.method dt,
+.check-values dt {
+  color: var(--muted);
+}
+
+.method dd,
+.check-values dd {
+  margin: 0;
+  font-family: var(--mono);
+}
+
+.method .not-applicable {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.verdict[data-ok="true"] {
+  color: var(--bg);
+  background: var(--ok);
+}
+
+.verdict[data-ok="false"] {
+  color: var(--bg);
+  background: var(--hot);
+}
+
+.check-limits {
+  max-width: 760px;
+  padding-left: 20px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}

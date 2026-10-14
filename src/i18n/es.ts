@@ -8,6 +8,7 @@ export const es: Messages = {
     narrow: "Filtrar",
     cyclic: "Cíclico",
     redundancy: "Redundancia",
+    check: "Comprobación",
     equivalence: "Equivalencias",
   },
   workbench: { sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)", language: "Idioma" },
@@ -330,6 +331,45 @@ export const es: Messages = {
     codeConstants: (poly: string, init: string) => `El código de la implementación escribe poly = ${poly} e init = ${init}`,
     ambiguous:
       "La forma invertida de este poly también tiene el bit más bajo a 1, así que la constante sola no indica si es normal o invertida",
+  },
+  check: {
+    heading: "¿Por qué «comprobación»?",
+    note: "Cómo comprueba realmente el receptor los datos. Los valores se calculan con la configuración y la entrada actuales (las mismas que en el visualizador).",
+    frameSection: "Cadena enviada",
+    frameNote:
+      "Se envía el mensaje seguido de su CRC. Los CRC con refin y refout true se añaden empezando por el byte bajo. Selecciona un bit para invertirlo (como si se dañara por el camino).",
+    message: "mensaje",
+    crc: "CRC",
+    reset: "Deshacer",
+    methodsSection: "Formas de comprobar",
+    recheck: {
+      title: "1. Recalcular y comparar",
+      note: "Calcular el CRC del mensaje recibido y compararlo con el CRC recibido.",
+      computed: "CRC del mensaje",
+      received: "CRC recibido",
+    },
+    whole: {
+      title: "2. Pasar la palabra de código entera",
+      note: "Calcular el CRC de toda la cadena recibida con la misma configuración. Sin errores es una constante que solo depende de la configuración, no del mensaje (el residuo). Con xorout 0 y sin reflexión, el residuo es 0. Como se compara con una constante, el hardware puede comprobar sin distinguir mensaje y CRC.",
+      value: "CRC de toda la cadena",
+      residue: "Residuo",
+      notApplicable:
+        "refin y refout difieren, así que el CRC añadido no se alinea con el registro y el resultado no es constante",
+    },
+    ok: "Sin error",
+    ng: "Con error",
+    sameVerdict: "Cuando ambas se aplican, los dos resultados siempre coinciden.",
+    checkSection: "Valor de comprobación",
+    catalogue: "Valor de comprobación del catálogo (check)",
+    computedCheck: "CRC calculado de 123456789",
+    checkNote:
+      "El valor de comprobación no sirve para encontrar errores, sino para verificar una implementación. Si tu implementación da este valor para la entrada 123456789, la configuración es correcta.",
+    custom: "No es un preajuste, así que no hay valor de comprobación del catálogo.",
+    limitsSection: "Lo que un CRC no puede comprobar",
+    limits: [
+      "Un CRC solo indica que hay un error; no lo corrige. Hace falta otro mecanismo, como pedir un reenvío.",
+      "Si quien cambia el mensaje también recalcula el CRC, el cambio pasa inadvertido. Contra la manipulación deliberada se usa un hash o un MAC.",
+    ],
   },
   listSeparator: ", ",
 };
