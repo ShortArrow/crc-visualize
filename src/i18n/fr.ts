@@ -66,6 +66,8 @@ export const fr: Messages = {
     check: (hex: string, match: boolean) => `valeur de contrôle ${hex} : ${match ? "concordante" : "non concordante"}`,
   },
   code: {
+    pseudo: "Pseudo-code",
+    language: "Langage du code",
     refinOff: "non exécuté car refin vaut false",
     refoutOff: "non exécuté car refout vaut false",
     xoroutZero: "aucun changement car xorout vaut 0",

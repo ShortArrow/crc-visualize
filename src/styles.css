@@ -743,7 +743,7 @@ h2 {
   fill: var(--accent);
 }
 
-/* 擬似コード */
+/* コード */
 .code {
   margin: 0;
   font-family: var(--mono);
@@ -760,6 +760,11 @@ h2 {
   transition:
     background var(--snap-ms),
     opacity var(--snap-ms);
+}
+
+/* 欄より長い行でも行番号の幅を縮めず、書き出しの位置を揃える。 */
+.code-line > * {
+  flex: none;
 }
 
 .code-line .ln {
@@ -1330,4 +1335,24 @@ h2 {
 .statusbar .locale-select option {
   color: var(--fg);
   background: var(--panel);
+}
+
+/* コードの言語の選択 */
+.software h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.code-lang {
+  padding: 1px 6px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
 }

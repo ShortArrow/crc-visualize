@@ -129,6 +129,10 @@ export class Visualizer {
   };
 
   readonly code = {
+    /** コードを書く言語の選択。 */
+    langSelect: () => this.page.locator(".software .code-lang"),
+    /** 各行のコードの部分（行番号と注記を除く）。 */
+    texts: () => this.page.locator(".code-text"),
     activeLine: () => this.page.locator(".code-line.active"),
     line: (text: string) => this.page.locator(".code-line", { hasText: text }),
     skippedLine: () => this.page.locator(".code-line.skipped"),

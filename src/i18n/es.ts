@@ -66,6 +66,8 @@ export const es: Messages = {
     check: (hex: string, match: boolean) => `valor de comprobación ${hex}: ${match ? "coincide" : "no coincide"}`,
   },
   code: {
+    pseudo: "Pseudocódigo",
+    language: "Lenguaje del código",
     refinOff: "no se ejecuta porque refin es false",
     refoutOff: "no se ejecuta porque refout es false",
     xoroutZero: "sin cambios porque xorout es 0",

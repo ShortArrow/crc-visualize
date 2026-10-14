@@ -24,7 +24,7 @@ test.describe("表示言語", () => {
     await then("画面の文がドイツ語になり、URL のクエリに lang=de が載る", async () => {
       await expect(v.workbench.sidebar().locator("h2").first()).toHaveText("Einstellungen");
       await expect(v.workbench.statusbar()).toContainText("Initialisierung");
-      await expect(page.locator(".software h2")).toHaveText("Software");
+      await expect(page.locator(".log-pane h2")).toHaveText("Verlauf");
       await expect(page.locator("html")).toHaveAttribute("lang", "de");
       expect(new URL(page.url()).searchParams.get("lang")).toBe("de");
     });

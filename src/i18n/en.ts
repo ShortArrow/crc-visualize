@@ -66,6 +66,8 @@ export const en: Messages = {
     check: (hex: string, match: boolean) => `check value ${hex} ${match ? "matches" : "does not match"}`,
   },
   code: {
+    pseudo: "Pseudocode",
+    language: "Code language",
     refinOff: "not run because refin is false",
     refoutOff: "not run because refout is false",
     xoroutZero: "no change because xorout is 0",
