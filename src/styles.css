@@ -1316,3 +1316,18 @@ h2 {
   font-size: 0.85rem;
   list-style: none;
 }
+
+.statusbar .locale-select {
+  margin-left: auto;
+  padding: 0 4px;
+  color: inherit;
+  background: transparent;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.statusbar .locale-select option {
+  color: var(--fg);
+  background: var(--panel);
+}

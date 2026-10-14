@@ -10,13 +10,13 @@ test.describe("ページの切替", () => {
       await v.settings.preset().selectOption("CRC-16/KERMIT");
       return v;
     });
-    await when("アクティビティバーで名前の規則に切り替える", () => v.workbench.pageLink("名前の規則").click());
+    await when("アクティビティバーで名前の規則に切り替える", () => v.workbench.pageLink("names").click());
     await then("URL のフラグメントが #names になり、名前の規則のページが出る", async () => {
       expect(new URL(page.url()).hash).toBe("#names");
       await expect(page.locator(".names-page")).toBeVisible();
       await expect(page.locator(".lfsr:not(.param-map)")).toHaveCount(0);
     });
-    await when("アクティビティバーで可視化に切り替える", () => v.workbench.pageLink("可視化").click());
+    await when("アクティビティバーで可視化に切り替える", () => v.workbench.pageLink("visualizer").click());
     await then("CRC-16/KERMIT のまま可視化のページが出る", async () => {
       await expect(v.settings.preset()).toHaveValue("CRC-16/KERMIT");
     });

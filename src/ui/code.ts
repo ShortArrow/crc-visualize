@@ -1,4 +1,5 @@
 import type { CrcParams, ParamName, Step, StepKind } from "../domain/trace";
+import type { Messages } from "../i18n/messages";
 
 /** 擬似コード中のパラメータ。label はコード上の名前（width から作る mask のように param と異なることがある）。 */
 export type ParamChip = Readonly<{ param: ParamName; label: string; value: string }>;
@@ -41,7 +42,7 @@ function chips(p: CrcParams) {
   };
 }
 
-function template(p: CrcParams): Template[] {
+function template(p: CrcParams, m: Messages): Template[] {
   const c = chips(p);
   const pad = p.refin ? "        " : "    ";
   const clock: Template[] = [
@@ -54,7 +55,7 @@ function template(p: CrcParams): Template[] {
   const reflectIn = (indent: string): Template => ({
     parts: [`${indent}if (`, c.refin, ") byte = reflect(byte, 8);"],
     runs: "reflectIn",
-    ...(p.refin ? {} : { disabledNote: "refin が false なので実行しない" }),
+    ...(p.refin ? {} : { disabledNote: m.code.refinOff }),
   });
   const loop: Template[] = p.refin
     ? [
@@ -72,12 +73,12 @@ function template(p: CrcParams): Template[] {
     {
       parts: ["if (", c.refout, ") crc = reflect(crc, ", c.width, ");"],
       runs: "reflectOut",
-      ...(p.refout ? {} : { disabledNote: "refout が false なので実行しない" }),
+      ...(p.refout ? {} : { disabledNote: m.code.refoutOff }),
     },
     {
       parts: ["crc ^= ", c.xorout, ";"],
       runs: "xorOut",
-      ...(p.xorout !== 0 ? {} : { disabledNote: "xorout が 0 なので値は変わらない" }),
+      ...(p.xorout !== 0 ? {} : { disabledNote: m.code.xoroutZero }),
     },
     { parts: ["return crc;"], runs: "done" },
   ];
@@ -88,10 +89,10 @@ const lineText = (parts: readonly CodePart[]) => parts.map((p) => (typeof p === 
 /** 分岐 if (feedback == 1) の評価結果。shift ステップでのみ決まる。 */
 const branchTaken = (step: Step): boolean | undefined => (step.kind === "shift" ? step.fb === 1 : undefined);
 
-/** params の擬似コードを、step の実行位置と評価結果つきで返す。 */
-export function codeLines(params: CrcParams, step: Step): CodeLine[] {
+/** params の擬似コードを、step の実行位置と評価結果つきで返す。注記は m の言語で書く。 */
+export function codeLines(params: CrcParams, step: Step, m: Messages): CodeLine[] {
   const taken = branchTaken(step);
-  return template(params).map(({ parts, runs, role, disabledNote }) => {
+  return template(params, m).map(({ parts, runs, role, disabledNote }) => {
     const active = runs === step.kind;
     const note =
       disabledNote ??
