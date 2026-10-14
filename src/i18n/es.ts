@@ -176,6 +176,7 @@ export const es: Messages = {
     none: "Ninguno todavía",
     status: (n: number) => `Filtrar: ${n} candidatos`,
   },
+  generators: "Polinomios generadores",
   cyclic: {
     heading: "¿Por qué comprobación de redundancia «cíclica»?",
     wordRing: "Anillo de la palabra de código",
@@ -194,7 +195,6 @@ export const es: Messages = {
       `La longitud del anillo y el número de pasos hasta que el estado vuelve a x^0 son ambos n = ${n}. Como x^n mod g(x) es 1, sustituir x^n por x^0 en el bit que da la vuelta no cambia el resto. Por eso una palabra de código girada sigue siendo una palabra de código; los códigos con esta propiedad se llaman códigos cíclicos.`,
     shortened:
       "Los CRC reales suelen aplicarse a entradas más cortas que n. Eso es un código cíclico acortado: un código cíclico cuyos bits iniciales se toman como 0.",
-    generators: "Polinomios generadores",
   },
   listSeparator: ", ",
 };

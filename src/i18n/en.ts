@@ -173,6 +173,7 @@ export const en: Messages = {
     none: "None yet",
     status: (n: number) => `Narrow down: ${n} candidates`,
   },
+  generators: "Generator polynomials",
   cyclic: {
     heading: 'Why a "cyclic" redundancy check?',
     wordRing: "Codeword ring",
@@ -189,7 +190,6 @@ export const en: Messages = {
       `The ring length and the number of steps until the state returns to x^0 are both n = ${n}. Since x^n mod g(x) is 1, replacing the wrapped bit's x^n with x^0 does not change the remainder. So a rotated codeword is still a codeword; codes with this property are called cyclic codes.`,
     shortened:
       "Real CRCs are usually applied to inputs shorter than n. That is a shortened cyclic code: a cyclic code whose leading bits are taken as 0.",
-    generators: "Generator polynomials",
   },
   listSeparator: ", ",
 };

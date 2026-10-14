@@ -1,9 +1,7 @@
 import { useState, type CSSProperties } from "react";
-import { codeword, GENERATORS, period, powerCycle, remainder, rotate, type Generator } from "../domain/cyclic";
-import { formatValue } from "../domain/narrow";
+import { codeword, period, powerCycle, remainder, rotate, type Generator } from "../domain/cyclic";
 import { useMessages } from "../i18n/I18n";
-import { polynomialText, powerText } from "./format";
-import { cyclicHash } from "./route";
+import { powerText } from "./format";
 
 const SIZE = 340;
 const CENTER = SIZE / 2;
@@ -194,30 +192,3 @@ function StateRing({ generator, k }: Readonly<{ generator: Generator; k: number 
     </svg>
   );
 }
-
-/** サイドバーに置く、選べる生成多項式の一覧。 */
-export function CyclicSidebar({ generator }: Readonly<{ generator: Generator }>) {
-  const m = useMessages();
-  return (
-    <>
-      <h2>{m.cyclic.generators}</h2>
-      <ul className="generator-list">
-        {GENERATORS.map((g) => (
-          <li key={`${g.width}/${g.poly}`}>
-            <a
-              href={cyclicHash(g)}
-              data-generator={`${g.width}/${formatValue("poly", g.poly)}`}
-              aria-current={g === generator ? "true" : undefined}
-            >
-              {polynomialText(g.width, g.poly)}
-              <span className="count">n = {period(g)}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
-
-/** ステータスバーに出す、生成多項式と周期。 */
-export const cyclicStatus = (g: Generator): string => `g(x) = ${polynomialText(g.width, g.poly)}, n = ${period(g)}`;

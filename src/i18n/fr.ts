@@ -173,6 +173,7 @@ export const fr: Messages = {
     none: "Aucune pour l’instant",
     status: (n: number) => `Affiner : ${n} candidats`,
   },
+  generators: "Polynômes générateurs",
   cyclic: {
     heading: "Pourquoi un contrôle de redondance « cyclique » ?",
     wordRing: "Anneau du mot de code",
@@ -191,7 +192,6 @@ export const fr: Messages = {
       `La longueur de l’anneau et le nombre de pas avant que l’état revienne à x^0 valent tous deux n = ${n}. Comme x^n mod g(x) vaut 1, remplacer x^n par x^0 pour le bit qui fait le tour ne change pas le reste. Un mot de code tourné reste donc un mot de code ; les codes ayant cette propriété sont appelés codes cycliques.`,
     shortened:
       "Les CRC réels s’appliquent le plus souvent à des entrées plus courtes que n. C’est un code cyclique raccourci : un code cyclique dont les premiers bits sont pris égaux à 0.",
-    generators: "Polynômes générateurs",
   },
   listSeparator: ", ",
 };

@@ -173,6 +173,7 @@ export const de: Messages = {
     none: "Noch keine",
     status: (n: number) => `Eingrenzen: ${n} Kandidaten`,
   },
+  generators: "Generatorpolynome",
   cyclic: {
     heading: "Warum „zyklische“ Redundanzprüfung?",
     wordRing: "Ring des Codeworts",
@@ -191,7 +192,6 @@ export const de: Messages = {
       `Die Länge des Rings und die Anzahl der Schritte, bis der Zustand zu x^0 zurückkehrt, sind beide n = ${n}. Da x^n mod g(x) gleich 1 ist, ändert sich der Rest nicht, wenn man beim herumlaufenden Bit x^n durch x^0 ersetzt. Ein gedrehtes Codewort bleibt also ein Codewort; Codes mit dieser Eigenschaft heißen zyklische Codes.`,
     shortened:
       "Echte CRCs werden meist auf Eingaben angewendet, die kürzer als n sind. Das ist ein verkürzter zyklischer Code: ein zyklischer Code, dessen führende Bits als 0 gelten.",
-    generators: "Generatorpolynome",
   },
   listSeparator: ", ",
 };
