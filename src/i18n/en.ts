@@ -229,6 +229,10 @@ export const en: Messages = {
     guarantee: (w: number) =>
       `Every 1-bit error and every error of length ${w} or less is detected. An error is missed only when e is divisible by g(x). The missed example sets e to g(x) itself, of length ${w + 1}.`,
   },
+  currentSettings: {
+    heading: "Current settings",
+    openVisualizer: "Change the settings on the visualizer page",
+  },
   equivalence: {
     heading: "Equivalences",
     note: "How the parameters relate to each other. The examples are computed with the current settings and input (the same as on the visualizer page).",
@@ -316,8 +320,6 @@ export const en: Messages = {
     codeConstants: (poly: string, init: string) => `The implementation's code writes poly = ${poly} and init = ${init}`,
     ambiguous:
       "The bit-reversed form of this poly also has lowest bit 1, so the constant alone does not tell whether it is normal or reversed",
-    settings: "Current settings",
-    openVisualizer: "Change the settings on the visualizer page",
   },
   listSeparator: ", ",
 };

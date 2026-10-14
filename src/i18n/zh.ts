@@ -211,6 +211,10 @@ export const zh: Messages = {
     guarantee: (w: number) =>
       `1 比特错误和长度不超过 ${w} 的错误一定能检测到。只有当 e 能被 g(x) 整除时才会漏检。“漏检示例”把 e 设为 g(x) 本身，长度为 ${w + 1}。`,
   },
+  currentSettings: {
+    heading: "当前设置",
+    openVisualizer: "在可视化页面修改设置",
+  },
   equivalence: {
     heading: "等价替换",
     note: "参数之间的关系。计算示例使用当前的设置和输入（与可视化页面相同）求得。",
@@ -289,8 +293,6 @@ export const zh: Messages = {
     },
     codeConstants: (poly: string, init: string) => `实现代码中写作 poly = ${poly}、init = ${init}`,
     ambiguous: "这个 poly 反转比特后的值最低位也是 1，仅凭常数无法判断是常规写法还是反转后的值",
-    settings: "当前设置",
-    openVisualizer: "在可视化页面修改设置",
   },
   listSeparator: "、",
 };

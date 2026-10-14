@@ -225,6 +225,11 @@ export const ja = {
     guarantee: (w: number) =>
       `1 ビットの誤りと、長さ ${w} 以下の誤りは必ず見つかる。見逃すのは e が g(x) で割り切れるときだけ。「見逃す例」は e を g(x) そのものにしたもので、長さは ${w + 1}。`,
   },
+  /** 他のページで今の設定を示すサイドバー。 */
+  currentSettings: {
+    heading: "今の設定",
+    openVisualizer: "可視化のページで設定を変える",
+  },
   equivalence: {
     heading: "置き換え",
     note: "パラメータどうしの関係。計算例は、今の設定と入力（可視化のページと同じもの）で求めた値。",
@@ -309,8 +314,6 @@ export const ja = {
     },
     codeConstants: (poly: string, init: string) => `実装のコードには poly = ${poly}、init = ${init} と書かれる`,
     ambiguous: "この poly はビットを反転した値も最下位ビットが 1 なので、定数だけでは通常表記か反転した値か決まらない",
-    settings: "今の設定",
-    openVisualizer: "可視化のページで設定を変える",
   },
   /** 一覧の区切り。 */
   listSeparator: "、",
