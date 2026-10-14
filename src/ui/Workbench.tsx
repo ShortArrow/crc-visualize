@@ -1,6 +1,6 @@
-import { BookOpen, Cpu, PanelLeft } from "lucide-react";
+import { BookOpen, Cpu, ListTree, PanelLeft } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
-import { namesHash, type Route } from "./route";
+import { namesHash, narrowHash, type Route } from "./route";
 import { Splitter } from "./Splitter";
 import { fitLayout, type PaneLayout } from "./panes";
 
@@ -31,6 +31,14 @@ export function Workbench({ route, layout, onLayout, sidebar, editor, status }: 
         </a>
         <a href={namesHash()} className={route.page === "names" ? "current" : ""} title="名前の規則" aria-label="名前の規則">
           <BookOpen size={ICON_SIZE} />
+        </a>
+        <a
+          href={narrowHash({ fixed: [] })}
+          className={route.page === "narrow" ? "current" : ""}
+          title="絞り込み"
+          aria-label="絞り込み"
+        >
+          <ListTree size={ICON_SIZE} />
         </a>
         <button
           type="button"

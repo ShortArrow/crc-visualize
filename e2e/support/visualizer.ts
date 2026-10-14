@@ -150,7 +150,7 @@ export class Visualizer {
 
   readonly workbench = {
     /** アクティビティバーのページの切替。 */
-    pageLink: (name: "可視化" | "名前の規則") => this.page.locator(`.activity a[title="${name}"]`),
+    pageLink: (name: "可視化" | "名前の規則" | "絞り込み") => this.page.locator(`.activity a[title="${name}"]`),
     sidebar: () => this.page.locator(".sidebar"),
     sidebarToggle: () => this.page.locator(".activity .sidebar-toggle"),
     statusbar: () => this.page.locator(".statusbar"),

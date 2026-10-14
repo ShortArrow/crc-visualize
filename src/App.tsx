@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { parseConfig, type ConfigForm } from "./domain/parse";
-import { findPreset, TUTORIAL } from "./domain/presets";
+import { fitPath, matching } from "./domain/narrow";
+import { CATALOGUE, findPreset, TUTORIAL, type Preset } from "./domain/presets";
 import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "./domain/trace";
 import { animationMs, initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
 import { CodeView } from "./ui/CodeView";
@@ -9,6 +10,7 @@ import { Controls } from "./ui/Controls";
 import { LfsrView } from "./ui/LfsrView";
 import { logEntries } from "./ui/log";
 import { NamesPage, NamesToc } from "./ui/NamesPage";
+import { NarrowPage, NarrowSidebar } from "./ui/NarrowPage";
 import { ParamHelp } from "./ui/ParamHelp";
 import type { ParamFocus } from "./ui/paramFocus";
 import type { FieldName } from "./ui/paramInfo";
@@ -63,6 +65,18 @@ export function App() {
 
   if (route.page === "names") {
     return frame(<NamesToc />)(<NamesPage target={route.param} />, <span>名前の規則</span>);
+  }
+  if (route.page === "narrow") {
+    const path = fitPath(CATALOGUE, route.path);
+    const open = (p: Preset) => {
+      setForm(formFromPreset(p));
+      location.hash = "";
+    };
+    const props = { presets: CATALOGUE, path, onOpen: open };
+    return frame(<NarrowSidebar {...props} />)(
+      <NarrowPage {...props} />,
+      <span>絞り込み: 候補 {matching(CATALOGUE, path.fixed).length}</span>,
+    );
   }
   if (!config.ok) {
     return frame(settingsSidebar)(

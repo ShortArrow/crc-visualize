@@ -16,11 +16,6 @@ export class NamesPage {
     return this.page.locator(".names-page");
   }
 
-  /** 見出し横のページの切替。 */
-  pageLink(name: "可視化" | "名前の規則"): Locator {
-    return this.page.locator(".pages a", { hasText: name });
-  }
-
   namePart(part: "head" | "width" | "origin"): Locator {
     return this.page.locator(`.name-parts [data-part="${part}"] b`);
   }
