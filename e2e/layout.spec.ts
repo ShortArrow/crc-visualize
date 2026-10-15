@@ -44,9 +44,32 @@ test.describe("Page layout", () => {
             expect(layout.narrow).toBe(0);
             expect(layout.scrolling).toBe(0);
             expect(layout.brokenBadges).toBe(0);
+            expect(layout.squeezed).toBe(0);
             expect(layout.count).toBeGreaterThan(0);
           },
         );
+      });
+    }
+  }
+
+  for (const hash of ["#cyclic", "#redundancy", "#redundancy/width=4/poly=0x3", "#check", "#table"]) {
+    for (const [width, height] of [
+      [1366, 768],
+      [1600, 1000],
+    ] as const) {
+      test(`on a ${width}×${height} screen, ${hash} grows its drawings and tables down to the bottom of the editor area`, async ({
+        page,
+      }) => {
+        const v = await given(`${hash} is open on a ${width}×${height} screen`, async () => {
+          await page.setViewportSize({ width, height });
+          await page.goto(`/?width=16&poly=0x1021&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789${hash}`);
+          const v = Visualizer.on(page);
+          await expect(page.locator(".editor > *").first()).toBeVisible();
+          return v;
+        });
+        await then("the page reaches at least 85 % of the way down the editor area, or scrolls", async () => {
+          expect(await v.workbench.pageFill()).toBeGreaterThanOrEqual(0.85);
+        });
       });
     }
   }

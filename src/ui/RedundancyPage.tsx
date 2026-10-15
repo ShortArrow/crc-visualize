@@ -30,7 +30,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
   const result = verdict(generator, error);
   const rowStyle = { "--bits": n } as CSSProperties;
   return (
-    <div className="redundancy-page">
+    <div className="redundancy-page" style={{ "--n": n } as CSSProperties}>
       <h2>{m.redundancy.heading}</h2>
       <div className="page-columns">
         <section className="card redundancy-summary">
@@ -129,14 +129,21 @@ function BitCells({ bits, width, range = [0, bits.length], flipped, onFlip }: Ce
   });
 }
 
-/** Lays out the CRCs that could follow the message of received by value, marking the one that fits the message and the one received. */
+/**
+ * Lays out the CRCs that could follow the message of received by value, marking the one that fits the message and the one received.
+ * Sets --columns and --rows for laying them out in a near-square grid.
+ */
 function CrcStripFigure({ generator, received }: Readonly<{ generator: Generator; received: readonly Bit[] }>) {
   const m = useMessages();
   const strip = crcStrip(generator, received);
+  const style = {
+    "--columns": 2 ** Math.ceil(generator.width / 2),
+    "--rows": 2 ** Math.floor(generator.width / 2),
+  } as CSSProperties;
   return (
     <figure className="crc-strip">
       <figcaption>{m.redundancy.stripTitle(received.length - generator.width, strip.size)}</figcaption>
-      <div className="strip-cells">
+      <div className="strip-cells" style={style}>
         {Array.from({ length: strip.size }, (_, v) => (
           <span
             key={v}

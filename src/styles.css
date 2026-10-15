@@ -106,12 +106,14 @@ body,
   background: var(--panel);
 }
 
+/* Pages size their drawings and tables against the editor's height (cqh), so that a short page grows down to the bottom of a tall screen */
 .editor {
   grid-row: 1;
   grid-column: -2;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  container-type: size;
 }
 
 .statusbar {
@@ -1564,20 +1566,34 @@ h2 {
 }
 
 /* 冗長のページ */
+/*
+ * A bit cell grows with the height the page leaves below its text, but stays narrow enough for --n bits (the codeword length) to fit
+ * twice across the editor, so that the received sequence still fits in half a row.
+ */
 .redundancy-page {
+  --bit: clamp(26px, min(calc((100cqh - 560px) / 8), calc((100cqw - 80px) / var(--n) / 2)), 44px);
   height: 100%;
+  font-size: clamp(16px, 1.9cqh, 19px);
   padding: 12px;
   overflow: auto;
 }
 
 .redundancy-page h3 {
   margin: 0 0 8px;
-  font-size: 0.95rem;
+  font-size: 0.95em;
 }
 
 .redundancy-page .note {
   margin: 6px 0;
-  font-size: 0.85rem;
+  font-size: 0.85em;
+}
+
+.redundancy-page .bit-row {
+  grid-template-columns: repeat(var(--bits), var(--bit));
+}
+
+.redundancy-page .bit-cell {
+  height: calc(var(--bit) - 2px);
 }
 
 .bit-row {
@@ -1620,7 +1636,7 @@ button.bit-cell:hover {
 }
 
 .part-label {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   text-align: center;
   white-space: nowrap;
   border-top: 1px solid currentColor;
@@ -1637,7 +1653,7 @@ button.bit-cell:hover {
 .row-label {
   margin: 0 0 4px;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .space-counts,
@@ -1664,14 +1680,15 @@ button.bit-cell:hover {
 }
 
 .word-grid {
+  --dot: clamp(14px, calc((100cqh - 560px) / 9), 34px);
   display: grid;
-  grid-template-columns: repeat(var(--columns), 14px);
+  grid-template-columns: repeat(var(--columns), var(--dot));
   gap: 3px;
 }
 
 .word-dot {
-  width: 14px;
-  height: 14px;
+  width: var(--dot);
+  height: var(--dot);
   background: var(--border);
   border-radius: 50%;
 }
@@ -1692,7 +1709,7 @@ button.bit-cell:hover {
 .crc-strip figcaption {
   margin-bottom: 4px;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .strip-cells {
@@ -1703,11 +1720,31 @@ button.bit-cell:hover {
 }
 
 .strip-cell {
-  padding: 1px 6px;
+  padding: clamp(1px, calc(0.8cqh - 2px), 6px) 6px;
   font-family: var(--mono);
-  font-size: 0.8rem;
+  font-size: 0.8em;
   border: 1px solid var(--border);
   border-radius: 3px;
+}
+
+/*
+ * Without the word grid (codewords too long to lay out), the strip takes its place: a near-square grid whose cells grow into the
+ * height the page leaves below the text.
+ */
+.redundancy-page section:not(:has(.word-grid)) .strip-cells {
+  --cell: clamp(24px, calc((100cqh - 540px) / var(--rows) - 4px), 88px);
+  display: grid;
+  grid-template-columns: repeat(var(--columns), auto);
+  justify-content: start;
+  contain: none;
+}
+
+.redundancy-page section:not(:has(.word-grid)) .strip-cell {
+  display: grid;
+  place-items: center;
+  height: var(--cell);
+  padding: 0 0.6em;
+  font-size: calc(var(--cell) * 0.36);
 }
 
 .strip-cell.fitting {
@@ -1883,21 +1920,22 @@ button.bit-cell:hover {
   word-break: break-all;
 }
 
-/* 検査のページ */
+/* 検査のページ: its text and bit cells are sized in em, so the page grows with the editor's height */
 .check-page {
   height: 100%;
+  font-size: clamp(16px, 2cqh, 20px);
   padding: 12px;
   overflow: auto;
 }
 
 .check-page > .note,
 .check-page .note {
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .check-page h3 {
   margin: 20px 0 8px;
-  font-size: 1rem;
+  font-size: 1em;
 }
 
 .frame-row {
@@ -1908,9 +1946,9 @@ button.bit-cell:hover {
 }
 
 .frame-row .bit-cell {
-  width: 18px;
-  height: 20px;
-  font-size: 0.75rem;
+  width: 1.5em;
+  height: 1.67em;
+  font-size: 0.75em;
   cursor: pointer;
 }
 
@@ -1921,7 +1959,7 @@ button.bit-cell:hover {
   gap: 6px 16px;
   margin: 8px 0;
   padding: 0;
-  font-size: 0.85rem;
+  font-size: 0.85em;
   list-style: none;
 }
 
@@ -1932,10 +1970,10 @@ button.bit-cell:hover {
 }
 
 .frame-legend .bit-cell {
-  width: 18px;
-  height: 20px;
+  width: 1.5em;
+  height: 1.67em;
   font-family: var(--mono);
-  font-size: 0.75rem;
+  font-size: 0.75em;
 }
 
 .frame-row .crc-start {
@@ -1966,7 +2004,7 @@ button.bit-cell:hover {
   grid-template-columns: max-content max-content;
   gap: 4px 12px;
   margin: 6px 0;
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .method dt,
@@ -1982,7 +2020,7 @@ button.bit-cell:hover {
 
 .method .not-applicable {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .verdict[data-ok="true"] {
@@ -1997,7 +2035,7 @@ button.bit-cell:hover {
 
 .check-limits {
   padding-left: 20px;
-  font-size: 0.85rem;
+  font-size: 0.85em;
   line-height: 1.6;
 }
 
@@ -2103,16 +2141,17 @@ button.bit-cell:hover {
   white-space: nowrap;
 }
 
-/* Table page */
+/* Table page: its text and tables are sized in em, so the page grows with the editor's height */
 .table-page {
   height: 100%;
+  font-size: clamp(16px, 2cqh, 20px);
   padding: 12px;
   overflow: auto;
 }
 
 .table-page > .note,
 .table-page .note {
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .table-direction {
@@ -2130,7 +2169,7 @@ button.bit-cell:hover {
 .crc-table {
   border-collapse: collapse;
   font-family: var(--mono);
-  font-size: 0.8rem;
+  font-size: 0.8em;
 }
 
 .table-steps th,
@@ -2167,7 +2206,7 @@ button.bit-cell:hover {
   grid-template-columns: max-content max-content;
   gap: 4px 12px;
   margin: 8px 0 0;
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .table-totals dt {
@@ -2265,6 +2304,10 @@ button.bit-cell:hover {
 
 .estimate-input .estimate-options {
   contain: inline-size;
+}
+
+.estimate-options .note {
+  flex-basis: 100%;
 }
 
 .samples {

@@ -198,7 +198,8 @@ export class Visualizer {
      * by more than 1 px. overflowing: cards whose content is wider than the card. sparse: cards whose content ends above 60 % of
      * their height (left mostly empty by a taller neighbour). narrow: cards whose content
      * reaches less than 55 % of their width (left mostly empty on the right). scrolling: parts of cards that have to be scrolled sideways to be seen
-     * whole. brokenBadges: verdict and match badges split over two lines. count: the number of cards.
+     * whole. brokenBadges: verdict and match badges split over two lines. squeezed: texts squeezed so narrow that they run down three or more
+     * lines of at most two characters each. count: the number of cards.
      */
     cardLayout: () =>
       this.page.evaluate(() => {
@@ -246,7 +247,15 @@ export class Visualizer {
         const brokenBadges = [...document.querySelectorAll(".editor :is(.match, .verdict)")].filter(
           (badge) => new Set([...badge.getClientRects()].map((r) => Math.round(r.top))).size > 1,
         ).length;
-        return { minGap, ragged, overflowing, sparse, narrow, scrolling, brokenBadges, count: cards.length };
+        const squeezed = [...document.querySelectorAll(".editor *")].filter((el) => {
+          const text = [...el.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim());
+          if (!text.length) return false;
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const lines = new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
+          return lines >= 3 && el.getBoundingClientRect().width < 2.5 * parseFloat(getComputedStyle(el).fontSize);
+        }).length;
+        return { minGap, ragged, overflowing, sparse, narrow, scrolling, brokenBadges, squeezed, count: cards.length };
       }),
     /**
      * How far across the editor area the content reaches in the first screen: the editor is cut into horizontal strips 40 px high,
@@ -280,6 +289,19 @@ export class Visualizer {
           if (inStrip.length) shares.push((Math.max(...inStrip.map((r) => r.right)) - editor.left) / editor.width);
         }
         return shares.filter((share) => share > 0.55).length / shares.length;
+      }),
+    /**
+     * How far down the editor area the page reaches, as a share of the editor height (0 to 1): the bottom of the lowest card, or of
+     * the lowest content of a page without cards. A page taller than the editor, which scrolls, counts as 1.
+     */
+    pageFill: () =>
+      this.page.evaluate(() => {
+        const editor = document.querySelector(".editor")!;
+        const page = editor.firstElementChild!;
+        if (page.scrollHeight > page.clientHeight + 1) return 1;
+        const box = editor.getBoundingClientRect();
+        const bottom = Math.max(...[...page.querySelectorAll("*")].map((el) => el.getBoundingClientRect().bottom));
+        return (bottom - box.top) / box.height;
       }),
     /** Drags the splitter name by (dx, dy) from where it is grabbed. */
     drag: async (name: "sidebar" | "panel" | "code", dx: number, dy: number) => {
