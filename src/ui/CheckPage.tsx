@@ -116,6 +116,8 @@ function Checks({ params, message, preset }: ChecksProps) {
             <p className="not-applicable">{m.check.whole.notApplicable}</p>
           )}
         </section>
+      </div>
+      <div className="page-columns">
         <section className="card">
           <h4>{m.check.checkSection}</h4>
           <dl className="check-values">

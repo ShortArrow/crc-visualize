@@ -144,9 +144,11 @@ function TableMethod({ params, bits }: MethodProps) {
           </table>
         </div>
       </section>
-      <section className="card">
-        <h3 className="entry-title">{t.entryTitle(byteHex(shown), hex(table[shown]!, w))}</h3>
-        <p className="note">{t.entryNote[direction]}</p>
+      <section className="card entry-card">
+        <div className="entry-text">
+          <h3 className="entry-title">{t.entryTitle(byteHex(shown), hex(table[shown]!, w))}</h3>
+          <p className="note">{t.entryNote[direction]}</p>
+        </div>
         <table className="entry-clocks">
           <thead>
             <tr>

@@ -196,7 +196,8 @@ export class Visualizer {
      * How the cards in the editor's .page-columns (or the names page) sit. minGap: the smallest space (px) between two cards that share a column span
      * (one above the other) or a row (side by side); Infinity if none. ragged: pairs of cards side by side whose top or height differ
      * by more than 1 px. overflowing: cards whose content is wider than the card. sparse: cards whose content ends above 60 % of
-     * their height (left mostly empty by a taller neighbour). count: the number of cards.
+     * their height (left mostly empty by a taller neighbour). scrolling: parts of cards that have to be scrolled sideways to be seen
+     * whole. brokenBadges: verdict and match badges split over two lines. count: the number of cards.
      */
     cardLayout: () =>
       this.page.evaluate(() => {
@@ -223,7 +224,15 @@ export class Visualizer {
           const bottom = Math.max(...[...el.children].map((c) => c.getBoundingClientRect().bottom));
           return bottom - r.top < 0.6 * r.height;
         }).length;
-        return { minGap, ragged, overflowing, sparse, count: cards.length };
+        const scrolling = cards.flatMap(({ el }) =>
+          [...el.querySelectorAll("*")].filter(
+            (d) => d.scrollWidth > d.clientWidth + 1 && /auto|scroll/.test(getComputedStyle(d).overflowX),
+          ),
+        ).length;
+        const brokenBadges = [...document.querySelectorAll(".editor :is(.match, .verdict)")].filter(
+          (badge) => new Set([...badge.getClientRects()].map((r) => Math.round(r.top))).size > 1,
+        ).length;
+        return { minGap, ragged, overflowing, sparse, scrolling, brokenBadges, count: cards.length };
       }),
     /**
      * How far across the editor area the content reaches in the first screen: the editor is cut into horizontal strips 40 px high,
