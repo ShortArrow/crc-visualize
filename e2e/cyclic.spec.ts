@@ -79,3 +79,19 @@ test.describe("Cyclic", () => {
     });
   });
 });
+
+test.describe("Cyclic page layout", () => {
+  test("on a large screen, the rings grow to use the height of the page instead of leaving its lower half empty", async ({
+    page,
+  }) => {
+    const c = await given("the cyclic page is open on a 1600 × 1000 px screen", async () => {
+      await page.setViewportSize({ width: 1600, height: 1000 });
+      return CyclicPage.open(page);
+    });
+    await then("each ring is at least half as tall as the page, and the page does not scroll", async () => {
+      const sizes = await c.ringSizes();
+      for (const ring of sizes.rings) expect(ring).toBeGreaterThanOrEqual(sizes.page / 2);
+      expect(await c.root.evaluate((el) => el.scrollHeight - el.clientHeight)).toBeLessThanOrEqual(0);
+    });
+  });
+});
