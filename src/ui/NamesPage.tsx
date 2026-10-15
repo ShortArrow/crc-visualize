@@ -53,12 +53,14 @@ export function NamesPage({ target }: { target: ParamName | undefined }) {
       <NameParts />
       <Families />
       <Aliases />
-      <section className="pane" id="names-param-map">
-        <h2>{m.names.sections.paramMap}</h2>
-        <p className="note">{m.names.paramMap.note}</p>
-        <ParamMap />
-      </section>
-      <ParamTable target={target} />
+      <div className="page-columns names-params">
+        <section className="pane" id="names-param-map">
+          <h2>{m.names.sections.paramMap}</h2>
+          <p className="note">{m.names.paramMap.note}</p>
+          <ParamMap />
+        </section>
+        <ParamTable target={target} />
+      </div>
     </div>
   );
 }
@@ -98,35 +100,37 @@ function Families() {
     <section className="pane families" id="names-families">
       <h2>{withCode(m.names.sections.families, "poly")}</h2>
       <p className="note">{m.names.families.note}</p>
-      {polyFamilies(CATALOGUE).map(({ width, poly, rows }) => (
-        <table key={`${width}-${poly}`} className="family" data-poly={hexOf(poly, width)}>
-          <caption>{m.names.families.caption(width, hexOf(poly, width))}</caption>
-          <thead>
-            <tr>
-              <th>{m.names.families.name}</th>
-              <th>init</th>
-              <th>refin / refout</th>
-              <th>xorout</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(({ preset, differs }) => (
-              <tr key={preset.name} data-preset={preset.name}>
-                <th>{preset.name}</th>
-                <td className={differs.init ? "differs" : ""} data-col="init">
-                  {hexOf(preset.params.init, width)}
-                </td>
-                <td className={differs.reflect ? "differs" : ""} data-col="reflect">
-                  {String(preset.params.refin)} / {String(preset.params.refout)}
-                </td>
-                <td className={differs.xorout ? "differs" : ""} data-col="xorout">
-                  {hexOf(preset.params.xorout, width)}
-                </td>
+      <div className="family-columns">
+        {polyFamilies(CATALOGUE).map(({ width, poly, rows }) => (
+          <table key={`${width}-${poly}`} className="family" data-poly={hexOf(poly, width)}>
+            <caption>{m.names.families.caption(width, hexOf(poly, width))}</caption>
+            <thead>
+              <tr>
+                <th>{m.names.families.name}</th>
+                <th>init</th>
+                <th>refin / refout</th>
+                <th>xorout</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      ))}
+            </thead>
+            <tbody>
+              {rows.map(({ preset, differs }) => (
+                <tr key={preset.name} data-preset={preset.name}>
+                  <th>{preset.name}</th>
+                  <td className={differs.init ? "differs" : ""} data-col="init">
+                    {hexOf(preset.params.init, width)}
+                  </td>
+                  <td className={differs.reflect ? "differs" : ""} data-col="reflect">
+                    {String(preset.params.refin)} / {String(preset.params.refout)}
+                  </td>
+                  <td className={differs.xorout ? "differs" : ""} data-col="xorout">
+                    {hexOf(preset.params.xorout, width)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ))}
+      </div>
     </section>
   );
 }

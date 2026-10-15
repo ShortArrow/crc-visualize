@@ -25,6 +25,49 @@ export class NamesPage {
     return this.page.locator(`.name-parts [data-part="${part}"] b`);
   }
 
+  /**
+   * How the family tables sit in their card. widths: the distinct widths of the tables (px, rounded). rightGap: the space (px) between the
+   * right edge of the furthest table and the right edge of the card's content box. wrapped: the cells whose text runs onto a second line.
+   */
+  familyLayout(): Promise<{ widths: number[]; rightGap: number; wrapped: number }> {
+    return this.page.evaluate(() => {
+      const card = document.querySelector(".families")!;
+      const style = getComputedStyle(card);
+      const inner = card.getBoundingClientRect().right - parseFloat(style.paddingRight) - parseFloat(style.borderRightWidth);
+      const tables = [...card.querySelectorAll("table.family")].map((t) => t.getBoundingClientRect());
+      return {
+        widths: [...new Set(tables.map((r) => Math.round(r.width)))],
+        rightGap: inner - Math.max(...tables.map((r) => r.right)),
+        wrapped: [...card.querySelectorAll("table.family :is(th, td)")].filter((cell) => {
+          const range = document.createRange();
+          range.selectNodeContents(cell);
+          return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size > 1;
+        }).length,
+      };
+    });
+  }
+
+  /** The number of cells in the alias table whose text runs onto a second line. */
+  aliasWrapped(): Promise<number> {
+    return this.page.evaluate(
+      () =>
+        [...document.querySelectorAll(".alias-index tbody :is(th, td)")].filter((cell) => {
+          const range = document.createRange();
+          range.selectNodeContents(cell);
+          return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size > 1;
+        }).length,
+    );
+  }
+
+  /** Whether the note of the name breakdown sits beside the parts (its top is above the bottom of the parts) rather than below them. */
+  noteBesideParts(): Promise<boolean> {
+    return this.page.evaluate(() => {
+      const parts = document.querySelector(".name-parts .parts")!.getBoundingClientRect();
+      const note = document.querySelector(".name-parts .note")!.getBoundingClientRect();
+      return note.top < parts.bottom && note.left >= parts.right;
+    });
+  }
+
   /** The family table of poly (such as "0x1021"). */
   family(poly: string): Locator {
     return this.page.locator(`table.family[data-poly="${poly}"]`);
