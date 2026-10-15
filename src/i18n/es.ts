@@ -10,6 +10,7 @@ export const es: Messages = {
     redundancy: "Redundancia",
     check: "Comprobación",
     equivalence: "Equivalencias",
+    table: "Tabla",
   },
   workbench: { sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)", language: "Idioma" },
   settings: {
@@ -372,6 +373,40 @@ export const es: Messages = {
       "Un CRC solo indica que hay un error; no lo corrige. Hace falta otro mecanismo, como pedir un reenvío.",
       "Si quien cambia el mensaje también recalcula el CRC, el cambio pasa inadvertido. Contra la manipulación deliberada se usa un hash o un MAC.",
     ],
+  },
+  table: {
+    heading: "Método de tabla (byte a byte)",
+    note: "Muchas bibliotecas construyen primero una tabla T de 256 valores y luego calculan byte a byte. Los valores se calculan con la configuración y la entrada actuales (las mismas que en el visualizador).",
+    direction: {
+      left: "Tabla con desplazamiento a la izquierda",
+      right: "Tabla con desplazamiento a la derecha (refin y refout son true)",
+    },
+    reflectNote:
+      "Si refin es true, se invierte el orden de bits de cada byte de entrada antes de usarlo; si refout es true, se invierte el resultado al final.",
+    tableTitle: "Tabla T (256 valores)",
+    tableNote:
+      "Las filas son los 4 bits altos del índice y las columnas los 4 bits bajos. Selecciona un valor para ver cómo se obtiene.",
+    entryTitle: (i: string, value: string) => `Cómo se obtiene T[${i}] = ${value}`,
+    entryNote: {
+      left: "Se introducen los 8 bits del índice, empezando por el MSB, en un registro a 0 durante 8 ciclos. Equivale a 8 ciclos del cálculo bit a bit.",
+      right:
+        "Se introducen los 8 bits del índice, empezando por el LSB, en un registro a 0 que desplaza a la derecha, durante 8 ciclos. Equivale a 8 ciclos del cálculo bit a bit.",
+    },
+    clock: "Ciclo",
+    bit: "Bit de entrada",
+    reg: "Registro",
+    stepsTitle: "Cálculo byte a byte",
+    formula: "Actualización",
+    start: "Valor inicial",
+    byte: "Byte",
+    before: "crc antes",
+    index: "Índice",
+    entry: "T[índice]",
+    after: "crc después",
+    result: "Resultado con tabla",
+    bitwise: "CRC calculado bit a bit",
+    match: "coincide",
+    notBytes: "La entrada no es múltiplo de 8 bits, así que no se puede calcular byte a byte.",
   },
   listSeparator: ", ",
 };

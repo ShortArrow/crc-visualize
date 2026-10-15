@@ -2,7 +2,7 @@
 
 # CRC Visualizer SPA Specification
 
-A browser app that shows the behaviour of an LFSR (hardware) and each line of a bit-at-a-time CRC implementation (software), synchronized one clock at a time. Terms and notation follow "14. Terms and notation".
+A browser app that shows the behaviour of an LFSR (hardware) and each line of a bit-at-a-time CRC implementation (software), synchronized one clock at a time. Terms and notation follow "16. Terms and notation".
 
 ## 1. CRC parameters (Rocksoft model)
 
@@ -110,14 +110,14 @@ The computation is returned as a `Step[]` by the pure function `trace(params, in
 - Loop: when enabled, once `done` has been shown during playback, playback returns to the start and continues. When disabled, it stops at `done`. Like the speed settings, it is kept when the CRC settings change.
 - Speed ramp: in auto mode, playback is slow (900 ms per step) until at least one clock with feedback bit 0 and one with feedback bit 1 have each been shown, and later clocks are fast (120 ms). Even for an input where only one of the values occurs, slow playback lasts at most the first 6 clocks. `init`, `reflectOut`, `xorOut` and `done` are always slow. In steady mode every step is 600 ms. In both modes the time is divided by the speed multiplier.
 - When the settings or the input change, the step sequence is rebuilt, playback returns to the start and stops.
-- Keeping settings: the CRC parameters, input mode, input value, speed mode, speed multiplier, loop on/off, code language (chapter 4) and display language (chapter 15) are saved to localStorage each time they change, and restored the next time the app is opened. The playback position is not saved; playback starts at the start, stopped. Among the saved values, any item whose shape or value range is wrong is reset to its own default only (`CRC-3/TUTORIAL`, auto, ×1, no loop, pseudocode, the language determined from the browser's preferred languages).
+- Keeping settings: the CRC parameters, input mode, input value, speed mode, speed multiplier, loop on/off, code language (chapter 4) and display language (chapter 17) are saved to localStorage each time they change, and restored the next time the app is opened. The playback position is not saved; playback starts at the start, stopped. Among the saved values, any item whose shape or value range is wrong is reset to its own default only (`CRC-3/TUTORIAL`, auto, ×1, no loop, pseudocode, the language determined from the browser's preferred languages).
 - Keeping the layout: the sidebar's open/closed state and width, the boundary between the diagram and the panel below, and the boundary between the pseudocode and the Progress panel are saved to localStorage each time they change, and restored the next time the app is opened. These settings adapt to the viewer's screen, so they are not put in the URL query. Saved values that are invalid, or that do not fit the current screen, are corrected to the default or into the range that fits.
 - Sharing by URL: the same items as the kept settings are also put in the URL query (`width`, `poly`, `init`, `refin`, `refout`, `xorout`, `inputMode`, `input`, `speed`, `rate`, `loop`, `code`, `lang`; booleans are `1`/`0`), and rewritten each time they change without adding history entries. When the app is opened, items in the URL take precedence over the values saved in localStorage. Items missing from the URL or invalid ones take the saved value (or the default if none).
 - When the settings are invalid, an error is shown for each field, and the rendering is cleared rather than keeping the last valid state.
 
 ## 7. Screen
 
-A dark-mode, editor-like screen similar to VS Code, with 7 pages: the Visualizer page, the Naming page (chapter 8), the Narrow down page (chapter 9), the Cyclic page (chapter 10), the Redundancy page (chapter 11), the Check page (chapter 12) and the Equivalences page (chapter 13). This chapter specifies the Visualizer page.
+A dark-mode, editor-like screen similar to VS Code, with 9 pages: the Visualizer page, the Naming page (chapter 8), the Narrow down page (chapter 9), the Cyclic page (chapter 10), the Redundancy page (chapter 11), the Check page (chapter 12), the Equivalences page (chapter 13), the Table page (chapter 14) and the Estimation page (chapter 15). This chapter specifies the Visualizer page.
 
 On pages other than the Visualizer, the content blocks (cards) are split into as many columns as the width allows and packed from the top of each column, so that a wide screen does not leave a large empty area on the right. Long lists (such as the alias table) are split into columns as well.
 
@@ -215,7 +215,7 @@ Shows how presets are named and how parameter names differ, with diagrams and ta
 4. Diagram of parameter-name aliases: on a fixed LFSR diagram (width 3, poly 0x3) drawn with the same parts as the visualizer's diagram, a leader line is drawn from the place where each parameter acts, and at its end only the parameter name (`poly` and so on) is written. The places are: `width` the row of registers, `poly` the tap gates, `init` the register boxes, `refin` the input stream, and `refout` and `xorout` the CRC output taken from the register.
    - Hovering over a parameter name emphasizes the place where it acts in the focused-parameter colour, and adds its full name and aliases on a small tag.
    - Parameter names are links; selecting one moves to that parameter's row in the table of 5 and highlights the row. The URL fragment is `#names/<parameter name>`.
-5. Parameter name table: for each parameter, the parameter name, full name, meaning and aliases are listed. The aliases are the same as in the description pane ("Aliases" in chapter 14).
+5. Parameter name table: for each parameter, the parameter name, full name, meaning and aliases are listed. The aliases are the same as in the description pane ("Aliases" in chapter 16).
 
 ## 9. Narrow down page
 
@@ -335,9 +335,44 @@ When some parameters or part of an implementation's code are known, lists what i
 - The sidebar holds the current settings (the 6 parameters and the input) and a link to the Visualizer page. The status bar shows the preset name (`custom` if none).
 - The URL fragment is `#equivalence`.
 
-## 14. Terms and notation
+## 14. Table page
 
-The rules under "Character types" are for the Japanese UI text (see chapter 15). The term table and the alias table give the Japanese UI wording, with the English UI wording (from `src/i18n/en.ts`) alongside.
+Shows, with the current settings and input (the same as on the Visualizer page), the byte-at-a-time method that many libraries use, with a table of 256 values (table T). It shows that the result equals the bit-at-a-time computation (chapter 3), and that each table value is 8 clocks of the bit-at-a-time computation.
+
+- Direction: a right-shift table when `refin` = `refout` = true, otherwise a left-shift table. For left shift, a note says that when `refin` is true the bit order of each input byte is reversed before use, and that when `refout` is true the result is reversed at the end.
+- Table T: the values for indices 0 to 255 are laid out in a 16 × 16 grid (rows are the upper 4 bits, columns the lower 4 bits; values in hexadecimal with as many digits as `width` needs).
+  - Left shift: `T[i]` is the value after feeding the 8 bits of `i`, MSB first, into a zero register (chapter 3) for 8 clocks (the remainder of `i(x)·x^width` divided by `g(x)`).
+  - Right shift: `T[i]` is the value after feeding the 8 bits of `i`, LSB first, into a zero register of an implementation that shifts right, for 8 clocks (the left-shift `T[i reversed in 8 bits]` reversed in `width` bits).
+- How a value is made: selecting a value in the grid lists the 8 clocks that make it, one row each (clock number, input bit, register afterwards in binary). The last row is the selected value.
+- Byte-at-a-time computation: the update formula and a row for each input byte (byte, `crc` before, index (in hexadecimal, to match the rows and columns of the table), `T[index]`, `crc` after) are shown, starting from the initial value and ending with the output reflection and `xorout` applied.
+  - The update formula is `crc = ((crc << 8) & mask) ^ T[((crc >> (width − 8)) ^ byte) & 0xFF]` for left shift with `width` ≥ 8, `crc = T[((crc << (8 − width)) ^ byte) & 0xFF]` for left shift with `width` < 8, and `crc = (crc >> 8) ^ T[(crc ^ byte) & 0xFF]` for right shift. The initial value is `init` for left shift and `init` reversed in `width` bits for right shift.
+  - Selecting a row highlights the value at that row's index in the grid and shows how that value is made. The first row is selected by default.
+  - Below the result, the CRC computed bit at a time is shown, and that the two match.
+- When the input is not a multiple of 8 bits, the byte-at-a-time computation is not shown and the reason is (the table and how values are made are still shown).
+- When the settings are invalid, only that fact is shown.
+- The sidebar and the status bar are the same as on the Equivalences page (chapter 13). The selected row and value are kept neither in the URL nor in storage.
+- The URL fragment is `#table`.
+
+## 15. Estimation page
+
+Given several pairs of data and their CRC, searches for the parameters that satisfy them.
+
+- Entering pairs: each row takes data and a CRC (hexadecimal). The data format is chosen once for the page (`text` is the UTF-8 bytes, `hex` is bytes in hexadecimal). Rows can be added and removed; there are 2 rows at first. The pairs are kept neither in the URL nor in storage.
+- `width`: set in an input field. When empty, it is the number of digits of the longest CRC entered × 4.
+- The search has two stages; choosing "Search" runs both and shows the results.
+  1. From the catalogue: presets of that `width` for which the CRC of the data equals the entered CRC for every pair.
+  2. Brute force: only when `width` is 16 or less. Every `poly` whose lowest bit is 1, and all 4 combinations of `refin` and `refout`, are tried.
+     - At least two pairs of the same length are needed. For pairs a and b of the same length, `crc(a) ⊕ crc(b)` equals `crc(a ⊕ b)` computed with `init` = `xorout` = 0 ("What init and xorout add" in chapter 13), so `poly`, `refin` and `refout` can be narrowed regardless of `init` and `xorout`.
+     - If there are also pairs of different lengths, every value of `init` is tried to determine it, and `xorout` is determined too. Otherwise `init` and `xorout` are not unique, so the `xorout` for `init` = 0 is shown with a note that they are not determined.
+     - Without two pairs of the same length, the brute force is not run, and the reason is shown.
+  - Each candidate shows the 6 parameters (or that `init` is undetermined), with its official name if it is in the catalogue. Up to 20 candidates are shown, with the number beyond that. Each candidate has "Open in visualizer", which applies those settings with the first pair's data as the input and moves to the Visualizer page.
+- The sidebar has hints on collecting pairs (two or more pairs of the same length, plus at least one of a different length, make the result easier to determine). The status bar shows the number of candidates.
+- Rows with invalid input (not readable as hexadecimal, or a CRC that does not fit in `width` bits) show the error in that field, and no search is run.
+- The URL fragment is `#estimate`.
+
+## 16. Terms and notation
+
+The rules under "Character types" are for the Japanese UI text (see chapter 17). The term table and the alias table give the Japanese UI wording, with the English UI wording (from `src/i18n/en.ts`) alongside.
 
 ### Character types
 
@@ -382,16 +417,16 @@ The aliases listed in the description pane are as follows. Only names whose corr
 
 A CRC with `refin` and `refout` both true can be computed by a right-shift (LSB-first) implementation, and a CRC with both false by a left-shift (MSB-first) implementation.
 
-## 15. Display language
+## 17. Display language
 
 - On-screen text can be shown in Japanese, English, Chinese (Simplified), Spanish, German and French. The on-screen text quoted in this specification is the English UI wording (the Japanese edition, [spec.ja.md](spec.ja.md), quotes the Japanese UI wording); other languages show translations with the same meaning.
 - Not translated: parameter names, the official names and aliases of presets, field labels and options of the settings panel, identifiers in the pseudocode and the diagram's formulas, the notation of numbers, and key names.
 - The full names of the parameters (the Japanese name when the UI is in Japanese) and aliases shown in the description pane and the parameter name table are the names used in that language. The aliases also include English names common in the literature.
-- The character-type rules of chapter 14 are for the Japanese UI. In every language, one concept is rendered with one term throughout.
+- The character-type rules of chapter 16 are for the Japanese UI. In every language, one concept is rendered with one term throughout.
 - Default language: the first entry in the browser's preferred-language list (`navigator.languages`), read from the start, whose language code (such as `zh` of `zh-CN`) matches one of the 6 above. If none matches, English.
 - Switching: at the right end of the status bar, a selector lists each language by its own name (日本語, English, 中文, Español, Deutsch, Français). The chosen language is kept, like the other settings, in localStorage and the URL query (`lang`, with values `ja`, `en`, `zh`, `es`, `de`, `fr`); if nothing is saved, the default language is used. Every page is shown in the same language, and the document language (`<html lang>`) follows it.
 
-## 16. Unspecified
+## 18. Unspecified
 
 - `width` above 32 bits (such as CRC-64) is not handled.
 - The layout is not optimized for mobile devices (a width of 1024px or more is assumed).

@@ -2,7 +2,7 @@ import { expect } from "@playwright/test";
 import { given, test, then } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
-const PAGES = ["#names", "#cyclic", "#redundancy", "#check", "#equivalence"];
+const PAGES = ["#names", "#cyclic", "#redundancy", "#check", "#equivalence", "#table"];
 
 test.describe("Page layout", () => {
   for (const hash of PAGES) {

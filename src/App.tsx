@@ -18,6 +18,7 @@ import { CyclicPage } from "./ui/CyclicPage";
 import { RedundancyPage } from "./ui/RedundancyPage";
 import { EquivalencePage } from "./ui/EquivalencePage";
 import { CheckPage } from "./ui/CheckPage";
+import { TablePage } from "./ui/TablePage";
 import { CurrentSettingsSidebar } from "./ui/CurrentSettingsSidebar";
 import { GeneratorSidebar, generatorStatus } from "./ui/GeneratorSidebar";
 import { NarrowPage, NarrowSidebar } from "./ui/NarrowPage";
@@ -132,13 +133,13 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       <span>{generatorStatus(generator)}</span>,
     );
   }
-  if (route.page === "equivalence" || route.page === "check") {
+  if (route.page === "equivalence" || route.page === "check" || route.page === "table") {
     return frame(<CurrentSettingsSidebar config={config} />)(
-      route.page === "check" ? (
-        <CheckPage key={JSON.stringify(config)} config={config} preset={preset} />
-      ) : (
-        <EquivalencePage config={config} />
-      ),
+      {
+        check: <CheckPage key={JSON.stringify(config)} config={config} preset={preset} />,
+        table: <TablePage key={JSON.stringify(config)} config={config} />,
+        equivalence: <EquivalencePage config={config} />,
+      }[route.page],
       <span>{config.ok ? (preset?.name ?? "custom") : m.settings.invalidStatus}</span>,
     );
   }

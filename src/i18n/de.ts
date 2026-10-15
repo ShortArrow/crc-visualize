@@ -10,6 +10,7 @@ export const de: Messages = {
     redundancy: "Redundanz",
     check: "Prüfung",
     equivalence: "Äquivalenzen",
+    table: "Tabelle",
   },
   workbench: { sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)", language: "Sprache" },
   settings: {
@@ -367,6 +368,37 @@ export const de: Messages = {
       "Ein CRC meldet nur, dass ein Fehler vorliegt; er behebt ihn nicht. Dafür braucht es einen anderen Mechanismus, etwa eine erneute Übertragung.",
       "Wer die Nachricht ändert und den CRC neu berechnet, bleibt unbemerkt. Gegen absichtliche Manipulation verwendet man einen Hash oder MAC.",
     ],
+  },
+  table: {
+    heading: "Tabellenverfahren (byteweise)",
+    note: "Viele Bibliotheken bauen zuerst eine Tabelle T mit 256 Werten und rechnen dann byteweise. Die Werte werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (wie auf der Visualisierungsseite).",
+    direction: { left: "Tabelle mit Linksschieben", right: "Tabelle mit Rechtsschieben (refin und refout sind true)" },
+    reflectNote:
+      "Ist refin true, wird die Bitreihenfolge jedes Eingabebytes vorher umgedreht; ist refout true, wird das Ergebnis am Ende umgedreht.",
+    tableTitle: "Tabelle T (256 Werte)",
+    tableNote:
+      "Zeilen sind die oberen 4 Bits des Index, Spalten die unteren 4 Bits. Einen Wert auswählen, um zu sehen, wie er entsteht.",
+    entryTitle: (i: string, value: string) => `Wie T[${i}] = ${value} entsteht`,
+    entryNote: {
+      left: "Die 8 Bits des Index werden, MSB zuerst, 8 Takte lang in ein Register mit 0 eingespeist. Das sind 8 Takte der bitweisen Berechnung.",
+      right:
+        "Die 8 Bits des Index werden, LSB zuerst, 8 Takte lang in ein nach rechts schiebendes Register mit 0 eingespeist. Das sind 8 Takte der bitweisen Berechnung.",
+    },
+    clock: "Takt",
+    bit: "Eingabebit",
+    reg: "Register",
+    stepsTitle: "Byteweise Berechnung",
+    formula: "Aktualisierung",
+    start: "Startwert",
+    byte: "Byte",
+    before: "crc vorher",
+    index: "Index",
+    entry: "T[Index]",
+    after: "crc nachher",
+    result: "Ergebnis mit Tabelle",
+    bitwise: "Bitweise berechneter CRC",
+    match: "gleich",
+    notBytes: "Die Eingabe ist kein Vielfaches von 8 Bits und lässt sich nicht byteweise berechnen.",
   },
   listSeparator: ", ",
 };
