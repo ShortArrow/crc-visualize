@@ -2124,3 +2124,104 @@ button.bit-cell:hover {
 .table-cell.shown {
   outline: 2px solid var(--accent);
 }
+
+/* Estimation page */
+.estimate-page {
+  height: 100%;
+  padding: 12px;
+  overflow: auto;
+}
+
+.estimate-page .note {
+  font-size: 0.85rem;
+}
+
+.estimate-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 8px;
+}
+
+.estimate-options input,
+.estimate-options select,
+.samples input {
+  padding: 2px 6px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-family: var(--mono);
+}
+
+.samples {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.samples th {
+  color: var(--muted);
+  font-weight: normal;
+  text-align: left;
+}
+
+.samples td {
+  padding: 2px 4px;
+  vertical-align: top;
+}
+
+.samples .sample-data {
+  width: 100%;
+}
+
+.field-error {
+  display: block;
+  color: var(--hot);
+  font-size: 0.75rem;
+}
+
+.estimate-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.catalogue-matches {
+  margin: 0;
+  padding-left: 18px;
+  font-family: var(--mono);
+}
+
+.catalogue-matches li {
+  margin: 4px 0;
+}
+
+.candidates {
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.candidates th,
+.candidates td {
+  padding: 2px 8px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.candidates th {
+  color: var(--muted);
+  font-weight: normal;
+}
+
+.candidate-name {
+  color: var(--ok);
+}
+
+.estimate-hints {
+  padding-left: 18px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}

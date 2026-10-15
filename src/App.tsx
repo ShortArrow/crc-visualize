@@ -9,7 +9,7 @@ import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "
 import { animationMs, initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
 import type { CodeLang } from "./ui/code";
 import { CodeLangSelect, CodeView } from "./ui/CodeView";
-import { ConfigPanel, formFromPreset } from "./ui/ConfigPanel";
+import { ConfigPanel, formFromParams, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { LfsrView } from "./ui/LfsrView";
 import { logEntries } from "./ui/log";
@@ -18,6 +18,7 @@ import { CyclicPage } from "./ui/CyclicPage";
 import { RedundancyPage } from "./ui/RedundancyPage";
 import { EquivalencePage } from "./ui/EquivalencePage";
 import { CheckPage } from "./ui/CheckPage";
+import { EstimatePage, EstimateSidebar } from "./ui/EstimatePage";
 import { TablePage } from "./ui/TablePage";
 import { CurrentSettingsSidebar } from "./ui/CurrentSettingsSidebar";
 import { GeneratorSidebar, generatorStatus } from "./ui/GeneratorSidebar";
@@ -65,6 +66,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   const [rate, setRate] = useState(restored.rate);
   const [loop, setLoop] = useState(restored.loop);
   const [codeLang, setCodeLang] = useState<CodeLang>(restored.codeLang);
+  const [estimateCount, setEstimateCount] = useState<number | undefined>(undefined);
   useEffect(
     () => persistSettings({ form, speedMode, rate, loop, codeLang, locale }),
     [form, speedMode, rate, loop, codeLang, locale],
@@ -131,6 +133,16 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     return frame(<GeneratorSidebar page={page} generator={generator} />)(
       page === "cyclic" ? <CyclicPage key={key} generator={generator} /> : <RedundancyPage key={key} generator={generator} />,
       <span>{generatorStatus(generator)}</span>,
+    );
+  }
+  if (route.page === "estimate") {
+    const open = (params: CrcParams, input: Preset["input"]) => {
+      setForm(formFromParams(params, input));
+      location.hash = "";
+    };
+    return frame(<EstimateSidebar />)(
+      <EstimatePage onOpen={open} onCount={setEstimateCount} />,
+      <span>{estimateCount === undefined ? m.pages.estimate : m.estimate.status(estimateCount)}</span>,
     );
   }
   if (route.page === "equivalence" || route.page === "check" || route.page === "table") {

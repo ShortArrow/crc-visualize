@@ -13,6 +13,7 @@ export type Route =
   | Readonly<{ page: "equivalence" }>
   | Readonly<{ page: "check" }>
   | Readonly<{ page: "table" }>
+  | Readonly<{ page: "estimate" }>
   | Readonly<{ page: GeneratorPage; generator: Generator }>;
 
 /** A page that shows a generator polynomial chosen from the list. */
@@ -41,6 +42,7 @@ export function parseRoute(hash: string): Route {
   if (page === "equivalence") return { page: "equivalence" };
   if (page === "check") return { page: "check" };
   if (page === "table") return { page: "table" };
+  if (page === "estimate") return { page: "estimate" };
   if (page === "narrow") return { page: "narrow", path: parseNarrowPath(rest) };
   if (isGeneratorPage(page)) return { page, generator: parseGenerator(rest) ?? DEFAULT_GENERATOR };
   if (page !== "names") return { page: "visualizer" };

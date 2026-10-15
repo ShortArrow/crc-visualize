@@ -117,3 +117,9 @@ describe("table page fragment", () => {
     expect(parseRoute("#table")).toEqual({ page: "table" });
   });
 });
+
+describe("estimation page fragment", () => {
+  it("Given the fragment #estimate, When the page is decided, Then the estimation page", () => {
+    expect(parseRoute("#estimate")).toEqual({ page: "estimate" });
+  });
+});

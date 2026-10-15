@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { ConfigError, ConfigField, ConfigForm } from "../domain/parse";
 import { PRESETS, type InputMode, type Preset } from "../domain/presets";
 import { presetLabel } from "./presetLabel";
-import type { ParamName } from "../domain/trace";
+import type { CrcParams, ParamName } from "../domain/trace";
 import { focusHandlers, type ParamFocus } from "./paramFocus";
 import { useMessages } from "../i18n/I18n";
 import { errorText } from "../i18n/messages";
@@ -10,6 +10,11 @@ import { FIELD_LABELS, type FieldName } from "./paramInfo";
 
 /** Turns a preset into form values. */
 export function formFromPreset({ params, input }: Preset): ConfigForm {
+  return formFromParams(params, input);
+}
+
+/** The form values for params and input. */
+export function formFromParams(params: CrcParams, input: Preset["input"]): ConfigForm {
   const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;
   return {
     width: String(params.width),
