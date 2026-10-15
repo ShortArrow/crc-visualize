@@ -25,21 +25,19 @@ export function CyclicPage({ generator }: Readonly<{ generator: Generator }>) {
   return (
     <div className="cyclic-page">
       <h2>{m.cyclic.heading}</h2>
-      <div className="cyclic-layout">
-        <div className="cyclic-rings">
-          <figure>
-            <figcaption>{m.cyclic.wordRing}</figcaption>
-            <WordRing generator={generator} turns={turns} />
-            <p className="note">{m.cyclic.wordNote}</p>
-            <p className="note crc-legend">{m.cyclic.crcBit}</p>
-          </figure>
-          <figure>
-            <figcaption>{m.cyclic.stateRing}</figcaption>
-            <StateRing generator={generator} k={k} />
-            <p className="note">{m.cyclic.stateNote}</p>
-          </figure>
-        </div>
-        <div className="cyclic-side">
+      <div className="page-columns cyclic-rings">
+        <figure className="card">
+          <figcaption>{m.cyclic.wordRing}</figcaption>
+          <WordRing generator={generator} turns={turns} />
+          <p className="note">{m.cyclic.wordNote}</p>
+          <p className="note crc-legend">{m.cyclic.crcBit}</p>
+        </figure>
+        <figure className="card">
+          <figcaption>{m.cyclic.stateRing}</figcaption>
+          <StateRing generator={generator} k={k} />
+          <p className="note">{m.cyclic.stateNote}</p>
+        </figure>
+        <section className="card cyclic-side">
           <div className="cyclic-controls">
             <button
               type="button"
@@ -75,7 +73,7 @@ export function CyclicPage({ generator }: Readonly<{ generator: Generator }>) {
           </dl>
           <p className="cyclic-explain">{m.cyclic.explain(n)}</p>
           <p className="note">{m.cyclic.shortened}</p>
-        </div>
+        </section>
       </div>
     </div>
   );
