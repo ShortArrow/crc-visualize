@@ -119,6 +119,8 @@ The computation is returned as a `Step[]` by the pure function `trace(params, in
 
 A dark-mode, editor-like screen similar to VS Code, with 7 pages: the Visualizer page, the Naming page (chapter 8), the Narrow down page (chapter 9), the Cyclic page (chapter 10), the Redundancy page (chapter 11), the Check page (chapter 12) and the Equivalences page (chapter 13). This chapter specifies the Visualizer page.
 
+On pages other than the Visualizer, the content blocks (cards) are split into as many columns as the width allows and packed from the top of each column, so that a wide screen does not leave a large empty area on the right. Long lists (such as the alias table) are split into columns as well.
+
 - Layout: the whole screen is divided into the following areas, and the page itself does not scroll. Content that does not fit in an area scrolls within that area only.
   - Activity bar (the narrow column at the left edge): icons for switching pages (Visualizer, Naming, Narrow down).
   - Sidebar: on the Visualizer page, the settings panel and the description pane (1 below). On the Naming page, a table of contents for its sections. On the Narrow down page, the fixed values and the remaining candidates.

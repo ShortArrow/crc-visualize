@@ -22,65 +22,67 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
   return (
     <div className="redundancy-page">
       <h2>{m.redundancy.heading}</h2>
-      <section>
-        <h3>{m.redundancy.whatSection}</h3>
-        <div className="sent-row">
-          <div className="part">
-            <div className="bit-row" style={{ "--bits": k } as CSSProperties}>
-              <BitCells bits={sent} width={generator.width} range={[0, k]} />
+      <div className="page-columns">
+        <section className="card">
+          <h3>{m.redundancy.whatSection}</h3>
+          <div className="sent-row">
+            <div className="part">
+              <div className="bit-row" style={{ "--bits": k } as CSSProperties}>
+                <BitCells bits={sent} width={generator.width} range={[0, k]} />
+              </div>
+              <span className="part-label message">{m.redundancy.message(k)}</span>
             </div>
-            <span className="part-label message">{m.redundancy.message(k)}</span>
-          </div>
-          <div className="part">
-            <div className="bit-row" style={{ "--bits": generator.width } as CSSProperties}>
-              <BitCells bits={sent} width={generator.width} range={[k, n]} />
+            <div className="part">
+              <div className="bit-row" style={{ "--bits": generator.width } as CSSProperties}>
+                <BitCells bits={sent} width={generator.width} range={[k, n]} />
+              </div>
+              <span className="part-label crc">{m.redundancy.crc(generator.width)}</span>
             </div>
-            <span className="part-label crc">{m.redundancy.crc(generator.width)}</span>
           </div>
-        </div>
-        <p className="note">{m.redundancy.whatNote}</p>
-      </section>
-      <section>
-        <h3>{m.redundancy.spaceSection}</h3>
-        <dl className="space-counts">
-          <dt>{m.redundancy.allWords(n)}</dt>
-          <dd>{powerOfTwoText(n)}</dd>
-          <dt>{m.redundancy.codewords}</dt>
-          <dd>{powerOfTwoText(k)}</dd>
-          <dt>{m.redundancy.ratio}</dt>
-          <dd>1/{2 ** generator.width}</dd>
-        </dl>
-        {2 ** n <= GRID_LIMIT ? <WordGrid generator={generator} received={bitsValue(received)} /> : null}
-        <p className="note">{m.redundancy.spaceNote(generator.width)}</p>
-      </section>
-      <section>
-        <h3>{m.redundancy.checkSection}</h3>
-        <p className="row-label">{m.redundancy.received}</p>
-        <div className="bit-row received-row" style={rowStyle}>
-          <BitCells bits={received} width={generator.width} flipped={error} onFlip={(i) => setError(flip(error, i))} />
-        </div>
-        <dl className="check-result">
-          <dt>{m.redundancy.error}</dt>
-          <dd className="error-bits">{error.join("")}</dd>
-          <dt>{m.redundancy.burst}</dt>
-          <dd className="burst-length">{burstLength(error)}</dd>
-          <dt>{m.redundancy.remainder}</dt>
-          <dd className="received-remainder">{binary(remainder(generator, received), generator.width)}</dd>
-        </dl>
-        <p className="verdict" data-verdict={result}>
-          {m.redundancy.verdict[result]}
-        </p>
-        <div className="check-actions">
-          <button type="button" className="reset-error" onClick={() => setError(noError(n))}>
-            {m.redundancy.reset}
-          </button>
-          <button type="button" className="missed-example" onClick={() => setError(generatorError(generator, n))}>
-            {m.redundancy.missedExample}
-          </button>
-        </div>
-        <p className="note">{m.redundancy.remainderNote}</p>
-        <p className="note">{m.redundancy.guarantee(generator.width)}</p>
-      </section>
+          <p className="note">{m.redundancy.whatNote}</p>
+        </section>
+        <section className="card">
+          <h3>{m.redundancy.spaceSection}</h3>
+          <dl className="space-counts">
+            <dt>{m.redundancy.allWords(n)}</dt>
+            <dd>{powerOfTwoText(n)}</dd>
+            <dt>{m.redundancy.codewords}</dt>
+            <dd>{powerOfTwoText(k)}</dd>
+            <dt>{m.redundancy.ratio}</dt>
+            <dd>1/{2 ** generator.width}</dd>
+          </dl>
+          {2 ** n <= GRID_LIMIT ? <WordGrid generator={generator} received={bitsValue(received)} /> : null}
+          <p className="note">{m.redundancy.spaceNote(generator.width)}</p>
+        </section>
+        <section className="card">
+          <h3>{m.redundancy.checkSection}</h3>
+          <p className="row-label">{m.redundancy.received}</p>
+          <div className="bit-row received-row" style={rowStyle}>
+            <BitCells bits={received} width={generator.width} flipped={error} onFlip={(i) => setError(flip(error, i))} />
+          </div>
+          <dl className="check-result">
+            <dt>{m.redundancy.error}</dt>
+            <dd className="error-bits">{error.join("")}</dd>
+            <dt>{m.redundancy.burst}</dt>
+            <dd className="burst-length">{burstLength(error)}</dd>
+            <dt>{m.redundancy.remainder}</dt>
+            <dd className="received-remainder">{binary(remainder(generator, received), generator.width)}</dd>
+          </dl>
+          <p className="verdict" data-verdict={result}>
+            {m.redundancy.verdict[result]}
+          </p>
+          <div className="check-actions">
+            <button type="button" className="reset-error" onClick={() => setError(noError(n))}>
+              {m.redundancy.reset}
+            </button>
+            <button type="button" className="missed-example" onClick={() => setError(generatorError(generator, n))}>
+              {m.redundancy.missedExample}
+            </button>
+          </div>
+          <p className="note">{m.redundancy.remainderNote}</p>
+          <p className="note">{m.redundancy.guarantee(generator.width)}</p>
+        </section>
+      </div>
     </div>
   );
 }

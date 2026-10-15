@@ -16,27 +16,31 @@ export function EquivalencePage({ config }: Readonly<{ config: ConfigResult }>) 
       <p className="note">{e.note}</p>
       {config.ok ? null : <p className="invalid-config">{m.settings.invalid}</p>}
       <h3>{e.sameSection}</h3>
-      {(config.ok ? equivalences(config.params, config.bits) : ITEM_IDS.map((id) => ({ id }))).map((item) => (
-        <EquivalenceItem key={item.id} item={item} params={config.ok ? config.params : undefined} />
-      ))}
+      <div className="page-columns">
+        {(config.ok ? equivalences(config.params, config.bits) : ITEM_IDS.map((id) => ({ id }))).map((item) => (
+          <EquivalenceItem key={item.id} item={item} params={config.ok ? config.params : undefined} />
+        ))}
+      </div>
       <h3>{e.inferSection}</h3>
-      <table className="inference">
-        <thead>
-          <tr>
-            <th>{e.known}</th>
-            <th>{e.follows}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {e.rows.map((row) => (
-            <tr key={row.known}>
-              <td>{row.known}</td>
-              <td>{row.follows}</td>
+      <div className="inference-layout">
+        <table className="inference">
+          <thead>
+            <tr>
+              <th>{e.known}</th>
+              <th>{e.follows}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {config.ok ? <CurrentInference params={config.params} /> : null}
+          </thead>
+          <tbody>
+            {e.rows.map((row) => (
+              <tr key={row.known}>
+                <td>{row.known}</td>
+                <td>{row.follows}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {config.ok ? <CurrentInference params={config.params} /> : null}
+      </div>
     </div>
   );
 }
@@ -52,7 +56,7 @@ function EquivalenceItem({ item, params }: ItemProps) {
   const text = e.items[item.id];
   const prefix = item.id === "initPrefix" && params ? initPrefix(params) : undefined;
   return (
-    <section className="equivalence-item" data-id={item.id}>
+    <section className="card equivalence-item" data-id={item.id}>
       <h4>{text.title}</h4>
       <dl>
         <dt>{e.left}</dt>
@@ -92,7 +96,7 @@ function CurrentInference({ params }: Readonly<{ params: CrcParams }>) {
   const direction = shiftDirection(params);
   const constants = codeConstants(params);
   return (
-    <div className="current-inference">
+    <div className="card current-inference">
       <h4>{e.current}</h4>
       <p className="current-direction" data-direction={direction}>
         {e.direction[direction]}

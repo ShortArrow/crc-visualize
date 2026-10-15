@@ -25,54 +25,58 @@ export function CyclicPage({ generator }: Readonly<{ generator: Generator }>) {
   return (
     <div className="cyclic-page">
       <h2>{m.cyclic.heading}</h2>
-      <div className="cyclic-rings">
-        <figure>
-          <figcaption>{m.cyclic.wordRing}</figcaption>
-          <WordRing generator={generator} turns={turns} />
-          <p className="note">{m.cyclic.wordNote}</p>
-          <p className="note crc-legend">{m.cyclic.crcBit}</p>
-        </figure>
-        <figure>
-          <figcaption>{m.cyclic.stateRing}</figcaption>
-          <StateRing generator={generator} k={k} />
-          <p className="note">{m.cyclic.stateNote}</p>
-        </figure>
+      <div className="cyclic-layout">
+        <div className="cyclic-rings">
+          <figure>
+            <figcaption>{m.cyclic.wordRing}</figcaption>
+            <WordRing generator={generator} turns={turns} />
+            <p className="note">{m.cyclic.wordNote}</p>
+            <p className="note crc-legend">{m.cyclic.crcBit}</p>
+          </figure>
+          <figure>
+            <figcaption>{m.cyclic.stateRing}</figcaption>
+            <StateRing generator={generator} k={k} />
+            <p className="note">{m.cyclic.stateNote}</p>
+          </figure>
+        </div>
+        <div className="cyclic-side">
+          <div className="cyclic-controls">
+            <button
+              type="button"
+              className="rotate-back"
+              title={m.cyclic.back}
+              aria-label={m.cyclic.back}
+              onClick={() => setTurns(turns - 1)}
+            >
+              ◀
+            </button>
+            <span className="rotated">{m.cyclic.rotated(k)}</span>
+            <button
+              type="button"
+              className="rotate-forward"
+              title={m.cyclic.forward}
+              aria-label={m.cyclic.forward}
+              onClick={() => setTurns(turns + 1)}
+            >
+              ▶
+            </button>
+          </div>
+          <dl className="cyclic-result">
+            <dt>{m.cyclic.word}</dt>
+            <dd className="cyclic-word">
+              {rotated.map((bit, i) => (
+                <span key={i} className={bit ? "one" : ""}>
+                  {bit}
+                </span>
+              ))}
+            </dd>
+            <dt>{m.cyclic.remainder}</dt>
+            <dd className="cyclic-remainder">{binary(remainder(generator, rotated), generator.width)}</dd>
+          </dl>
+          <p className="cyclic-explain">{m.cyclic.explain(n)}</p>
+          <p className="note">{m.cyclic.shortened}</p>
+        </div>
       </div>
-      <div className="cyclic-controls">
-        <button
-          type="button"
-          className="rotate-back"
-          title={m.cyclic.back}
-          aria-label={m.cyclic.back}
-          onClick={() => setTurns(turns - 1)}
-        >
-          ◀
-        </button>
-        <span className="rotated">{m.cyclic.rotated(k)}</span>
-        <button
-          type="button"
-          className="rotate-forward"
-          title={m.cyclic.forward}
-          aria-label={m.cyclic.forward}
-          onClick={() => setTurns(turns + 1)}
-        >
-          ▶
-        </button>
-      </div>
-      <dl className="cyclic-result">
-        <dt>{m.cyclic.word}</dt>
-        <dd className="cyclic-word">
-          {rotated.map((bit, i) => (
-            <span key={i} className={bit ? "one" : ""}>
-              {bit}
-            </span>
-          ))}
-        </dd>
-        <dt>{m.cyclic.remainder}</dt>
-        <dd className="cyclic-remainder">{binary(remainder(generator, rotated), generator.width)}</dd>
-      </dl>
-      <p className="cyclic-explain">{m.cyclic.explain(n)}</p>
-      <p className="note">{m.cyclic.shortened}</p>
     </div>
   );
 }
