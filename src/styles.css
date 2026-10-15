@@ -1855,13 +1855,30 @@ button.bit-cell:hover {
 
 .frame-legend {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  margin: 6px 0;
+  gap: 6px 16px;
+  margin: 8px 0;
+  padding: 0;
+  font-size: 0.85rem;
+  list-style: none;
 }
 
-.frame-legend .part-label {
-  padding: 0 4px;
+.frame-legend li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.frame-legend .bit-cell {
+  width: 18px;
+  height: 20px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+.frame-row .crc-start {
+  margin-left: 10px;
 }
 
 .methods {

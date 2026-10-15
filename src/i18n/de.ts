@@ -333,8 +333,10 @@ export const de: Messages = {
     frameSection: "Gesendete Bitfolge",
     frameNote:
       "Die Nachricht wird gefolgt von ihrem CRC gesendet. CRCs mit refin und refout true werden mit dem niedrigsten Byte zuerst angehängt. Ein Bit auswählen, um es zu kippen (als wäre es unterwegs beschädigt worden).",
-    message: "Nachricht",
-    crc: "CRC",
+    message: (n: number) => `Nachricht (${n} Bits)`,
+    crc: (n: number) => `CRC (${n} Bits, grüner Rand)`,
+    values: "rot = 1, weiß = 0",
+    flipped: "gelber Rand = gekipptes Bit",
     reset: "Zurücksetzen",
     methodsSection: "Arten der Prüfung",
     recheck: {

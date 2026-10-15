@@ -328,8 +328,10 @@ export const en: Messages = {
     frameSection: "Sent bit string",
     frameNote:
       "The message is sent followed by its CRC. CRCs with refin and refout true are appended lowest byte first. Select a bit to flip it (as if it were corrupted in transit).",
-    message: "message",
-    crc: "CRC",
+    message: (n: number) => `message (${n} bits)`,
+    crc: (n: number) => `CRC (${n} bits, green outline)`,
+    values: "red = 1, white = 0",
+    flipped: "yellow outline = flipped bit",
     reset: "Undo",
     methodsSection: "Ways to check",
     recheck: {
