@@ -18,8 +18,8 @@ A browser app that shows the behaviour of an LFSR (hardware) and each line of a 
 Each preset carries the reveng catalogue's check value (check, the CRC of the input `"123456789"`), which serves as the reference for correct computation.
 
 - The teaching preset `CRC-3/TUTORIAL` (width=3, poly=0x3, init=0, refin=false, refout=false, xorout=0, input bits `10101`, CRC=`101`)
-- CRC-3/GSM, CRC-4/G-704, CRC-5/USB, CRC-7/MMC, CRC-8/SMBUS, CRC-8/MAXIM-DOW, CRC-8/AUTOSAR, CRC-8/SAE-J1850, CRC-16/ARC, CRC-16/MODBUS, CRC-16/USB, CRC-16/IBM-3740, CRC-16/XMODEM, CRC-16/KERMIT, CRC-16/IBM-SDLC, CRC-16/SPI-FUJITSU, CRC-16/GENIBUS, CRC-32/ISO-HDLC, CRC-32/BZIP2, CRC-32/MPEG-2, CRC-32/ISCSI
-- Each option shows the official name followed by up to 3 of the reveng catalogue's aliases that are common in the literature, in full-width parentheses (e.g. CRC-16/KERMIT（CCITT、CCITT-TRUE、CRC-CCITT）). An alias that starts with the same "CRC-width/" omits that prefix.
+- Every algorithm with `width` 32 or less in reveng's "Catalogue of parametrised CRC algorithms" (104 of them), in catalogue order. Each preset has all of its catalogue aliases, with the ones most used in the literature first.
+- Each option shows the official name followed by up to the first 3 aliases in full-width parentheses (e.g. CRC-16/KERMIT（CCITT、CCITT-TRUE、CRC-CCITT）). An alias that starts with the same "CRC-width/" omits that prefix.
 
 ## 2. Input
 

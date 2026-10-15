@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { branches, fitPath, formatValue, matching, parseValue, splittingParams } from "./narrow";
-import { CATALOGUE } from "./presets";
+import { SAMPLE_PRESETS } from "../testing/fixtures";
 
 const names = (presets: readonly { name: string }[]) => presets.map((p) => p.name);
 
@@ -11,21 +11,21 @@ describe("matching", () => {
       { param: "poly", value: 0x1021 },
     ] as const;
 
-    expect(matching(CATALOGUE, fixed)).toHaveLength(6);
+    expect(matching(SAMPLE_PRESETS, fixed)).toHaveLength(6);
   });
 
   it("Given an empty path, When candidates are narrowed, Then every preset remains", () => {
-    expect(matching(CATALOGUE, [])).toEqual(CATALOGUE);
+    expect(matching(SAMPLE_PRESETS, [])).toEqual(SAMPLE_PRESETS);
   });
 });
 
 describe("splittingParams", () => {
-  it("Given all presets, When the splittable parameters are listed, Then every parameter appears in PARAM_NAMES order", () => {
-    expect(splittingParams(CATALOGUE)).toEqual(["width", "poly", "init", "refin", "refout", "xorout"]);
+  it("Given the sample presets, When the splittable parameters are listed, Then every parameter appears in PARAM_NAMES order", () => {
+    expect(splittingParams(SAMPLE_PRESETS)).toEqual(["width", "poly", "init", "refin", "refout", "xorout"]);
   });
 
   it("Given candidates with width 16 and poly 0x8005, When the splittable parameters are listed, Then width and poly, shared by all candidates, are absent", () => {
-    const family = matching(CATALOGUE, [
+    const family = matching(SAMPLE_PRESETS, [
       { param: "width", value: 16 },
       { param: "poly", value: 0x8005 },
     ]);
@@ -36,13 +36,13 @@ describe("splittingParams", () => {
   });
 
   it("Given a single candidate, When the splittable parameters are listed, Then there are none", () => {
-    expect(splittingParams(CATALOGUE.slice(0, 1))).toEqual([]);
+    expect(splittingParams(SAMPLE_PRESETS.slice(0, 1))).toEqual([]);
   });
 });
 
 describe("branches", () => {
-  it("Given all presets, When split by width, Then branches are in ascending order of value and each holds the candidates with that value", () => {
-    const result = branches(CATALOGUE, "width");
+  it("Given the sample presets, When split by width, Then branches are in ascending order of value and each holds the candidates with that value", () => {
+    const result = branches(SAMPLE_PRESETS, "width");
 
     expect(result.map((b) => [b.value, b.presets.length])).toEqual([
       [3, 1],
@@ -55,12 +55,12 @@ describe("branches", () => {
     ]);
   });
 
-  it("Given all presets, When split by refin, Then the false branch comes first", () => {
-    expect(branches(CATALOGUE, "refin").map((b) => b.value)).toEqual([false, true]);
+  it("Given the sample presets, When split by refin, Then the false branch comes first", () => {
+    expect(branches(SAMPLE_PRESETS, "refin").map((b) => b.value)).toEqual([false, true]);
   });
 
   it("Given candidates with width 16 and poly 0x8005, When split by init, Then each branch keeps preset list order", () => {
-    const family = matching(CATALOGUE, [
+    const family = matching(SAMPLE_PRESETS, [
       { param: "width", value: 16 },
       { param: "poly", value: 0x8005 },
     ]);
@@ -82,7 +82,7 @@ describe("fitPath", () => {
       open: "init",
     } as const;
 
-    expect(fitPath(CATALOGUE, path)).toEqual(path);
+    expect(fitPath(SAMPLE_PRESETS, path)).toEqual(path);
   });
 
   it("Given a path containing a value with no candidates, When the path is fitted, Then it is cut just before that value and the branch point closes", () => {
@@ -95,7 +95,7 @@ describe("fitPath", () => {
       open: "xorout",
     } as const;
 
-    expect(fitPath(CATALOGUE, path)).toEqual({ fixed: [{ param: "width", value: 16 }] });
+    expect(fitPath(SAMPLE_PRESETS, path)).toEqual({ fixed: [{ param: "width", value: 16 }] });
   });
 
   it("Given a path splitting by a parameter shared by all candidates, When the path is fitted, Then it is cut just before that parameter", () => {
@@ -107,13 +107,13 @@ describe("fitPath", () => {
       ],
     } as const;
 
-    expect(fitPath(CATALOGUE, path)).toEqual({ fixed: path.fixed.slice(0, 2) });
+    expect(fitPath(SAMPLE_PRESETS, path)).toEqual({ fixed: path.fixed.slice(0, 2) });
   });
 
   it("Given a branch point after the candidates are down to one, When the path is fitted, Then the branch point closes", () => {
     const path = { fixed: [{ param: "width", value: 3 }], open: "init" } as const;
 
-    expect(fitPath(CATALOGUE, path)).toEqual({ fixed: path.fixed });
+    expect(fitPath(SAMPLE_PRESETS, path)).toEqual({ fixed: path.fixed });
   });
 });
 

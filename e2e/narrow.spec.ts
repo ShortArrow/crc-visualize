@@ -7,18 +7,18 @@ test.describe("Narrowing", () => {
   test("fixes values one at a time down to a single algorithm and opens it in the visualizer", async ({ page }) => {
     const v = await given("the visualizer page is open", () => Visualizer.open(page));
     await when("switching to the narrowing page in the activity bar", () => v.workbench.pageLink("narrow").click());
-    const n = await then("it starts from all 21 candidates", async () => {
+    const n = await then("it starts from all 104 candidates", async () => {
       const n = await NarrowPage.shown(page);
       expect(n.hash()).toBe("#narrow");
-      await expect(n.candidates()).toHaveCount(21);
-      await expect(v.workbench.statusbar()).toContainText("候補 21");
+      await expect(n.candidates()).toHaveCount(104);
+      await expect(v.workbench.statusbar()).toContainText("候補 104");
       return n;
     });
     await when("selecting width at the root", () => n.splitBy(0, "width").click());
     await then("a branch per width value appears, with its candidate count", async () => {
       expect(n.hash()).toBe("#narrow/width");
-      await expect(n.branch(0, "16")).toContainText("9");
-      await expect(n.branch(0, "3")).toContainText("CRC-3/GSM");
+      await expect(n.branch(0, "16")).toContainText("31");
+      await expect(n.branch(0, "17")).toContainText("CRC-17/CAN-FD");
     });
     await when("selecting 16, poly, 0x1021 and init in turn", async () => {
       await n.branch(0, "16").locator(":scope > a").click();
@@ -26,9 +26,9 @@ test.describe("Narrowing", () => {
       await n.branch(1, "0x1021").locator(":scope > a").click();
       await n.splitBy(2, "init").click();
     });
-    await then("the path is in the URL and the candidates drop to 6", async () => {
+    await then("the path is in the URL and the candidates drop to 11", async () => {
       expect(n.hash()).toBe("#narrow/width=16/poly=0x1021/init");
-      await expect(n.candidates()).toHaveCount(6);
+      await expect(n.candidates()).toHaveCount(11);
       await expect(n.branch(2, "0x1D0F")).toContainText("CRC-16/SPI-FUJITSU");
     });
     await when("selecting the init 0x1D0F branch", () => n.branch(2, "0x1D0F").locator(":scope > a").click());
@@ -52,12 +52,12 @@ test.describe("Narrowing", () => {
     );
     await then("the path from poly on becomes 0x8005", async () => {
       expect(n.hash()).toBe("#narrow/width=16/poly=0x8005");
-      await expect(n.candidates()).toHaveCount(3);
+      await expect(n.candidates()).toHaveCount(7);
     });
     await when("changing the splitting parameter at the root to refin", () => n.splitBy(0, "refin").click());
     await then("the path from the root is discarded and re-split by refin", async () => {
       expect(n.hash()).toBe("#narrow/refin");
-      await expect(n.candidates()).toHaveCount(21);
+      await expect(n.candidates()).toHaveCount(104);
       await expect(n.branch(0, "false")).toBeVisible();
     });
   });
@@ -76,7 +76,7 @@ test.describe("Narrowing", () => {
       NarrowPage.open(page, "#narrow/width=16/poly=0x7"),
     );
     await then("the path goes up to width=16", async () => {
-      await expect(n.candidates()).toHaveCount(9);
+      await expect(n.candidates()).toHaveCount(31);
       await expect(n.branch(0, "16")).toHaveClass(/on-path/);
     });
   });

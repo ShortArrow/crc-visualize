@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { AMBIGUOUS_NAMES, aliasIndex, polyFamilies, splitPresetName } from "./naming";
 import { CATALOGUE } from "./presets";
+import { SAMPLE_PRESETS } from "../testing/fixtures";
 
 describe("splitPresetName", () => {
   it("Given canonical name CRC-16/KERMIT, When parsed, Then it splits into CRC, width and suffix", () => {
@@ -13,8 +14,8 @@ describe("splitPresetName", () => {
 });
 
 describe("polyFamilies", () => {
-  it("Given the reveng catalogue presets, When grouped into families, Then only width and poly pairs shared by two or more appear, in ascending order of width then poly", () => {
-    const families = polyFamilies(CATALOGUE);
+  it("Given the sample presets, When grouped into families, Then only width and poly pairs shared by two or more appear, in ascending order of width then poly", () => {
+    const families = polyFamilies(SAMPLE_PRESETS);
 
     expect(families.map((f) => [f.width, f.poly])).toEqual([
       [16, 0x1021],
@@ -23,8 +24,8 @@ describe("polyFamilies", () => {
     ]);
   });
 
-  it("Given the reveng catalogue presets, When the poly 0x1021 family is inspected, Then it has 6 members in preset list order", () => {
-    const ccitt = polyFamilies(CATALOGUE).find((f) => f.poly === 0x1021)!;
+  it("Given the sample presets, When the poly 0x1021 family is inspected, Then it has 6 members in preset list order", () => {
+    const ccitt = polyFamilies(SAMPLE_PRESETS).find((f) => f.poly === 0x1021)!;
 
     expect(ccitt.rows.map((r) => r.preset.name)).toEqual([
       "CRC-16/IBM-3740",
@@ -36,8 +37,8 @@ describe("polyFamilies", () => {
     ]);
   });
 
-  it("Given the reveng catalogue presets, When the poly 0x1021 family is inspected, Then each row shows only the columns that differ from the first, IBM-3740", () => {
-    const ccitt = polyFamilies(CATALOGUE).find((f) => f.poly === 0x1021)!;
+  it("Given the sample presets, When the poly 0x1021 family is inspected, Then each row shows only the columns that differ from the first, IBM-3740", () => {
+    const ccitt = polyFamilies(SAMPLE_PRESETS).find((f) => f.poly === 0x1021)!;
     const differs = Object.fromEntries(ccitt.rows.map((r) => [r.preset.name, r.differs]));
 
     expect(differs["CRC-16/IBM-3740"]).toEqual({ init: false, reflect: false, xorout: false });
