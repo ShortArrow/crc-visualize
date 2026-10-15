@@ -1,3 +1,5 @@
+[English](0002-svg-spa.md) | **日本語**
+
 # ADR-0002: Motion Canvas を使わず、React + SVG の SPA で描画する
 
 - 状態: 採用
