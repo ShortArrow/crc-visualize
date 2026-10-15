@@ -1384,6 +1384,7 @@ h2 {
   height: 100%;
   padding: 12px;
   overflow: auto;
+  container-type: size;
 }
 
 .cyclic-page .note {
@@ -1397,11 +1398,23 @@ h2 {
   font-weight: 600;
 }
 
+/*
+ * The two rings share the first row and grow up to the height the page leaves after the heading, captions, notes and
+ * the row of controls and explanation below them.
+ */
+.cyclic-rings > figure {
+  flex: 1 1 340px;
+}
+
+.cyclic-rings > .cyclic-side {
+  flex-basis: 100%;
+}
+
 .cyclic-rings svg {
   display: block;
   width: 100%;
-  max-width: 340px;
   height: auto;
+  max-height: max(240px, calc(100cqh - 400px));
   margin: 0 auto;
 }
 

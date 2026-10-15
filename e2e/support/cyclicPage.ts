@@ -21,6 +21,16 @@ export class CyclicPage {
     return this.page.locator(".cyclic-page");
   }
 
+  /** The height of each ring drawing and of the page's scrolling area (px). */
+  ringSizes(): Promise<{ rings: number[]; page: number }> {
+    return this.page.evaluate(() => ({
+      rings: [...document.querySelectorAll(".cyclic-page :is(.word-ring, .state-ring)")].map(
+        (r) => r.getBoundingClientRect().height,
+      ),
+      page: document.querySelector(".cyclic-page")!.clientHeight,
+    }));
+  }
+
   /** The bits of the codeword ring. */
   wordBits(): Locator {
     return this.root.locator(".word-ring .ring-bit");
