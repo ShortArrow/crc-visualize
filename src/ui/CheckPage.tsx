@@ -24,14 +24,11 @@ export function CheckPage({ config, preset }: Props) {
       {config.ok ? (
         <Checks params={config.params} message={config.bits} preset={preset} />
       ) : (
-        <p className="invalid-config">{m.settings.invalid}</p>
+        <>
+          <p className="invalid-config">{m.settings.invalid}</p>
+          <Limits />
+        </>
       )}
-      <h3>{m.check.limitsSection}</h3>
-      <ul className="check-limits">
-        {m.check.limits.map((text) => (
-          <li key={text}>{text}</li>
-        ))}
-      </ul>
     </div>
   );
 }
@@ -89,8 +86,9 @@ function Checks({ params, message, preset }: ChecksProps) {
         </li>
       </ul>
       <h3>{m.check.methodsSection}</h3>
-      <div className="methods">
-        <section className="method" data-method="recheck">
+      <p className="note">{m.check.sameVerdict}</p>
+      <div className="page-columns">
+        <section className="card method" data-method="recheck">
           <h4>{m.check.recheck.title}</h4>
           <p className="note">{m.check.recheck.note}</p>
           <dl>
@@ -101,7 +99,7 @@ function Checks({ params, message, preset }: ChecksProps) {
           </dl>
           <Verdict ok={re.ok} />
         </section>
-        <section className="method" data-method="whole">
+        <section className="card method" data-method="whole">
           <h4>{m.check.whole.title}</h4>
           <p className="note">{m.check.whole.note}</p>
           {whole ? (
@@ -118,22 +116,39 @@ function Checks({ params, message, preset }: ChecksProps) {
             <p className="not-applicable">{m.check.whole.notApplicable}</p>
           )}
         </section>
+        <section className="card">
+          <h4>{m.check.checkSection}</h4>
+          <dl className="check-values">
+            {preset ? (
+              <>
+                <dt>{m.check.catalogue}</dt>
+                <dd className="catalogue-check">{hex(preset.check, w)}</dd>
+              </>
+            ) : null}
+            <dt>{m.check.computedCheck}</dt>
+            <dd className="computed-check">{hex(crcOf(params, CHECK_INPUT), w)}</dd>
+          </dl>
+          {preset ? null : <p className="note">{m.check.custom}</p>}
+          <p className="note">{m.check.checkNote}</p>
+        </section>
+        <Limits />
       </div>
-      <p className="note">{m.check.sameVerdict}</p>
-      <h3>{m.check.checkSection}</h3>
-      <dl className="check-values">
-        {preset ? (
-          <>
-            <dt>{m.check.catalogue}</dt>
-            <dd className="catalogue-check">{hex(preset.check, w)}</dd>
-          </>
-        ) : null}
-        <dt>{m.check.computedCheck}</dt>
-        <dd className="computed-check">{hex(crcOf(params, CHECK_INPUT), w)}</dd>
-      </dl>
-      {preset ? null : <p className="note">{m.check.custom}</p>}
-      <p className="note">{m.check.checkNote}</p>
     </>
+  );
+}
+
+/** What a CRC cannot check. */
+function Limits() {
+  const m = useMessages();
+  return (
+    <section className="card">
+      <h4>{m.check.limitsSection}</h4>
+      <ul className="check-limits">
+        {m.check.limits.map((text) => (
+          <li key={text}>{text}</li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

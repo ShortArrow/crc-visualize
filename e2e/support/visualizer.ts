@@ -15,6 +15,11 @@ export const TUTORIAL_STEPS = 15;
 export class Visualizer {
   private constructor(readonly page: Page) {}
 
+  /** Drives the workbench (activity bar, sidebar, status bar) on whatever page is open, without waiting for the visualizer. */
+  static on(page: Page): Visualizer {
+    return new Visualizer(page);
+  }
+
   /** Opens the page with a query (such as "?rate=0.25") and waits at the first step. */
   static async open(page: Page, query = ""): Promise<Visualizer> {
     await page.goto(`/${query}`);
@@ -185,6 +190,34 @@ export class Visualizer {
       this.page.evaluate(() => {
         const root = document.scrollingElement!;
         return { x: root.scrollWidth - root.clientWidth, y: root.scrollHeight - root.clientHeight };
+      }),
+    /**
+     * How far across the editor area the content reaches in the first screen: the editor is cut into horizontal strips 40 px high,
+     * and for each strip that holds content the right edge of the furthest text or drawing is taken as a share of the editor width (0 to 1).
+     * Headings are left out, as they are short by nature. Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
+     */
+    contentFill: () =>
+      this.page.evaluate(() => {
+        const editor = document.querySelector(".editor")!.getBoundingClientRect();
+        const walker = document.createTreeWalker(document.querySelector(".editor")!, NodeFilter.SHOW_TEXT);
+        const inked: DOMRect[] = [];
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (!node.textContent?.trim()) continue;
+          if (node.parentElement?.closest("h1, h2, h3, h4")) continue;
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          inked.push(...range.getClientRects());
+        }
+        const drawn = [...document.querySelectorAll(".editor :is(svg, button, input, select, .bit-cell, .word-dot)")];
+        const rects = [...inked, ...drawn.map((el) => el.getBoundingClientRect())].filter(
+          (r) => r.width > 0 && r.height > 0 && r.bottom > editor.top && r.top < editor.bottom,
+        );
+        const shares: number[] = [];
+        for (let y = editor.top; y < editor.bottom; y += 40) {
+          const inStrip = rects.filter((r) => r.top < y + 40 && r.bottom > y && r.width < editor.width - 1);
+          if (inStrip.length) shares.push((Math.max(...inStrip.map((r) => r.right)) - editor.left) / editor.width);
+        }
+        return shares.filter((share) => share > 0.55).length / shares.length;
       }),
     /** Drags the splitter name by (dx, dy) from where it is grabbed. */
     drag: async (name: "sidebar" | "panel" | "code", dx: number, dy: number) => {

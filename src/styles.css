@@ -1495,7 +1495,6 @@ h2 {
 }
 
 .cyclic-explain {
-  max-width: 720px;
   line-height: 1.6;
 }
 
@@ -1548,7 +1547,6 @@ h2 {
 }
 
 .redundancy-page .note {
-  max-width: 720px;
   margin: 6px 0;
   font-size: 0.85rem;
 }
@@ -1709,7 +1707,6 @@ button.bit-cell:hover {
 }
 
 .equivalence-page > .note {
-  max-width: 760px;
   font-size: 0.85rem;
 }
 
@@ -1719,7 +1716,6 @@ button.bit-cell:hover {
 }
 
 .equivalence-item {
-  max-width: 760px;
   margin-bottom: 12px;
   padding: 8px 12px;
   border: 1px solid var(--border);
@@ -1768,7 +1764,6 @@ button.bit-cell:hover {
 }
 
 .inference {
-  max-width: 760px;
   border-collapse: collapse;
   font-size: 0.85rem;
 }
@@ -1786,7 +1781,6 @@ button.bit-cell:hover {
 }
 
 .current-inference {
-  max-width: 760px;
   margin-top: 12px;
   padding: 8px 12px;
   border: 1px solid var(--accent);
@@ -1829,7 +1823,6 @@ button.bit-cell:hover {
 
 .check-page > .note,
 .check-page .note {
-  max-width: 760px;
   font-size: 0.85rem;
 }
 
@@ -1842,7 +1835,6 @@ button.bit-cell:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 2px;
-  max-width: 760px;
   font-family: var(--mono);
 }
 
@@ -1889,7 +1881,6 @@ button.bit-cell:hover {
 
 .method {
   flex: 1 1 320px;
-  max-width: 374px;
   padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1936,8 +1927,88 @@ button.bit-cell:hover {
 }
 
 .check-limits {
-  max-width: 760px;
   padding-left: 20px;
   font-size: 0.85rem;
   line-height: 1.6;
+}
+
+/* Columns that spread a page's cards across the editor area */
+.page-columns {
+  columns: 380px;
+  column-gap: 12px;
+}
+
+.page-columns > * {
+  break-inside: avoid;
+  margin-bottom: 12px;
+}
+
+.card {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.card h3,
+.card h4 {
+  margin: 0 0 6px;
+  color: var(--accent);
+}
+
+.cyclic-layout {
+  display: grid;
+  grid-template-columns: max-content minmax(260px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.cyclic-side .cyclic-controls {
+  margin-top: 0;
+}
+
+.inference-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.inference-layout .current-inference {
+  margin-top: 0;
+}
+
+.names-page {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
+  grid-auto-flow: dense;
+  align-items: start;
+}
+
+.names-page .families,
+.names-page .aliases {
+  grid-column: 1 / -1;
+}
+
+.names-page .alias-index,
+.names-page .alias-index tbody {
+  display: block;
+}
+
+.names-page .alias-index {
+  width: 100%;
+}
+
+.names-page .alias-index thead {
+  display: none;
+}
+
+.names-page .alias-index tbody {
+  columns: 300px;
+  column-gap: 24px;
+}
+
+.names-page .alias-index tr {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  break-inside: avoid;
 }
