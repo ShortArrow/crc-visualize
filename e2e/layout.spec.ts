@@ -41,6 +41,7 @@ test.describe("Page layout", () => {
             expect(layout.ragged).toBe(0);
             expect(layout.overflowing).toBe(0);
             expect(layout.sparse).toBe(0);
+            expect(layout.narrow).toBe(0);
             expect(layout.scrolling).toBe(0);
             expect(layout.brokenBadges).toBe(0);
             expect(layout.count).toBeGreaterThan(0);
