@@ -22,12 +22,17 @@ test.describe("Page layout", () => {
   }
 
   for (const hash of [...PAGES, "#estimate"]) {
-    for (const width of [1366, 1600]) {
-      test(`on a ${width} px wide screen, the cards of ${hash} are spaced apart, aligned row by row and hold their content`, async ({
+    for (const [width, height] of [
+      [1366, 1000],
+      [1600, 1000],
+      [2560, 1440],
+      [3840, 2160],
+    ] as const) {
+      test(`on a ${width}×${height} screen, the cards of ${hash} are spaced apart, aligned row by row and hold their content`, async ({
         page,
       }) => {
-        const v = await given(`${hash} is open on a ${width} px wide screen`, async () => {
-          await page.setViewportSize({ width, height: 1000 });
+        const v = await given(`${hash} is open on a ${width}×${height} screen`, async () => {
+          await page.setViewportSize({ width, height });
           await page.goto(`/?width=16&poly=0x1021&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789${hash}`);
           const v = Visualizer.on(page);
           await expect(page.locator(".editor > *").first()).toBeVisible();
@@ -56,6 +61,8 @@ test.describe("Page layout", () => {
     for (const [width, height] of [
       [1366, 768],
       [1600, 1000],
+      [2560, 1440],
+      [3840, 2160],
     ] as const) {
       test(`on a ${width}×${height} screen, ${hash} grows its drawings and tables down to the bottom of the editor area`, async ({
         page,

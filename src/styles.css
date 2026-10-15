@@ -1573,7 +1573,7 @@ h2 {
 .redundancy-page {
   --bit: clamp(26px, min(calc((100cqh - 560px) / 8), calc((100cqw - 80px) / var(--n) / 2)), 44px);
   height: 100%;
-  font-size: clamp(16px, 1.9cqh, 19px);
+  font-size: clamp(16px, 2.1cqh, 21px);
   padding: 12px;
   overflow: auto;
 }
@@ -2144,7 +2144,7 @@ button.bit-cell:hover {
 /* Table page: its text and tables are sized in em, so the page grows with the editor's height */
 .table-page {
   height: 100%;
-  font-size: clamp(16px, 2cqh, 20px);
+  font-size: clamp(16px, 2.15cqh, 21px);
   padding: 12px;
   overflow: auto;
 }
