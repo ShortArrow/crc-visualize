@@ -1,8 +1,8 @@
 import { toRegister, type Bit, type CrcParams, type Step } from "../domain/trace";
 
 /**
- * LFSR 図の配線に流れている値。キーの無い配線には何も流れていない。
- * tapIn[i] は r[i] から真下のゲートへ下りる線、tapOut[i] はゲートから r[i] へ戻る線。
+ * Values flowing through the wires of the LFSR diagram. Wires without a key carry nothing.
+ * tapIn[i] is the line going down from r[i] to the gate directly below it; tapOut[i] is the line returning from the gate to r[i].
  */
 export type WireLevels = Readonly<{
   input?: Bit;
@@ -14,15 +14,19 @@ export type WireLevels = Readonly<{
 }>;
 
 /**
- * 配線に沿って動く粒。route は "input"（入力ストリーム → 入力ゲート）、"msb"（r[width-1] → 入力ゲート）、
- * "result"（入力ゲート → feedback の箱）、"tap-i"（feedback の箱 → フィードバック線 → r[i] の真下のゲート）、"in-i"（r[i] → ゲート）、"out-i"（ゲート → r[i]）。
- * phase はアニメーションの前半（0）と後半（1）のどちらで動くか。
+ * A particle moving along a wire. route is "input" (input stream → input gate), "msb" (r[width-1] → input gate),
+ * "result" (input gate → feedback box), "tap-i" (feedback box → feedback line → gate directly below r[i]), "in-i" (r[i] → gate) or "out-i" (gate → r[i]).
+ * phase is whether it moves in the first half (0) or the second half (1) of the animation.
  */
-export type Particle = Readonly<{ route: `${"tap" | "in" | "out"}-${number}` | "input" | "msb" | "result"; value: Bit; phase: 0 | 1 }>;
+export type Particle = Readonly<{
+  route: `${"tap" | "in" | "out"}-${number}` | "input" | "msb" | "result";
+  value: Bit;
+  phase: 0 | 1;
+}>;
 
 const tapsOf = (params: CrcParams) => toRegister(params.poly, params.width).flatMap((tap, i) => (tap === 1 ? [i] : []));
 
-/** step で各配線に流れている値。 */
+/** Values flowing through each wire at step. */
 export function wireLevels(params: CrcParams, step: Step): WireLevels {
   switch (step.kind) {
     case "feedback":
@@ -38,7 +42,7 @@ export function wireLevels(params: CrcParams, step: Step): WireLevels {
   }
 }
 
-/** step で配線に沿って動く粒。 */
+/** Particles moving along the wires at step. */
 export function particles(params: CrcParams, step: Step): Particle[] {
   switch (step.kind) {
     case "feedback":
@@ -61,8 +65,8 @@ export function particles(params: CrcParams, step: Step): Particle[] {
 }
 
 /**
- * 粒 route が通る配線の名前（LfsrView の data-wire）。その配線は粒の後ろから値の色に塗る。
- * "feedback-i" は feedback の箱から r[i] の真下のゲートまでのフィードバック線。
+ * Name of the wire the particle route travels (data-wire in LfsrView). That wire is painted in the value's colour behind the particle.
+ * "feedback-i" is the feedback line from the feedback box to the gate directly below r[i].
  */
 export function particleWire(route: Particle["route"]): string {
   const [kind, n] = route.split("-");
@@ -70,7 +74,7 @@ export function particleWire(route: Particle["route"]): string {
   return kind === "tap" ? `feedback-${n}` : route;
 }
 
-/** step で feedback の箱が示す値。クロックの feedback から xor まで保ち、それ以外では undefined。 */
+/** Value shown by the feedback box at step. Held from a clock's feedback step through its xor step; undefined otherwise. */
 export function heldFeedback(step: Step): Bit | undefined {
   switch (step.kind) {
     case "feedback":
@@ -84,8 +88,8 @@ export function heldFeedback(step: Step): Bit | undefined {
 }
 
 /**
- * 次のステップ next で新しく箱に入る値の控え（キーは r[i] の i）。next が shift のときの、右端から入る r[0] だけ。
- * 隣の箱から移るだけの値は既に見えており、xor の結果はゲートから箱へ入る粒が見せるので控えない。
+ * Values about to enter boxes at the next step next, kept in advance (keyed by the i of r[i]). Only r[0], entering from the right end, when next is shift.
+ * Values merely moving from the neighbouring box are already visible, and the xor result is shown by the particle entering the box from the gate, so neither is kept.
  */
 export function upcomingValues(next: Step | undefined): Partial<Record<number, Bit>> {
   switch (next?.kind) {

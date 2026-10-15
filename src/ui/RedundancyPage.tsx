@@ -9,7 +9,7 @@ const GRID_LIMIT = 128;
 
 const binary = (value: number, width: number) => value.toString(2).padStart(width, "0");
 
-/** 生成多項式 generator の符号語で、CRC が付け足した冗長なビットであることと、それで誤りを見つける様子を示す。 */
+/** Uses codewords of the generator polynomial generator to show that the CRC is redundant bits appended to the message, and how they detect errors. */
 export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>) {
   const m = useMessages();
   const sent = codeword(generator);
@@ -94,8 +94,8 @@ type CellsProps = Readonly<{
 }>;
 
 /**
- * ビットを最高次から 1 つずつ並べる。末尾の width ビットを CRC とし、onFlip を渡すと各ビットを選んで反転できる。
- * range を渡すと、bits のうち from 番目から to 番目の手前までだけを並べる。
+ * Lays out bits one by one from the highest degree. The last width bits are the CRC; with onFlip, each bit can be selected to flip it.
+ * With range, lays out only bits from index from up to, but not including, index to.
  */
 function BitCells({ bits, width, range = [0, bits.length], flipped, onFlip }: CellsProps) {
   const n = bits.length;
@@ -116,7 +116,7 @@ function BitCells({ bits, width, range = [0, bits.length], flipped, onFlip }: Ce
   });
 }
 
-/** n ビットの並びの全てを値の順に格子に並べ、符号語と受け取った並び received（値）を示す。 */
+/** Lays out every n-bit sequence in a grid by value, marking the codewords and the received sequence received (a value). */
 function WordGrid({ generator, received }: Readonly<{ generator: Generator; received: number }>) {
   const m = useMessages();
   const codewords = codewordValues(generator);

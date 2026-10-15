@@ -4,7 +4,7 @@ import { PARAM_NAMES } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { bitsToString } from "./format";
 
-/** サイドバーに置く、今の設定（6 つのパラメータと入力）と、設定を変える可視化のページへのリンク。 */
+/** Sidebar showing the current settings (the 6 parameters and the input) and a link to the visualization page where they are changed. */
 export function CurrentSettingsSidebar({ config }: Readonly<{ config: ConfigResult }>) {
   const m = useMessages();
   return (

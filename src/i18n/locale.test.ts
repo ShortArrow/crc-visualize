@@ -9,12 +9,15 @@ describe("pickLocale", () => {
     [["ko-KR", "fr-CA", "de"], "fr"],
     [["ES"], "es"],
     [["de-AT"], "de"],
-  ] as const)("Given ブラウザの優先言語 %j, When 表示言語を決める, Then 言語コードが一致した最初の %s", (preferred, locale) => {
-    expect(pickLocale(preferred)).toBe(locale);
-  });
+  ] as const)(
+    "Given the browser's preferred languages %j, When choosing the display language, Then %s, the first language whose code matches",
+    (preferred, locale) => {
+      expect(pickLocale(preferred)).toBe(locale);
+    },
+  );
 
   it.each([[[]], [["ko-KR", "ru"]]] as const)(
-    "Given どれとも一致しない優先言語 %j, When 表示言語を決める, Then 英語",
+    "Given preferred languages %j that match none, When choosing the display language, Then English",
     (preferred) => {
       expect(pickLocale(preferred)).toBe("en");
     },

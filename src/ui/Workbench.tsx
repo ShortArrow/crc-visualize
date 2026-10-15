@@ -21,8 +21,8 @@ const ICON_SIZE = 22;
 const ACTIVITY_WIDTH = 48;
 
 /**
- * VS Code 風の画面の枠。左端のアクティビティバー、開閉できるサイドバー、エディタ領域、下端のステータスバーに分け、
- * 画面全体に広げる。ページ自体はスクロールさせず、各領域の中だけをスクロールする。
+ * VS Code-style screen frame. Divides into the activity bar on the left, a collapsible sidebar, the editor area and the status bar at the bottom,
+ * filling the whole screen. The page itself does not scroll; only each area scrolls internally.
  */
 export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, editor, status }: Props) {
   const m = useMessages();

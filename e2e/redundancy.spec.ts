@@ -3,18 +3,18 @@ import { RedundancyPage } from "./support/redundancyPage";
 import { given, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
-test.describe("冗長", () => {
-  test("付け足した CRC のビットと、符号語が並び全体の一部であることを示す", async ({ page }) => {
-    const v = await given("可視化のページを開いている", () => Visualizer.open(page));
-    await when("アクティビティバーで冗長に切り替える", () => v.workbench.pageLink("redundancy").click());
-    await then("x³ + x + 1 の符号語を本文 4 ビットと CRC 3 ビットに分けて示す", async () => {
+test.describe("Redundancy", () => {
+  test("shows the appended CRC bits and that the codewords are a part of all sequences", async ({ page }) => {
+    const v = await given("the visualizer page is open", () => Visualizer.open(page));
+    await when("switching to the redundancy page in the activity bar", () => v.workbench.pageLink("redundancy").click());
+    await then("the codeword of x³ + x + 1 is shown split into a 4-bit message and a 3-bit CRC", async () => {
       const r = await RedundancyPage.shown(page);
       expect(r.hash()).toBe("#redundancy");
       await expect(r.sentBits("message")).toHaveCount(4);
       await expect(r.sentBits("crc")).toHaveCount(3);
       await expect(v.workbench.statusbar()).toContainText("n = 7");
     });
-    await then("128 通りの並びのうち符号語は 16 通りで、受け取った並びは符号語の点にある", async () => {
+    await then("16 of the 128 sequences are codewords, and the received sequence is on a codeword dot", async () => {
       const r = await RedundancyPage.shown(page);
       await expect(r.counts()).toContainText("128");
       await expect(r.counts()).toContainText("16");
@@ -25,61 +25,64 @@ test.describe("冗長", () => {
     });
   });
 
-  test("受け取った並びのビットを反転すると誤りを見つけ、g(x) と同じ形の誤りは見逃す", async ({ page }) => {
-    const r = await given("x³ + x + 1 の冗長のページを開いている", () => RedundancyPage.open(page));
-    await then("誤りなし", async () => {
+  test("flipping bits of the received sequence finds the error, but an error shaped like g(x) is missed", async ({ page }) => {
+    const r = await given("the redundancy page for x³ + x + 1 is open", () => RedundancyPage.open(page));
+    await then("no error", async () => {
       await expect(r.verdict()).toHaveAttribute("data-verdict", "clean");
       await expect(r.remainder()).toHaveText("000");
       await expect(r.burstLength()).toHaveText("0");
     });
-    await when("x⁵ と x¹ のビットを反転する", async () => {
+    await when("flipping the x⁵ and x¹ bits", async () => {
       await r.receivedBit(1).click();
       await r.receivedBit(5).click();
     });
-    await then("長さ 5 の誤りを見つけ、受け取った並びは符号語の点から外れる", async () => {
+    await then("an error of length 5 is found and the received sequence leaves the codeword dots", async () => {
       await expect(r.error()).toHaveText("0100010");
       await expect(r.burstLength()).toHaveText("5");
       await expect(r.verdict()).toHaveAttribute("data-verdict", "detected");
       await expect(r.remainder()).not.toHaveText("000");
       await expect(r.gridDots("received")).not.toHaveClass(/codeword/);
     });
-    await when("元に戻す", () => r.resetError().click());
-    await then("誤りなしに戻る", async () => {
+    await when("resetting", () => r.resetError().click());
+    await then("it is back to no error", async () => {
       await expect(r.verdict()).toHaveAttribute("data-verdict", "clean");
       await expect(r.error()).toHaveText("0000000");
     });
-    await when("見逃す例を選ぶ", () => r.missedExample().click());
-    await then("g(x) の形の長さ 4 の誤りは余りが 0 で見逃し、受け取った並びは別の符号語になる", async () => {
-      await expect(r.error()).toHaveText("0001011");
-      await expect(r.burstLength()).toHaveText("4");
-      await expect(r.remainder()).toHaveText("000");
-      await expect(r.verdict()).toHaveAttribute("data-verdict", "missed");
-      await expect(r.gridDots("received")).toHaveClass(/codeword/);
-    });
+    await when("selecting the missed example", () => r.missedExample().click());
+    await then(
+      "a length-4 error shaped like g(x) leaves remainder 0 and is missed, and the received sequence is another codeword",
+      async () => {
+        await expect(r.error()).toHaveText("0001011");
+        await expect(r.burstLength()).toHaveText("4");
+        await expect(r.remainder()).toHaveText("000");
+        await expect(r.verdict()).toHaveAttribute("data-verdict", "missed");
+        await expect(r.gridDots("received")).toHaveClass(/codeword/);
+      },
+    );
   });
 
-  test("並びが多い生成多項式では格子を出さず数だけ示す", async ({ page }) => {
-    const r = await given("x⁵ + x² + 1 の冗長のページを開いている", () =>
+  test("for a generator polynomial with many sequences, only the counts are shown, without a grid", async ({ page }) => {
+    const r = await given("the redundancy page for x⁵ + x² + 1 is open", () =>
       RedundancyPage.open(page, "#redundancy/width=5/poly=0x5"),
     );
-    await then("31 ビットの符号語で、格子は無い", async () => {
+    await then("the codeword has 31 bits and there is no grid", async () => {
       await expect(r.sentBits()).toHaveCount(31);
       await expect(r.gridDots()).toHaveCount(0);
       await expect(r.counts()).toContainText("1/32");
     });
   });
 
-  test("本文が短くても、本文と CRC の見出しは重ならない", async ({ page }) => {
-    const r = await given("本文 1 ビットの x⁴ + x³ + x² + x + 1 の冗長のページを開いている", () =>
+  test("even with a short message, the message and CRC headings do not overlap", async ({ page }) => {
+    const r = await given("the redundancy page for x⁴ + x³ + x² + x + 1, with a 1-bit message, is open", () =>
       RedundancyPage.open(page, "#redundancy/width=4/poly=0xF"),
     );
-    await then("どちらの見出しも文字が枠からはみ出さない", async () => {
+    await then("neither heading's text overflows its box", async () => {
       for (const part of ["message", "crc"] as const) {
         const overflow = await r.partLabel(part).evaluate((el) => el.scrollWidth - el.clientWidth);
         expect(overflow).toBeLessThanOrEqual(0);
       }
     });
-    await then("本文の見出しの右端は CRC の見出しの左端より左にある", async () => {
+    await then("the right edge of the message heading is left of the left edge of the CRC heading", async () => {
       const message = await r.partLabel("message").boundingBox();
       const crc = await r.partLabel("crc").boundingBox();
       expect(message!.x + message!.width).toBeLessThanOrEqual(crc!.x);

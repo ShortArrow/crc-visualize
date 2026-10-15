@@ -1,8 +1,8 @@
 import type { StepKind } from "../domain/trace";
 
 /**
- * 日本語の画面の文。全ての言語の辞書はこれと同じ形（Messages）を持つ。
- * 関数の項目は、数や値を差し込んで文を作る。
+ * Japanese UI text. Every language's dictionary has the same shape (Messages).
+ * Function items build text by inserting numbers and values.
  */
 export const ja = {
   pages: {
@@ -91,7 +91,7 @@ export const ja = {
     shiftLeft: "refin と refout がともに false なので、左送り（MSB から処理する）の実装で計算できる",
     shiftMixed: "refin と refout が異なるので、右送りと左送りのどちらの実装でも、どこかでビットの反転が別に要る",
   },
-  /** パラメータの説明。title は画面での名前、aliases は資料で使われる別の呼び名（英語の呼び名も載せる）。 */
+  /** Parameter descriptions. title is the name on screen; aliases are other names used in the literature (English names included). */
   params: {
     width: {
       title: "幅",
@@ -124,7 +124,7 @@ export const ja = {
       aliases: ["出力 XOR", "final XOR", "XorOut"],
     },
   },
-  /** パラメータ以外の設定項目の名前と説明。 */
+  /** Names and descriptions of settings items other than parameters. */
   fields: {
     preset: {
       title: "プリセット",
@@ -178,7 +178,7 @@ export const ja = {
     none: "まだ無い",
     status: (n: number) => `絞り込み: 候補 ${n}`,
   },
-  /** 生成多項式の一覧の見出し。 */
+  /** Headings of the generator polynomial list. */
   generators: "生成多項式",
   cyclic: {
     heading: "なぜ「巡回」冗長検査か",
@@ -226,7 +226,7 @@ export const ja = {
     guarantee: (w: number) =>
       `1 ビットの誤りと、長さ ${w} 以下の誤りは必ず見つかる。見逃すのは e が g(x) で割り切れるときだけ。「見逃す例」は e を g(x) そのものにしたもので、長さは ${w + 1}。`,
   },
-  /** 他のページで今の設定を示すサイドバー。 */
+  /** Sidebar showing the current settings on other pages. */
   currentSettings: {
     heading: "今の設定",
     openVisualizer: "可視化のページで設定を変える",
@@ -354,7 +354,7 @@ export const ja = {
       "本文を書き換えた側が CRC も付け直せば見抜けない。意図的な改ざんへの備えには、ハッシュや MAC を使う。",
     ],
   },
-  /** 一覧の区切り。 */
+  /** List separator. */
   listSeparator: "、",
 };
 

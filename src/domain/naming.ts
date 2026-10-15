@@ -1,6 +1,6 @@
 import type { Preset } from "./presets";
 
-/** reveng の正式名 "CRC-<幅>/<後半の名前>" を分けたもの。origin は最初に使われた規格・製品・団体などの名前。 */
+/** A reveng canonical name "CRC-<width>/<suffix>" split into parts; origin names the standard, product or organisation that first used it. */
 export type NameParts = Readonly<{ head: string; width: string; origin: string }>;
 
 export function splitPresetName(name: string): NameParts {
@@ -8,15 +8,15 @@ export function splitPresetName(name: string): NameParts {
   return { head, width, origin };
 }
 
-/** 一族の 1 行。differs は一族の先頭のプリセットと値が違う列（reflect は refin と refout の組）。 */
+/** One row of a family; differs lists the columns whose values differ from the family's first preset (reflect is the refin and refout pair). */
 export type FamilyRow = Readonly<{ preset: Preset; differs: Readonly<{ init: boolean; reflect: boolean; xorout: boolean }> }>;
 
-/** 幅と poly が同じプリセットの組。 */
+/** A group of presets sharing width and poly. */
 export type PolyFamily = Readonly<{ width: number; poly: number; rows: readonly FamilyRow[] }>;
 
 /**
- * 幅と poly が同じプリセットが 2 つ以上ある組を、幅・poly の小さい順に並べる。
- * 組の中は presets の順で、先頭のプリセットとの違いを各行に持たせる。
+ * Lists the groups of two or more presets sharing width and poly, in ascending order of width then poly.
+ * Within a group, rows follow the order of presets, and each row records how it differs from the first preset.
  */
 export function polyFamilies(presets: readonly Preset[]): PolyFamily[] {
   const groups = new Map<string, Preset[]>();
@@ -42,17 +42,17 @@ export function polyFamilies(presets: readonly Preset[]): PolyFamily[] {
     .sort((a, b) => a.width - b.width || a.poly - b.poly);
 }
 
-/** 別名から正式名を引く表の 1 行。 */
+/** One row of the table mapping an alias to its canonical name. */
 export type AliasEntry = Readonly<{ alias: string; name: string }>;
 
-/** presets の全ての別名を英数字順に並べ、それぞれの正式名を添える。 */
+/** Lists every alias in presets in alphanumeric order, each with its canonical name. */
 export function aliasIndex(presets: readonly Preset[]): AliasEntry[] {
   return presets
     .flatMap((p) => p.aliases.map((alias) => ({ alias, name: p.name })))
     .sort((a, b) => a.alias.localeCompare(b.alias, "en"));
 }
 
-/** 流儀によって指すものが割れる呼び名と、その候補の正式名。 */
+/** A name whose meaning varies by convention, and the canonical names it may refer to. */
 export const AMBIGUOUS_NAMES: readonly Readonly<{ alias: string; candidates: readonly string[] }>[] = [
   { alias: "CRC-16-CCITT", candidates: ["CRC-16/KERMIT", "CRC-16/IBM-3740", "CRC-16/XMODEM"] },
 ];

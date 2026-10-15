@@ -1,8 +1,8 @@
 import type { Preset } from "../domain/presets";
 
 /**
- * プリセットの選択肢に出す名前。正式名の後に全角括弧で別名を「、」区切りで添える。
- * 別名が正式名と同じ接頭辞（"CRC-16/" など）で始まるときは、その接頭辞を省く。
+ * Name shown for a preset in the selector. Aliases follow the official name in full-width parentheses, separated by "、".
+ * When an alias starts with the same prefix as the official name (such as "CRC-16/"), that prefix is omitted.
  */
 export function presetLabel(preset: Preset): string {
   if (preset.aliases.length === 0) return preset.name;

@@ -3,17 +3,17 @@ import type { Step } from "../domain/trace";
 export const SLOW_MS = 900;
 export const FAST_MS = 120;
 export const STEADY_MS = 600;
-/** auto モードで低速を続ける最大クロック数。 */
+/** Maximum number of clocks kept slow in auto mode. */
 export const MAX_SLOW_CLOCKS = 6;
 
-/** auto: 序盤と後処理を低速、残りを高速にする。steady: 一定速度。 */
+/** auto: slow at the start and during post-processing, fast otherwise. steady: constant speed. */
 export type SpeedMode = "auto" | "steady";
 
 const ALWAYS_SLOW: ReadonlySet<Step["kind"]> = new Set(["init", "reflectOut", "xorOut", "done"]);
 
 /**
- * 各ステップの表示時間（ms、速度倍率を掛ける前）。結果の i 番目が steps[i] に対応する。
- * auto では fb=0 と fb=1 の両方が出たクロックまで、ただし最大 MAX_SLOW_CLOCKS クロックを低速にする。
+ * Display time of each step (ms, before the speed multiplier); element i of the result corresponds to steps[i].
+ * In auto, clocks are slow until both fb=0 and fb=1 have appeared, but for at most MAX_SLOW_CLOCKS clocks.
  */
 export function stepDurations(steps: readonly Step[], mode: SpeedMode): number[] {
   if (mode === "steady") return steps.map(() => STEADY_MS);
@@ -30,12 +30,12 @@ export function stepDurations(steps: readonly Step[], mode: SpeedMode): number[]
   });
 }
 
-/** 1 ステップのアニメーションの長さ（ms）。ステップ時間 stepMs（速度倍率で割った後）の 80% で、次のステップまでに描き終える。 */
+/** Animation length of one step (ms); 80% of the step time stepMs (after dividing by the speed multiplier), so drawing finishes before the next step. */
 export function animationMs(stepMs: number): number {
   return stepMs * 0.8;
 }
 
-/** 再生状態。index は表示中のステップ。 */
+/** Playback state; index is the step being shown. */
 export type Player = Readonly<{ index: number; playing: boolean }>;
 
 export type PlayerMsg =
@@ -52,7 +52,7 @@ export type PlayerMsg =
 
 export const initialPlayer: Player = { index: 0, playing: false };
 
-/** 再生状態の遷移。length はステップ数（1 以上）。tick の loop が真なら末尾の次は先頭に戻る。 */
+/** Playback state transitions; length is the number of steps (at least 1). When loop on tick is true, the step after the last wraps to the first. */
 export function updatePlayer(player: Player, msg: PlayerMsg, length: number): Player {
   const last = length - 1;
   const stopAt = (index: number): Player => ({ index: Math.min(Math.max(index, 0), last), playing: false });

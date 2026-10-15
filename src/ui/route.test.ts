@@ -2,27 +2,27 @@ import { describe, expect, it } from "vitest";
 import { generatorHash, narrowHash, parseRoute } from "./route";
 
 describe("parseRoute", () => {
-  it.each(["", "#", "#other"])("Given フラグメント %j, When ページを決める, Then 可視化のページ", (hash) => {
+  it.each(["", "#", "#other"])("Given fragment %j, When determining the page, Then the visualization page", (hash) => {
     expect(parseRoute(hash)).toEqual({ page: "visualizer" });
   });
 
-  it("Given フラグメント #names, When ページを決める, Then 名前の規則のページ", () => {
+  it("Given fragment #names, When determining the page, Then the naming-rules page", () => {
     expect(parseRoute("#names")).toEqual({ page: "names" });
   });
 
-  it("Given フラグメント #names/poly, When ページを決める, Then 名前の規則のページで poly の行を指す", () => {
+  it("Given fragment #names/poly, When determining the page, Then the naming-rules page pointing to the poly row", () => {
     expect(parseRoute("#names/poly")).toEqual({ page: "names", param: "poly" });
   });
 
-  it("Given パラメータ名でないものを指すフラグメント #names/foo, When ページを決める, Then 名前の規則のページで行は指さない", () => {
+  it("Given fragment #names/foo pointing to something that is not a parameter name, When determining the page, Then the naming-rules page with no row pointed to", () => {
     expect(parseRoute("#names/foo")).toEqual({ page: "names" });
   });
 
-  it("Given フラグメント #narrow, When ページを決める, Then 絞り込みのページで道筋は空", () => {
+  it("Given fragment #narrow, When determining the page, Then the narrowing page with an empty path", () => {
     expect(parseRoute("#narrow")).toEqual({ page: "narrow", path: { fixed: [] } });
   });
 
-  it("Given フラグメント #narrow/width=16/poly=0x1021/init, When ページを決める, Then 固定した値と開いた分かれ目を持つ", () => {
+  it("Given fragment #narrow/width=16/poly=0x1021/init, When determining the page, Then it holds the fixed values and the open branch", () => {
     expect(parseRoute("#narrow/width=16/poly=0x1021/init")).toEqual({
       page: "narrow",
       path: {
@@ -36,7 +36,7 @@ describe("parseRoute", () => {
   });
 
   it.each(["#narrow/width=16/foo=1/poly=0x1021", "#narrow/width=16/poly=abc", "#narrow/width=16/init/poly=0x1021"])(
-    "Given 解釈できない部分を含むフラグメント %s, When ページを決める, Then その手前までの道筋にする",
+    "Given fragment %s containing an unparsable part, When determining the page, Then the path up to just before that part",
     (hash) => {
       expect(parseRoute(hash)).toEqual({ page: "narrow", path: { fixed: [{ param: "width", value: 16 }] } });
     },
@@ -44,7 +44,7 @@ describe("parseRoute", () => {
 });
 
 describe("narrowHash", () => {
-  it("Given 固定した値と開いた分かれ目, When フラグメントにする, Then 値を順に並べ分かれ目を最後に付ける", () => {
+  it("Given fixed values and an open branch, When making the fragment, Then the values are listed in order and the branch is appended last", () => {
     const path = {
       fixed: [
         { param: "width", value: 16 },
@@ -56,28 +56,28 @@ describe("narrowHash", () => {
     expect(narrowHash(path)).toBe("#narrow/width=16/refin=true/xorout");
   });
 
-  it("Given 空の道筋, When フラグメントにする, Then #narrow", () => {
+  it("Given an empty path, When making the fragment, Then #narrow", () => {
     expect(narrowHash({ fixed: [] })).toBe("#narrow");
   });
 });
 
-describe("巡回のページのフラグメント", () => {
-  it("Given フラグメント #cyclic, When ページを決める, Then 既定の生成多項式の巡回のページ", () => {
+describe("cyclic page fragment", () => {
+  it("Given fragment #cyclic, When determining the page, Then the cyclic page for the default generator polynomial", () => {
     expect(parseRoute("#cyclic")).toEqual({ page: "cyclic", generator: { width: 3, poly: 0x3 } });
   });
 
-  it("Given フラグメント #cyclic/width=4/poly=0xF, When ページを決める, Then その生成多項式", () => {
+  it("Given fragment #cyclic/width=4/poly=0xF, When determining the page, Then that generator polynomial", () => {
     expect(parseRoute("#cyclic/width=4/poly=0xF")).toEqual({ page: "cyclic", generator: { width: 4, poly: 0xf } });
   });
 
   it.each(["#cyclic/width=4/poly=0x5", "#cyclic/width=x/poly=0x3", "#cyclic/poly=0x3"])(
-    "Given 一覧に無いか解釈できないフラグメント %j, When ページを決める, Then 既定の生成多項式",
+    "Given fragment %j that is not in the list or cannot be parsed, When determining the page, Then the default generator polynomial",
     (hash) => {
       expect(parseRoute(hash)).toEqual({ page: "cyclic", generator: { width: 3, poly: 0x3 } });
     },
   );
 
-  it("Given 生成多項式, When フラグメントにする, Then width は 10 進、poly は大文字の 16 進で書き、読み戻せる", () => {
+  it("Given a generator polynomial, When making the fragment, Then width is written in decimal and poly in uppercase hexadecimal, and it can be read back", () => {
     expect(generatorHash("cyclic", { width: 4, poly: 0xf })).toBe("#cyclic/width=4/poly=0xF");
     expect(parseRoute(generatorHash("cyclic", { width: 5, poly: 0x5 }))).toEqual({
       page: "cyclic",
@@ -86,25 +86,28 @@ describe("巡回のページのフラグメント", () => {
   });
 });
 
-describe("冗長のページのフラグメント", () => {
-  it("Given フラグメント #redundancy, When ページを決める, Then 既定の生成多項式の冗長のページ", () => {
+describe("redundancy page fragment", () => {
+  it("Given fragment #redundancy, When determining the page, Then the redundancy page for the default generator polynomial", () => {
     expect(parseRoute("#redundancy")).toEqual({ page: "redundancy", generator: { width: 3, poly: 0x3 } });
   });
 
-  it("Given 生成多項式, When 冗長のページのフラグメントにする, Then 読み戻せる", () => {
+  it("Given a generator polynomial, When making the redundancy page fragment, Then it can be read back", () => {
     expect(generatorHash("redundancy", { width: 4, poly: 0x3 })).toBe("#redundancy/width=4/poly=0x3");
     expect(parseRoute("#redundancy/width=4/poly=0x3")).toEqual({ page: "redundancy", generator: { width: 4, poly: 0x3 } });
   });
 });
 
-describe("置き換えのページのフラグメント", () => {
-  it.each(["#equivalence", "#equivalence/foo"])("Given フラグメント %j, When ページを決める, Then 置き換えのページ", (hash) => {
-    expect(parseRoute(hash)).toEqual({ page: "equivalence" });
-  });
+describe("substitution page fragment", () => {
+  it.each(["#equivalence", "#equivalence/foo"])(
+    "Given fragment %j, When determining the page, Then the substitution page",
+    (hash) => {
+      expect(parseRoute(hash)).toEqual({ page: "equivalence" });
+    },
+  );
 });
 
-describe("検査のページのフラグメント", () => {
-  it("Given フラグメント #check, When ページを決める, Then 検査のページ", () => {
+describe("check page fragment", () => {
+  it("Given fragment #check, When determining the page, Then the check page", () => {
     expect(parseRoute("#check")).toEqual({ page: "check" });
   });
 });

@@ -42,7 +42,7 @@ const DEFAULT_SETTINGS: Settings = {
 };
 const sameBits = (a: readonly Bit[], b: readonly Bit[]) => a.length === b.length && a.every((x, i) => x === b[i]);
 
-/** エディタ領域とステータスバーの中身を受け取り、画面の枠に収める。 */
+/** Takes the editor area and status bar contents and fits them into the screen frame. */
 type Frame = (editor: ReactNode, status: ReactNode) => ReactNode;
 
 export function App() {
@@ -57,7 +57,7 @@ export function App() {
 
 type ScreenProps = Readonly<{ restored: Settings; locale: Locale; onLocale: (locale: Locale) => void }>;
 
-/** 表示言語の中で、ページと画面の枠を組み立てる。 */
+/** Assembles the page and screen frame within the display language. */
 function Screen({ restored, locale, onLocale }: ScreenProps) {
   const [form, setForm] = useState<ConfigForm>(restored.form);
   const [speedMode, setSpeedMode] = useState<SpeedMode>(restored.speedMode);
@@ -171,7 +171,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   );
 }
 
-/** 画面割り。localStorage から復元して今の画面に収め、変えるたびに保存する。Ctrl+B（⌘+B）でサイドバーを開閉する。 */
+/** Screen layout; restored from localStorage and fitted to the current screen, saved on every change. Ctrl+B (⌘+B) toggles the sidebar. */
 function useLayout(): [PaneLayout, (layout: PaneLayout) => void] {
   const [layout, setLayout] = useState(() => fitLayout(loadLayout(), innerWidth));
   useEffect(() => saveLayout(layout), [layout]);
@@ -187,7 +187,7 @@ function useLayout(): [PaneLayout, (layout: PaneLayout) => void] {
   return [layout, setLayout];
 }
 
-/** URL のフラグメントが指すページ。フラグメントが変わるたびに読み直す。 */
+/** The page the URL fragment points to; re-read whenever the fragment changes. */
 function useRoute(): Route {
   const [route, setRoute] = useState(() => parseRoute(location.hash));
   useEffect(() => {
@@ -228,7 +228,7 @@ const KEY_MSG: Record<string, PlayerMsg> = {
   End: { type: "last" },
 };
 
-/** 1 つの設定に対するステップ列と再生状態。設定が変わると key で作り直され、先頭・停止に戻る。 */
+/** Step sequence and playback state for one configuration; when the configuration changes, key recreates it, back at the first step and stopped. */
 function Visualizer(props: VisualizerProps) {
   const { params, bits, presetName, check, speedMode, rate, loop, codeLang, focus, layout, frame } = props;
   const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout } = props;

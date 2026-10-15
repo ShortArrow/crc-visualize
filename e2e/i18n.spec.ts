@@ -3,12 +3,12 @@ import { NamesPage } from "./support/namesPage";
 import { given, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
-test.describe("表示言語（ブラウザが英語）", () => {
+test.describe("Display language (browser in English)", () => {
   test.use({ locale: "en-US" });
 
-  test("保存した言語が無ければ、ブラウザの優先言語で出す", async ({ page }) => {
-    const v = await given("ブラウザの優先言語が英語で、保存値が無い", () => Visualizer.open(page));
-    await then("画面の文が英語になり、文書の言語も en になる", async () => {
+  test("without a saved language, uses the browser's preferred language", async ({ page }) => {
+    const v = await given("the browser prefers English and nothing is saved", () => Visualizer.open(page));
+    await then("the page text is in English and the document language is en", async () => {
       await expect(v.workbench.sidebar().locator("h2").first()).toHaveText("Settings");
       await expect(v.workbench.statusbar()).toContainText("Initialize");
       await expect(v.workbench.localeSelect()).toHaveValue("en");
@@ -17,39 +17,39 @@ test.describe("表示言語（ブラウザが英語）", () => {
   });
 });
 
-test.describe("表示言語", () => {
-  test("ステータスバーで言語を替えると全ての文が替わり、URL と再読み込みでも保たれる", async ({ page }) => {
-    const v = await given("日本語で可視化のページを開いている", () => Visualizer.open(page));
-    await when("ステータスバーで Deutsch を選ぶ", () => v.workbench.localeSelect().selectOption("de"));
-    await then("画面の文がドイツ語になり、URL のクエリに lang=de が載る", async () => {
+test.describe("Display language", () => {
+  test("switching language in the status bar changes all text and persists in the URL and across reloads", async ({ page }) => {
+    const v = await given("the visualizer page is open in Japanese", () => Visualizer.open(page));
+    await when("selecting Deutsch in the status bar", () => v.workbench.localeSelect().selectOption("de"));
+    await then("the page text is in German and the URL query carries lang=de", async () => {
       await expect(v.workbench.sidebar().locator("h2").first()).toHaveText("Einstellungen");
       await expect(v.workbench.statusbar()).toContainText("Initialisierung");
       await expect(page.locator(".log-pane h2")).toHaveText("Verlauf");
       await expect(page.locator("html")).toHaveAttribute("lang", "de");
       expect(new URL(page.url()).searchParams.get("lang")).toBe("de");
     });
-    await when("再読み込みして名前の規則のページへ移る", async () => {
+    await when("reloading and moving to the naming page", async () => {
       await page.reload();
       await v.workbench.pageLink("names").click();
     });
-    await then("名前の規則のページもドイツ語のまま", async () => {
+    await then("the naming page is still in German", async () => {
       const n = await NamesPage.shown(page);
       await expect(n.root.locator("#names-parts h2")).toHaveText("Aufbau eines Namens");
     });
   });
 
-  test("URL のクエリ lang の言語で開く", async ({ page }) => {
-    const v = await given("lang=zh を付けて開いている", () => Visualizer.open(page, "?lang=zh"));
-    await then("画面の文が中国語になる", async () => {
+  test("opens in the language of the URL query lang", async ({ page }) => {
+    const v = await given("the page is open with lang=zh", () => Visualizer.open(page, "?lang=zh"));
+    await then("the page text is in Chinese", async () => {
       await expect(v.workbench.statusbar()).toContainText("初始化");
       await expect(v.workbench.localeSelect()).toHaveValue("zh");
     });
   });
 
-  test("設定の誤りは選んだ言語で出す", async ({ page }) => {
-    const v = await given("フランス語で開いている", () => Visualizer.open(page, "?lang=fr"));
-    await when("width に 0 を入れる", () => v.settings.param("width").locator("input").fill("0"));
-    await then("誤りの文がフランス語になる", async () => {
+  test("settings errors are shown in the chosen language", async ({ page }) => {
+    const v = await given("the page is open in French", () => Visualizer.open(page, "?lang=fr"));
+    await when("entering 0 for width", () => v.settings.param("width").locator("input").fill("0"));
+    await then("the error text is in French", async () => {
       await expect(v.settings.param("width").locator(".error")).toHaveText("Saisissez un entier de 1 à 32");
     });
   });

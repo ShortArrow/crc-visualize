@@ -19,11 +19,11 @@ const viewWidth = outEnd + 40;
 const CARD_WIDTH = 230;
 const CARD_HEIGHT = 90;
 const midY = regY + box / 2;
-/** 右端のタップのゲート（引き出し線の始点）。 */
+/** Gate of the rightmost tap (start of the callout line). */
 const rightGate = layout.gates.reduce((a, b) => (b.x > a.x ? b : a));
 const toPoints = (points: readonly Point[]) => points.map((p) => `${p.x},${p.y}`).join(" ");
 
-/** 引き出し線の先にパラメータ名を置く位置と、線の始点（効く場所）。 */
+/** Where each parameter name sits at the end of its callout line, and the line's start (where it takes effect). */
 const CALLOUTS: Record<ParamName, Readonly<{ label: Point; from?: Point }>> = {
   refin: { label: { x: streamEnd + 56, y: streamY }, from: { x: streamEnd + 12, y: streamY - 5 } },
   width: { label: { x: rowLeft, y: bracketY - 8 } },
@@ -34,8 +34,8 @@ const CALLOUTS: Record<ParamName, Readonly<{ label: Point; from?: Point }>> = {
 };
 
 /**
- * パラメータ名の別名の図。固定の LFSR（width 3、poly 0x3）の各部から引き出し線を出してパラメータ名を書く。
- * パラメータ名にマウスを乗せると効く場所を強調して日本語名と別名の札を出し、選ぶと対応表のその行へ移る。
+ * Diagram of parameter name aliases. Draws callout lines from parts of a fixed LFSR (width 3, poly 0x3) labelled with parameter names.
+ * Hovering a parameter name highlights where it takes effect and shows a card with its Japanese name and aliases; selecting it moves to that row of the table.
  */
 export function ParamMap() {
   const [hovered, setHovered] = useState<ParamName | undefined>(undefined);
@@ -128,7 +128,7 @@ export function ParamMap() {
   );
 }
 
-/** パラメータ名に添える、表示言語での名前と別名の札。図の下半分にある名前では、はみ出さないよう名前の上に出す。 */
+/** Card next to a parameter name with its name in the display language and aliases. For names in the lower half of the diagram, it appears above the name so it does not overflow. */
 function HoverCard({ param, at }: { param: ParamName; at: Point }) {
   const m = useMessages();
   const info = m.params[param];

@@ -9,7 +9,7 @@ type Props = Readonly<{
   onOpen: (preset: Preset) => void;
 }>;
 
-/** 値を 1 つずつ固定してプリセットの候補を 1 つに絞る木。path は presets に収めたもの。 */
+/** Tree that narrows the preset candidates to one by fixing values one at a time. path is already applied to presets. */
 export function NarrowPage({ presets, path, onOpen }: Props) {
   const m = useMessages();
   return (
@@ -23,7 +23,7 @@ export function NarrowPage({ presets, path, onOpen }: Props) {
 
 type NodeProps = Props & Readonly<{ depth: number }>;
 
-/** 根から depth 番目の節。分けるパラメータの選択肢と、その値ごとの枝を出し、道筋の枝の先に次の節を出す。 */
+/** The node at depth from the root. Shows the choice of parameter to split on and a branch per value, with the next node under the branch on the path. */
 function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
   const m = useMessages();
   const prefix = path.fixed.slice(0, depth);
@@ -74,7 +74,7 @@ function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
   );
 }
 
-/** サイドバーに置く、固定した値と残りの候補。候補が 1 つなら可視化で開ける。 */
+/** Sidebar showing the fixed values and remaining candidates. A single remaining candidate can be opened in the visualization. */
 export function NarrowSidebar({ presets, path, onOpen }: Props) {
   const m = useMessages();
   const candidates = matching(presets, path.fixed);

@@ -3,64 +3,64 @@ import { toRegister, type CrcParams } from "../domain/trace";
 export type Point = Readonly<{ x: number; y: number }>;
 
 /**
- * LFSR 図の配置（SVG 座標）。
- * boxes[i] が r[i] で、x は箱の左端。gates は poly[i] = 1 の r[i] の真下にある XOR ゲート中心。
- * taps はフィードバック線を受けるビット位置 i（poly[i] = 1）の昇順。
+ * Layout of the LFSR diagram (SVG coordinates).
+ * boxes[i] is r[i], with x at the box's left edge. gates are the centers of the XOR gates directly below each r[i] where poly[i] = 1.
+ * taps are the bit positions i that receive the feedback line (poly[i] = 1), in ascending order.
  */
 export type LfsrLayout = Readonly<{
   box: number;
-  /** 隣り合う箱の左辺の距離。shift で値が隣の箱へ移るときの移動量。 */
+  /** Distance between the left edges of adjacent boxes; how far a value travels when shift moves it to the next box. */
   pitch: number;
   regY: number;
   streamY: number;
   busY: number;
-  /** XOR ゲートの半径。 */
+  /** Radius of an XOR gate. */
   gateR: number;
   viewWidth: number;
   viewHeight: number;
   inputGate: Point;
-  /** 変数 feedback の値を示す箱。入力ゲートの真下にあり、x・y は中心、size は一辺。 */
+  /** Box showing the value of the variable feedback. It sits directly below the input gate; x and y are its center and size is its side length. */
   feedbackBox: Point & { size: number };
-  /** r[0] の入口。r[0] の中心から箱の間隔だけ右で、隣に箱があるときの位置。シフトで入る 0 はここから真横に r[0] へ入る。 */
+  /** Entrance of r[0]: one box spacing right of r[0]'s center, where a neighbouring box would be. The 0 shifted in enters r[0] horizontally from here. */
   entry: (i: 0) => Point;
   boxes: readonly (Point & { bit: number })[];
   gates: readonly (Point & { bit: number })[];
   taps: readonly number[];
-  /** 入力線: 入力ストリームの下から入力ゲートの上端まで。 */
+  /** Input line: from below the input stream to the top of the input gate. */
   inputRoute: readonly Point[];
-  /** 結果線: 入力ゲートの下端から feedback の箱の上辺まで。 */
+  /** Result line: from the bottom of the input gate to the top edge of the feedback box. */
   resultRoute: readonly Point[];
-  /** 最上位ビット線: r[width-1] の左辺から入力ゲートの右端まで。 */
+  /** MSB line: from the left edge of r[width-1] to the right end of the input gate. */
   msbRoute: readonly Point[];
-  /** フィードバック線: feedback の箱の下辺からバスを通り、r[i] の真下のゲートの下端まで。 */
+  /** Feedback line: from the bottom edge of the feedback box through the bus to the bottom of the gate directly below r[i]. */
   tapRoute: (i: number) => readonly Point[];
-  /** タップの入力線（左の脚）: r[i] の下辺の左寄りから下りてゲートの縁まで。 */
+  /** Tap input line (left leg): down from the left part of r[i]'s bottom edge to the gate's rim. */
   tapInRoute: (i: number) => readonly Point[];
-  /** タップの出力線（右の脚）: ゲートの縁から上がって r[i] の下辺の右寄りまで。 */
+  /** Tap output line (right leg): up from the gate's rim to the right part of r[i]'s bottom edge. */
   outRoute: (i: number) => readonly Point[];
 }>;
 
 const BOX = 48;
 const PITCH = 84;
-/** 入力ゲートの x。左に feedback の箱の名前を書く余白を取る。 */
+/** x of the input gate. Leaves room on the left for the name of the feedback box. */
 const GATE_X = 96;
 const FIRST_BOX_X = 160;
 const GATE_R = 13;
 const FB_BOX = 30;
-/** 箱の下辺からタップのゲート中心までの高さ。 */
+/** Height from a box's bottom edge to the center of its tap gate. */
 const GATE_DROP = 66;
-/** 左右の脚が箱の下辺に付く位置の、箱の中心からの横のずれ。 */
+/** Horizontal offset from the box's center at which the left and right legs meet the box's bottom edge. */
 const LEG_OFFSET = 16;
-/** 脚を箱の下辺から真下へ伸ばしてから斜めにゲートへ向かう長さ。 */
+/** Length a leg runs straight down from the box's bottom edge before slanting toward the gate. */
 const STUB = 18;
 
-/** from から center へ向かう線が、半径 r の円の縁と交わる点。 */
+/** Point where the line from from toward center crosses the rim of the circle of radius r. */
 function rim(center: Point, from: Point, r: number): Point {
   const d = Math.hypot(from.x - center.x, from.y - center.y);
   return { x: center.x + ((from.x - center.x) * r) / d, y: center.y + ((from.y - center.y) * r) / d };
 }
 
-/** width と poly から LFSR 図の配置を決める。 */
+/** Determines the LFSR diagram layout from width and poly. */
 export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): LfsrLayout {
   const regY = 140;
   const taps = toRegister(poly, width).flatMap((b, i) => (b === 1 ? [i] : []));
@@ -101,9 +101,18 @@ export function lfsrLayout({ width, poly }: Pick<CrcParams, "width" | "poly">): 
     boxes: Array.from({ length: width }, (_, i) => ({ bit: i, x: boxX(i), y: regY })),
     gates: taps.map((i) => ({ bit: i, ...gate(i) })),
     taps,
-    inputRoute: [{ x: GATE_X, y: streamY + 8 }, { x: GATE_X, y: midY - GATE_R }],
-    resultRoute: [{ x: GATE_X, y: midY + GATE_R }, { x: GATE_X, y: feedbackBox.y - FB_BOX / 2 }],
-    msbRoute: [{ x: boxX(width - 1), y: midY }, { x: GATE_X + GATE_R, y: midY }],
+    inputRoute: [
+      { x: GATE_X, y: streamY + 8 },
+      { x: GATE_X, y: midY - GATE_R },
+    ],
+    resultRoute: [
+      { x: GATE_X, y: midY + GATE_R },
+      { x: GATE_X, y: feedbackBox.y - FB_BOX / 2 },
+    ],
+    msbRoute: [
+      { x: boxX(width - 1), y: midY },
+      { x: GATE_X + GATE_R, y: midY },
+    ],
     tapRoute,
     tapInRoute,
     outRoute,

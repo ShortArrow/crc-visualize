@@ -4,11 +4,11 @@ import { Visualizer } from "./support/visualizer";
 
 const PARAMS = ["width", "poly", "init", "refin", "refout", "xorout"];
 
-test.describe("パラメータの説明と強調", () => {
-  test("設定項目にマウスを乗せると、そのパラメータの使用箇所がコードと図で強調される", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("poly の設定項目にマウスを乗せる", () => v.settings.param("poly").hover());
-    await then("poly の項目・コードのチップ・タップのゲートが強調され、他のチップは強調されない", async () => {
+test.describe("Parameter help and highlighting", () => {
+  test("hovering a settings field highlights where that parameter is used in the code and the diagram", async ({ page }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("hovering the poly field", () => v.settings.param("poly").hover());
+    await then("the poly field, its code chip and the tap gate are highlighted, and other chips are not", async () => {
       await expect(v.settings.param("poly")).toHaveClass(/\bhl\b/);
       await expect(v.code.chip("poly")).toHaveClass(/\bhl\b/);
       await expect(v.code.chip("init")).not.toHaveClass(/\bhl\b/);
@@ -16,18 +16,20 @@ test.describe("パラメータの説明と強調", () => {
     });
   });
 
-  test("コードのチップにマウスを乗せると、対応する設定項目が強調される", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("init のチップにマウスを乗せる", () => v.code.chip("init").hover());
-    await then("init の項目だけが強調される", async () => {
+  test("hovering a code chip highlights the matching settings field", async ({ page }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("hovering the init chip", () => v.code.chip("init").hover());
+    await then("only the init field is highlighted", async () => {
       await expect(v.settings.param("init")).toHaveClass(/\bhl\b/);
       await expect(v.settings.param("poly")).not.toHaveClass(/\bhl\b/);
     });
   });
 
-  test("設定項目は英語だけで示し、マウスを乗せると説明欄に日本語名と説明を出す", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await then("項目名はどれも英語で、説明欄は使い方を案内する", async () => {
+  test("settings fields are labelled only in English, and hovering shows the Japanese name and help in the help area", async ({
+    page,
+  }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await then("every field name is in English and the help area explains how to use it", async () => {
       await expect(v.settings.labels()).toHaveText([
         "preset",
         "width",
@@ -41,54 +43,57 @@ test.describe("パラメータの説明と強調", () => {
       ]);
       await expect(v.settings.currentHelp()).toContainText("マウスを乗せると、日本語名と説明を表示します");
     });
-    await when("preset にマウスを乗せる", () =>
+    await when("hovering preset", () =>
       v.settings
         .labels()
         .filter({ hasText: /^preset$/ })
         .hover(),
     );
-    await then("説明欄に日本語名プリセットと説明を出す", async () => {
+    await then("the help area shows the Japanese name for preset and its help", async () => {
       await expect(v.settings.currentHelp()).toContainText("プリセット");
     });
-    await when("input mode にマウスを乗せる", () =>
+    await when("hovering input mode", () =>
       v.settings
         .labels()
         .filter({ hasText: /^input mode$/ })
         .hover(),
     );
-    await then("説明欄に日本語名入力形式を出す", async () => {
+    await then("the help area shows the Japanese name for input mode", async () => {
       await expect(v.settings.currentHelp()).toContainText("入力形式");
     });
   });
 
-  test("パラメータにマウスを乗せると、説明欄に日本語名・説明・別名・注記を出す", async ({ page }) => {
-    const v = await given("CRC-16/ARC を選んでいる", async () => {
+  test("hovering a parameter shows its Japanese name, help, aliases and notes in the help area", async ({ page }) => {
+    const v = await given("CRC-16/ARC is selected", async () => {
       const v = await Visualizer.open(page);
       await v.settings.preset().selectOption("CRC-16/ARC");
       return v;
     });
-    await when("poly にマウスを乗せる", () => v.settings.param("poly").hover());
-    await then("生成多項式の説明・別名と、右送りの反転表記の値を出す", async () => {
-      await expect(v.settings.currentHelp()).toContainText("生成多項式");
-      await expect(v.settings.currentHelp()).toContainText("別名");
-      await expect(v.settings.currentHelp()).toContainText("0xA001");
-    });
-    await when("refin にマウスを乗せる", () => v.settings.param("refin").hover());
-    await then("右送りの実装にあたると注記する", async () => {
+    await when("hovering poly", () => v.settings.param("poly").hover());
+    await then(
+      "it shows the generator polynomial's help and aliases, and the value in reflected right-shift notation",
+      async () => {
+        await expect(v.settings.currentHelp()).toContainText("生成多項式");
+        await expect(v.settings.currentHelp()).toContainText("別名");
+        await expect(v.settings.currentHelp()).toContainText("0xA001");
+      },
+    );
+    await when("hovering refin", () => v.settings.param("refin").hover());
+    await then("it notes that this amounts to a right-shift implementation", async () => {
       await expect(v.settings.currentHelp()).toContainText("右送り");
     });
   });
 
   for (const width of [1024, 1600]) {
-    test(`横幅 ${width}px でも、どのパラメータの説明も見切れず、説明欄の高さが変わらない`, async ({ page }) => {
-      const v = await given(`横幅 ${width}px で開いている`, async () => {
+    test(`at a width of ${width}px no parameter's help is clipped and the help area keeps its height`, async ({ page }) => {
+      const v = await given(`the page is open at a width of ${width}px`, async () => {
         await page.setViewportSize({ width, height: 900 });
         return Visualizer.open(page);
       });
       const idleHeight = (await v.settings.help().boundingBox())!.height;
       for (const param of PARAMS) {
-        await when(`${param} にマウスを乗せる`, () => v.settings.param(param).hover());
-        await then(`${param} の説明が見切れず、高さが変わらない`, async () => {
+        await when(`hovering ${param}`, () => v.settings.param(param).hover());
+        await then(`the help for ${param} is not clipped and the height is unchanged`, async () => {
           await expect(v.settings.currentHelp()).toHaveAttribute("data-param", param);
           const { scroll, client } = await v.settings
             .help()
@@ -101,32 +106,34 @@ test.describe("パラメータの説明と強調", () => {
   }
 });
 
-test.describe("設定の検証と表記", () => {
-  test("プリセットの選択肢は正式名に別名を添え、別名で探した設定を選べる", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("別名 CCITT-TRUE が添えられた選択肢を選ぶ", async () => {
+test.describe("Settings validation and notation", () => {
+  test("preset options show the full name with its aliases, so a setting looked up by alias can be selected", async ({
+    page,
+  }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("selecting the option carrying the alias CCITT-TRUE", async () => {
       const option = v.settings.preset().locator("option", { hasText: "CCITT-TRUE" });
       await expect(option).toHaveText("CRC-16/KERMIT（CCITT、CCITT-TRUE、CRC-CCITT）");
       await v.settings.preset().selectOption({ label: (await option.textContent())! });
     });
-    await then("CRC-16/KERMIT のパラメータになる", async () => {
+    await then("the parameters become those of CRC-16/KERMIT", async () => {
       await expect(v.settings.param("poly").locator("input")).toHaveValue("0x1021");
       await expect(v.settings.param("refin").locator("input")).toBeChecked();
     });
   });
 
-  test("不正な設定では項目にエラーを出し、図を消す", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("width に 0 を入れる", () => page.getByLabel("width").fill("0"));
-    await then("width にエラーが出て、図が消える", async () => {
+  test("invalid settings show an error on the field and remove the diagram", async ({ page }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("entering 0 for width", () => page.getByLabel("width").fill("0"));
+    await then("width shows an error and the diagram disappears", async () => {
       await expect(page.locator(".error")).toHaveText("1〜32 の整数を入れてください");
       await expect(page.locator(".invalid-config")).toBeVisible();
       await expect(v.diagram.root()).toHaveCount(0);
     });
   });
 
-  test("画面の文に独自の略語や、日本語の直後の半角括弧を使わない", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
+  test("page text uses no ad-hoc abbreviations and no half-width parenthesis right after Japanese", async ({ page }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
     const visibleText = () =>
       page.locator(".workbench").evaluate((main) => {
         const clone = main.cloneNode(true) as HTMLElement;
@@ -135,7 +142,7 @@ test.describe("設定の検証と表記", () => {
         return `${clone.textContent} ${titles}`;
       });
     for (const preset of ["CRC-3/TUTORIAL", "CRC-32/ISO-HDLC"]) {
-      const texts = await when(`${preset} を選び、先頭 6 ステップを順に表示する`, async () => {
+      const texts = await when(`selecting ${preset} and showing the first 6 steps in turn`, async () => {
         await v.settings.preset().selectOption(preset);
         const seen: string[] = [];
         for (let i = 0; i < 6; i++) {
@@ -144,7 +151,7 @@ test.describe("設定の検証と表記", () => {
         }
         return seen;
       });
-      await then("どのステップの文にも fb や「日本語(」が無い", async () => {
+      await then("no step's text contains fb or a Japanese character followed by (", async () => {
         for (const text of texts) {
           expect(text).not.toMatch(/\bfb\b/);
           expect(text).not.toMatch(/[ぁ-んァ-ヶー一-龠] ?\(/);

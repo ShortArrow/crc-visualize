@@ -4,8 +4,8 @@ import type { Messages } from "./messages";
 
 const MessagesContext = createContext<Messages>(ja);
 
-/** 子孫に表示言語の辞書を配る。 */
+/** Provides the display-language dictionary to descendants. */
 export const MessagesProvider = MessagesContext.Provider;
 
-/** 表示言語の辞書。 */
+/** The display-language dictionary. */
 export const useMessages = (): Messages => useContext(MessagesContext);

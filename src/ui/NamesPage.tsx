@@ -8,7 +8,7 @@ import type { Messages } from "../i18n/messages";
 
 const EXAMPLE = "CRC-16/KERMIT";
 
-/** 名前の規則のページの節の id と、辞書での見出しの項目。目次と各節の id に使う。 */
+/** Section ids of the naming-rules page and their heading keys in the dictionary. Used for the table of contents and section ids. */
 const SECTIONS: readonly Readonly<{ id: string; key: keyof Messages["names"]["sections"] }>[] = [
   { id: "names-parts", key: "parts" },
   { id: "names-families", key: "families" },
@@ -17,7 +17,7 @@ const SECTIONS: readonly Readonly<{ id: string; key: keyof Messages["names"]["se
   { id: "names-param-table", key: "paramTable" },
 ];
 
-/** サイドバーに置く目次。選ぶとエディタ領域のその節へ移る。フラグメントはページの切替に使うので変えない。 */
+/** Table of contents for the sidebar. Selecting an entry moves the editor area to that section. Leaves the fragment unchanged, since it is used for page switching. */
 export function NamesToc() {
   const m = useMessages();
   return (
@@ -35,7 +35,7 @@ export function NamesToc() {
     </>
   );
 }
-/** text の中の識別子 word を code で囲む。見出しの大文字化を識別子に及ぼさないため。 */
+/** Wraps the identifier word in text with code, so heading capitalization does not affect the identifier. */
 const withCode = (text: string, word: string) =>
   text.split(word).flatMap((part, i) => (i === 0 ? [part] : [<code key={i}>{word}</code>, part]));
 
@@ -45,7 +45,7 @@ const hexOf = (value: number, width: number) =>
     .toUpperCase()
     .padStart(Math.ceil(width / 4), "0")}`;
 
-/** プリセットの名前の付け方と、パラメータの呼び名の違いを示すページ。target は強調するパラメータの行。 */
+/** Page showing how presets are named and how parameter names differ. target is the parameter row to highlight. */
 export function NamesPage({ target }: { target: ParamName | undefined }) {
   const m = useMessages();
   return (

@@ -1,6 +1,6 @@
 import type { Messages } from "./ja";
 
-/** 中国語（簡体字）の画面の文。 */
+/** Chinese (Simplified) UI text. */
 export const zh: Messages = {
   pages: {
     visualizer: "可视化",

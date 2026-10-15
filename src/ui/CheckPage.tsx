@@ -14,7 +14,7 @@ const hex = (value: number, width: number) => toHex(toRegister(value, width));
 
 type Props = Readonly<{ config: ConfigResult; preset: Preset | undefined }>;
 
-/** 受け取った側がどう確かめるかを、今の設定と入力で示す。設定が不正なら、そのことだけを出す。 */
+/** Shows how the receiver checks, using the current settings and input. If the settings are invalid, shows only that. */
 export function CheckPage({ config, preset }: Props) {
   const m = useMessages();
   return (
@@ -38,7 +38,7 @@ export function CheckPage({ config, preset }: Props) {
 
 type ChecksProps = Readonly<{ params: CrcParams; message: readonly Bit[]; preset: Preset | undefined }>;
 
-/** 送る並びと、ビットを反転して受け取った並びの 2 つの確かめ方、検査値。 */
+/** The two ways to check, on the sent sequence and on a received sequence with a flipped bit, and the check value. */
 function Checks({ params, message, preset }: ChecksProps) {
   const m = useMessages();
   const sent = frame(params, message);

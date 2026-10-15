@@ -4,10 +4,10 @@ import { bitsToString, toBinary, toHex } from "./format";
 import { useMessages } from "../i18n/I18n";
 import { logEntries, type LogEntry } from "./log";
 
-/** 画面に残すログの行数。 */
+/** Number of log rows kept on screen. */
 const LOG_LIMIT = 40;
 
-/** 行が上下へ滑る時間と、見出しの文字の大きさが変わる時間（ms）。 */
+/** Duration (ms) of rows sliding up or down and of the heading text resizing. */
 const MOTION_MS = 240;
 
 type Props = Readonly<{ steps: readonly Step[]; current: number; input: readonly Bit[]; check: number | undefined }>;
@@ -28,7 +28,7 @@ function Entry({ entry, age }: { entry: LogEntry; age: number }) {
   );
 }
 
-/** 完了時の結果。入力の後ろに CRC を連結したビット列と、検査値との照合。 */
+/** Result on completion: the bit string of the input followed by the CRC, and the comparison with the check value. */
 function Result({ step, input, check }: { step: Step; input: readonly Bit[]; check: number | undefined }) {
   const m = useMessages();
   const crc = registerValue(step.reg);
@@ -51,8 +51,8 @@ function Result({ step, input, check }: { step: Step; input: readonly Bit[]; che
 }
 
 /**
- * ステップのログ。最新を一番上に大きく出し、それより前は同じ大きさで下へ並べる。
- * ステップが進むと、最新だった行は文字が小さくなりながら下へ送られ、戻すと逆に動く。
+ * Step log. Shows the latest step large at the top, and earlier ones below at a uniform size.
+ * When the step advances, the previous latest row shrinks its text while moving down; stepping back reverses this.
  */
 export function StepLog({ steps, current, input, check }: Props) {
   const m = useMessages();
@@ -71,8 +71,8 @@ export function StepLog({ steps, current, input, check }: Props) {
 }
 
 /**
- * 描画のたびに、前の描画から位置の変わった行（data-index で同じ行とみなす）を、前の位置から今の位置へ滑らせる。
- * 新しく現れた行は、上から降りながら浮かび上がらせる。
+ * On each render, slides rows whose position changed since the previous render (identified by data-index) from their old position to the new one.
+ * Newly appearing rows fade in while dropping from above.
  */
 function useSlidingRows(current: number) {
   const ref = useRef<HTMLOListElement>(null);

@@ -2,35 +2,37 @@ import { expect } from "@playwright/test";
 import { given, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
-test.describe("図の値の流れ（CRC-3/TUTORIAL、1 番目のクロックは feedback 1）", () => {
-  test("フィードバックビットの計算では、入力ビットと最上位ビットが入力ゲートで合流し、結果が feedback の箱に入る", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("1 番目のクロックの feedback ステップへ進む", () => v.goTo("feedback"));
-    await then("入力ビット 1 と最上位ビット 0 の粒が入力ゲートへ向かう", async () => {
+test.describe("Value flow in the diagram (CRC-3/TUTORIAL, the 1st clock has feedback 1)", () => {
+  test("computing the feedback bit, the input bit and the MSB meet at the input gate and the result enters the feedback box", async ({
+    page,
+  }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("advancing to the feedback step of the 1st clock", () => v.goTo("feedback"));
+    await then("particles for input bit 1 and MSB 0 head to the input gate", async () => {
       await expect(v.diagram.particle("input")).toHaveText("1");
       await expect(v.diagram.particle("msb")).toHaveText("0");
       await expect(v.diagram.wire("input")).toHaveAttribute("data-level", "1");
       await expect(v.diagram.wire("msb")).toHaveAttribute("data-level", "0");
     });
-    await then("結果 1 の粒が結果線を通って feedback の箱に入る", async () => {
+    await then("a result-1 particle travels along the result wire into the feedback box", async () => {
       await expect(v.diagram.particle("result")).toHaveText("1");
       await expect(v.diagram.wire("result")).toHaveAttribute("data-level", "1");
       await expect(v.diagram.feedbackValue()).toHaveText("1");
       await expect(v.diagram.feedbackBox()).toHaveAttribute("data-level", "1");
     });
-    await then("feedback はまだゲートへ送られない", async () => {
+    await then("feedback is not yet sent to the gates", async () => {
       await expect(v.diagram.wire("feedback-0")).toHaveAttribute("data-level", "none");
     });
   });
 
-  test("シフトの間、feedback の値は箱に留まり、フィードバック線には流れない", async ({ page }) => {
-    const v = await given("1 番目のクロックの feedback ステップにいる", async () => {
+  test("during shift, the feedback value stays in its box and does not flow along the feedback wires", async ({ page }) => {
+    const v = await given("at the feedback step of the 1st clock", async () => {
       const v = await Visualizer.open(page);
       await v.goTo("feedback");
       return v;
     });
-    await when("shift ステップへ進む", () => v.stepForward());
-    await then("feedback の箱は 1 のままで、結果線とフィードバック線には何も流れない", async () => {
+    await when("advancing to the shift step", () => v.stepForward());
+    await then("the feedback box stays 1 and nothing flows along the result and feedback wires", async () => {
       await expect(v.diagram.feedbackValue()).toHaveText("1");
       await expect(v.diagram.wire("result")).toHaveAttribute("data-level", "none");
       await expect(v.diagram.wire("feedback-0")).toHaveAttribute("data-level", "none");
@@ -38,16 +40,21 @@ test.describe("図の値の流れ（CRC-3/TUTORIAL、1 番目のクロックは 
     });
   });
 
-  test("xor では feedback の箱から各タップのゲートへ 1 が運ばれ、r[i] との XOR の結果が箱へ戻る", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("1 番目のクロックの xor ステップへ進む", () => v.goTo("xor"));
-    await then("1 の粒が feedback の箱からタップ 0 と 1 のゲートへ向かい、フィードバック線が 1 になる", async () => {
-      await expect(v.diagram.particle("tap-0")).toHaveText("1");
-      await expect(v.diagram.particle("tap-1")).toHaveText("1");
-      await expect(v.diagram.wire("feedback-0")).toHaveAttribute("data-level", "1");
-      await expect(v.diagram.wire("feedback-1")).toHaveAttribute("data-level", "1");
-    });
-    await then("各 r[i] の値 0 が左の脚を下り、結果 1 が右の脚を上がる", async () => {
+  test("on xor, a 1 is carried from the feedback box to each tap's gate and the XOR with r[i] returns to the box", async ({
+    page,
+  }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("advancing to the xor step of the 1st clock", () => v.goTo("xor"));
+    await then(
+      "1 particles head from the feedback box to the gates of taps 0 and 1, and the feedback wires become 1",
+      async () => {
+        await expect(v.diagram.particle("tap-0")).toHaveText("1");
+        await expect(v.diagram.particle("tap-1")).toHaveText("1");
+        await expect(v.diagram.wire("feedback-0")).toHaveAttribute("data-level", "1");
+        await expect(v.diagram.wire("feedback-1")).toHaveAttribute("data-level", "1");
+      },
+    );
+    await then("each r[i]'s value 0 goes down the left leg and the result 1 comes up the right leg", async () => {
       await expect(v.diagram.particles()).toHaveCount(6);
       for (const i of [0, 1]) {
         await expect(v.diagram.particle(`in-${i}`)).toHaveText("0");
@@ -56,71 +63,75 @@ test.describe("図の値の流れ（CRC-3/TUTORIAL、1 番目のクロックは 
         await expect(v.diagram.wire(`tap-out-${i}`)).toHaveAttribute("data-level", "1");
       }
     });
-    await then("入力線には何も流れない", async () => {
+    await then("nothing flows along the input wire", async () => {
       await expect(v.diagram.wire("input")).toHaveAttribute("data-level", "none");
     });
   });
 
-  test("feedback が 0 のクロックでは xor が来ず、箱は白で、フィードバック線に何も流れない", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("2 番目のクロック（feedback 0）の shift ステップへ進む", () => v.goTo("shift", 2));
-    await then("feedback の箱は 0 で白く、フィードバック線は灰色のまま", async () => {
+  test("on a clock with feedback 0 no xor comes, the box is white, and nothing flows along the feedback wires", async ({
+    page,
+  }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("advancing to the shift step of the 2nd clock (feedback 0)", () => v.goTo("shift", 2));
+    await then("the feedback box is 0 and white, and the feedback wires stay grey", async () => {
       await expect(v.diagram.feedbackValue()).toHaveText("0");
       await expect(v.diagram.feedbackBox()).toHaveAttribute("data-level", "0");
       await expect(v.diagram.wire("feedback-0")).toHaveAttribute("data-level", "none");
     });
-    await then("次のステップは xor ではなく次のクロックの feedback", async () => {
+    await then("the next step is the next clock's feedback, not xor", async () => {
       await v.stepForward();
       expect(await v.stepKind()).toBe("feedback");
     });
   });
 
-  test("図は配線の色と粒だけで流れを示し、計算式の文字列を出さない", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await then("先頭のステップでは粒も値の流れる配線も無い", async () => {
+  test("the diagram shows the flow only by wire colour and particles, without formula text", async ({ page }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await then("on the first step there are no particles and no wires carrying values", async () => {
       await expect(v.diagram.particles()).toHaveCount(0);
       await expect(v.diagram.wire("feedback-0")).toHaveAttribute("data-level", "none");
     });
-    await when("xor ステップへ進む", () => v.goTo("xor"));
-    await then("図に ⊕ や = の式は無く、凡例が ⊕ の意味を示す", async () => {
+    await when("advancing to the xor step", () => v.goTo("xor"));
+    await then("the diagram has no ⊕ or = formula, and the legend explains ⊕", async () => {
       await expect(v.diagram.root()).not.toContainText("⊕");
       await expect(v.diagram.root()).not.toContainText("=");
       await expect(page.locator(".legend")).toContainText("⊕ = XOR（2 入力が異なれば 1）");
     });
-    await then("直線の配線でも光彩が消えないよう、光彩の範囲を図全体の座標で取る", async () => {
+    await then("the glow region is taken in whole-diagram coordinates so straight wires keep their glow", async () => {
       expect(await page.locator(".lfsr filter#glow").getAttribute("filterUnits")).toBe("userSpaceOnUse");
     });
   });
 });
 
-test.describe("レジスタの箱", () => {
-  test("xor では poly の 1 のビットの箱だけ値が裏返り、箱の色は変わらない", async ({ page }) => {
-    const v = await given("既定の設定（poly 0x3）で開いている", () => Visualizer.open(page));
-    await when("xor ステップへ進む", () => v.goTo("xor"));
-    await then("r0 と r1 だけが裏返る", async () => {
+test.describe("Register boxes", () => {
+  test("on xor, only the boxes of poly's 1 bits flip their value, and the box colour does not change", async ({ page }) => {
+    const v = await given("the page is open with the default settings (poly 0x3)", () => Visualizer.open(page));
+    await when("advancing to the xor step", () => v.goTo("xor"));
+    await then("only r0 and r1 flip", async () => {
       await expect(v.diagram.register(0)).toHaveClass(/\bhit\b/);
       await expect(v.diagram.register(1)).toHaveClass(/\bhit\b/);
       await expect(v.diagram.register(2)).not.toHaveClass(/\bhit\b/);
     });
-    await then("裏返る箱も裏返らない r2 と同じ色のまま", async () => {
+    await then("the flipping boxes keep the same colour as r2, which does not flip", async () => {
       const same = async (bit: number) => (await v.diagram.registerLook(bit)) === (await v.diagram.registerLook(2));
       await expect.poll(() => same(0)).toBe(true);
       await expect.poll(() => same(1)).toBe(true);
     });
   });
 
-  test("shift では元の r[width-1] が桁あふれして左へ抜ける", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("shift ステップへ進む", () => v.goTo("shift"));
-    await then("r2 の元の値 0 が抜けていく", async () => {
+  test("on shift, the original r[width-1] overflows and leaves to the left", async ({ page }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("advancing to the shift step", () => v.goTo("shift"));
+    await then("r2's original value 0 leaves", async () => {
       await expect(v.diagram.register(2).locator(".drop")).toHaveText("0");
     });
   });
 
-  test("shift で左へ抜ける値は入力ゲートに入らず、届く前に消えきる", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("shift ステップへ進む", () => v.goTo("shift"));
-    await then("抜ける値が見えている間は、入力ゲートの右端より右にある", async () => {
+  test("on shift, the value leaving to the left does not enter the input gate and fades out before reaching it", async ({
+    page,
+  }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("advancing to the shift step", () => v.goTo("shift"));
+    await then("while visible, the leaving value is right of the input gate's right edge", async () => {
       const gate = await v.diagram.gateEdges("input");
       for (let progress = 0; progress <= 1; progress += 0.05) {
         const frame = await v.diagram.frameAt(v.diagram.dropped(), progress);
@@ -129,25 +140,30 @@ test.describe("レジスタの箱", () => {
     });
   });
 
-  test("shift で左へ抜ける値と右端から入る値は、隣の箱へ移る値と同じ速さで動く", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("shift ステップへ進む", () => v.goTo("shift"));
-    await then("途中のどの時点でも、r2 から抜ける値・右端から r0 へ入る値・r0 から r1 へ移る値の動いた距離が等しい", async () => {
-      for (const progress of [0.25, 0.5, 0.9]) {
-        const sliding = await v.diagram.travelX(v.diagram.sliding(1), progress);
-        expect(await v.diagram.travelX(v.diagram.dropped(), progress)).toBeCloseTo(sliding, 0);
-        expect(await v.diagram.travelX(v.diagram.sliding(0), progress)).toBeCloseTo(sliding, 0);
-      }
-    });
+  test("on shift, the values leaving to the left and entering from the right move as fast as values moving to the neighbouring box", async ({
+    page,
+  }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("advancing to the shift step", () => v.goTo("shift"));
+    await then(
+      "at every point, the value leaving r2, the value entering r0 from the right and the value moving r0 to r1 have moved the same distance",
+      async () => {
+        for (const progress of [0.25, 0.5, 0.9]) {
+          const sliding = await v.diagram.travelX(v.diagram.sliding(1), progress);
+          expect(await v.diagram.travelX(v.diagram.dropped(), progress)).toBeCloseTo(sliding, 0);
+          expect(await v.diagram.travelX(v.diagram.sliding(0), progress)).toBeCloseTo(sliding, 0);
+        }
+      },
+    );
   });
 
-  test("次が shift なら、r0 に入る値を r0 の真横に控えとして先に出す", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await then("先頭のステップでは控えを出さない", async () => {
+  test("if the next step is shift, the value entering r0 is shown in advance right beside r0", async ({ page }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await then("on the first step no upcoming value is shown", async () => {
       await expect(v.diagram.upcoming()).toHaveCount(0);
     });
-    await when("次が shift の feedback ステップへ進む", () => v.goTo("feedback"));
-    await then("r0 に入る 0 を、値が入ってくる右側の、箱と同じ高さに出す", async () => {
+    await when("advancing to a feedback step followed by shift", () => v.goTo("feedback"));
+    await then("the 0 entering r0 is shown on the right, where values come in, level with the box", async () => {
       await expect(v.diagram.upcoming()).toHaveCount(1);
       await expect(v.diagram.upcoming()).toHaveAttribute("data-bit", "0");
       await expect(v.diagram.upcoming()).toHaveText("0");
@@ -156,40 +172,40 @@ test.describe("レジスタの箱", () => {
       expect(hint.x).toBeGreaterThan(box.x + box.width);
       expect(hint.y + hint.height / 2).toBeCloseTo(box.y + box.height / 2, 0);
     });
-    await when("次が xor の shift ステップへ進む", () => v.stepForward());
-    await then("xor の結果は粒が見せるので控えを出さない", async () => {
+    await when("advancing to a shift step followed by xor", () => v.stepForward());
+    await then("no upcoming value is shown, since particles show the xor result", async () => {
       await expect(v.diagram.upcoming()).toHaveCount(0);
     });
   });
 
-  test("完了するとレジスタが緑になり、入力の後ろに CRC を連結して示す", async ({ page }) => {
-    const v = await given("既定の設定（入力 10101）で開いている", () => Visualizer.open(page));
-    await when("末尾へ進む", () => v.goToEnd());
-    await then("全ての箱が完了の色になる", async () => {
+  test("when done, the registers turn green and the CRC is shown appended to the input", async ({ page }) => {
+    const v = await given("the page is open with the default settings (input 10101)", () => Visualizer.open(page));
+    await when("advancing to the end", () => v.goToEnd());
+    await then("every box takes the done colour", async () => {
       for (const bit of [0, 1, 2]) await expect(v.diagram.register(bit)).toHaveClass(/\bdone\b/);
     });
-    await then("入力 10101 の後ろに CRC 101 が続く", async () => {
+    await then("CRC 101 follows the input 10101", async () => {
       await expect(page.locator(".framed")).toHaveText("10101101");
       await expect(page.locator(".crc-tail")).toHaveText("101");
     });
   });
 });
 
-test.describe("ゲートの点灯", () => {
-  test("ゲートは計算に使われるステップでだけ黄に点き、フィードバックビットの値にはよらない", async ({ page }) => {
-    const v = await given("既定の設定で開いている", () => Visualizer.open(page));
-    await when("feedback 1 のクロックの feedback ステップへ進む", () => v.goTo("feedback"));
-    await then("入力ゲートだけが点く", async () => {
+test.describe("Gate lighting", () => {
+  test("gates light yellow only on the steps that use them, regardless of the feedback bit's value", async ({ page }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("advancing to the feedback step of a clock with feedback 1", () => v.goTo("feedback"));
+    await then("only the input gate lights", async () => {
       await expect.poll(() => v.diagram.gateLit("input")).toBe(true);
       await expect.poll(() => v.diagram.gateLit(1)).toBe(false);
     });
-    await when("xor ステップへ進む", () => v.goTo("xor"));
-    await then("タップのゲートだけが点く", async () => {
+    await when("advancing to the xor step", () => v.goTo("xor"));
+    await then("only the tap gates light", async () => {
       await expect.poll(() => v.diagram.gateLit("input")).toBe(false);
       await expect.poll(() => v.diagram.gateLit(1)).toBe(true);
     });
-    await when("feedback 0 のクロックの feedback ステップへ進む", () => v.goTo("feedback"));
-    await then("入力ゲートが点く", async () => {
+    await when("advancing to the feedback step of a clock with feedback 0", () => v.goTo("feedback"));
+    await then("the input gate lights", async () => {
       await expect.poll(() => v.diagram.gateLit("input")).toBe(true);
     });
   });

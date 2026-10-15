@@ -6,16 +6,16 @@ const YELLOW = "rgb(229, 192, 123)";
 const RED = "rgb(255, 92, 92)";
 
 /**
- * 既定のプリセット CRC-3/TUTORIAL（poly 0x3、入力 10101）のステップ列。
- * 1 番目のクロックは feedback 1、2 番目は feedback 0。
+ * The step sequence of the default preset CRC-3/TUTORIAL (poly 0x3, input 10101).
+ * The first clock has feedback 1, the second feedback 0.
  */
 export const TUTORIAL_STEPS = 15;
 
-/** 可視化の画面を、ステップ・図・コード・経過の言葉で操作し観察する。 */
+/** Drives and observes the visualizer page in terms of steps, the diagram, the code and the log. */
 export class Visualizer {
   private constructor(readonly page: Page) {}
 
-  /** query（"?rate=0.25" など）を付けて開き、先頭のステップにいる状態にする。 */
+  /** Opens the page with a query (such as "?rate=0.25") and waits at the first step. */
   static async open(page: Page, query = ""): Promise<Visualizer> {
     await page.goto(`/${query}`);
     const v = new Visualizer(page);
@@ -27,12 +27,12 @@ export class Visualizer {
     return this.page.locator(".counter");
   }
 
-  /** 表示中のステップの種類。 */
+  /** The kind of the step shown. */
   stepKind(): Promise<string | null> {
     return this.page.locator("svg.lfsr").getAttribute("data-step");
   }
 
-  /** 1 ステップ進め、表示が切り替わるまで待つ。 */
+  /** Advances one step and waits for the display to change. */
   async stepForward(times = 1): Promise<void> {
     for (let i = 0; i < times; i++) {
       const before = await this.counter.textContent();
@@ -52,13 +52,13 @@ export class Visualizer {
     await expect(this.counter).toHaveText(/^(\d+) \/ \1$/);
   }
 
-  /** 今の位置から進め、種類 kind の nth 番目（1 始まり、今の位置を含む）のステップで止まる。 */
+  /** Advances from the current position and stops at the nth (1-based, counting the current position) step of kind. */
   async goTo(kind: StepKind, nth = 1): Promise<void> {
     let seen = 0;
     for (;;) {
       if ((await this.stepKind()) === kind && ++seen === nth) return;
       const [at, total] = (await this.counter.textContent())!.split(" / ");
-      if (at === total) throw new Error(`${kind} の ${nth} 番目のステップがありません`);
+      if (at === total) throw new Error(`There is no step number ${nth} of kind ${kind}`);
       await this.stepForward();
     }
   }
@@ -66,12 +66,12 @@ export class Visualizer {
   readonly diagram = {
     root: () => this.page.locator("svg.lfsr"),
     wire: (name: string) => this.page.locator(`.lfsr [data-wire="${name}"]`),
-    /** 配線 name のうち、粒の後ろから塗られた割合（0〜1）。 */
+    /** The fraction (0 to 1) of wire name painted behind the particle. */
     painted: (name: string) =>
       this.page
         .locator(`.lfsr [data-wire="${name}"] .trail`)
         .evaluate((el) => 1 - parseFloat(getComputedStyle(el).strokeDashoffset)),
-    /** 粒と配線の塗りのアニメーション（WAAPI）を取り除き、それらが始まる前の最初の描画の状態にする。 */
+    /** Removes the particle and wire-painting animations (WAAPI), leaving the first render before they start. */
     withoutMotion: () =>
       this.page.evaluate(() =>
         document
@@ -82,23 +82,23 @@ export class Visualizer {
     particles: () => this.page.locator(".lfsr .particle"),
     particle: (route: string) => this.page.locator(`.lfsr .particle[data-route="${route}"]`),
     gate: (id: "input" | number) => this.page.locator(`.gate[data-gate="${id}"]`),
-    /** ゲートが計算中の色（黄）で点いているか。 */
+    /** Whether the gate is lit in the computing colour (yellow). */
     gateLit: (id: "input" | number) =>
       this.page.locator(`.gate[data-gate="${id}"] circle`).evaluate((el, y) => getComputedStyle(el).stroke === y, YELLOW),
     register: (bit: number) => this.page.locator(`.reg[data-bit="${bit}"]`),
-    /** r[bit] の見た目（枠・塗り・数字の色）。 */
+    /** The look of r[bit] (border, fill and digit colour). */
     registerLook: (bit: number) =>
       this.page.locator(`.reg[data-bit="${bit}"]`).evaluate((el) => {
         const rect = getComputedStyle(el.querySelector("rect")!);
         const digit = getComputedStyle(el.querySelector(".reg-bit:not(.flip-old)")!);
         return [rect.stroke, rect.fill, digit.fill].join(" ");
       }),
-    /** shift で桁あふれして左へ抜ける値。 */
+    /** The value that overflows on shift and leaves to the left. */
     dropped: () => this.page.locator(".reg .drop"),
     upcoming: () => this.page.locator(".lfsr .upcoming"),
-    /** shift で隣の箱から r[bit] へ滑り込む値。 */
+    /** The value that slides into r[bit] from the neighbouring box on shift. */
     sliding: (bit: number) => this.page.locator(`.reg[data-bit="${bit}"] .reg-bit.slide`),
-    /** target のアニメーションを止めて progress（0〜1）の時点に合わせ、その時点の左右の端（px）と不透明度を返す。 */
+    /** Pauses target's animations at progress (0 to 1) and returns its left and right edges (px) and opacity at that point. */
     frameAt: (target: Locator, progress: number) =>
       target.evaluate((el, p) => {
         const anims = el.getAnimations();
@@ -110,10 +110,10 @@ export class Visualizer {
         const { left, right } = el.getBoundingClientRect();
         return { left, right, opacity: Number(getComputedStyle(el).opacity) };
       }, progress),
-    /** target が始めから progress（0〜1）の時点までに横へ動いた距離（px、左が負）。 */
+    /** The horizontal distance (px, negative to the left) target moves from the start to progress (0 to 1). */
     travelX: async (target: Locator, progress: number) =>
       (await this.diagram.frameAt(target, progress)).left - (await this.diagram.frameAt(target, 0)).left,
-    /** ゲートの円の左右の端（px）。 */
+    /** The left and right edges (px) of the gate's circle. */
     gateEdges: (id: "input" | number) =>
       this.page.locator(`.gate[data-gate="${id}"] circle`).evaluate((el) => {
         const { left, right } = el.getBoundingClientRect();
@@ -121,17 +121,17 @@ export class Visualizer {
       }),
     feedbackBox: () => this.page.locator(".lfsr .fb-box"),
     feedbackValue: () => this.page.locator(".lfsr .fb-box .reg-bit"),
-    /** feedback の箱に値が見えているか（裏返しの途中でない）。 */
+    /** Whether the feedback box shows its value (not mid-flip). */
     feedbackShown: () =>
       this.page.locator(".lfsr .fb-box .reg-bit").evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).d > 0.5),
-    /** feedback の箱が値 1 の色（赤）で塗られているか。 */
+    /** Whether the feedback box is painted in the colour of value 1 (red). */
     feedbackRed: () => this.page.locator(".lfsr .fb-box rect").evaluate((el, r) => getComputedStyle(el).stroke === r, RED),
   };
 
   readonly code = {
-    /** コードを書く言語の選択。 */
+    /** The selector of the language the code is written in. */
     langSelect: () => this.page.locator(".software .code-lang"),
-    /** 各行のコードの部分（行番号と注記を除く）。 */
+    /** The code part of each line (excluding the line number and the note). */
     texts: () => this.page.locator(".code-text"),
     activeLine: () => this.page.locator(".code-line.active"),
     line: (text: string) => this.page.locator(".code-line", { hasText: text }),
@@ -151,8 +151,8 @@ export class Visualizer {
         .locator(".log-title")
         .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
     /**
-     * 経過の前の動きが終わってから key（ArrowRight など）でステップを動かし、その直後の描画で各行が動いているかを返す。
-     * moving は行の位置の移動（WAAPI）、resizing は見出しの文字の大きさの変化（CSS の遷移）。
+     * Once the log's previous motion has finished, moves the step with key (such as ArrowRight) and returns whether each entry is moving in the very next frame.
+     * moving is the entry's change of position (WAAPI); resizing is the change of its title's font size (a CSS transition).
      */
     motionAfter: (key: string) =>
       this.page.evaluate(async (k) => {
@@ -171,22 +171,22 @@ export class Visualizer {
   };
 
   readonly workbench = {
-    /** アクティビティバーのページの切替。 */
+    /** The page switcher in the activity bar. */
     pageLink: (name: "visualizer" | "names" | "narrow" | "cyclic" | "redundancy" | "check" | "equivalence") =>
       this.page.locator(`.activity a[data-page="${name}"]`),
-    /** ステータスバーの表示言語の選択。 */
+    /** The display-language selector in the status bar. */
     localeSelect: () => this.page.locator(".statusbar .locale-select"),
     sidebar: () => this.page.locator(".sidebar"),
     sidebarToggle: () => this.page.locator(".activity .sidebar-toggle"),
     statusbar: () => this.page.locator(".statusbar"),
     splitter: (name: "sidebar" | "panel" | "code") => this.page.locator(`[data-splitter="${name}"]`),
-    /** ページ自体の縦横のはみ出し（px）。0 ならページはスクロールしない。 */
+    /** The page's own horizontal and vertical overflow (px). 0 means the page does not scroll. */
     pageOverflow: () =>
       this.page.evaluate(() => {
         const root = document.scrollingElement!;
         return { x: root.scrollWidth - root.clientWidth, y: root.scrollHeight - root.clientHeight };
       }),
-    /** name の境界を、つかんだ位置から (dx, dy) だけドラッグする。 */
+    /** Drags the splitter name by (dx, dy) from where it is grabbed. */
     drag: async (name: "sidebar" | "panel" | "code", dx: number, dy: number) => {
       const box = (await this.page.locator(`[data-splitter="${name}"]`).boundingBox())!;
       const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
@@ -195,7 +195,7 @@ export class Visualizer {
       await this.page.mouse.move(x + dx, y + dy, { steps: 5 });
       await this.page.mouse.up();
     },
-    /** 要素の大きさ（px）。 */
+    /** The size of an element (px). */
     size: async (selector: string) => {
       const box = (await this.page.locator(selector).boundingBox())!;
       return { width: box.width, height: box.height };
@@ -204,9 +204,9 @@ export class Visualizer {
 
   readonly settings = {
     preset: () => this.page.locator('label[data-field="preset"] select'),
-    /** 設定パネルの項目名。 */
+    /** The field names of the settings panel. */
     labels: () => this.page.locator(".config label > span:first-child"),
-    /** パラメータ以外の項目（preset・inputMode・input）の入力欄。 */
+    /** The inputs of the non-parameter fields (preset, inputMode, input). */
     field: (name: "preset" | "inputMode" | "input") => this.page.locator(`label[data-field="${name}"] :is(input, select)`),
     param: (name: string) => this.page.locator(`label[data-param="${name}"]`),
     help: () => this.page.locator(".param-help"),

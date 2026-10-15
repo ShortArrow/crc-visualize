@@ -3,7 +3,7 @@ import { bitsFromBytes, type Bit, type CrcParams } from "./trace";
 
 export const MAX_INPUT_BITS = 256;
 
-/** 設定フォームの生の値。 */
+/** Raw values of the settings form. */
 export type ConfigForm = Readonly<{
   width: string;
   poly: string;
@@ -18,9 +18,9 @@ export type ConfigForm = Readonly<{
 export type ConfigField = "width" | "poly" | "init" | "xorout" | "input";
 
 /**
- * 項目の誤り。widthRange: 幅が 1〜32 の整数でない。notHex: 16 進数でない。tooWide: width ビットに収まらない。
- * zero: 0 は指定できない。notBits: 0 と 1 以外を含む。oddHex: 16 進の桁数が奇数（バイト単位でない）。
- * tooLong: 入力が max ビットを超える。refinBytes: refin を使うのに入力が 8 ビット単位でない。
+ * Field errors. widthRange: width is not an integer from 1 to 32. notHex: not a hex number. tooWide: does not fit in width bits.
+ * zero: 0 is not allowed. notBits: contains characters other than 0 and 1. oddHex: odd number of hex digits (not whole bytes).
+ * tooLong: input exceeds max bits. refinBytes: refin is used but the input is not a multiple of 8 bits.
  */
 export type ConfigError =
   | Readonly<{ code: "widthRange" | "notHex" | "zero" | "notBits" | "oddHex" | "refinBytes" }>
@@ -75,7 +75,7 @@ function checkInput(bits: Parsed<Bit[]>, refin: boolean): Parsed<Bit[]> {
   return bits;
 }
 
-/** フォームの値を検証し、CRC パラメータと入力ビット列にする。誤りは項目ごとに返す。 */
+/** Validates the form values and turns them into CRC parameters and input bits; errors are returned per field. */
 export function parseConfig(form: ConfigForm): ConfigResult {
   const errors: Partial<Record<ConfigField, ConfigError>> = {};
   const width = parseWidth(form.width);

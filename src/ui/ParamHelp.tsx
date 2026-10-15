@@ -10,9 +10,9 @@ const FIELD_NAMES = Object.keys(FIELD_LABELS) as FieldName[];
 const IDLE = "idle";
 
 /**
- * 注目中の項目の名前と説明（表示言語で書く）。パラメータなら別名と設定値に応じた注記も添え、params が無い（設定が不正な）間は注記を省く。
- * 全項目の説明を同じ位置に重ねて描き、注目中の 1 枚だけを見せる。
- * 欄の高さが最も長い説明に揃うので、横幅によらず見切れず、注目が変わっても高さが変わらない。
+ * Name and description of the focused field (in the display language). For a parameter, also adds aliases and a note depending on the setting; omits the note while params is absent (settings invalid).
+ * Draws every field's description stacked in the same place and shows only the focused one.
+ * The panel height fits the longest description, so nothing is cut off at any width and the height stays the same when focus changes.
  */
 export function ParamHelp({ topic, params }: Props) {
   const m = useMessages();

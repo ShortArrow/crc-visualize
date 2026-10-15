@@ -6,7 +6,7 @@ import { generatorHash, type GeneratorPage } from "./route";
 
 type Props = Readonly<{ page: GeneratorPage; generator: Generator }>;
 
-/** サイドバーに置く、選べる生成多項式の一覧。選ぶと page のまま generator を替える。 */
+/** Sidebar listing the selectable generator polynomials. Selecting one changes generator while staying on page. */
 export function GeneratorSidebar({ page, generator }: Props) {
   const m = useMessages();
   return (
@@ -30,5 +30,5 @@ export function GeneratorSidebar({ page, generator }: Props) {
   );
 }
 
-/** ステータスバーに出す、生成多項式と周期。 */
+/** The generator polynomial and period shown in the status bar. */
 export const generatorStatus = (g: Generator): string => `g(x) = ${polynomialText(g.width, g.poly)}, n = ${period(g)}`;

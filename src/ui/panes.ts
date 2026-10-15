@@ -1,12 +1,12 @@
 /**
- * 画面割り。sidebarWidth はサイドバーの幅（px）、panelRatio はエディタ領域のうち下のパネルが占める高さの比、
- * codeRatio は下のパネルのうち擬似コードが占める幅の比。見る人の画面に合わせる設定なので URL には載せない。
+ * Pane layout. sidebarWidth is the sidebar width (px), panelRatio is the fraction of the editor area's height taken by the bottom panel,
+ * and codeRatio is the fraction of the bottom panel's width taken by the pseudocode. It is fitted to the viewer's screen, so it is not put in the URL.
  */
 export type PaneLayout = Readonly<{ sidebarOpen: boolean; sidebarWidth: number; panelRatio: number; codeRatio: number }>;
 
 export const DEFAULT_PANES: PaneLayout = { sidebarOpen: true, sidebarWidth: 300, panelRatio: 0.4, codeRatio: 0.6 };
 
-/** localStorage のキー。保存形式を変えるときは版を上げる。 */
+/** localStorage key. Bump the version when the stored format changes. */
 export const PANES_KEY = "crc-visualize:panes:v1";
 
 const MIN_SIDEBAR = 200;
@@ -16,7 +16,7 @@ const MAX_RATIO = 0.85;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const isNumber = (x: unknown): x is number => typeof x === "number" && Number.isFinite(x);
 
-/** 保存文字列 raw から画面割りを復元する。読めない・形の正しくない項目は既定値にする。 */
+/** Restores the pane layout from the stored string raw. Unreadable or malformed items fall back to the defaults. */
 export function restoreLayout(raw: string | null): PaneLayout {
   let v: unknown;
   try {
@@ -34,7 +34,7 @@ export function restoreLayout(raw: string | null): PaneLayout {
   };
 }
 
-/** 画面割りを横幅 viewWidth（px）の画面に収める。サイドバーは 200px から画面の半分まで、境界の比は 0.15〜0.85。 */
+/** Fits the pane layout to a screen viewWidth (px) wide. The sidebar ranges from 200px to half the screen; split ratios range over 0.15–0.85. */
 export function fitLayout(layout: PaneLayout, viewWidth: number): PaneLayout {
   return {
     ...layout,
@@ -44,7 +44,7 @@ export function fitLayout(layout: PaneLayout, viewWidth: number): PaneLayout {
   };
 }
 
-/** localStorage から画面割りを読む。ストレージが使えない環境では既定値を返す。 */
+/** Reads the pane layout from localStorage. Returns the defaults where storage is unavailable. */
 export function loadLayout(): PaneLayout {
   try {
     return restoreLayout(localStorage.getItem(PANES_KEY));
@@ -53,7 +53,7 @@ export function loadLayout(): PaneLayout {
   }
 }
 
-/** 画面割りを localStorage に書く。ストレージが使えない環境では何もしない。 */
+/** Writes the pane layout to localStorage. Does nothing where storage is unavailable. */
 export function saveLayout(layout: PaneLayout): void {
   try {
     localStorage.setItem(PANES_KEY, JSON.stringify(layout));

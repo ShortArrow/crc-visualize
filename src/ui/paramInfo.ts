@@ -1,13 +1,13 @@
 import { reflectValue, type CrcParams, type ParamName } from "../domain/trace";
 import type { Messages } from "../i18n/messages";
 
-/** パラメータ以外の設定項目。項目名は英語で示し、各言語の名前と説明は説明欄に出す。 */
+/** Settings items other than parameters. Item names are shown in English; each language's name and description appear in the description pane. */
 export type FieldName = "preset" | "inputMode" | "input";
 
-/** 説明欄で説明する項目。 */
+/** Items explained in the description pane. */
 export type HelpTopic = ParamName | FieldName;
 
-/** 設定パネルでの項目名。どの言語でも英語のまま出す。 */
+/** Item names in the settings panel. Shown in English in every language. */
 export const FIELD_LABELS: Record<FieldName, string> = { preset: "preset", inputMode: "input mode", input: "input" };
 
 const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;
@@ -18,7 +18,7 @@ function shiftDirection({ refin, refout }: CrcParams, m: Messages): string {
   return m.help.shiftMixed;
 }
 
-/** 今の設定値に応じて、param の説明に添える注記。文は m の言語で書く。 */
+/** Notes appended to the description of param depending on the current settings. Text is written in the language of m. */
 export function paramNotes(param: ParamName, params: CrcParams, m: Messages): string[] {
   switch (param) {
     case "poly":

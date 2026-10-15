@@ -1,6 +1,6 @@
 import type { Messages } from "./ja";
 
-/** ドイツ語の画面の文。 */
+/** German UI text. */
 export const de: Messages = {
   pages: {
     visualizer: "Visualisierung",

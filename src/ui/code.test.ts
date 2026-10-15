@@ -4,7 +4,7 @@ import { bits, firstStep, plain3, stepOf } from "../testing/fixtures";
 import { ja } from "../i18n/ja";
 import { CODE_LANGS, codeLines, type CodeLang, type CodeLine, type ParamChip } from "./code";
 
-/** refin・refout・xorout が全て有効な CRC-3。 */
+/** CRC-3 with refin, refout and xorout all enabled. */
 const full3: CrcParams = { ...plain3, refin: true, refout: true, xorout: 7 };
 const initStep = (params: CrcParams) => trace(params, [])[0]!;
 const texts = (lines: CodeLine[]) => lines.map((l) => l.text.trim());
@@ -14,7 +14,7 @@ const ifLine = (step: Step) => codeLines(plain3, step, ja, "pseudo").find((l) =>
 const xorBody = (step: Step) => codeLines(plain3, step, ja, "pseudo").find((l) => l.text.trim() === "crc ^= poly;")!;
 
 describe("codeLines", () => {
-  it("Given init 5 の CRC-3, When コードを組み立てる, Then パラメータは名前で書き、チップに値を持たせる", () => {
+  it("Given CRC-3 with init 5, When building the code, Then parameters are written by name and chips carry their values", () => {
     const lines = codeLines({ ...plain3, init: 5 }, initStep(plain3), ja, "pseudo");
 
     expect(texts(lines)).toEqual(
@@ -33,22 +33,22 @@ describe("codeLines", () => {
   });
 
   it.each([
-    ["refin・refout・xorout が全て無効", plain3],
-    ["refin・refout・xorout が全て有効", full3],
-  ])("Given %s, When コードを組み立てる, Then 6 つのパラメータはどれもコードのどこかに現れる", (_, params) => {
+    ["refin, refout and xorout all disabled", plain3],
+    ["refin, refout and xorout all enabled", full3],
+  ])("Given %s, When building the code, Then each of the 6 parameters appears somewhere in the code", (_, params) => {
     const used = new Set(codeLines(params, initStep(params), ja, "pseudo").flatMap((l) => chips(l).map((c) => c.param)));
 
     expect([...used].sort()).toEqual([...PARAM_NAMES].sort());
   });
 
-  it("Given refin・refout・xorout が全て無効, When コードを組み立てる, Then それらの行は消さず、理由を添えて disabled で残す", () => {
+  it("Given refin, refout and xorout all disabled, When building the code, Then their lines are kept as disabled with a reason instead of being removed", () => {
     const disabled = codeLines(plain3, initStep(plain3), ja, "pseudo").filter((l) => l.disabled);
 
     expect(disabled.map((l) => chips(l)[0]!.param)).toEqual(["refin", "refout", "xorout"]);
     expect(disabled.every((l) => l.note !== undefined)).toBe(true);
   });
 
-  it("Given refin・refout・xorout が全て有効, When コードを組み立てる, Then それらは disabled でない処理の行になる", () => {
+  it("Given refin, refout and xorout all enabled, When building the code, Then they become processing lines that are not disabled", () => {
     const lines = codeLines(full3, initStep(full3), ja, "pseudo");
 
     expect(lines.some((l) => l.disabled)).toBe(false);
@@ -57,7 +57,7 @@ describe("codeLines", () => {
     );
   });
 
-  it("Given refin・refout・xorout が全て有効, When 各種類のステップを表示する, Then 対応する 1 行だけが現在行になる", () => {
+  it("Given refin, refout and xorout all enabled, When showing each kind of step, Then exactly the one corresponding line is the current line", () => {
     const steps = trace(full3, bits("10000000"));
 
     const active = (kind: Step["kind"]) => activeText(full3, stepOf(steps, kind));
@@ -72,20 +72,20 @@ describe("codeLines", () => {
     expect(active("done")).toEqual(["return crc;"]);
   });
 
-  it("Given init 100 の CRC-3 に 0 を流した feedback ステップ, When コードを組み立てる, Then feedback の行に 最上位ビット ⊕ 入力ビット の結果を注記する", () => {
+  it("Given the feedback step of CRC-3 with init 100 fed a 0, When building the code, Then the feedback line is noted with the result of MSB ⊕ input bit", () => {
     const step = firstStep({ ...plain3, init: 4 }, "0", "feedback");
 
     expect(codeLines(plain3, step, ja, "pseudo").find((l) => l.active)!.note).toBe("msb 1 ⊕ bit 0 = feedback 1");
   });
 
-  it("Given feedback 1 のクロックの shift ステップ, When コードを組み立てる, Then if は true で、本体は飛ばさない", () => {
+  it("Given the shift step of a clock with feedback 1, When building the code, Then the if is true and the body is not skipped", () => {
     const taken = firstStep(plain3, "1", "shift");
 
     expect(ifLine(taken)).toMatchObject({ note: "true" });
     expect(xorBody(taken).skipped).toBe(false);
   });
 
-  it("Given feedback 0 のクロックの shift ステップ, When コードを組み立てる, Then if は false で、本体を飛ばしたと示す", () => {
+  it("Given the shift step of a clock with feedback 0, When building the code, Then the if is false and the body is shown as skipped", () => {
     const skipped = firstStep(plain3, "0", "shift");
 
     expect(ifLine(skipped)).toMatchObject({ note: "false" });
@@ -97,8 +97,8 @@ const LANG_IDS = Object.keys(CODE_LANGS) as CodeLang[];
 const STEP_KINDS: readonly Step["kind"][] = ["init", "reflectIn", "feedback", "shift", "xor", "reflectOut", "xorOut", "done"];
 
 describe("CODE_LANGS", () => {
-  it.each(LANG_IDS.flatMap((lang) => [[lang, "全て無効", plain3] as const, [lang, "全て有効", full3] as const]))(
-    "Given 言語 %s で refin・refout・xorout が%s, When 全てのステップを表示する, Then どのステップでもちょうど 1 行が現在行になり、種類ごとに同じ行を指す",
+  it.each(LANG_IDS.flatMap((lang) => [[lang, "all disabled", plain3] as const, [lang, "all enabled", full3] as const]))(
+    "Given language %s with refin, refout and xorout %s, When showing every step, Then exactly 1 line is current at every step, and steps of the same kind point to the same line",
     (lang, _, params) => {
       const steps = trace(params, bits("10000000"));
       const activeAt = (step: Step) => codeLines(params, step, ja, lang).flatMap((l, i) => (l.active ? [i] : []));
@@ -111,7 +111,7 @@ describe("CODE_LANGS", () => {
     },
   );
 
-  it.each(LANG_IDS)("Given 言語 %s, When コードを組み立てる, Then 6 つのパラメータはどれもチップで現れる", (lang) => {
+  it.each(LANG_IDS)("Given language %s, When building the code, Then each of the 6 parameters appears as a chip", (lang) => {
     for (const params of [plain3, full3]) {
       const used = new Set(codeLines(params, initStep(params), ja, lang).flatMap((l) => chips(l).map((c) => c.param)));
       expect([...used].sort()).toEqual([...PARAM_NAMES].sort());
@@ -119,7 +119,7 @@ describe("CODE_LANGS", () => {
   });
 
   it.each(LANG_IDS)(
-    "Given 言語 %s で refin・refout・xorout が全て無効, When コードを組み立てる, Then その 3 行だけを理由つきで disabled にし、全て有効なら disabled は無い",
+    "Given language %s with refin, refout and xorout all disabled, When building the code, Then only those 3 lines are disabled with a reason, and with all enabled none is disabled",
     (lang) => {
       const disabled = codeLines(plain3, initStep(plain3), ja, lang).filter((l) => l.disabled);
 
@@ -133,7 +133,7 @@ describe("CODE_LANGS", () => {
   );
 
   it.each(LANG_IDS)(
-    "Given 言語 %s で feedback 0 のクロックの shift ステップ, When コードを組み立てる, Then xor の行を飛ばしたと示す",
+    "Given the shift step of a clock with feedback 0 in language %s, When building the code, Then the xor line is shown as skipped",
     (lang) => {
       const step = firstStep(plain3, "0", "shift");
       const xorRow = codeLines(plain3, stepOf(trace(plain3, bits("1")), "xor"), ja, lang).findIndex((l) => l.active);
@@ -152,7 +152,7 @@ describe("CODE_LANGS", () => {
     ["fsharp", "poly", "0x3u"],
     ["rust", "poly", "0x3"],
   ] as const)(
-    "Given 言語 %s, When コードを組み立てる, Then %s のチップの値はその言語のリテラル %s で書く",
+    "Given language %s, When building the code, Then the value of the %s chip is written as that language's literal %s",
     (lang, param, value) => {
       const chip = codeLines(plain3, initStep(plain3), ja, lang)
         .flatMap(chips)

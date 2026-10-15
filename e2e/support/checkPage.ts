@@ -1,16 +1,16 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-/** 検査のページを、受け取った並び・2 つの確かめ方・検査値の言葉で操作し観察する。 */
+/** Drives and observes the check page in terms of the received sequence, the two ways of checking, and the check value. */
 export class CheckPage {
   private constructor(readonly page: Page) {}
 
-  /** query（"?width=99" など）を付けて開く。 */
+  /** Opens the page with a query (such as "?width=99"). */
   static async open(page: Page, query = ""): Promise<CheckPage> {
     await page.goto(`/${query}#check`);
     return CheckPage.shown(page);
   }
 
-  /** 開いている検査のページを捉える。 */
+  /** Captures the check page that is already open. */
   static async shown(page: Page): Promise<CheckPage> {
     const c = new CheckPage(page);
     await expect(c.root).toBeVisible();
@@ -21,12 +21,12 @@ export class CheckPage {
     return this.page.locator(".check-page");
   }
 
-  /** 受け取った並びのビット。part を渡すと本文（message）か CRC（crc）のものだけ。 */
+  /** The bits of the received sequence. Given part, only those of the message or of the CRC. */
   bits(part?: "message" | "crc"): Locator {
     return this.root.locator(`.frame-row .bit-cell${part ? `.${part}` : ""}`);
   }
 
-  /** 受け取った並びの i 番目（0 始まり）のビット。選ぶと反転する。 */
+  /** The i-th (0-based) bit of the received sequence. Selecting it flips it. */
   bit(i: number): Locator {
     return this.root.locator(`.frame-row .bit-cell[data-index="${i}"]`);
   }
@@ -35,27 +35,27 @@ export class CheckPage {
     return this.root.locator(".reset-flips");
   }
 
-  /** 確かめ方（recheck は計算し直して比べる、whole は符号語ごと通す）。 */
+  /** A way of checking (recheck recomputes and compares, whole runs the whole codeword through). */
   method(id: "recheck" | "whole"): Locator {
     return this.root.locator(`.method[data-method="${id}"]`);
   }
 
-  /** 確かめ方 id の判定。data-ok に true か false を持つ。 */
+  /** The verdict of check method id. Holds true or false in data-ok. */
   verdict(id: "recheck" | "whole"): Locator {
     return this.method(id).locator(".verdict");
   }
 
-  /** 計算し直した本文の CRC。 */
+  /** The recomputed CRC of the message. */
   computed(): Locator {
     return this.method("recheck").locator(".computed");
   }
 
-  /** 受け取った CRC。 */
+  /** The received CRC. */
   receivedCrc(): Locator {
     return this.method("recheck").locator(".received-crc");
   }
 
-  /** 受け取った並び全体の CRC。 */
+  /** The CRC of the whole received sequence. */
   wholeValue(): Locator {
     return this.method("whole").locator(".whole-value");
   }
@@ -64,12 +64,12 @@ export class CheckPage {
     return this.method("whole").locator(".residue");
   }
 
-  /** カタログの検査値。 */
+  /** The catalogue's check value. */
   catalogueCheck(): Locator {
     return this.root.locator(".catalogue-check");
   }
 
-  /** 入力 123456789 で計算した CRC。 */
+  /** The CRC computed from the input 123456789. */
   computedCheck(): Locator {
     return this.root.locator(".computed-check");
   }

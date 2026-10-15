@@ -3,8 +3,8 @@ import { formatValue, parseValue, type Choice, type NarrowPath } from "../domain
 import { PARAM_NAMES, type ParamName } from "../domain/trace";
 
 /**
- * URL のフラグメントが指すページ。param は名前の規則のページで強調するパラメータの行、
- * path は絞り込みのページの固定の道筋（候補に収める前の、書かれたとおりのもの）、generator は生成多項式を選んで見るページの生成多項式。
+ * The page a URL fragment points to. param is the parameter row highlighted on the naming-rules page,
+ * path is the fixed path on the narrowing page (as written, before being fitted to the candidates), and generator is the generator polynomial on pages that show a chosen generator polynomial.
  */
 export type Route =
   | Readonly<{ page: "visualizer" }>
@@ -14,19 +14,19 @@ export type Route =
   | Readonly<{ page: "check" }>
   | Readonly<{ page: GeneratorPage; generator: Generator }>;
 
-/** 一覧から生成多項式を選んで見るページ。 */
+/** A page that shows a generator polynomial chosen from the list. */
 export type GeneratorPage = "cyclic" | "redundancy";
 
 const GENERATOR_PAGES: readonly string[] = ["cyclic", "redundancy"] satisfies GeneratorPage[];
 
-/** 名前の規則のページのフラグメント。param を渡すとその行を指す。 */
+/** Fragment of the naming-rules page. Passing param points to its row. */
 export const namesHash = (param?: ParamName): string => (param ? `#names/${param}` : "#names");
 
-/** 絞り込みのページのフラグメント。固定した値を "/<名前>=<値>" で順に、開いた分かれ目を "/<名前>" で最後に付ける。 */
+/** Fragment of the narrowing page. Appends the fixed values as "/<name>=<value>" in order, then the open branch as "/<name>" last. */
 export const narrowHash = ({ fixed, open }: NarrowPath): string =>
   ["#narrow", ...fixed.map((c) => `${c.param}=${formatValue(c.param, c.value)}`), ...(open ? [open] : [])].join("/");
 
-/** 生成多項式を選んで見るページ page で、生成多項式 g を指すフラグメント。 */
+/** Fragment pointing to generator polynomial g on page, a page that shows a chosen generator polynomial. */
 export const generatorHash = (page: GeneratorPage, { width, poly }: Generator): string =>
   `#${page}/width=${formatValue("width", width)}/poly=${formatValue("poly", poly)}`;
 
@@ -34,7 +34,7 @@ const isGeneratorPage = (page: string | undefined): page is GeneratorPage => GEN
 
 const isParam = (name: string | undefined): name is ParamName => PARAM_NAMES.includes(name as ParamName);
 
-/** フラグメント hash（"#names/poly" など）からページを決める。 */
+/** Determines the page from the fragment hash (such as "#names/poly"). */
 export function parseRoute(hash: string): Route {
   const [page, ...rest] = hash.replace(/^#/, "").split("/");
   if (page === "equivalence") return { page: "equivalence" };
@@ -45,7 +45,7 @@ export function parseRoute(hash: string): Route {
   return isParam(rest[0]) ? { page: "names", param: rest[0] } : { page: "names" };
 }
 
-/** "/" で分けた絞り込みの道筋を読む。解釈できない部分が現れたら、その手前までにする。 */
+/** Reads a narrowing path split by "/". Stops just before the first part that cannot be parsed. */
 function parseNarrowPath(segments: readonly string[]): NarrowPath {
   const fixed: Choice[] = [];
   for (const [i, segment] of segments.entries()) {
@@ -59,7 +59,7 @@ function parseNarrowPath(segments: readonly string[]): NarrowPath {
   return { fixed };
 }
 
-/** "width=<10 進>" と "poly=<16 進>" の並びから、一覧の生成多項式を探す。 */
+/** Finds a generator polynomial in the list from a sequence of "width=<decimal>" and "poly=<hex>". */
 function parseGenerator([widthPart, polyPart]: readonly string[]): Generator | undefined {
   const width = widthPart?.startsWith("width=") ? parseValue("width", widthPart.slice(6)) : undefined;
   const poly = polyPart?.startsWith("poly=") ? parseValue("poly", polyPart.slice(5)) : undefined;

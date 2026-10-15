@@ -6,7 +6,7 @@ import { bitsToString, toHex } from "./format";
 
 const hex = (value: number, width: number) => toHex(toRegister(value, width));
 
-/** 同じ CRC になる置き換えと、分かっていることから分かることの一覧。計算例は config（今の設定と入力）で求める。 */
+/** Lists the substitutions that give the same CRC and what can be inferred from what is known. Examples are computed from config (the current settings and input). */
 export function EquivalencePage({ config }: Readonly<{ config: ConfigResult }>) {
   const m = useMessages();
   const e = m.equivalence;
@@ -45,7 +45,7 @@ const ITEM_IDS = ["refin", "refout", "rightShift", "initPrefix", "affine"] as co
 
 type ItemProps = Readonly<{ item: Equivalence | Readonly<{ id: Equivalence["id"] }>; params: CrcParams | undefined }>;
 
-/** 1 つの置き換え。左辺・右辺・理由と、params があれば計算例（当てはまらなければその理由）を出す。 */
+/** One substitution. Shows the left side, right side and reason, and, if params is given, an example (or why it does not apply). */
 function EquivalenceItem({ item, params }: ItemProps) {
   const m = useMessages();
   const e = m.equivalence;
@@ -86,7 +86,7 @@ function EquivalenceItem({ item, params }: ItemProps) {
   );
 }
 
-/** 今の設定での送り方と、実装のコードに書かれる poly と init。 */
+/** The shift direction under the current settings, and the poly and init written in implementation code. */
 function CurrentInference({ params }: Readonly<{ params: CrcParams }>) {
   const e = useMessages().equivalence;
   const direction = shiftDirection(params);
