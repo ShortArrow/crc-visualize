@@ -177,8 +177,9 @@ export class Visualizer {
 
   readonly workbench = {
     /** The page switcher in the activity bar. */
-    pageLink: (name: "visualizer" | "names" | "narrow" | "cyclic" | "redundancy" | "check" | "equivalence" | "table") =>
-      this.page.locator(`.activity a[data-page="${name}"]`),
+    pageLink: (
+      name: "visualizer" | "names" | "narrow" | "cyclic" | "redundancy" | "check" | "equivalence" | "table" | "estimate",
+    ) => this.page.locator(`.activity a[data-page="${name}"]`),
     /** The display-language selector in the status bar. */
     localeSelect: () => this.page.locator(".statusbar .locale-select"),
     sidebar: () => this.page.locator(".sidebar"),

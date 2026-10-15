@@ -5,6 +5,7 @@ import {
   ListTree,
   PanelLeft,
   RefreshCw,
+  Search,
   SearchCheck,
   ShieldCheck,
   Table2,
@@ -41,6 +42,7 @@ const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: L
   { page: "check", href: "#check", Icon: SearchCheck },
   { page: "equivalence", href: "#equivalence", Icon: ArrowRightLeft },
   { page: "table", href: "#table", Icon: Table2 },
+  { page: "estimate", href: "#estimate", Icon: Search },
 ];
 
 /**
