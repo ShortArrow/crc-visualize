@@ -221,6 +221,9 @@ export const es: Messages = {
     spaceNote: (w: number) =>
       `Una cadena dañada coincide por azar con alguna palabra de código con una probabilidad de aproximadamente 1/2^${w}. Cuanto mayor es width, más difícil es que un error pase inadvertido.`,
     gridLegend: "verde = palabra de código, borde amarillo = cadena recibida",
+    stripTitle: (k: number, size: number) => `CRC que podrían seguir al mensaje recibido (${k} bits): ${size}`,
+    stripLegend:
+      "verde = el CRC que corresponde al mensaje (el único que forma una palabra de código), borde amarillo = el CRC recibido. El error se detecta cuando difieren",
     checkSection: "Dañar y comprobar",
     received: "Cadena recibida (selecciona un bit para invertirlo)",
     error: "Error e (enviada XOR recibida)",

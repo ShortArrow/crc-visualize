@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { codeword, GENERATORS, period, type Generator } from "./cyclic";
-import { bitsValue, burstLength, codewordValues, flip, generatorError, noError, verdict, xorBits } from "./redundancy";
+import { codeword, GENERATORS, period, remainder, type Generator } from "./cyclic";
+import { bitsValue, burstLength, codewordValues, crcStrip, flip, generatorError, noError, verdict, xorBits } from "./redundancy";
 import type { Bit } from "./trace";
 
 const bits = (s: string): Bit[] => [...s].map((c) => (c === "1" ? 1 : 0));
@@ -72,6 +72,27 @@ describe("redundancy", () => {
       const values = codewordValues(g);
       expect(values.size).toBe(2 ** (period(g) - g.width));
       expect(values.has(bitsValue(codeword(g)))).toBe(true);
+    },
+  );
+  it("Given x³+x+1 and the codeword received as sent, When its CRC strip is read, Then the strip holds 8 CRCs and the received one fits the message", () => {
+    const strip = crcStrip(X3_X_1, codeword(X3_X_1));
+    expect(strip.size).toBe(8);
+    expect(strip.received).toBe(strip.fitting);
+    expect(strip.fitting).toBe(0b001);
+  });
+
+  it.each(GENERATORS)(
+    "Given generator polynomial %o, When any one or two bits are flipped, Then the received CRC differs from the fitting one exactly when the remainder is not 0",
+    (g) => {
+      const sent = codeword(g);
+      const n = sent.length;
+      for (let i = 0; i < n; i++) {
+        for (let j = i; j < n; j++) {
+          const received = flip(flip(sent, i), j);
+          const strip = crcStrip(g, received);
+          expect(strip.received !== strip.fitting).toBe(remainder(g, received) !== 0);
+        }
+      }
     },
   );
 });

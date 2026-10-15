@@ -1,4 +1,4 @@
-import { period, remainder, type Generator } from "./cyclic";
+import { crcFor, period, remainder, type Generator } from "./cyclic";
 import type { Bit } from "./trace";
 
 /** Verdict on a received sequence: clean means no error, detected means a nonzero remainder caught the error, missed means the remainder is 0 despite an error. */
@@ -43,4 +43,15 @@ export function codewordValues(g: Generator): Set<number> {
     if (remainder(g, bits) === 0) values.add(v);
   }
   return values;
+}
+
+/**
+ * The CRCs that could follow the message of received (all but its last width bits): size of them (2^width), the one that makes a
+ * codeword (fitting, the CRC of that message) and the one that arrived (received). They differ exactly when the remainder is not 0.
+ */
+export type CrcStrip = Readonly<{ size: number; fitting: number; received: number }>;
+
+export function crcStrip(g: Generator, received: readonly Bit[]): CrcStrip {
+  const k = received.length - g.width;
+  return { size: 2 ** g.width, fitting: crcFor(g, received.slice(0, k)), received: bitsValue(received.slice(k)) };
 }

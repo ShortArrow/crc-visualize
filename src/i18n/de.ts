@@ -218,6 +218,9 @@ export const de: Messages = {
     spaceNote: (w: number) =>
       `Eine beschädigte Folge ist zufällig mit einer Wahrscheinlichkeit von etwa 1/2^${w} ein Codewort. Je größer width, desto seltener wird ein Fehler übersehen.`,
     gridLegend: "grün = Codewort, gelber Rand = empfangene Folge",
+    stripTitle: (k: number, size: number) => `CRCs, die auf die empfangene Nachricht (${k} Bit) folgen könnten: ${size}`,
+    stripLegend:
+      "grün = der zur Nachricht passende CRC (nur er ergibt ein Codewort), gelber Rand = der empfangene CRC. Weichen sie ab, wird der Fehler erkannt",
     checkSection: "Beschädigen und prüfen",
     received: "Empfangene Folge (Bit auswählen, um es zu kippen)",
     error: "Fehler e (gesendet XOR empfangen)",

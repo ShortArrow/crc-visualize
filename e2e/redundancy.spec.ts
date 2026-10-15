@@ -88,4 +88,27 @@ test.describe("Redundancy", () => {
       expect(message!.x + message!.width).toBeLessThanOrEqual(crc!.x);
     });
   });
+  test("for any length, a strip of the CRCs that could follow the received message shows the single fitting one and the one received", async ({
+    page,
+  }) => {
+    const r = await given("the redundancy page for x⁴ + x + 1 (n = 15, too long for the grid) is open", () =>
+      RedundancyPage.open(page, "#redundancy/width=4/poly=0x3"),
+    );
+    await then("the strip holds 16 CRCs, one fits the message, and the received CRC is that one", async () => {
+      await expect(r.gridDots()).toHaveCount(0);
+      await expect(r.stripCells()).toHaveCount(16);
+      await expect(r.stripCells("fitting")).toHaveCount(1);
+      await expect(r.stripCells("received")).toHaveClass(/fitting/);
+    });
+    await when("flipping the lowest bit of the CRC", () => r.receivedBit(14).click());
+    await then("the received CRC moves off the fitting one, and the error is detected", async () => {
+      await expect(r.stripCells("received")).not.toHaveClass(/fitting/);
+      await expect(r.verdict()).toHaveAttribute("data-verdict", "detected");
+    });
+    await when("setting the missed example", () => r.missedExample().click());
+    await then("the received CRC is again the fitting one of the changed message, and the error is missed", async () => {
+      await expect(r.stripCells("received")).toHaveClass(/fitting/);
+      await expect(r.verdict()).toHaveAttribute("data-verdict", "missed");
+    });
+  });
 });

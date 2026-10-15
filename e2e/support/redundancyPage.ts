@@ -41,6 +41,11 @@ export class RedundancyPage {
     return this.root.locator(`.word-grid .word-dot${kind ? `.${kind}` : ""}`);
   }
 
+  /** The cells of the strip of CRCs that could follow the received message. Given kind, only the one fitting it or the one received. */
+  stripCells(kind?: "fitting" | "received"): Locator {
+    return this.root.locator(`.crc-strip .strip-cell${kind ? `.${kind}` : ""}`);
+  }
+
   /** The i-th (0-based, highest degree first) bit of the received sequence. Selecting it flips it. */
   receivedBit(i: number): Locator {
     return this.root.locator(`.received-row .bit-cell[data-index="${i}"]`);
