@@ -193,6 +193,32 @@ export class Visualizer {
         return { x: root.scrollWidth - root.clientWidth, y: root.scrollHeight - root.clientHeight };
       }),
     /**
+     * How the cards in the editor's .page-columns (or the names page) sit. minGap: the smallest space (px) between two cards that share a column span
+     * (one above the other) or a row (side by side); Infinity if none. ragged: pairs of cards side by side whose top or height differ
+     * by more than 1 px. overflowing: cards whose content is wider than the card.
+     */
+    cardLayout: () =>
+      this.page.evaluate(() => {
+        const cards = [...document.querySelectorAll(".editor :is(.page-columns, .names-page) > *")].map((el) => ({
+          el,
+          r: el.getBoundingClientRect(),
+        }));
+        let minGap = Infinity;
+        let ragged = 0;
+        for (const [i, a] of cards.entries()) {
+          for (const b of cards.slice(i + 1)) {
+            const sideBySide = a.r.top < b.r.bottom && b.r.top < a.r.bottom;
+            const stacked = a.r.left < b.r.right && b.r.left < a.r.right;
+            if (sideBySide) {
+              minGap = Math.min(minGap, Math.max(b.r.left - a.r.right, a.r.left - b.r.right));
+              if (Math.abs(a.r.top - b.r.top) > 1 || Math.abs(a.r.height - b.r.height) > 1) ragged++;
+            } else if (stacked) minGap = Math.min(minGap, Math.max(b.r.top - a.r.bottom, a.r.top - b.r.bottom));
+          }
+        }
+        const overflowing = cards.filter(({ el }) => el.scrollWidth > el.clientWidth + 1).length;
+        return { minGap, ragged, overflowing };
+      }),
+    /**
      * How far across the editor area the content reaches in the first screen: the editor is cut into horizontal strips 40 px high,
      * and for each strip that holds content the right edge of the furthest text or drawing is taken as a share of the editor width (0 to 1).
      * Headings are left out, as they are short by nature. Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
