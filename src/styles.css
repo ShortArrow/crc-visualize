@@ -1117,16 +1117,37 @@ h2 {
   font-weight: 500;
 }
 
-.families {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 8px 24px;
+/* Family tables of one width, packed from the top of as many columns as the card allows */
+.family-columns {
+  columns: 460px;
+  column-gap: 16px;
 }
 
-.families h2,
-.families .note {
+.family-columns .family {
+  width: 100%;
+  margin-bottom: 12px;
+  break-inside: avoid;
+}
+
+.family-columns .family :is(th, td) {
+  padding-inline: 10px;
+  white-space: nowrap;
+}
+
+/* The note of the name breakdown sits beside the parts when there is room */
+.name-parts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  column-gap: 32px;
+}
+
+.name-parts h2 {
   flex-basis: 100%;
+}
+
+.name-parts .note {
+  flex: 1 1 300px;
 }
 
 .family td {
@@ -1972,7 +1993,19 @@ button.bit-cell:hover {
   margin-top: 0;
 }
 
-/* The parameter diagram keeps its aspect ratio, so it sits in the middle of its full-width section */
+/* The parameter diagram and the parameter table side by side; the diagram keeps its aspect ratio in the middle of its card */
+.names-params {
+  margin: 0;
+}
+
+.names-params > #names-param-map {
+  flex: 1 1 480px;
+}
+
+.names-params > .param-table {
+  flex: 2 1 640px;
+}
+
 .names-page .param-map {
   display: block;
   margin: 0 auto;
@@ -1992,14 +2025,19 @@ button.bit-cell:hover {
 }
 
 .names-page .alias-index tbody {
-  columns: 300px;
-  column-gap: 24px;
+  columns: 440px;
+  column-gap: 16px;
 }
 
 .names-page .alias-index tr {
   display: grid;
   grid-template-columns: 1fr 1fr;
   break-inside: avoid;
+}
+
+.names-page .alias-index :is(th, td) {
+  padding-inline: 8px;
+  white-space: nowrap;
 }
 
 /* Table page */

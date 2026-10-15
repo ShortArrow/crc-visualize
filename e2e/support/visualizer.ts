@@ -200,10 +200,12 @@ export class Visualizer {
      */
     cardLayout: () =>
       this.page.evaluate(() => {
-        const cards = [...document.querySelectorAll(".editor :is(.page-columns, .names-page) > *")].map((el) => ({
-          el,
-          r: el.getBoundingClientRect(),
-        }));
+        const cards = [...document.querySelectorAll(".editor :is(.page-columns, .names-page) > :not(.page-columns)")].map(
+          (el) => ({
+            el,
+            r: el.getBoundingClientRect(),
+          }),
+        );
         let minGap = Infinity;
         let ragged = 0;
         for (const [i, a] of cards.entries()) {

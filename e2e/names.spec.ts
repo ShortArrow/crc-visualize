@@ -110,3 +110,45 @@ test.describe("Parameter-alias diagram", () => {
     });
   });
 });
+
+test.describe("Naming page layout", () => {
+  for (const width of [1366, 1600]) {
+    test(`on a ${width} px wide screen, the family tables stand in columns of one width that fill their card without wrapping`, async ({
+      page,
+    }) => {
+      const n = await given(`the naming page is open on a ${width} px wide screen`, async () => {
+        await page.setViewportSize({ width, height: 1000 });
+        return NamesPage.open(page);
+      });
+      await then(
+        "every family table has the same width, the furthest reaches the right edge of the card, and no cell wraps",
+        async () => {
+          const layout = await n.familyLayout();
+          expect(layout.widths).toHaveLength(1);
+          expect(layout.rightGap).toBeLessThanOrEqual(2);
+          expect(layout.wrapped).toBe(0);
+        },
+      );
+    });
+
+    test(`on a ${width} px wide screen, no name in the alias table wraps`, async ({ page }) => {
+      const n = await given(`the naming page is open on a ${width} px wide screen`, async () => {
+        await page.setViewportSize({ width, height: 1000 });
+        return NamesPage.open(page);
+      });
+      await then("every alias and preset name stays on one line", async () => {
+        expect(await n.aliasWrapped()).toBe(0);
+      });
+    });
+  }
+
+  test("on a wide screen, the note of the name breakdown sits beside the parts instead of under them", async ({ page }) => {
+    const n = await given("the naming page is open on a 1600 px wide screen", async () => {
+      await page.setViewportSize({ width: 1600, height: 1000 });
+      return NamesPage.open(page);
+    });
+    await then("the note starts to the right of the parts, level with them", async () => {
+      expect(await n.noteBesideParts()).toBe(true);
+    });
+  });
+});
