@@ -111,3 +111,9 @@ describe("check page fragment", () => {
     expect(parseRoute("#check")).toEqual({ page: "check" });
   });
 });
+
+describe("table page fragment", () => {
+  it("Given the fragment #table, When the page is decided, Then the table page", () => {
+    expect(parseRoute("#table")).toEqual({ page: "table" });
+  });
+});

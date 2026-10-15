@@ -1,4 +1,15 @@
-import { ArrowRightLeft, BookOpen, Cpu, ListTree, PanelLeft, RefreshCw, SearchCheck, ShieldCheck } from "lucide-react";
+import {
+  ArrowRightLeft,
+  BookOpen,
+  Cpu,
+  ListTree,
+  PanelLeft,
+  RefreshCw,
+  SearchCheck,
+  ShieldCheck,
+  Table2,
+  type LucideIcon,
+} from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { useMessages } from "../i18n/I18n";
 import { LOCALE_NAMES, LOCALES, type Locale } from "../i18n/locale";
@@ -20,6 +31,18 @@ type Props = Readonly<{
 const ICON_SIZE = 22;
 const ACTIVITY_WIDTH = 48;
 
+/** Links to the pages in the activity bar, top to bottom. */
+const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: LucideIcon }>[] = [
+  { page: "visualizer", href: "#", Icon: Cpu },
+  { page: "names", href: namesHash(), Icon: BookOpen },
+  { page: "narrow", href: narrowHash({ fixed: [] }), Icon: ListTree },
+  { page: "cyclic", href: "#cyclic", Icon: RefreshCw },
+  { page: "redundancy", href: "#redundancy", Icon: ShieldCheck },
+  { page: "check", href: "#check", Icon: SearchCheck },
+  { page: "equivalence", href: "#equivalence", Icon: ArrowRightLeft },
+  { page: "table", href: "#table", Icon: Table2 },
+];
+
 /**
  * VS Code-style screen frame. Divides into the activity bar on the left, a collapsible sidebar, the editor area and the status bar at the bottom,
  * filling the whole screen. The page itself does not scroll; only each area scrolls internally.
@@ -31,69 +54,18 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
   return (
     <div className={`workbench ${open ? "" : "sidebar-closed"}`} style={style}>
       <nav className="activity">
-        <a
-          href="#"
-          className={route.page === "visualizer" ? "current" : ""}
-          data-page="visualizer"
-          title={m.pages.visualizer}
-          aria-label={m.pages.visualizer}
-        >
-          <Cpu size={ICON_SIZE} />
-        </a>
-        <a
-          href={namesHash()}
-          className={route.page === "names" ? "current" : ""}
-          data-page="names"
-          title={m.pages.names}
-          aria-label={m.pages.names}
-        >
-          <BookOpen size={ICON_SIZE} />
-        </a>
-        <a
-          href={narrowHash({ fixed: [] })}
-          className={route.page === "narrow" ? "current" : ""}
-          data-page="narrow"
-          title={m.pages.narrow}
-          aria-label={m.pages.narrow}
-        >
-          <ListTree size={ICON_SIZE} />
-        </a>
-        <a
-          href="#cyclic"
-          className={route.page === "cyclic" ? "current" : ""}
-          data-page="cyclic"
-          title={m.pages.cyclic}
-          aria-label={m.pages.cyclic}
-        >
-          <RefreshCw size={ICON_SIZE} />
-        </a>
-        <a
-          href="#redundancy"
-          className={route.page === "redundancy" ? "current" : ""}
-          data-page="redundancy"
-          title={m.pages.redundancy}
-          aria-label={m.pages.redundancy}
-        >
-          <ShieldCheck size={ICON_SIZE} />
-        </a>
-        <a
-          href="#check"
-          className={route.page === "check" ? "current" : ""}
-          data-page="check"
-          title={m.pages.check}
-          aria-label={m.pages.check}
-        >
-          <SearchCheck size={ICON_SIZE} />
-        </a>
-        <a
-          href="#equivalence"
-          className={route.page === "equivalence" ? "current" : ""}
-          data-page="equivalence"
-          title={m.pages.equivalence}
-          aria-label={m.pages.equivalence}
-        >
-          <ArrowRightLeft size={ICON_SIZE} />
-        </a>
+        {PAGE_LINKS.map(({ page, href, Icon }) => (
+          <a
+            key={page}
+            href={href}
+            className={route.page === page ? "current" : ""}
+            data-page={page}
+            title={m.pages[page]}
+            aria-label={m.pages[page]}
+          >
+            <Icon size={ICON_SIZE} />
+          </a>
+        ))}
         <button
           type="button"
           className="sidebar-toggle"

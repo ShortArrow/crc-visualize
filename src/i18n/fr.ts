@@ -10,6 +10,7 @@ export const fr: Messages = {
     redundancy: "Redondance",
     check: "Contrôle",
     equivalence: "Équivalences",
+    table: "Table",
   },
   workbench: { sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)", language: "Langue" },
   settings: {
@@ -369,6 +370,37 @@ export const fr: Messages = {
       "Un CRC signale seulement qu’il y a une erreur ; il ne la corrige pas. Il faut un autre mécanisme, comme demander un renvoi.",
       "Si celui qui modifie le message recalcule aussi le CRC, la modification passe inaperçue. Contre une altération volontaire, on utilise un hachage ou un MAC.",
     ],
+  },
+  table: {
+    heading: "Méthode par table (octet par octet)",
+    note: "Beaucoup de bibliothèques construisent d’abord une table T de 256 valeurs, puis calculent octet par octet. Les valeurs sont calculées avec les réglages et l’entrée actuels (les mêmes que sur la page de visualisation).",
+    direction: { left: "Table à décalage à gauche", right: "Table à décalage à droite (refin et refout valent true)" },
+    reflectNote:
+      "Si refin vaut true, l’ordre des bits de chaque octet d’entrée est inversé avant usage ; si refout vaut true, le résultat est inversé à la fin.",
+    tableTitle: "Table T (256 valeurs)",
+    tableNote:
+      "Les lignes sont les 4 bits de poids fort de l’indice, les colonnes les 4 bits de poids faible. Sélectionnez une valeur pour voir comment elle est obtenue.",
+    entryTitle: (i: string, value: string) => `Comment T[${i}] = ${value} est obtenu`,
+    entryNote: {
+      left: "On fait entrer les 8 bits de l’indice, MSB d’abord, dans un registre à 0 pendant 8 cycles. Cela correspond à 8 cycles du calcul bit par bit.",
+      right:
+        "On fait entrer les 8 bits de l’indice, LSB d’abord, dans un registre à 0 qui décale à droite, pendant 8 cycles. Cela correspond à 8 cycles du calcul bit par bit.",
+    },
+    clock: "Cycle",
+    bit: "Bit d’entrée",
+    reg: "Registre",
+    stepsTitle: "Calcul octet par octet",
+    formula: "Mise à jour",
+    start: "Valeur initiale",
+    byte: "Octet",
+    before: "crc avant",
+    index: "Indice",
+    entry: "T[indice]",
+    after: "crc après",
+    result: "Résultat avec la table",
+    bitwise: "CRC calculé bit par bit",
+    match: "identique",
+    notBytes: "L’entrée n’est pas un multiple de 8 bits ; on ne peut pas calculer octet par octet.",
   },
   listSeparator: ", ",
 };
