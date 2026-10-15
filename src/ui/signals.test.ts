@@ -3,28 +3,28 @@ import { trace, type Step } from "../domain/trace";
 import { bits, firstStep, plain3, stepOf } from "../testing/fixtures";
 import { heldFeedback, particleWire, particles, upcomingValues, wireLevels } from "./signals";
 
-/** init 100 の CRC-3 に 0 を流したクロック: msb 1 ⊕ bit 0 = feedback 1。 */
+/** Clock of CRC-3 with init 100 fed a 0: msb 1 ⊕ bit 0 = feedback 1. */
 const msbOne = { ...plain3, init: 0b100 };
-/** init 001 の CRC-3 に 1 を流したクロック: feedback 1、shift 後 010、xor 後 001。 */
+/** Clock of CRC-3 with init 001 fed a 1: feedback 1, 010 after shift, 001 after xor. */
 const lowOne = { ...plain3, init: 0b001 };
-/** lowOne の各ステップの、次のステップで控える値。 */
+/** Values kept for the next step at each step of lowOne. */
 const upcomingAfter = (kind: Step["kind"]) => {
   const steps = trace(lowOne, bits("1"));
   return upcomingValues(steps[steps.findIndex((s) => s.kind === kind) + 1]);
 };
 
 describe("wireLevels", () => {
-  it("Given msb 1・入力ビット 0 のクロック, When feedback ステップ, Then 入力線に 0、最上位ビット線に 1、結果線に 1 が流れ、フィードバック線にはまだ流れない", () => {
+  it("Given a clock with msb 1 and input bit 0, When the feedback step, Then 0 flows on the input line, 1 on the MSB line and 1 on the result line, and nothing yet on the feedback line", () => {
     const step = firstStep(msbOne, "0", "feedback");
 
     expect(wireLevels(plain3, step)).toEqual({ input: 0, msb: 1, result: 1, tapIn: {}, tapOut: {} });
   });
 
-  it("Given feedback 1、shift 後 010 のクロック, When shift ステップ, Then どの配線にも値が流れない（feedback は箱に留まり、xor で粒が運ぶ）", () => {
+  it("Given a clock with feedback 1 and 010 after shift, When the shift step, Then no wire carries a value (feedback stays in the box and a particle carries it at xor)", () => {
     expect(wireLevels(plain3, firstStep(lowOne, "1", "shift"))).toEqual({ tapIn: {}, tapOut: {} });
   });
 
-  it("Given feedback 1、shift 後 010 のクロック, When xor ステップ, Then フィードバック線に 1、タップの入力線に XOR 前の r[i]、出力線に結果が流れる", () => {
+  it("Given a clock with feedback 1 and 010 after shift, When the xor step, Then 1 flows on the feedback line, r[i] before the XOR on the tap input lines, and the result on the output lines", () => {
     expect(wireLevels(plain3, firstStep(lowOne, "1", "xor"))).toEqual({
       feedback: 1,
       tapIn: { 0: 0, 1: 1 },
@@ -32,7 +32,7 @@ describe("wireLevels", () => {
     });
   });
 
-  it.each(["init", "xorOut", "done"] as const)("Given xorout あり, When %s ステップ, Then どの配線にも値が流れない", (kind) => {
+  it.each(["init", "xorOut", "done"] as const)("Given xorout present, When the %s step, Then no wire carries a value", (kind) => {
     const steps = trace({ ...plain3, xorout: 1 }, bits("1"));
 
     expect(wireLevels(plain3, stepOf(steps, kind))).toEqual({ tapIn: {}, tapOut: {} });
@@ -40,7 +40,7 @@ describe("wireLevels", () => {
 });
 
 describe("particles", () => {
-  it("Given msb 1・入力ビット 0 のクロック, When feedback ステップ, Then 前半に入力ビットと msb の粒が入力ゲートへ、後半に結果の粒が feedback の箱へ向かう", () => {
+  it("Given a clock with msb 1 and input bit 0, When the feedback step, Then in the first half the input bit and msb particles go to the input gate, and in the second half the result particle goes to the feedback box", () => {
     expect(particles(plain3, firstStep(msbOne, "0", "feedback"))).toEqual([
       { route: "input", value: 0, phase: 0 },
       { route: "msb", value: 1, phase: 0 },
@@ -48,7 +48,7 @@ describe("particles", () => {
     ]);
   });
 
-  it("Given feedback 1、shift 後 010 のクロック, When xor ステップ, Then 前半に 1 が各タップのゲートへ、r[i] が真下のゲートへ向かい、後半に結果が r[i] へ戻る", () => {
+  it("Given a clock with feedback 1 and 010 after shift, When the xor step, Then in the first half 1 goes to each tap's gate and r[i] to the gate below it, and in the second half the result returns to r[i]", () => {
     expect(particles(plain3, firstStep(lowOne, "1", "xor"))).toEqual([
       { route: "tap-0", value: 1, phase: 0 },
       { route: "tap-1", value: 1, phase: 0 },
@@ -59,11 +59,14 @@ describe("particles", () => {
     ]);
   });
 
-  it.each(["init", "shift", "done"] as const)("Given feedback 1 のクロック, When %s ステップ, Then 粒を出さない", (kind) => {
-    const steps = trace(plain3, bits("1"));
+  it.each(["init", "shift", "done"] as const)(
+    "Given a clock with feedback 1, When the %s step, Then no particles are emitted",
+    (kind) => {
+      const steps = trace(plain3, bits("1"));
 
-    expect(particles(plain3, stepOf(steps, kind))).toEqual([]);
-  });
+      expect(particles(plain3, stepOf(steps, kind))).toEqual([]);
+    },
+  );
 });
 
 describe("particleWire", () => {
@@ -74,13 +77,13 @@ describe("particleWire", () => {
     ["in-2", "tap-in-2"],
     ["out-0", "tap-out-0"],
     ["tap-1", "feedback-1"],
-  ] as const)("Given %s の粒, When 通る配線を求める, Then %s", (route, wire) => {
+  ] as const)("Given particle %s, When finding the wire it travels, Then %s", (route, wire) => {
     expect(particleWire(route)).toBe(wire);
   });
 });
 
 describe("heldFeedback", () => {
-  it("Given feedback 1 と 0 の 2 クロックと xorOut, When 各ステップの箱の値を求める, Then クロックの間は feedback を保ち、それ以外では空", () => {
+  it("Given 2 clocks with feedback 1 and 0 and xorOut, When finding the box value at each step, Then feedback is held during a clock and empty otherwise", () => {
     const steps = trace({ ...lowOne, xorout: 1 }, bits("10"));
 
     expect(steps.map((s) => [s.kind, heldFeedback(s)])).toEqual([
@@ -97,15 +100,15 @@ describe("heldFeedback", () => {
 });
 
 describe("upcomingValues", () => {
-  it("Given feedback 1、shift 後 010 のクロック, When 次が shift, Then 右端から r[0] に入る値だけを控える", () => {
+  it("Given a clock with feedback 1 and 010 after shift, When next is shift, Then only the value entering r[0] from the right end is kept", () => {
     expect(upcomingAfter("feedback")).toEqual({ 0: 0 });
   });
 
-  it("Given feedback 1、shift 後 010 のクロック, When 次が xor, Then 結果の粒が見せるので控えない", () => {
+  it("Given a clock with feedback 1 and 010 after shift, When next is xor, Then nothing is kept because the result particle shows it", () => {
     expect(upcomingAfter("shift")).toEqual({});
   });
 
-  it("Given feedback 1、shift 後 010 のクロック, When 次がそれ以外か、次が無い, Then 控えない", () => {
+  it("Given a clock with feedback 1 and 010 after shift, When next is something else or there is no next, Then nothing is kept", () => {
     expect(upcomingAfter("init")).toEqual({});
     expect(upcomingAfter("xor")).toEqual({});
     expect(upcomingValues(undefined)).toEqual({});

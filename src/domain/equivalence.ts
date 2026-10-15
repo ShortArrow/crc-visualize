@@ -1,34 +1,34 @@
 import { reflectValue, registerValue, trace, type Bit, type CrcParams } from "./trace";
 
-/** 置き換えの項目。refin は入力の反転、refout は出力の反転、rightShift は右送りの実装、initPrefix は初期値と前置き、affine は初期値と最終 XOR の分。 */
+/** Substitution items: refin is input reflection, refout is output reflection, rightShift is the right-shift implementation, initPrefix is init versus prefix, affine is the init and final XOR contribution. */
 export type EquivalenceId = "refin" | "refout" | "rightShift" | "initPrefix" | "affine";
 
-/** 置き換えが当てはまらない理由。notBytes は入力がバイト単位でない、notReflected は refin と refout が両方 true でない、evenPoly は poly の最下位ビットが 0。 */
+/** Why a substitution does not apply: notBytes means the input is not whole bytes, notReflected means refin and refout are not both true, evenPoly means the LSB of poly is 0. */
 export type NotApplicable = "notBytes" | "notReflected" | "evenPoly";
 
-/** 1 つの置き換えを今の設定と入力で計算した結果。left は元の設定の CRC、right は置き換えた側の CRC。 */
+/** Result of computing one substitution with the current parameters and input; left is the CRC of the original parameters, right is the CRC of the substituted side. */
 export type Equivalence =
   | Readonly<{ id: EquivalenceId; applicable: true; left: number; right: number }>
   | Readonly<{ id: EquivalenceId; applicable: false; reason: NotApplicable }>;
 
-/** 実装のシフトの向き。right は右送り、left は左送り、mixed はどちらでも別にビットの並びを反転する処理が要る。 */
+/** Shift direction of an implementation: right is right-shift, left is left-shift, mixed needs a separate bit reversal either way. */
 export type ShiftDirection = "right" | "left" | "mixed";
 
-/** a と b の XOR を符号なしの整数にしたもの（32 ビットの値でも負にしない）。 */
+/** a XOR b as an unsigned integer (never negative, even for 32-bit values). */
 const xor = (a: number, b: number): number => (a ^ b) >>> 0;
 
-/** params で input を計算した CRC。 */
+/** CRC of input under params. */
 export function crcOf(params: CrcParams, input: readonly Bit[]): number {
   const steps = trace(params, input);
   return registerValue(steps[steps.length - 1]!.reg);
 }
 
-/** input（長さは 8 の倍数）の各バイトのビットの並びを反転したもの。 */
+/** input (length a multiple of 8) with the bit order of each byte reversed. */
 export const reverseEachByte = (input: readonly Bit[]): Bit[] => input.map((_, i) => input[i - (i % 8) + 7 - (i % 8)]!);
 
 /**
- * refin・refout が true の params を、反転をせずに右へシフトするレジスタで計算した CRC。
- * poly と init はビットの並びを反転した値を使い、各バイトを LSB から入れて最下位ビットで分ける。
+ * CRC of params with refin and refout true, computed by a right-shifting register without any reflection.
+ * poly and init are bit-reversed, each byte enters LSB first, and the LSB selects the feedback.
  */
 export function rightShiftCrc(params: CrcParams, input: readonly Bit[]): number {
   const poly = reflectValue(params.poly, params.width);
@@ -42,13 +42,13 @@ export function rightShiftCrc(params: CrcParams, input: readonly Bit[]): number 
   return xor(crc, params.xorout);
 }
 
-/** 状態 r に x の逆元を掛けて g(x) で割った余り。poly の最下位ビットが 1 のときだけ使える。 */
+/** State r times the inverse of x, modulo g(x); valid only when the LSB of poly is 1. */
 const divideByX = ({ width, poly }: CrcParams, r: number): number =>
   r & 1 ? (((r ^ poly) >>> 1) | (2 ** (width - 1))) >>> 0 : r >>> 1;
 
 /**
- * init = 0 で入力の前に足すと init を入れたのと同じになる width ビットの前置き P（P(x)·x^width ≡ init (mod g(x))）。
- * poly の最下位ビットが 0 なら x で割れないので undefined。
+ * The width-bit prefix P that, prepended to the input with init = 0, has the same effect as init (P(x)·x^width ≡ init (mod g(x))).
+ * undefined when the LSB of poly is 0, since x is then not invertible.
  */
 export function initPrefix(params: CrcParams): Bit[] | undefined {
   if ((params.poly & 1) === 0) return undefined;
@@ -57,7 +57,7 @@ export function initPrefix(params: CrcParams): Bit[] | undefined {
   return Array.from({ length: params.width }, (_, i): Bit => ((p >>> (params.width - 1 - i)) & 1 ? 1 : 0));
 }
 
-/** params と input で、5 つの置き換えの両辺を計算する。当てはまらない項目は理由を返す。 */
+/** Computes both sides of the five substitutions for params and input; items that do not apply return the reason. */
 export function equivalences(params: CrcParams, input: readonly Bit[]): Equivalence[] {
   const left = crcOf(params, input);
   const ok = (id: EquivalenceId, right: number): Equivalence => ({ id, applicable: true, left, right });
@@ -77,13 +77,13 @@ export function equivalences(params: CrcParams, input: readonly Bit[]): Equivale
   ];
 }
 
-/** params を反転なしで計算できる実装のシフトの向き。 */
+/** Shift direction of an implementation that computes params without reflection. */
 export function shiftDirection({ refin, refout }: CrcParams): ShiftDirection {
   if (refin !== refout) return "mixed";
   return refin ? "right" : "left";
 }
 
-/** 反転なしで計算する実装のコードに書かれる poly と init。右送りならビットの並びを反転した値。 */
+/** The poly and init written in the code of an implementation without reflection; bit-reversed for right-shift. */
 export function codeConstants(params: CrcParams): Readonly<{ poly: number; init: number }> {
   if (shiftDirection(params) !== "right") return { poly: params.poly, init: params.init };
   return { poly: reflectValue(params.poly, params.width), init: reflectValue(params.init, params.width) };

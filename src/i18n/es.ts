@@ -1,6 +1,6 @@
 import type { Messages } from "./ja";
 
-/** スペイン語の画面の文。 */
+/** Spanish UI text. */
 export const es: Messages = {
   pages: {
     visualizer: "Visualizador",

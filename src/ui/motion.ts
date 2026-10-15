@@ -1,6 +1,6 @@
 import type { Point } from "./layout";
 
-/** 折れ線 points を一定の速さでたどる Web Animations のキーフレーム。offset は始点からの道のりの割合。 */
+/** Web Animations keyframes that follow the polyline points at constant speed. offset is the fraction of the path length from the start. */
 export function routeKeyframes(points: readonly Point[]): Keyframe[] {
   const lengths = points.map((p, k) => (k === 0 ? 0 : Math.hypot(p.x - points[k - 1]!.x, p.y - points[k - 1]!.y)));
   const total = lengths.reduce((a, b) => a + b, 0);

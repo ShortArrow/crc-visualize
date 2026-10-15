@@ -3,8 +3,8 @@ import type { Messages } from "../i18n/messages";
 import { toBinary, toHex } from "./format";
 
 /**
- * ログ 1 行分。index は元のステップ番号、bitNo は関わる入力ビットの 1 始まりの番号。
- * bin と hex はそのステップを処理した後の crc。
+ * One log line. index is the original step number; bitNo is the 1-based number of the input bit involved.
+ * bin and hex are crc after that step is processed.
  */
 export type LogEntry = Readonly<{
   index: number;
@@ -41,7 +41,7 @@ function bitNoOf(step: Step): number | undefined {
   }
 }
 
-/** 先頭から current までのステップを、新しい順に最大 limit 行のログにする。文は m の言語で書く。 */
+/** Turns the steps from the start up to current into at most limit log lines, newest first. Text is written in the language of m. */
 export function logEntries(steps: readonly Step[], current: number, limit: number, m: Messages): LogEntry[] {
   const from = Math.max(0, current - limit + 1);
   return steps

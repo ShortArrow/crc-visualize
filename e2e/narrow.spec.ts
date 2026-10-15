@@ -3,79 +3,79 @@ import { NarrowPage } from "./support/narrowPage";
 import { given, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
-test.describe("絞り込み", () => {
-  test("値を 1 つずつ固定して 1 つのアルゴリズムに決め、可視化で開く", async ({ page }) => {
-    const v = await given("可視化のページを開いている", () => Visualizer.open(page));
-    await when("アクティビティバーで絞り込みに切り替える", () => v.workbench.pageLink("narrow").click());
-    const n = await then("全 21 の候補から始まる", async () => {
+test.describe("Narrowing", () => {
+  test("fixes values one at a time down to a single algorithm and opens it in the visualizer", async ({ page }) => {
+    const v = await given("the visualizer page is open", () => Visualizer.open(page));
+    await when("switching to the narrowing page in the activity bar", () => v.workbench.pageLink("narrow").click());
+    const n = await then("it starts from all 21 candidates", async () => {
       const n = await NarrowPage.shown(page);
       expect(n.hash()).toBe("#narrow");
       await expect(n.candidates()).toHaveCount(21);
       await expect(v.workbench.statusbar()).toContainText("候補 21");
       return n;
     });
-    await when("根で width を選ぶ", () => n.splitBy(0, "width").click());
-    await then("width の値ごとに候補の数を添えた枝が出る", async () => {
+    await when("selecting width at the root", () => n.splitBy(0, "width").click());
+    await then("a branch per width value appears, with its candidate count", async () => {
       expect(n.hash()).toBe("#narrow/width");
       await expect(n.branch(0, "16")).toContainText("9");
       await expect(n.branch(0, "3")).toContainText("CRC-3/GSM");
     });
-    await when("16、poly、0x1021、init の順に選ぶ", async () => {
+    await when("selecting 16, poly, 0x1021 and init in turn", async () => {
       await n.branch(0, "16").locator(":scope > a").click();
       await n.splitBy(1, "poly").click();
       await n.branch(1, "0x1021").locator(":scope > a").click();
       await n.splitBy(2, "init").click();
     });
-    await then("道筋が URL に載り、候補が 6 つに減る", async () => {
+    await then("the path is in the URL and the candidates drop to 6", async () => {
       expect(n.hash()).toBe("#narrow/width=16/poly=0x1021/init");
       await expect(n.candidates()).toHaveCount(6);
       await expect(n.branch(2, "0x1D0F")).toContainText("CRC-16/SPI-FUJITSU");
     });
-    await when("init 0x1D0F の枝を選ぶ", () => n.branch(2, "0x1D0F").locator(":scope > a").click());
-    await then("1 つに決まり、可視化で開けるようになる", async () => {
+    await when("selecting the init 0x1D0F branch", () => n.branch(2, "0x1D0F").locator(":scope > a").click());
+    await then("a single candidate remains and it can be opened in the visualizer", async () => {
       await expect(n.candidates()).toHaveText(["CRC-16/SPI-FUJITSU"]);
       await expect(n.openInVisualizer()).toBeVisible();
     });
-    await when("可視化で開く", () => n.openInVisualizer().click());
-    await then("CRC-16/SPI-FUJITSU の設定で可視化のページが出る", async () => {
+    await when("opening it in the visualizer", () => n.openInVisualizer().click());
+    await then("the visualizer page appears with the CRC-16/SPI-FUJITSU settings", async () => {
       expect(n.hash()).toBe("");
       await expect(v.settings.preset()).toHaveValue("CRC-16/SPI-FUJITSU");
     });
   });
 
-  test("選ばなかった枝や違うパラメータを選ぶと、その節から先の道筋を替える", async ({ page }) => {
-    const n = await given("#narrow/width=16/poly=0x1021/init を開いている", () =>
+  test("selecting an unchosen branch or a different parameter replaces the path from that node on", async ({ page }) => {
+    const n = await given("#narrow/width=16/poly=0x1021/init is open", () =>
       NarrowPage.open(page, "#narrow/width=16/poly=0x1021/init"),
     );
-    await when("poly の節で閉じた 0x8005 の枝を選ぶ", () => n.branch(1, "0x8005").locator(":scope > a").click());
-    await then("poly から先が 0x8005 に替わる", async () => {
+    await when("selecting the collapsed 0x8005 branch at the poly node", () =>
+      n.branch(1, "0x8005").locator(":scope > a").click(),
+    );
+    await then("the path from poly on becomes 0x8005", async () => {
       expect(n.hash()).toBe("#narrow/width=16/poly=0x8005");
       await expect(n.candidates()).toHaveCount(3);
     });
-    await when("根で分けるパラメータを refin に替える", () => n.splitBy(0, "refin").click());
-    await then("根から先の道筋を捨てて refin で分け直す", async () => {
+    await when("changing the splitting parameter at the root to refin", () => n.splitBy(0, "refin").click());
+    await then("the path from the root is discarded and re-split by refin", async () => {
       expect(n.hash()).toBe("#narrow/refin");
       await expect(n.candidates()).toHaveCount(21);
       await expect(n.branch(0, "false")).toBeVisible();
     });
   });
 
-  test("全ての候補で同じパラメータは分ける選択肢に出ない", async ({ page }) => {
-    const n = await given("#narrow/width=16/poly=0x8005 を開いている", () =>
-      NarrowPage.open(page, "#narrow/width=16/poly=0x8005"),
-    );
-    await then("poly の先の節に width と poly は無く、init はある", async () => {
+  test("a parameter that is the same in every candidate is not offered for splitting", async ({ page }) => {
+    const n = await given("#narrow/width=16/poly=0x8005 is open", () => NarrowPage.open(page, "#narrow/width=16/poly=0x8005"));
+    await then("the node after poly offers neither width nor poly, but does offer init", async () => {
       await expect(n.splitBy(2, "width")).toHaveCount(0);
       await expect(n.splitBy(2, "poly")).toHaveCount(0);
       await expect(n.splitBy(2, "init")).toBeVisible();
     });
   });
 
-  test("解釈できない道筋はその手前までで開く", async ({ page }) => {
-    const n = await given("候補の無い値を含む #narrow/width=16/poly=0x7 を開いている", () =>
+  test("a path that cannot be interpreted opens up to the point before it", async ({ page }) => {
+    const n = await given("#narrow/width=16/poly=0x7, which contains a value with no candidates, is open", () =>
       NarrowPage.open(page, "#narrow/width=16/poly=0x7"),
     );
-    await then("width=16 までの道筋になる", async () => {
+    await then("the path goes up to width=16", async () => {
       await expect(n.candidates()).toHaveCount(9);
       await expect(n.branch(0, "16")).toHaveClass(/on-path/);
     });

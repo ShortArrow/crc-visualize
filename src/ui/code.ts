@@ -7,9 +7,9 @@ export { CODE_LANGS, type CodeLang };
 export type { CodePart, ParamChip } from "./codeTemplate";
 
 /**
- * コード 1 行分の表示状態。
- * text: チップを label に置き換えた行の文字列。active: 現在のステップが実行中の行。
- * note: 行末に添える注記。skipped: 分岐で実行されない行。disabled: パラメータが無効で実行されない行。
+ * Display state of one line of code.
+ * text: the line's string with chips replaced by their label. active: the line the current step is executing.
+ * note: a note appended to the end of the line. skipped: a line not executed because of the branch. disabled: a line not executed because its parameter is disabled.
  */
 export type CodeLine = Readonly<{
   parts: readonly CodePart[];
@@ -22,10 +22,10 @@ export type CodeLine = Readonly<{
 
 const lineText = (parts: readonly CodePart[]) => parts.map((p) => (typeof p === "string" ? p : p.label)).join("");
 
-/** 分岐 if (feedback == 1) の評価結果。shift ステップでのみ決まる。 */
+/** Result of evaluating the branch if (feedback == 1). Decided only in the shift step. */
 const branchTaken = (step: Step): boolean | undefined => (step.kind === "shift" ? step.fb === 1 : undefined);
 
-/** パラメータが無効で、kind のステップが実行されない（値を変えない）ときの注記。 */
+/** Note for when a parameter is disabled and steps of kind are not executed (do not change the value). */
 function disabledNote(kind: StepKind | undefined, p: CrcParams, m: Messages): string | undefined {
   if (kind === "reflectIn" && !p.refin) return m.code.refinOff;
   if (kind === "reflectOut" && !p.refout) return m.code.refoutOff;
@@ -33,7 +33,7 @@ function disabledNote(kind: StepKind | undefined, p: CrcParams, m: Messages): st
   return undefined;
 }
 
-/** params のコードを lang で書き、step の実行位置と評価結果つきで返す。注記は m の言語で書く。 */
+/** Writes the code for params in lang and returns it with the execution position and evaluation results of step. Notes are written in the language of m. */
 export function codeLines(params: CrcParams, step: Step, m: Messages, lang: CodeLang): CodeLine[] {
   const taken = branchTaken(step);
   const def = CODE_LANGS[lang];

@@ -18,7 +18,7 @@ type Props = Readonly<{
   onLoop: (loop: boolean) => void;
 }>;
 
-/** 再生コントロール。 */
+/** Playback controls. */
 export function Controls({ player, length, speedMode, rate, loop, send, onSpeedMode, onRate, onLoop }: Props) {
   const m = useMessages();
   return (

@@ -1,24 +1,24 @@
 import type { CrcParams, ParamName, StepKind } from "../domain/trace";
 
-/** コード中のパラメータ。label はコード上の名前（width から作る mask のように param と異なることがある）。 */
+/** A parameter in the code. label is its name in the code (it can differ from param, as with mask derived from width). */
 export type ParamChip = Readonly<{ param: ParamName; label: string; value: string }>;
 
 export type CodePart = string | ParamChip;
 
-/** コード 1 行の雛形。runs はこの行が実行するステップの種類、role は feedback の分岐での役目。 */
+/** Template for one line of code. runs are the kinds of step this line executes; role is its role in the feedback branch. */
 export type Template = Readonly<{
   parts: readonly CodePart[];
   runs?: StepKind;
   role?: "if" | "ifBody";
 }>;
 
-/** チップの値の書き方。hex は 16 進の整数、bool は真偽値のリテラル。 */
+/** How a chip's value is written. hex is a hexadecimal integer; bool is a boolean literal. */
 export type Literals = Readonly<{ hex: (n: number) => string; bool: (b: boolean) => string }>;
 
-/** コードに置くパラメータのチップ。mask は width から作る値で、width のチップとして扱う。 */
+/** A parameter chip placed in the code. mask is a value derived from width and is treated as a width chip. */
 export type Chips = Readonly<Record<"width" | "mask" | "poly" | "init" | "refin" | "refout" | "xorout", ParamChip>>;
 
-/** コードを書く 1 つの言語。label は選択肢に出す名前、comment は行コメントの記号、lit はチップの値の書き方。 */
+/** One language the code is written in. label is the name shown in the selector, comment is the line-comment marker, and lit is how chip values are written. */
 export type LangDef = Readonly<{
   label: string;
   comment: string;
@@ -28,19 +28,19 @@ export type LangDef = Readonly<{
 
 const upperHex = (n: number) => n.toString(16).toUpperCase();
 
-/** 多くの言語に共通のリテラル（0x1021、true/false）。 */
+/** Literals shared by many languages (0x1021, true/false). */
 export const C_LIKE: Literals = { hex: (n) => `0x${upperHex(n)}`, bool: String };
 
-/** 先頭を大文字にした真偽値（True/False）を使う言語のリテラル。 */
+/** Literals for languages whose booleans are capitalized (True/False). */
 export const CAPITAL_BOOL: Literals = { ...C_LIKE, bool: (b) => (b ? "True" : "False") };
 
-/** 接頭辞 prefix・接尾辞 suffix を付けた大文字の 16 進。 */
+/** Uppercase hexadecimal with a prefix and a suffix attached. */
 export const hexWith =
   (prefix: string, suffix = "") =>
   (n: number) =>
     `${prefix}${upperHex(n)}${suffix}`;
 
-/** params の各パラメータを、lit の書き方で値を持つチップにする。 */
+/** Turns each parameter of params into a chip holding its value written as lit. */
 export function chips(p: CrcParams, lit: Literals): Chips {
   const chip = (param: ParamName, value: string, label: string = param): ParamChip => ({ param, label, value });
   return {
@@ -56,12 +56,12 @@ export function chips(p: CrcParams, lit: Literals): Chips {
 
 type Parts = (c: Chips) => readonly CodePart[];
 
-/** ループの始まり。open は外側の字下げで、bind（ループ変数からビットを取り出す行など）は 1 段深く書く。 */
+/** Start of a loop. open is at the outer indentation, and bind (such as the line extracting a bit from the loop variable) is written one level deeper. */
 export type Opener = Readonly<{ open: readonly string[]; bind?: readonly string[] }>;
 
 /**
- * 命令型の言語の書き方。各項目は 1 行分で、擬似コードの同じ行にあたる。
- * endIf・end は分岐とループを閉じる行で、字下げで閉じる言語では省く。
+ * How an imperative language is written. Each item is one line and corresponds to the same line of the pseudocode.
+ * endIf and end are the lines closing the branch and the loop; languages that close blocks by indentation omit them.
  */
 export type Imperative = Readonly<{
   label: string;
@@ -91,8 +91,8 @@ const indented = (pad: string, parts: readonly CodePart[]): CodePart[] => {
 };
 
 /**
- * 命令型の言語の雛形。refin が真なら入力をバイトごとに反転してからビットに分ける 2 重ループ、
- * 偽なら入力ビットを 1 重ループで処理する。
+ * Template for imperative languages. If refin is true, a double loop reflects the input byte by byte and then splits it into bits;
+ * if false, a single loop processes the input bits.
  */
 export function imperative(s: Imperative): LangDef {
   const template = (c: Chips, p: CrcParams): Template[] => {

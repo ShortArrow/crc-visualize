@@ -1,16 +1,16 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-/** 名前の規則のページを、名前の分解・一族・別名・パラメータの言葉で操作し観察する。 */
+/** Drives and observes the naming page in terms of the name breakdown, families, aliases and parameters. */
 export class NamesPage {
   private constructor(readonly page: Page) {}
 
-  /** query（"?poly=0x7" など）と fragment（"#names/poly" など）を付けて開く。 */
+  /** Opens the page with a query (such as "?poly=0x7") and a fragment (such as "#names/poly"). */
   static async open(page: Page, fragment = "#names", query = ""): Promise<NamesPage> {
     await page.goto(`/${query}${fragment}`);
     return NamesPage.shown(page);
   }
 
-  /** 開いている名前の規則のページを捉える。 */
+  /** Captures the naming page that is already open. */
   static async shown(page: Page): Promise<NamesPage> {
     const n = new NamesPage(page);
     await expect(n.root).toBeVisible();
@@ -25,22 +25,22 @@ export class NamesPage {
     return this.page.locator(`.name-parts [data-part="${part}"] b`);
   }
 
-  /** poly（"0x1021" など）の一族の表。 */
+  /** The family table of poly (such as "0x1021"). */
   family(poly: string): Locator {
     return this.page.locator(`table.family[data-poly="${poly}"]`);
   }
 
-  /** 一族の表の、preset の行の col 列（init・reflect・xorout）。 */
+  /** The col column (init, reflect, xorout) of the preset's row in a family table. */
   familyCell(poly: string, preset: string, col: "init" | "reflect" | "xorout"): Locator {
     return this.family(poly).locator(`tr[data-preset="${preset}"] td[data-col="${col}"]`);
   }
 
-  /** 別名の対応表と、割れる呼び名の表の、alias の行。 */
+  /** The alias row in the alias table and in the table of ambiguous names. */
   aliasRow(alias: string): Locator {
     return this.page.locator(`.aliases tr[data-alias="${alias}"]`);
   }
 
-  /** パラメータ名の別名の図に書いたパラメータ名。 */
+  /** The parameter names written on the parameter-alias diagram. */
   callouts(): Locator {
     return this.page.locator(".param-map .callout-name");
   }
@@ -53,7 +53,7 @@ export class NamesPage {
     return this.page.locator(".param-map .hover-card .card");
   }
 
-  /** パラメータ名の別名の図で、注目中のパラメータの色で強調されている部品。 */
+  /** The parts of the parameter-alias diagram highlighted in the focused parameter's colour. */
   highlighted(): Locator {
     return this.page.locator(".param-map .param-hl");
   }

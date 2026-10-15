@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { routeKeyframes } from "./motion";
 
 describe("routeKeyframes", () => {
-  it("Given 長さ 10 と 30 の 2 区間からなる折れ線, When キーフレームにする, Then 各頂点の offset は始点からの道のりの割合になる", () => {
+  it("Given a polyline of 2 segments of length 10 and 30, When turning it into keyframes, Then each vertex's offset is the fraction of the path length from the start", () => {
     const points = [
       { x: 0, y: 0 },
       { x: 10, y: 0 },
@@ -16,7 +16,7 @@ describe("routeKeyframes", () => {
     ]);
   });
 
-  it("Given 1 点だけの長さ 0 の経路, When キーフレームにする, Then 始点に留まる", () => {
+  it("Given a path of a single point with length 0, When turning it into keyframes, Then it stays at the start", () => {
     expect(routeKeyframes([{ x: 5, y: 5 }])).toEqual([
       { transform: "translate(5px, 5px)", offset: 0 },
       { transform: "translate(5px, 5px)", offset: 1 },

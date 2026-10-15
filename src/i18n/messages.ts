@@ -9,10 +9,10 @@ import { zh } from "./zh";
 
 export type { Messages };
 
-/** 言語ごとの画面の文。 */
+/** UI text per language. */
 export const MESSAGES: Record<Locale, Messages> = { ja, en, zh, es, de, fr };
 
-/** 項目の誤り error を文にする。 */
+/** Turns an item error into text. */
 export function errorText(m: Messages, error: ConfigError): string {
   switch (error.code) {
     case "tooWide":

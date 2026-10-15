@@ -1,11 +1,11 @@
 export type Bit = 0 | 1;
 
-/** レジスタ。添字 i が r[i]（x^i の係数）を表し、末尾が MSB。 */
+/** The register; index i is r[i] (the coefficient of x^i), and the last element is the MSB. */
 export type Register = readonly Bit[];
 
 /**
- * Rocksoft モデルの CRC パラメータ。
- * 不変条件: 1 ≤ width ≤ 32、0 < poly < 2^width、0 ≤ init, xorout < 2^width。
+ * CRC parameters of the Rocksoft model.
+ * Invariant: 1 ≤ width ≤ 32, 0 < poly < 2^width, 0 ≤ init, xorout < 2^width.
  */
 export type CrcParams = Readonly<{
   width: number;
@@ -16,21 +16,21 @@ export type CrcParams = Readonly<{
   xorout: number;
 }>;
 
-/** Rocksoft モデルのパラメータ名。 */
+/** Parameter names of the Rocksoft model. */
 export type ParamName = keyof CrcParams;
 
 export const PARAM_NAMES: readonly ParamName[] = ["width", "poly", "init", "refin", "refout", "xorout"];
 
 type StepBase = Readonly<{
-  /** このステップ適用後のレジスタ。 */
+  /** The register after this step is applied. */
   reg: Register;
-  /** 画面に出す入力ストリーム（refin で反転済みのバイトは反転後の並び）。 */
+  /** The input stream shown on screen (bytes already reflected by refin appear in reflected order). */
   stream: readonly Bit[];
-  /** 次に投入するビットの位置。全投入後は stream.length。 */
+  /** Position of the next input bit; stream.length once all bits are fed. */
   cursor: number;
 }>;
 
-/** 1 ステップの状態。種類ごとの Given/Then は docs/spec.md の「ステップ列」を参照。 */
+/** State of one step; see "Step sequence" in docs/spec.md for the Given/Then of each kind. */
 export type Step = StepBase &
   (
     | { kind: "init" }
@@ -45,22 +45,22 @@ export type Step = StepBase &
 
 export type StepKind = Step["kind"];
 
-/** 整数の下位 width ビットをレジスタにする。 */
+/** Turns the low width bits of an integer into a register. */
 export function toRegister(value: number, width: number): Register {
   return Array.from({ length: width }, (_, i) => (Math.floor(value / 2 ** i) % 2) as Bit);
 }
 
-/** レジスタを符号なし整数にする。 */
+/** Turns a register into an unsigned integer. */
 export function registerValue(reg: Register): number {
   return reg.reduceRight<number>((acc, b) => acc * 2 + b, 0);
 }
 
-/** 整数の下位 width ビットの並びを反転する（例: 0x8005 を 16 ビットで反転すると 0xA001）。 */
+/** Reverses the order of the low width bits of an integer (e.g. 0x8005 reflected over 16 bits is 0xA001). */
 export function reflectValue(value: number, width: number): number {
   return registerValue(toRegister(value, width).toReversed());
 }
 
-/** バイト列を MSB 先頭のビット列にする。 */
+/** Turns bytes into bits, MSB first. */
 export function bitsFromBytes(bytes: readonly number[]): Bit[] {
   return bytes.flatMap((byte) => toRegister(byte, 8).toReversed());
 }
@@ -68,8 +68,8 @@ export function bitsFromBytes(bytes: readonly number[]): Bit[] {
 const xorRegister = (a: Register, b: Register): Register => a.map((x, i) => (x ^ b[i]!) as Bit);
 
 /**
- * CRC 計算をステップ列に展開する。最後のステップは常に done で、その reg が CRC。
- * 事前条件: params は CrcParams の不変条件を満たし、refin なら input.length は 8 の倍数。
+ * Expands a CRC computation into a sequence of steps; the last step is always done, and its reg is the CRC.
+ * Precondition: params satisfies the CrcParams invariant, and input.length is a multiple of 8 when refin is set.
  */
 export function trace(params: CrcParams, input: readonly Bit[]): Step[] {
   const { width, refin, refout } = params;

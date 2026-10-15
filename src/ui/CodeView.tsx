@@ -20,7 +20,7 @@ function Part({ part, focus }: { part: CodePart; focus: ParamFocus }) {
 
 type Props = Readonly<{ params: CrcParams; step: Step; focus: ParamFocus; lang: CodeLang }>;
 
-/** コード（ソフトウェア表現）を lang で書く。現在のステップの行をハイライトし、パラメータをチップで示す。 */
+/** Writes the code (software representation) in lang. Highlights the line of the current step and shows parameters as chips. */
 export function CodeView({ params, step, focus, lang }: Props) {
   const m = useMessages();
   return (
@@ -45,7 +45,7 @@ export function CodeView({ params, step, focus, lang }: Props) {
 
 const CODE_LANG_IDS = Object.keys(CODE_LANGS) as CodeLang[];
 
-/** コードを書く言語の選択。擬似コードの名前だけ表示言語で出す。 */
+/** Selects the language to write the code in. Only the pseudocode name is shown in the display language. */
 export function CodeLangSelect({ value, onChange }: Readonly<{ value: CodeLang; onChange: (lang: CodeLang) => void }>) {
   const m = useMessages();
   return (

@@ -3,8 +3,8 @@ import type { CrcParams } from "./trace";
 export type InputMode = "bits" | "hex" | "text";
 
 /**
- * 名前付きの CRC 設定。name は正式名、aliases は資料でよく使われる別名（代表的なものを最大 3 つ）。
- * check は入力 "123456789"（ASCII）の CRC。名前と値は reveng の "Catalogue of parametrised CRC algorithms" による。
+ * A named CRC configuration; name is the canonical name, aliases are names common in the literature (up to 3 representative ones).
+ * check is the CRC of the input "123456789" (ASCII). Names and values follow reveng's "Catalogue of parametrised CRC algorithms".
  */
 export type Preset = Readonly<{
   name: string;
@@ -34,7 +34,7 @@ const preset = (
 });
 
 export const TUTORIAL: Preset = {
-  // CRC-3/GSM から xorout (0x7) を外したもの。check = 0x4 ^ 0x7。
+  // CRC-3/GSM without its xorout (0x7); check = 0x4 ^ 0x7.
   ...preset("CRC-3/TUTORIAL", 3, 0x3, 0x0, false, 0x0, 0x3),
   input: { mode: "bits", text: "10101" },
 };
@@ -61,10 +61,14 @@ export const PRESETS: readonly Preset[] = [
   preset("CRC-32/ISO-HDLC", 32, 0x04c11db7, 0xffffffff, true, 0xffffffff, 0xcbf43926, ["CRC-32", "PKZIP", "CRC-32/V-42"]),
   preset("CRC-32/BZIP2", 32, 0x04c11db7, 0xffffffff, false, 0xffffffff, 0xfc891918, ["CRC-32/AAL5", "B-CRC-32"]),
   preset("CRC-32/MPEG-2", 32, 0x04c11db7, 0xffffffff, false, 0x00000000, 0x0376e6e7),
-  preset("CRC-32/ISCSI", 32, 0x1edc6f41, 0xffffffff, true, 0xffffffff, 0xe3069283, ["CRC-32C", "CRC-32/CASTAGNOLI", "CRC-32/NVME"]),
+  preset("CRC-32/ISCSI", 32, 0x1edc6f41, 0xffffffff, true, 0xffffffff, 0xe3069283, [
+    "CRC-32C",
+    "CRC-32/CASTAGNOLI",
+    "CRC-32/NVME",
+  ]),
 ];
 
-/** reveng カタログにあるプリセット。教材用の TUTORIAL を除く。 */
+/** Presets in the reveng catalogue, excluding the tutorial TUTORIAL. */
 export const CATALOGUE: readonly Preset[] = PRESETS.filter((p) => p !== TUTORIAL);
 
 const sameParams = (a: CrcParams, b: CrcParams) =>
@@ -75,5 +79,5 @@ const sameParams = (a: CrcParams, b: CrcParams) =>
   a.refout === b.refout &&
   a.xorout === b.xorout;
 
-/** パラメータが完全に一致するプリセット。無ければ undefined。 */
+/** The preset whose parameters match exactly, or undefined if none. */
 export const findPreset = (params: CrcParams): Preset | undefined => PRESETS.find((p) => sameParams(p.params, params));

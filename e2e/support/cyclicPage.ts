@@ -1,16 +1,16 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-/** 巡回のページを、符号語の輪・状態の輪・回す操作・生成多項式の一覧の言葉で操作し観察する。 */
+/** Drives and observes the cyclic page in terms of the codeword ring, the state ring, rotation, and the list of generator polynomials. */
 export class CyclicPage {
   private constructor(readonly page: Page) {}
 
-  /** fragment（"#cyclic/width=4/poly=0x3" など）を付けて開く。 */
+  /** Opens the page with a fragment (such as "#cyclic/width=4/poly=0x3"). */
   static async open(page: Page, fragment = "#cyclic"): Promise<CyclicPage> {
     await page.goto(`/${fragment}`);
     return CyclicPage.shown(page);
   }
 
-  /** 開いている巡回のページを捉える。 */
+  /** Captures the cyclic page that is already open. */
   static async shown(page: Page): Promise<CyclicPage> {
     const c = new CyclicPage(page);
     await expect(c.root).toBeVisible();
@@ -21,42 +21,42 @@ export class CyclicPage {
     return this.page.locator(".cyclic-page");
   }
 
-  /** 符号語の輪のビット。 */
+  /** The bits of the codeword ring. */
   wordBits(): Locator {
     return this.root.locator(".word-ring .ring-bit");
   }
 
-  /** 回したビット列（次数の大きい方から）。 */
+  /** The rotated bit sequence (highest degree first). */
   word(): Locator {
     return this.root.locator(".cyclic-word");
   }
 
-  /** 回したビット列を g(x) で割った余り。 */
+  /** The remainder of the rotated bit sequence divided by g(x). */
   remainder(): Locator {
     return this.root.locator(".cyclic-remainder");
   }
 
-  /** 状態の輪の状態。 */
+  /** The states of the state ring. */
   states(): Locator {
     return this.root.locator(".state-ring .ring-state");
   }
 
-  /** 状態の輪で強調している状態。 */
+  /** The state highlighted in the state ring. */
   currentState(): Locator {
     return this.root.locator(".state-ring .ring-state.current");
   }
 
-  /** x を 1 回掛ける（▶）。 */
+  /** Multiplies by x once (▶). */
   forward(): Locator {
     return this.root.locator(".rotate-forward");
   }
 
-  /** x で 1 回割る（◀）。 */
+  /** Divides by x once (◀). */
   back(): Locator {
     return this.root.locator(".rotate-back");
   }
 
-  /** サイドバーの生成多項式の一覧で、width と poly（"0xF" など）のもの。 */
+  /** The entry for width and poly (such as "0xF") in the sidebar's list of generator polynomials. */
   generator(width: number, poly: string): Locator {
     return this.page.locator(`.sidebar .generator-list a[data-generator="${width}/${poly}"]`);
   }

@@ -1,16 +1,16 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-/** 絞り込みのページを、木の節・分けるパラメータ・枝・候補の言葉で操作し観察する。 */
+/** Drives and observes the narrowing page in terms of tree nodes, the splitting parameter, branches and candidates. */
 export class NarrowPage {
   private constructor(readonly page: Page) {}
 
-  /** fragment（"#narrow/width=16" など）を付けて開く。 */
+  /** Opens the page with a fragment (such as "#narrow/width=16"). */
   static async open(page: Page, fragment = "#narrow"): Promise<NarrowPage> {
     await page.goto(`/${fragment}`);
     return NarrowPage.shown(page);
   }
 
-  /** 開いている絞り込みのページを捉える。 */
+  /** Captures the narrowing page that is already open. */
   static async shown(page: Page): Promise<NarrowPage> {
     const n = new NarrowPage(page);
     await expect(n.root).toBeVisible();
@@ -21,27 +21,27 @@ export class NarrowPage {
     return this.page.locator(".narrow-page");
   }
 
-  /** 根からの深さ depth（0 始まり）の節。 */
+  /** The node at depth (0-based) from the root. */
   node(depth: number): Locator {
     return this.page.locator(`.narrow-node[data-depth="${depth}"]`);
   }
 
-  /** depth の節で、分けるパラメータに param を選ぶ操作。 */
+  /** The control that picks param as the splitting parameter at the node at depth. */
   splitBy(depth: number, param: string): Locator {
     return this.node(depth).locator(`:scope > .split-by a[data-param="${param}"]`);
   }
 
-  /** depth の節の、値の表記が value の枝。 */
+  /** The branch of the node at depth whose value is written as value. */
   branch(depth: number, value: string): Locator {
     return this.node(depth).locator(`:scope > .branches > .branch[data-value="${value}"]`);
   }
 
-  /** サイドバーの残りの候補の正式名。 */
+  /** The full names of the remaining candidates in the sidebar. */
   candidates(): Locator {
     return this.page.locator(".sidebar .narrow-candidates li");
   }
 
-  /** 候補が 1 つに決まったときの「可視化で開く」（エディタ領域の）。 */
+  /** The "open in visualizer" link (in the editor area) shown once a single candidate remains. */
   openInVisualizer(): Locator {
     return this.root.locator(".narrow-open");
   }

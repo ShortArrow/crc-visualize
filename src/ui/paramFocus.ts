@@ -1,12 +1,12 @@
 import type { ParamName } from "../domain/trace";
 
-/** 注目中のパラメータ。設定パネル・擬似コード・LFSR 図で共有し、使用箇所を強調する。 */
+/** The parameter in focus. Shared by the settings panel, the pseudocode and the LFSR diagram to highlight where it is used. */
 export type ParamFocus = Readonly<{
   focused: ParamName | undefined;
   onFocus: (param: ParamName | undefined) => void;
 }>;
 
-/** 要素に付けると、マウスかキーボードのフォーカスが乗っている間 param に注目する。 */
+/** Attached to an element, focuses on param while the mouse or keyboard focus is on that element. */
 export const focusHandlers = ({ onFocus }: ParamFocus, param: ParamName) => ({
   onMouseEnter: () => onFocus(param),
   onMouseLeave: () => onFocus(undefined),

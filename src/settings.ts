@@ -5,7 +5,7 @@ import type { SpeedMode } from "./playback/playback";
 import { CODE_LANGS, type CodeLang } from "./ui/codeLangs";
 import { RATES } from "./ui/Controls";
 
-/** 次に開いたときに復元する設定。再生位置は含めない。 */
+/** Settings restored on the next visit; the playback position is not included. */
 export type Settings = Readonly<{
   form: ConfigForm;
   speedMode: SpeedMode;
@@ -15,7 +15,7 @@ export type Settings = Readonly<{
   locale: Locale;
 }>;
 
-/** localStorage のキー。保存形式を変えるときは版を上げる。 */
+/** localStorage key; bump the version when the stored format changes. */
 export const SETTINGS_KEY = "crc-visualize:settings:v1";
 
 const INPUT_MODES: readonly InputMode[] = ["bits", "hex", "text"];
@@ -46,7 +46,7 @@ function restoreForm(v: unknown, d: ConfigForm): ConfigForm {
   };
 }
 
-/** 保存文字列 raw から設定を復元する。読めない・形や範囲が正しくない項目は defaults の値にする。 */
+/** Restores settings from the stored string raw; unreadable items and items with the wrong shape or range take the defaults value. */
 export function restoreSettings(raw: string | null, defaults: Settings): Settings {
   let parsed: unknown;
   try {
@@ -57,7 +57,7 @@ export function restoreSettings(raw: string | null, defaults: Settings): Setting
   return validate(parsed, defaults);
 }
 
-/** 形の分からない値 v を設定として検証する。正しくない項目は defaults の値にする。 */
+/** Validates a value v of unknown shape as settings; invalid items take the defaults value. */
 function validate(v: unknown, defaults: Settings): Settings {
   const s = isRecord(v) ? v : {};
   return {
@@ -75,7 +75,7 @@ const FLAG_FIELDS = ["refin", "refout"] as const;
 const flag = (b: boolean) => (b ? "1" : "0");
 const unflag = (v: string): unknown => (v === "1" ? true : v === "0" ? false : v);
 
-/** 設定を URL のクエリ文字列（先頭の ? は含まない）にする。真偽値は 1/0、速度モードは speed、コードの言語は code、表示言語は lang。 */
+/** Turns settings into a URL query string (without the leading ?); booleans are 1/0, the speed mode is speed, the code language is code, the display language is lang. */
 export function settingsToQuery({ form, speedMode, rate, loop, codeLang, locale }: Settings): string {
   const q = new URLSearchParams();
   for (const k of TEXT_FIELDS) q.set(k, form[k]);
@@ -88,7 +88,7 @@ export function settingsToQuery({ form, speedMode, rate, loop, codeLang, locale 
   return q.toString();
 }
 
-/** URL のクエリ search から設定を読む。クエリに無い項目と正しくない項目は base の値にする。 */
+/** Reads settings from the URL query search; items missing from the query and invalid items take the base value. */
 export function settingsFromQuery(search: string, base: Settings): Settings {
   const q = new URLSearchParams(search);
   const has = (k: string) => q.has(k);
@@ -109,7 +109,7 @@ export function settingsFromQuery(search: string, base: Settings): Settings {
   );
 }
 
-/** localStorage から設定を読む。ストレージが使えない環境では defaults を返す。 */
+/** Reads settings from localStorage; returns defaults where storage is unavailable. */
 export function loadSettings(defaults: Settings): Settings {
   try {
     return restoreSettings(localStorage.getItem(SETTINGS_KEY), defaults);
@@ -118,7 +118,7 @@ export function loadSettings(defaults: Settings): Settings {
   }
 }
 
-/** 設定を localStorage に書く。ストレージが使えない環境では、操作を妨げないよう何もしない。 */
+/** Writes settings to localStorage; does nothing where storage is unavailable, so as not to block the user. */
 export function saveSettings(settings: Settings): void {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -127,12 +127,12 @@ export function saveSettings(settings: Settings): void {
   }
 }
 
-/** 起動時の設定。URL のクエリにある項目を、localStorage の保存値（無ければ defaults）より優先する。 */
+/** Settings at startup; items in the URL query take precedence over the localStorage values (or defaults if none). */
 export function initialSettings(defaults: Settings): Settings {
   return settingsFromQuery(location.search, loadSettings(defaults));
 }
 
-/** 設定を localStorage に保存し、履歴を増やさずに URL のクエリを書き換える。 */
+/** Saves settings to localStorage and rewrites the URL query without adding a history entry. */
 export function persistSettings(settings: Settings): void {
   saveSettings(settings);
   history.replaceState(history.state, "", `${location.pathname}?${settingsToQuery(settings)}${location.hash}`);

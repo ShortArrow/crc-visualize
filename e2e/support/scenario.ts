@@ -16,16 +16,16 @@ function step(keyword: StepKeyword) {
   };
 }
 
-/** 前提を整える手順。Playwright の報告に "Given ..." として出る。 */
+/** A step that sets up the precondition. Reported by Playwright as "Given ...". */
 export const given = step("Given");
-/** 振る舞いを起こす操作。報告に "When ..." として出る。 */
+/** An action that triggers the behaviour. Reported as "When ...". */
 export const when = step("When");
-/** 期待する状態の確認。報告に "Then ..." として出る。 */
+/** A check of the expected state. Reported as "Then ...". */
 export const then = step("Then");
 
 /**
- * E2E の test。通ったテストの最上位の手順が書き方の決まり（scenarioStepsViolation）を破っていれば、そのテストを失敗にする。
- * 手順は given / when / then で書いたものだけを数える。
+ * The E2E test. A passing test is failed if its top-level steps break the writing rule (scenarioStepsViolation).
+ * Only steps written with given / when / then are counted.
  */
 export const test = base.extend<{ scenarioShape: void }>({
   scenarioShape: [

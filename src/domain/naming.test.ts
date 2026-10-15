@@ -3,17 +3,17 @@ import { AMBIGUOUS_NAMES, aliasIndex, polyFamilies, splitPresetName } from "./na
 import { CATALOGUE } from "./presets";
 
 describe("splitPresetName", () => {
-  it("Given 正式名 CRC-16/KERMIT, When 分解する, Then CRC・幅・後半の名前に分かれる", () => {
+  it("Given canonical name CRC-16/KERMIT, When parsed, Then it splits into CRC, width and suffix", () => {
     expect(splitPresetName("CRC-16/KERMIT")).toEqual({ head: "CRC", width: "16", origin: "KERMIT" });
   });
 
-  it("Given 後半の名前にハイフンを含む CRC-32/ISO-HDLC, When 分解する, Then 後半はそのまま残る", () => {
+  it("Given CRC-32/ISO-HDLC with a hyphen in the suffix, When parsed, Then the suffix stays intact", () => {
     expect(splitPresetName("CRC-32/ISO-HDLC")).toEqual({ head: "CRC", width: "32", origin: "ISO-HDLC" });
   });
 });
 
 describe("polyFamilies", () => {
-  it("Given reveng カタログのプリセット, When 一族にまとめる, Then 2 つ以上ある幅と poly の組だけを幅・poly の小さい順に並べる", () => {
+  it("Given the reveng catalogue presets, When grouped into families, Then only width and poly pairs shared by two or more appear, in ascending order of width then poly", () => {
     const families = polyFamilies(CATALOGUE);
 
     expect(families.map((f) => [f.width, f.poly])).toEqual([
@@ -23,7 +23,7 @@ describe("polyFamilies", () => {
     ]);
   });
 
-  it("Given reveng カタログのプリセット, When poly 0x1021 の一族を見る, Then プリセットの一覧の順に 6 つ並ぶ", () => {
+  it("Given the reveng catalogue presets, When the poly 0x1021 family is inspected, Then it has 6 members in preset list order", () => {
     const ccitt = polyFamilies(CATALOGUE).find((f) => f.poly === 0x1021)!;
 
     expect(ccitt.rows.map((r) => r.preset.name)).toEqual([
@@ -36,7 +36,7 @@ describe("polyFamilies", () => {
     ]);
   });
 
-  it("Given reveng カタログのプリセット, When poly 0x1021 の一族を見る, Then 各行は先頭の IBM-3740 と違う列だけを示す", () => {
+  it("Given the reveng catalogue presets, When the poly 0x1021 family is inspected, Then each row shows only the columns that differ from the first, IBM-3740", () => {
     const ccitt = polyFamilies(CATALOGUE).find((f) => f.poly === 0x1021)!;
     const differs = Object.fromEntries(ccitt.rows.map((r) => [r.preset.name, r.differs]));
 
@@ -47,7 +47,7 @@ describe("polyFamilies", () => {
 });
 
 describe("aliasIndex", () => {
-  it("Given reveng カタログのプリセット, When 別名の対応表にする, Then 別名を英数字順に並べ、それぞれの正式名を引ける", () => {
+  it("Given the reveng catalogue presets, When turned into an alias table, Then aliases are in alphanumeric order and each maps to its canonical name", () => {
     const index = aliasIndex(CATALOGUE);
 
     const aliases = index.map((e) => e.alias);
@@ -58,7 +58,7 @@ describe("aliasIndex", () => {
 });
 
 describe("AMBIGUOUS_NAMES", () => {
-  it("Given 流儀で指すものが割れる呼び名, When CRC-16-CCITT を引く, Then 候補はどれもプリセットの正式名", () => {
+  it("Given a name whose meaning varies by convention, When CRC-16-CCITT is looked up, Then every candidate is a preset canonical name", () => {
     const names = CATALOGUE.map((p) => p.name);
     const ccitt = AMBIGUOUS_NAMES.find((a) => a.alias === "CRC-16-CCITT")!;
 

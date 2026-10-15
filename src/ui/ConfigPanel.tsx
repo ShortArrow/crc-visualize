@@ -8,7 +8,7 @@ import { useMessages } from "../i18n/I18n";
 import { errorText } from "../i18n/messages";
 import { FIELD_LABELS, type FieldName } from "./paramInfo";
 
-/** プリセットをフォームの値にする。 */
+/** Turns a preset into form values. */
 export function formFromPreset({ params, input }: Preset): ConfigForm {
   const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;
   return {
@@ -29,13 +29,13 @@ type Props = Readonly<{
   errors: Partial<Record<ConfigField, ConfigError>>;
   onChange: (form: ConfigForm) => void;
   focus: ParamFocus;
-  /** パラメータ以外の項目にマウスかフォーカスが乗ったとき、その項目（離れたら undefined）を知らせる。 */
+  /** Reports the non-parameter field under the mouse or focus (undefined when it leaves). */
   onFieldHover: (field: FieldName | undefined) => void;
 }>;
 
 const CUSTOM = "";
 
-/** CRC パラメータと入力の設定パネル。 */
+/** Settings panel for the CRC parameters and input. */
 export function ConfigPanel({ form, presetName, errors, onChange, focus, onFieldHover }: Props) {
   const m = useMessages();
   const set = <K extends keyof ConfigForm>(key: K, value: ConfigForm[K]) => onChange({ ...form, [key]: value });

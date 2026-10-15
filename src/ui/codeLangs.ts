@@ -360,7 +360,7 @@ const fsharp: LangDef = {
   ],
 };
 
-/** コードを書ける言語。キーは URL のクエリ code の値。pseudo の名前は表示言語で出す。 */
+/** Languages the code can be written in. Keys are values of the URL query code. The name of pseudo is shown in the display language. */
 export const CODE_LANGS = {
   pseudo,
   c,

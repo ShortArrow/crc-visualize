@@ -7,7 +7,7 @@ const SIZE = 340;
 const CENTER = SIZE / 2;
 const RADIUS = 130;
 
-/** 次数 d の位置の、輪の中心からの半径 r の点。x^0 を真上に、次数の大きい方へ時計回りに並べる。 */
+/** The point for degree d at radius r from the ring's centre. x^0 is at the top, and higher degrees go clockwise. */
 const at = (d: number, n: number, r: number) => {
   const angle = (2 * Math.PI * d) / n;
   return { x: CENTER + r * Math.sin(angle), y: CENTER - r * Math.cos(angle) };
@@ -15,7 +15,7 @@ const at = (d: number, n: number, r: number) => {
 
 const binary = (value: number, width: number) => value.toString(2).padStart(width, "0");
 
-/** 生成多項式 generator の符号語の輪と状態の輪を、共有する回した数 k で並べる。 */
+/** Shows the codeword ring and the state ring of the generator polynomial generator side by side, sharing the rotation count k. */
 export function CyclicPage({ generator }: Readonly<{ generator: Generator }>) {
   const m = useMessages();
   const [turns, setTurns] = useState(0);
@@ -78,8 +78,8 @@ export function CyclicPage({ generator }: Readonly<{ generator: Generator }>) {
 }
 
 /**
- * 符号語の輪。各ビットを元の次数の位置に描き、輪ごと turns ビット分回す（回すたびに角度が連続して増減するので、回り込みも輪に沿って動く）。
- * x^(n−1) と x^0 の間には回り込みの境目を引く。
+ * Codeword ring. Draws each bit at its original degree and rotates the whole ring by turns bits (the angle changes continuously with each rotation, so wrap-around also moves along the ring).
+ * Draws a wrap-around boundary between x^(n−1) and x^0.
  */
 function WordRing({ generator, turns }: Readonly<{ generator: Generator; turns: number }>) {
   const word = codeword(generator);
@@ -122,8 +122,8 @@ function WordRing({ generator, turns }: Readonly<{ generator: Generator; turns: 
 }
 
 /**
- * 状態の輪。x^j mod g(x) を j の順に時計回りに並べて矢印でつなぎ、x^k の状態を強調する。x^(n−1) から x^0 へ戻る矢印は回り込みの色にする。
- * 状態が多いと横書きでは隣と重なるので、輪の半径に沿って書く。
+ * State ring. Places x^j mod g(x) clockwise in order of j, joins them with arrows, and highlights the state x^k. The arrow from x^(n−1) back to x^0 uses the wrap-around colour.
+ * Labels run along the ring's radius, since horizontal text overlaps its neighbours when there are many states.
  */
 function StateRing({ generator, k }: Readonly<{ generator: Generator; k: number }>) {
   const states = powerCycle(generator);

@@ -7,21 +7,21 @@ import { heldFeedback, particleWire, particles, upcomingValues, wireLevels, type
 
 const STREAM_PITCH = 22;
 const BYTE_GAP = 8;
-/** 幅の大きい CRC でも文字が読める最小の表示倍率。超える分は横スクロール。 */
+/** Minimum display scale at which text stays readable even for wide CRCs. Anything wider scrolls horizontally. */
 const MIN_SCALE = 0.8;
 
 /**
- * 前半・後半それぞれで粒が経路を進む時間の、ステップのアニメーション時間に対する割合。
- * 後半の粒が届くのは 2 倍の時点で、styles.css の after-gate と flip の時間をこれに揃える。
+ * Fraction of the step's animation time that a particle takes to travel its path, in each of the first and second halves.
+ * Second-half particles arrive at twice this point; the after-gate and flip timings in styles.css match it.
  */
 const PHASE_SHARE = 0.4;
-/** 光彩の範囲を図の外側へ広げる量。箱やゲートは translate した座標で描くため、その分の余白を取る。 */
+/** How far the glow region extends beyond the diagram. Boxes and gates are drawn in translated coordinates, so this leaves room for them. */
 const GLOW_MARGIN = 200;
 
-/** ストリーム上のビット位置 k の x 座標（入力 XOR を原点とした相対値）。 */
+/** x coordinate of bit position k on the stream (relative to the input XOR as origin). */
 const streamX = (k: number, grouped: boolean) => k * STREAM_PITCH + (grouped ? Math.floor(k / 8) * BYTE_GAP : 0);
 
-/** ステップごとにレジスタ箱へ付けるアニメーション名。 */
+/** Animation name applied to a register box for each step. */
 function boxAnimation(params: CrcParams, step: Step, bit: number): string | undefined {
   switch (step.kind) {
     case "shift":
@@ -37,7 +37,7 @@ function boxAnimation(params: CrcParams, step: Step, bit: number): string | unde
   }
 }
 
-/** XOR ゲート（⊕）。id は "input" か入口にあるレジスタの番号。active はこのステップで計算に使われていること。 */
+/** XOR gate (⊕). id is "input" or the number of the register at its entry. active means it is used in this step's computation. */
 export function XorGate(props: { at: Point; r: number; id: "input" | number; active: boolean; highlight: boolean }) {
   const { at, r, id, active, highlight } = props;
   return (
@@ -53,7 +53,7 @@ export function XorGate(props: { at: Point; r: number; id: "input" | number; act
   );
 }
 
-/** 変数 feedback の値を示す箱。値の色で塗り、feedback ステップでは結果の粒が届いた時点で値と色が入る。 */
+/** Box showing the value of the variable feedback. Filled with the value's colour; in the feedback step the value and colour appear when the result particle arrives. */
 function FeedbackBox(props: { at: Point & { size: number }; value: Bit | undefined; arriving: boolean; stepIndex: number }) {
   const { at, value, arriving, stepIndex } = props;
   const half = at.size / 2;
@@ -70,14 +70,14 @@ function FeedbackBox(props: { at: Point & { size: number }; value: Bit | undefin
   );
 }
 
-/** 粒の進み方。粒と、粒の後ろから配線を塗る線とで共有する。 */
+/** How a particle travels. Shared by the particle and the trail that paints the wire behind it. */
 type Travel = Readonly<{ delayMs: number; durationMs: number }>;
 
 const toPoints = (points: readonly Point[]) => points.map((p) => `${p.x},${p.y}`).join(" ");
 
 /**
- * 値の流れる配線。level が undefined なら何も流れていない。
- * travel があれば、配線は灰色のまま、粒と同じ進み方で始点から値の色に塗られていく。
+ * A wire carrying a value. If level is undefined, nothing flows.
+ * With travel, the wire stays grey and is painted in the value's colour from its start, at the same pace as the particle.
  */
 function Wire(props: {
   name: string;
@@ -100,7 +100,7 @@ function Wire(props: {
   );
 }
 
-/** 粒の後ろから配線を塗る線。長さを 1 として、描く範囲を粒の進み方に合わせて伸ばす。 */
+/** Trail that paints the wire behind a particle. Treats the length as 1 and extends the drawn range to follow the particle. */
 function Trail(props: { points: readonly Point[]; level: Bit; travel: Travel }) {
   const { points, level, travel } = props;
   const ref = useRef<SVGPolylineElement>(null);
@@ -115,12 +115,12 @@ function Trail(props: { points: readonly Point[]; level: Bit; travel: Travel }) 
   return <polyline ref={ref} className="wire trail" data-level={level} pathLength={1} points={toPoints(points)} fill="none" />;
 }
 
-/** 粒が届いてから消えきるまでの時間。届いた値は配線・ゲート・箱が引き継ぐので、すぐ消す。 */
+/** Time from a particle's arrival until it fully vanishes. The wire, gate or box takes over the arrived value, so it vanishes quickly. */
 const VANISH_MS = 60;
 
 /**
- * 経路 points に沿って動く値の粒。delayMs までは見えず、durationMs で終点に届いたら消える。
- * 届いた値は配線の色が引き継ぐ。アニメーションが始まる前の描画では見えない。
+ * A value particle moving along the path points. Invisible until delayMs; vanishes on reaching the end after durationMs.
+ * The wire's colour takes over the arrived value. Invisible in renders before the animation starts.
  */
 function ParticleDot(props: { route: string; value: Bit; points: readonly Point[] } & Travel) {
   const { route, value, points, delayMs, durationMs } = props;
@@ -148,15 +148,15 @@ function ParticleDot(props: { route: string; value: Bit; points: readonly Point[
 type Props = Readonly<{
   params: CrcParams;
   step: Step;
-  /** 次のステップ。箱に入る値の控えを出すのに使う。 */
+  /** The next step. Used to show a preview of the value entering each box. */
   next: Step | undefined;
   stepIndex: number;
-  /** このステップのアニメーション時間。 */
+  /** Animation time of this step. */
   animMs: number;
   focused: ParamName | undefined;
 }>;
 
-/** 注目中のパラメータが図のどこに効くか。 */
+/** Where in the diagram the focused parameter takes effect. */
 const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
   width: "registers",
   poly: "taps",
@@ -167,8 +167,8 @@ const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
 };
 
 /**
- * LFSR（ハードウェア表現）。描画は step だけで決まり、アニメーションは stepIndex ごとに再生し直す。
- * 値の流れは配線の色（wireLevels）と粒（particles）で示し、計算式の文字列は出さない。
+ * LFSR (hardware representation). Rendering depends only on step, and the animation replays for each stepIndex.
+ * Value flow is shown by wire colours (wireLevels) and particles (particles); no formula text is shown.
  */
 export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Props) {
   const m = useMessages();

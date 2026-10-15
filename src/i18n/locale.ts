@@ -1,9 +1,9 @@
-/** 画面の文を出せる言語。zh は簡体字の中国語。 */
+/** Languages the UI text is available in. zh is Simplified Chinese. */
 export const LOCALES = ["ja", "en", "zh", "es", "de", "fr"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
-/** 言語の選択肢に出す、各言語の自称。 */
+/** Each language's name for itself, shown in the language selector. */
 export const LOCALE_NAMES: Record<Locale, string> = {
   ja: "日本語",
   en: "English",
@@ -15,7 +15,7 @@ export const LOCALE_NAMES: Record<Locale, string> = {
 
 export const isLocale = (x: unknown): x is Locale => LOCALES.includes(x as Locale);
 
-/** ブラウザの優先言語の並び preferred を先頭から見て、言語コードが一致した最初の言語。どれとも一致しなければ英語。 */
+/** The first language whose code matches, scanning the browser's preferred languages preferred from the front. English if none matches. */
 export function pickLocale(preferred: readonly string[]): Locale {
   return preferred.map((tag) => tag.split("-")[0]!.toLowerCase()).find(isLocale) ?? "en";
 }

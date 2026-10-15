@@ -3,7 +3,7 @@ import { trace, type CrcParams } from "../domain/trace";
 import { bits, plain3 } from "../testing/fixtures";
 import { FAST_MS, SLOW_MS, STEADY_MS, animationMs, initialPlayer, stepDurations, updatePlayer, type Player } from "./playback";
 
-/** 各クロック（feedback から次の feedback の直前まで）の所要時間の一覧。 */
+/** Duration of each clock (from one feedback up to just before the next). */
 const clockDurations = (params: CrcParams, input: string) => {
   const steps = trace(params, bits(input));
   const durations = stepDurations(steps, "auto");
@@ -11,21 +11,21 @@ const clockDurations = (params: CrcParams, input: string) => {
 };
 
 describe("stepDurations", () => {
-  it("Given 自動モード, When feedback が 1,0,0,1,1 と出る 10101 を流す, Then 0 と 1 の両方を見せた 2 クロック目までは低速、以降は高速", () => {
+  it("Given auto mode, When 10101 is fed, giving feedback 1,0,0,1,1, Then clocks are slow through the 2nd, which has shown both 0 and 1, and fast after", () => {
     expect(clockDurations(plain3, "10101")).toEqual([SLOW_MS, SLOW_MS, FAST_MS, FAST_MS, FAST_MS]);
   });
 
-  it("Given 自動モード, When feedback が 0 しか出ない 00000000 を流す, Then 7 クロック目からは高速", () => {
+  it("Given auto mode, When 00000000 is fed, giving only feedback 0, Then clocks are fast from the 7th", () => {
     expect(clockDurations(plain3, "00000000")).toEqual([...Array(6).fill(SLOW_MS), FAST_MS, FAST_MS]);
   });
 
-  it("Given 自動モード, When 1 クロックだけ流す, Then そのクロックの shift と xor も同じ速度", () => {
+  it("Given auto mode, When only 1 clock is fed, Then that clock's shift and xor run at the same speed", () => {
     const steps = trace(plain3, bits("1"));
 
     expect(stepDurations(steps, "auto")).toEqual(steps.map(() => SLOW_MS));
   });
 
-  it("Given 自動モード, When 高速になるほど長く流す, Then init と後処理は常に低速", () => {
+  it("Given auto mode, When fed long enough to speed up, Then init and post-processing are always slow", () => {
     const steps = trace({ ...plain3, refout: true, xorout: 1 }, bits("10101010"));
 
     const durations = stepDurations(steps, "auto");
@@ -35,7 +35,7 @@ describe("stepDurations", () => {
     expect(durations.at(-2)).toBe(SLOW_MS);
   });
 
-  it("Given 一定モード, When 101 を流す, Then 全ステップが同じ時間", () => {
+  it("Given steady mode, When 101 is fed, Then every step takes the same time", () => {
     const steps = trace(plain3, bits("101"));
 
     expect(new Set(stepDurations(steps, "steady"))).toEqual(new Set([STEADY_MS]));
@@ -48,49 +48,49 @@ describe("updatePlayer", () => {
   const tickOnce = { type: "tick", loop: false } as const;
   const tickLoop = { type: "tick", loop: true } as const;
 
-  it("Given 開いた直後, When 何もしない, Then 先頭で停止している", () => {
+  it("Given just opened, When nothing is done, Then it is stopped at the first step", () => {
     expect(initialPlayer).toEqual(at(0));
   });
 
-  it("Given ループ無効, When 再生中に tick する, Then 1 つ進み、末尾に着いたら停止する", () => {
+  it("Given loop off, When ticked while playing, Then it advances one step and stops at the last", () => {
     expect(updatePlayer(at(1, true), tickOnce, len)).toEqual(at(2, true));
     expect(updatePlayer(at(3, true), tickOnce, len)).toEqual(at(4, false));
   });
 
-  it("Given ループ無効, When 停止中に tick する, Then 進まない", () => {
+  it("Given loop off, When ticked while stopped, Then it does not advance", () => {
     expect(updatePlayer(at(1), tickOnce, len)).toEqual(at(1));
   });
 
-  it("Given ループ有効, When 再生中に末尾まで tick する, Then 末尾を表示したまま再生を続け、次の tick で先頭に戻る", () => {
+  it("Given loop on, When ticked to the last step while playing, Then it keeps playing with the last step shown and returns to the first on the next tick", () => {
     expect(updatePlayer(at(3, true), tickLoop, len)).toEqual(at(4, true));
     expect(updatePlayer(at(4, true), tickLoop, len)).toEqual(at(0, true));
   });
 
-  it("Given ループ有効, When 停止中に tick する, Then 進まない", () => {
+  it("Given loop on, When ticked while stopped, Then it does not advance", () => {
     expect(updatePlayer(at(4), tickLoop, len)).toEqual(at(4));
   });
 
-  it("Given 停止中, When 末尾で play する, Then 先頭から再生する", () => {
+  it("Given stopped, When play is pressed at the last step, Then it plays from the first", () => {
     expect(updatePlayer(at(4), { type: "play" }, len)).toEqual(at(0, true));
   });
 
-  it("Given 停止中, When 途中で play する, Then その位置から再生する", () => {
+  it("Given stopped, When play is pressed midway, Then it plays from that position", () => {
     expect(updatePlayer(at(2), { type: "play" }, len)).toEqual(at(2, true));
   });
 
-  it("Given 停止中, When 末尾で toggle する, Then 先頭から再生する", () => {
+  it("Given stopped, When toggled at the last step, Then it plays from the first", () => {
     expect(updatePlayer(at(4), { type: "toggle" }, len)).toEqual(at(0, true));
   });
 
-  it("Given 再生中, When toggle する, Then 停止する", () => {
+  it("Given playing, When toggled, Then it stops", () => {
     expect(updatePlayer(at(2, true), { type: "toggle" }, len)).toEqual(at(2, false));
   });
 
-  it("Given 再生中, When reset する, Then 先頭で停止する", () => {
+  it("Given playing, When reset, Then it stops at the first step", () => {
     expect(updatePlayer(at(3, true), { type: "reset" }, len)).toEqual(at(0));
   });
 
-  it("Given 任意の位置, When 手動で移動する, Then 停止し、範囲内に収める", () => {
+  it("Given any position, When moved manually, Then it stops and is clamped to the range", () => {
     expect(updatePlayer(at(2, true), { type: "next" }, len)).toEqual(at(3));
     expect(updatePlayer(at(4), { type: "next" }, len)).toEqual(at(4));
     expect(updatePlayer(at(0), { type: "prev" }, len)).toEqual(at(0));
@@ -102,7 +102,7 @@ describe("updatePlayer", () => {
 });
 
 describe("animationMs", () => {
-  it("Given ステップの表示時間, When アニメーションの長さを求める, Then 表示時間の 80% で、速度倍率を下げると上限なく長くなる", () => {
+  it("Given a step display time, When the animation length is computed, Then it is 80% of the display time and grows without bound as the speed multiplier falls", () => {
     expect(animationMs(FAST_MS)).toBe(FAST_MS * 0.8);
     expect(animationMs(SLOW_MS / 0.25)).toBe((SLOW_MS / 0.25) * 0.8);
   });

@@ -2,22 +2,22 @@ import { expect } from "@playwright/test";
 import { given, test, then, when } from "./support/scenario";
 import { TUTORIAL_STEPS, Visualizer } from "./support/visualizer";
 
-test.describe("再生", () => {
-  test("再生すると末尾まで進んで停止する", async ({ page }) => {
-    const v = await given("速度倍率 ×8 で開いている", async () => {
+test.describe("Playback", () => {
+  test("playing advances to the end and stops", async ({ page }) => {
+    const v = await given("the page is open with speed rate ×8", async () => {
       const v = await Visualizer.open(page);
       await v.settings.rate().selectOption("8");
       return v;
     });
-    await when("再生する", () => v.settings.play().click());
-    await then("末尾で止まり、ボタンは再生に戻る", async () => {
+    await when("playing", () => v.settings.play().click());
+    await then("it stops at the end and the button returns to play", async () => {
       await expect(v.counter).toHaveText(`${TUTORIAL_STEPS} / ${TUTORIAL_STEPS}`, { timeout: 10_000 });
       await expect(v.settings.play()).toHaveAttribute("aria-label", "再生");
     });
   });
 
-  test("ループ再生では末尾の次に先頭へ戻って再生を続ける", async ({ page }) => {
-    const v = await given("ループ再生を L キーで有効にし、末尾の 1 つ手前にいる", async () => {
+  test("with loop playback, after the end it returns to the start and keeps playing", async ({ page }) => {
+    const v = await given("loop playback is enabled with the L key and the position is one before the end", async () => {
       const v = await Visualizer.open(page);
       await expect(v.settings.loop()).toHaveAttribute("aria-pressed", "false");
       await page.keyboard.press("l");
@@ -26,46 +26,46 @@ test.describe("再生", () => {
       await v.stepBack();
       return v;
     });
-    await when("再生する", () => v.settings.play().click());
-    await then("末尾を表示した後、先頭へ戻って再生を続ける", async () => {
+    await when("playing", () => v.settings.play().click());
+    await then("after showing the end, it returns to the start and keeps playing", async () => {
       await expect(v.counter).toHaveText(`${TUTORIAL_STEPS} / ${TUTORIAL_STEPS}`);
       await expect(v.counter).toHaveText(`1 / ${TUTORIAL_STEPS}`, { timeout: 5_000 });
       await expect(v.settings.play()).toHaveAttribute("aria-label", "一時停止");
     });
   });
 
-  test("ループ設定は CRC 設定を変えても保たれる", async ({ page }) => {
-    const v = await given("ループ再生を有効にしている", async () => {
+  test("the loop setting is kept when the CRC settings change", async ({ page }) => {
+    const v = await given("loop playback is enabled", async () => {
       const v = await Visualizer.open(page);
       await v.settings.loop().click();
       return v;
     });
-    await when("プリセットを変える", () => v.settings.preset().selectOption("CRC-8/SMBUS"));
-    await then("ループ再生は有効のまま", async () => {
+    await when("changing the preset", () => v.settings.preset().selectOption("CRC-8/SMBUS"));
+    await then("loop playback stays enabled", async () => {
       await expect(v.settings.loop()).toHaveAttribute("aria-pressed", "true");
     });
   });
 
-  test("設定を変えると先頭に戻る", async ({ page }) => {
-    const v = await given("xor ステップにいる", async () => {
+  test("changing the settings returns to the start", async ({ page }) => {
+    const v = await given("at an xor step", async () => {
       const v = await Visualizer.open(page);
       await v.goTo("xor");
       return v;
     });
-    await when("入力を 1 に変える", () => v.settings.field("input").fill("1"));
-    await then("新しいステップ列の先頭にいる", async () => {
+    await when("changing the input to 1", () => v.settings.field("input").fill("1"));
+    await then("the position is at the start of the new step sequence", async () => {
       await expect(v.counter).toHaveText("1 / 5");
     });
   });
 
-  test("CRC-32/ISO-HDLC で 123456789 の CRC が検査値と一致する", async ({ page }) => {
-    const v = await given("CRC-32/ISO-HDLC を選んでいる", async () => {
+  test("with CRC-32/ISO-HDLC the CRC of 123456789 matches the check value", async ({ page }) => {
+    const v = await given("CRC-32/ISO-HDLC is selected", async () => {
       const v = await Visualizer.open(page);
       await v.settings.preset().selectOption("CRC-32/ISO-HDLC");
       return v;
     });
-    await when("末尾へ進む", () => v.goToEnd());
-    await then("検査値と一致と示す", async () => {
+    await when("advancing to the end", () => v.goToEnd());
+    await then("it shows that the check value matches", async () => {
       await expect(page.locator(".check")).toHaveText("検査値 0xCBF43926 と一致");
     });
   });
