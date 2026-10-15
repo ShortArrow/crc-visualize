@@ -322,8 +322,10 @@ export const ja = {
     frameSection: "送る並び",
     frameNote:
       "本文の後ろにその CRC を付けて送る。refin と refout が true の CRC は下位のバイトから付ける。ビットを選ぶと反転する（届くまでに壊れたことにする）。",
-    message: "本文",
-    crc: "CRC",
+    message: (n: number) => `本文（${n} ビット）`,
+    crc: (n: number) => `CRC（${n} ビット、緑の枠）`,
+    values: "赤 = 1、白 = 0",
+    flipped: "黄の枠 = 反転したビット",
     reset: "元に戻す",
     methodsSection: "確かめ方",
     recheck: {

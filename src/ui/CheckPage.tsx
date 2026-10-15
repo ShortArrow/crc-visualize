@@ -56,7 +56,7 @@ function Checks({ params, message, preset }: ChecksProps) {
           <button
             key={i}
             type="button"
-            className={`bit-cell ${i < message.length ? "message" : "crc"} ${bit ? "one" : ""} ${flips[i] ? "flipped" : ""}`}
+            className={`bit-cell ${i < message.length ? "message" : "crc"} ${i === message.length ? "crc-start" : ""} ${bit ? "one" : ""} ${flips[i] ? "flipped" : ""}`}
             data-index={i}
             onClick={() => setFlips(flip(flips, i))}
           >
@@ -64,13 +64,30 @@ function Checks({ params, message, preset }: ChecksProps) {
           </button>
         ))}
       </div>
-      <p className="frame-legend">
-        <span className="part-label message">{m.check.message}</span>
-        <span className="part-label crc">{m.check.crc}</span>
-        <button type="button" className="reset-flips" onClick={() => setFlips(noError(sent.length))}>
-          {m.check.reset}
-        </button>
-      </p>
+      <ul className="frame-legend">
+        <li data-key="message">
+          <span className="bit-cell message">0</span>
+          {m.check.message(message.length)}
+        </li>
+        <li data-key="crc">
+          <span className="bit-cell crc">0</span>
+          {m.check.crc(sent.length - message.length)}
+        </li>
+        <li data-key="values">
+          <span className="bit-cell one">1</span>
+          <span className="bit-cell">0</span>
+          {m.check.values}
+        </li>
+        <li data-key="flipped">
+          <span className="bit-cell flipped">0</span>
+          {m.check.flipped}
+        </li>
+        <li>
+          <button type="button" className="reset-flips" onClick={() => setFlips(noError(sent.length))}>
+            {m.check.reset}
+          </button>
+        </li>
+      </ul>
       <h3>{m.check.methodsSection}</h3>
       <div className="methods">
         <section className="method" data-method="recheck">

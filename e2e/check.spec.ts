@@ -64,4 +64,20 @@ test.describe("Check", () => {
       await expect(c.method("recheck")).toHaveCount(0);
     });
   });
+  test("the legend says how many bits are message and CRC, and its samples look like the bits they explain", async ({ page }) => {
+    const c = await given("CRC-16/KERMIT is open", () =>
+      CheckPage.open(page, "?width=16&poly=0x1021&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789"),
+    );
+    await then("the legend names the message and CRC with their bit counts", async () => {
+      await expect(c.legend("message")).toContainText("本文（72 ビット）");
+      await expect(c.legend("crc")).toContainText("CRC（16 ビット");
+      await expect(c.legend("values")).toBeVisible();
+      await expect(c.legend("flipped")).toBeVisible();
+    });
+    await then("the CRC sample has the same border as the CRC bits", async () => {
+      const sample = await c.borderColor(c.legend("crc").locator(".bit-cell"));
+      expect(sample).toBe(await c.borderColor(c.bits("crc").first()));
+      expect(sample).not.toBe(await c.borderColor(c.bits("message").first()));
+    });
+  });
 });

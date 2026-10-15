@@ -338,8 +338,10 @@ export const es: Messages = {
     frameSection: "Cadena enviada",
     frameNote:
       "Se envía el mensaje seguido de su CRC. Los CRC con refin y refout true se añaden empezando por el byte bajo. Selecciona un bit para invertirlo (como si se dañara por el camino).",
-    message: "mensaje",
-    crc: "CRC",
+    message: (n: number) => `mensaje (${n} bits)`,
+    crc: (n: number) => `CRC (${n} bits, borde verde)`,
+    values: "rojo = 1, blanco = 0",
+    flipped: "borde amarillo = bit invertido",
     reset: "Deshacer",
     methodsSection: "Formas de comprobar",
     recheck: {

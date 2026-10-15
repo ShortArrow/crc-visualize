@@ -308,8 +308,10 @@ export const zh: Messages = {
     frameSection: "发送的比特串",
     frameNote:
       "在消息后附上其 CRC 发送。refin 和 refout 为 true 的 CRC 从低位字节开始附加。选择比特即可翻转（视为在传输中损坏）。",
-    message: "消息",
-    crc: "CRC",
+    message: (n: number) => `消息（${n} 比特）`,
+    crc: (n: number) => `CRC（${n} 比特，绿框）`,
+    values: "红 = 1，白 = 0",
+    flipped: "黄框 = 翻转的比特",
     reset: "还原",
     methodsSection: "校验方法",
     recheck: {

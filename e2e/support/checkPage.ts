@@ -31,6 +31,16 @@ export class CheckPage {
     return this.root.locator(`.frame-row .bit-cell[data-index="${i}"]`);
   }
 
+  /** A legend entry below the received sequence (message, crc, values, flipped). */
+  legend(key: "message" | "crc" | "values" | "flipped"): Locator {
+    return this.root.locator(`.frame-legend [data-key="${key}"]`);
+  }
+
+  /** The border colour of an element. */
+  async borderColor(target: Locator): Promise<string> {
+    return target.evaluate((el) => getComputedStyle(el).borderTopColor);
+  }
+
   resetFlips(): Locator {
     return this.root.locator(".reset-flips");
   }

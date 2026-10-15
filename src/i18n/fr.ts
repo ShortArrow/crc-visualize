@@ -335,8 +335,10 @@ export const fr: Messages = {
     frameSection: "Suite envoyée",
     frameNote:
       "Le message est envoyé suivi de son CRC. Les CRC avec refin et refout à true sont ajoutés octet de poids faible en premier. Sélectionnez un bit pour l’inverser (comme s’il avait été abîmé en route).",
-    message: "message",
-    crc: "CRC",
+    message: (n: number) => `message (${n} bits)`,
+    crc: (n: number) => `CRC (${n} bits, bord vert)`,
+    values: "rouge = 1, blanc = 0",
+    flipped: "bord jaune = bit inversé",
     reset: "Annuler",
     methodsSection: "Façons de vérifier",
     recheck: {
