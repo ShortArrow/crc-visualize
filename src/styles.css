@@ -1777,6 +1777,12 @@ button.bit-cell:hover {
   font-size: 0.85rem;
 }
 
+/* Badges stay whole: a narrow card moves them to the next line instead of splitting them */
+.match,
+.verdict {
+  white-space: nowrap;
+}
+
 .equivalence-item .match {
   margin-left: 8px;
   padding: 0 6px;
@@ -1960,7 +1966,10 @@ button.bit-cell:hover {
   line-height: 1.6;
 }
 
-/* Spreads a page's cards across the editor area row by row: the cards of a row are as tall as each other and share out the whole width */
+/*
+ * Spreads a page's cards across the editor area row by row: the cards of a row are as tall as each other and share out the whole width.
+ * A card starts as wide as its widest table, bit row or drawing, and prose wraps to whatever width the card gets instead of widening it.
+ */
 .page-columns {
   display: flex;
   flex-wrap: wrap;
@@ -1969,8 +1978,13 @@ button.bit-cell:hover {
 }
 
 .page-columns > * {
-  flex: 1 1 300px;
-  min-width: 0;
+  flex: 1 1 auto;
+  min-width: min(100%, 280px);
+}
+
+.page-columns > * > :is(p, h3, h4, ul):not(.verdict),
+.page-columns .equivalence-item dd {
+  contain: inline-size;
 }
 
 /* A short introduction that would be left mostly empty beside taller cards takes a row of its own */
@@ -2087,7 +2101,7 @@ button.bit-cell:hover {
 .table-steps td,
 .entry-clocks th,
 .entry-clocks td {
-  padding: 2px 8px;
+  padding: 2px 5px;
   text-align: right;
   border-bottom: 1px solid var(--border);
 }
@@ -2137,13 +2151,26 @@ button.bit-cell:hover {
   border-radius: 3px;
 }
 
+/* On a wide card the explanation of an entry stands to the left of its clocks; on a narrow one, above them */
+.entry-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 24px;
+}
+
+.entry-text {
+  flex: 1 1 240px;
+  contain: inline-size;
+}
+
 .crc-table-scroll {
   overflow-x: auto;
 }
 
 .crc-table th,
 .crc-table td {
-  padding: 1px 4px;
+  padding: 1px 3px;
   text-align: center;
 }
 
@@ -2195,8 +2222,16 @@ button.bit-cell:hover {
   font-family: var(--mono);
 }
 
+/* The form keeps the width of its fields (its options wrap to it); the results take the rest of the row */
+.page-columns > .estimate-input {
+  flex-grow: 0;
+}
+
+.estimate-input .estimate-options {
+  contain: inline-size;
+}
+
 .samples {
-  width: 100%;
   border-collapse: collapse;
 }
 
@@ -2212,7 +2247,7 @@ button.bit-cell:hover {
 }
 
 .samples .sample-data {
-  width: 100%;
+  width: 24ch;
 }
 
 .field-error {

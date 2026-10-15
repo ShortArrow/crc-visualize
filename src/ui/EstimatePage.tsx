@@ -84,7 +84,7 @@ export function EstimatePage({ onOpen, onCount }: Props) {
       <h2>{e.heading}</h2>
       <p className="note">{e.note}</p>
       <div className="page-columns">
-        <section className="card">
+        <section className="card estimate-input">
           <div className="estimate-options">
             <label>
               {e.format}{" "}
@@ -159,26 +159,24 @@ export function EstimatePage({ onOpen, onCount }: Props) {
           </div>
         </section>
         {results ? (
-          <>
-            <section className="card">
-              <h3>{e.catalogueTitle}</h3>
-              {results.catalogue.length ? (
-                <ul className="catalogue-matches">
-                  {results.catalogue.map((p) => (
-                    <li key={p.name}>
-                      {p.name}{" "}
-                      <button type="button" onClick={() => onOpen(p.params, firstInput)}>
-                        {e.open}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="note">{e.noCatalogue}</p>
-              )}
-            </section>
+          <section className="card estimate-results">
+            <h3>{e.catalogueTitle}</h3>
+            {results.catalogue.length ? (
+              <ul className="catalogue-matches">
+                {results.catalogue.map((p) => (
+                  <li key={p.name}>
+                    {p.name}{" "}
+                    <button type="button" onClick={() => onOpen(p.params, firstInput)}>
+                      {e.open}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="note">{e.noCatalogue}</p>
+            )}
             <BruteResults brute={results.brute} width={w} onOpen={(params) => onOpen(params, firstInput)} />
-          </>
+          </section>
         ) : null}
       </div>
     </div>
@@ -187,7 +185,7 @@ export function EstimatePage({ onOpen, onCount }: Props) {
 
 type BruteProps = Readonly<{ brute: BruteForce; width: number; onOpen: (params: CrcParams) => void }>;
 
-/** The brute-force state and up to SHOWN_CANDIDATES candidates, each with its official name if it is a preset. */
+/** The brute-force state and up to SHOWN_CANDIDATES candidates, each with its official name if it is a preset. Placed in the results card below the catalogue matches. */
 function BruteResults({ brute, width, onOpen }: BruteProps) {
   const e = useMessages().estimate;
   const shown = brute.candidates.slice(0, SHOWN_CANDIDATES);
@@ -197,7 +195,7 @@ function BruteResults({ brute, width, onOpen }: BruteProps) {
     needPair: e.needPair,
   }[brute.status];
   return (
-    <section className="card">
+    <>
       <h3>{e.bruteTitle}</h3>
       <p className="brute-status note" data-status={brute.status}>
         {message}
@@ -241,7 +239,7 @@ function BruteResults({ brute, width, onOpen }: BruteProps) {
       {brute.candidates.length > SHOWN_CANDIDATES ? (
         <p className="note">{e.more(brute.candidates.length - SHOWN_CANDIDATES)}</p>
       ) : null}
-    </section>
+    </>
   );
 }
 
