@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findPreset, PRESETS } from "./presets";
+import { CATALOGUE, findPreset, PRESETS } from "./presets";
 
 describe("findPreset", () => {
   it("Given the same parameters as CRC-16/XMODEM, When a preset is looked up, Then CRC-16/XMODEM is returned", () => {
@@ -36,5 +36,21 @@ describe("PRESETS", () => {
     "CRC-32/MPEG-2",
   ])("Given the preset list, When %s is looked up, Then it is found", (name) => {
     expect(PRESETS.map((p) => p.name)).toContain(name);
+  });
+
+  it("Given the preset list, When the reveng catalogue entries are counted, Then all 104 entries of width 32 or less are there", () => {
+    expect(CATALOGUE).toHaveLength(104);
+    expect(CATALOGUE.every((p) => p.params.width <= 32)).toBe(true);
+  });
+
+  it("Given CRC-12/UMTS, When its parameters are read, Then refin and refout differ as in the catalogue", () => {
+    const umts = CATALOGUE.find((p) => p.name === "CRC-12/UMTS")!;
+    expect([umts.params.refin, umts.params.refout]).toEqual([false, true]);
+  });
+
+  it("Given CRC-16/KERMIT, When its aliases are read, Then the commonly used ones come first and the rest of the catalogue aliases follow", () => {
+    const kermit = CATALOGUE.find((p) => p.name === "CRC-16/KERMIT")!;
+    expect(kermit.aliases.slice(0, 3)).toEqual(["CRC-16/CCITT", "CRC-16/CCITT-TRUE", "CRC-CCITT"]);
+    expect(kermit.aliases).toContain("CRC-16/BLUETOOTH");
   });
 });

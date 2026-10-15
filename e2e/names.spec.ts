@@ -35,15 +35,19 @@ test.describe("Naming", () => {
 
   test("lists the family sharing a poly and highlights values differing from the first", async ({ page }) => {
     const n = await given("the naming page is open", () => NamesPage.open(page));
-    await then("the poly 0x1021 family lists 6 presets", async () => {
-      await expect(n.family("0x1021").locator("tbody tr")).toHaveCount(6);
+    await then("the poly 0x1021 family lists 11 presets", async () => {
+      await expect(n.family("0x1021").locator("tbody tr")).toHaveCount(11);
     });
-    await then("XMODEM highlights only init, IBM-SDLC highlights refin/refout and xorout", async () => {
-      await expect(n.familyCell("0x1021", "CRC-16/XMODEM", "init")).toHaveClass(/differs/);
-      await expect(n.familyCell("0x1021", "CRC-16/XMODEM", "xorout")).not.toHaveClass(/differs/);
-      await expect(n.familyCell("0x1021", "CRC-16/IBM-SDLC", "reflect")).toHaveClass(/differs/);
-      await expect(n.familyCell("0x1021", "CRC-16/IBM-SDLC", "xorout")).toHaveClass(/differs/);
-    });
+    await then(
+      "compared with the first member GENIBUS, XMODEM highlights init and xorout, IBM-SDLC only refin/refout",
+      async () => {
+        await expect(n.familyCell("0x1021", "CRC-16/XMODEM", "init")).toHaveClass(/differs/);
+        await expect(n.familyCell("0x1021", "CRC-16/XMODEM", "xorout")).toHaveClass(/differs/);
+        await expect(n.familyCell("0x1021", "CRC-16/XMODEM", "reflect")).not.toHaveClass(/differs/);
+        await expect(n.familyCell("0x1021", "CRC-16/IBM-SDLC", "reflect")).toHaveClass(/differs/);
+        await expect(n.familyCell("0x1021", "CRC-16/IBM-SDLC", "xorout")).not.toHaveClass(/differs/);
+      },
+    );
   });
 
   test("looks up the full name from an alias, and lists every candidate for names that differ by convention", async ({

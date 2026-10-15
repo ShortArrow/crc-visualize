@@ -18,8 +18,8 @@ LFSR（ハードウェア）の動きと、ビット単位 CRC 実装（ソフ�
 プリセットは reveng カタログの検査値（check、入力 `"123456789"` の CRC）を持ち、計算の正しさの基準にする。
 
 - 教材用 `CRC-3/TUTORIAL`（width=3, poly=0x3, init=0, refin=false, refout=false, xorout=0, 入力ビット `10101`, CRC=`101`）
-- CRC-3/GSM, CRC-4/G-704, CRC-5/USB, CRC-7/MMC, CRC-8/SMBUS, CRC-8/MAXIM-DOW, CRC-8/AUTOSAR, CRC-8/SAE-J1850, CRC-16/ARC, CRC-16/MODBUS, CRC-16/USB, CRC-16/IBM-3740, CRC-16/XMODEM, CRC-16/KERMIT, CRC-16/IBM-SDLC, CRC-16/SPI-FUJITSU, CRC-16/GENIBUS, CRC-32/ISO-HDLC, CRC-32/BZIP2, CRC-32/MPEG-2, CRC-32/ISCSI
-- 選択肢には正式名に続けて、reveng カタログの別名から資料でよく使われるものを最大 3 つ、全角括弧で添える（例: CRC-16/KERMIT（CCITT、CCITT-TRUE、CRC-CCITT））。同じ「CRC-幅/」で始まる別名はその接頭辞を省く。
+- reveng の「Catalogue of parametrised CRC algorithms」にある、`width` が 32 以下の全てのアルゴリズム（104 個）。並びはカタログの順。各プリセットはカタログの別名を全て持ち、資料でよく使われるものを先に並べる。
+- 選択肢には正式名に続けて、別名のうち先頭から最大 3 つを全角括弧で添える（例: CRC-16/KERMIT（CCITT、CCITT-TRUE、CRC-CCITT））。同じ「CRC-幅/」で始まる別名はその接頭辞を省く。
 
 ## 2. 入力
 
