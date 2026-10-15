@@ -218,6 +218,9 @@ export const fr: Messages = {
     spaceNote: (w: number) =>
       `Une suite abîmée tombe par hasard sur un mot de code avec une probabilité d’environ 1/2^${w}. Plus width est grand, plus une erreur est difficile à manquer.`,
     gridLegend: "vert = mot de code, bord jaune = suite reçue",
+    stripTitle: (k: number, size: number) => `CRC pouvant suivre le message reçu (${k} bits) : ${size}`,
+    stripLegend:
+      "vert = le CRC qui correspond au message (le seul qui forme un mot de code), bord jaune = le CRC reçu. L’erreur est détectée quand ils diffèrent",
     checkSection: "Abîmer et vérifier",
     received: "Suite reçue (sélectionnez un bit pour l’inverser)",
     error: "Erreur e (envoyée XOR reçue)",

@@ -212,6 +212,8 @@ export const ja = {
     ratio: "符号語の割合",
     spaceNote: (w: number) => `壊れた並びが偶然どれかの符号語になる割合はおよそ 1/2^${w}。width を増やすほど見逃しにくくなる。`,
     gridLegend: "緑 = 符号語、黄の枠 = 受け取った並び",
+    stripTitle: (k: number, size: number) => `受け取った本文（${k} ビット）に付きうる CRC（${size} 通り）`,
+    stripLegend: "緑 = 本文に合う CRC（符号語になるのはこれだけ）、黄の枠 = 届いた CRC。2 つが違えば誤りが見つかる",
     checkSection: "壊して確かめる",
     received: "受け取った並び（ビットを選ぶと反転）",
     error: "誤り e（送った並び XOR 受け取った並び）",

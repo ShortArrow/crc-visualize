@@ -216,6 +216,9 @@ export const en: Messages = {
     spaceNote: (w: number) =>
       `A corrupted string happens to be some codeword with a probability of about 1/2^${w}. A larger width makes errors harder to miss.`,
     gridLegend: "green = codeword, yellow outline = received string",
+    stripTitle: (k: number, size: number) => `CRCs that could follow the received message (${k} bits): ${size} of them`,
+    stripLegend:
+      "green = the CRC that fits the message (the only one that makes a codeword), yellow outline = the CRC received. The error is found when they differ",
     checkSection: "Break it and check",
     received: "Received string (select a bit to flip it)",
     error: "Error e (sent XOR received)",

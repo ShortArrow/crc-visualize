@@ -1684,6 +1684,41 @@ button.bit-cell:hover {
   box-shadow: 0 0 0 2px var(--warn);
 }
 
+/* The CRCs that could follow the received message, as many to a row as the card allows */
+.crc-strip {
+  margin: 8px 0;
+}
+
+.crc-strip figcaption {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.strip-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  contain: inline-size;
+}
+
+.strip-cell {
+  padding: 1px 6px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.strip-cell.fitting {
+  color: var(--bg);
+  background: var(--ok);
+}
+
+.strip-cell.received {
+  box-shadow: 0 0 0 2px var(--warn);
+}
+
 .verdict {
   display: inline-block;
   margin: 4px 0;
@@ -1983,6 +2018,7 @@ button.bit-cell:hover {
 }
 
 .page-columns > * > :is(p, h3, h4, ul):not(.verdict),
+.page-columns :is(.note, figcaption),
 .page-columns .equivalence-item dd {
   contain: inline-size;
 }

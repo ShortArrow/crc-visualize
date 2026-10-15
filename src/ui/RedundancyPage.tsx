@@ -1,6 +1,16 @@
 import { useState, type CSSProperties } from "react";
 import { codeword, remainder, type Generator } from "../domain/cyclic";
-import { bitsValue, burstLength, codewordValues, flip, generatorError, noError, verdict, xorBits } from "../domain/redundancy";
+import {
+  bitsValue,
+  burstLength,
+  codewordValues,
+  crcStrip,
+  flip,
+  generatorError,
+  noError,
+  verdict,
+  xorBits,
+} from "../domain/redundancy";
 import type { Bit } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { powerOfTwoText, powerText } from "./format";
@@ -52,6 +62,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
             <dd>1/{2 ** generator.width}</dd>
           </dl>
           {2 ** n <= GRID_LIMIT ? <WordGrid generator={generator} received={bitsValue(received)} /> : null}
+          <CrcStripFigure generator={generator} received={received} />
           <p className="note">{m.redundancy.spaceNote(generator.width)}</p>
         </section>
         <section className="card">
@@ -116,6 +127,28 @@ function BitCells({ bits, width, range = [0, bits.length], flipped, onFlip }: Ce
       </span>
     );
   });
+}
+
+/** Lays out the CRCs that could follow the message of received by value, marking the one that fits the message and the one received. */
+function CrcStripFigure({ generator, received }: Readonly<{ generator: Generator; received: readonly Bit[] }>) {
+  const m = useMessages();
+  const strip = crcStrip(generator, received);
+  return (
+    <figure className="crc-strip">
+      <figcaption>{m.redundancy.stripTitle(received.length - generator.width, strip.size)}</figcaption>
+      <div className="strip-cells">
+        {Array.from({ length: strip.size }, (_, v) => (
+          <span
+            key={v}
+            className={`strip-cell ${v === strip.fitting ? "fitting" : ""} ${v === strip.received ? "received" : ""}`}
+          >
+            {binary(v, generator.width)}
+          </span>
+        ))}
+      </div>
+      <p className="note">{m.redundancy.stripLegend}</p>
+    </figure>
+  );
 }
 
 /** Lays out every n-bit sequence in a grid by value, marking the codewords and the received sequence received (a value). */

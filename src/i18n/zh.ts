@@ -205,6 +205,8 @@ export const zh: Messages = {
     ratio: "码字所占比例",
     spaceNote: (w: number) => `损坏的比特串恰好变成某个码字的概率约为 1/2^${w}。width 越大，越不容易漏检。`,
     gridLegend: "绿色 = 码字，黄框 = 接收的比特串",
+    stripTitle: (k: number, size: number) => `可接在接收的正文（${k} 位）之后的 CRC（${size} 种）`,
+    stripLegend: "绿色 = 与正文相符的 CRC（只有它构成码字），黄框 = 收到的 CRC。两者不同时即可发现错误",
     checkSection: "破坏后校验",
     received: "接收的比特串（选择比特即可翻转）",
     error: "错误 e（发送的比特串 XOR 接收的比特串）",
