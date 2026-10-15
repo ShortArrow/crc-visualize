@@ -41,7 +41,7 @@ test.describe("Parameter help and highlighting", () => {
         "input mode",
         "input",
       ]);
-      await expect(v.settings.currentHelp()).toContainText("マウスを乗せると、日本語名と説明を表示します");
+      await expect(v.settings.currentHelp()).toContainText("マウスを乗せると、日本語名と説明を表示する");
     });
     await when("hovering preset", () =>
       v.settings
