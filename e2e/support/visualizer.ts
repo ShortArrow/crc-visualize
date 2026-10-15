@@ -185,6 +185,40 @@ export class Visualizer {
     sidebar: () => this.page.locator(".sidebar"),
     sidebarToggle: () => this.page.locator(".activity .sidebar-toggle"),
     statusbar: () => this.page.locator(".statusbar"),
+    /** The shade behind the sidebar drawn over the editor on a phone; tapping it closes the sidebar. */
+    drawerShade: () => this.page.locator(".drawer-shade"),
+    /** The boxes of the activity bar, the editor area and the status bar, and the size of the window. */
+    frameBoxes: () =>
+      this.page.evaluate(() => {
+        const box = (selector: string) => {
+          const r = document.querySelector(selector)!.getBoundingClientRect();
+          return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+        };
+        return {
+          activity: box(".activity"),
+          editor: box(".editor"),
+          statusbar: box(".statusbar"),
+          view: { width: innerWidth, height: innerHeight },
+        };
+      }),
+    /**
+     * Elements in the editor area that stick out past its right edge where they cannot be scrolled to: those not inside an element
+     * that scrolls or clips sideways (other than the page itself, which scrolls down). Returns up to five of them as tag.class.
+     */
+    sticking: () =>
+      this.page.evaluate(() => {
+        const editor = document.querySelector(".editor")!;
+        const right = editor.getBoundingClientRect().right;
+        const clipped = (el: Element) => {
+          for (let a = el.parentElement; a && a !== editor && a.parentElement !== editor; a = a.parentElement)
+            if (/auto|scroll|hidden/.test(getComputedStyle(a).overflowX)) return true;
+          return false;
+        };
+        return [...editor.querySelectorAll("*")]
+          .filter((el) => el.getBoundingClientRect().right > right + 1 && !clipped(el))
+          .map((el) => el.tagName.toLowerCase() + (el.className ? `.${String(el.className).split(" ")[0]}` : ""))
+          .slice(0, 5);
+      }),
     splitter: (name: "sidebar" | "panel" | "code") => this.page.locator(`[data-splitter="${name}"]`),
     /** The page's own horizontal and vertical overflow (px). 0 means the page does not scroll. */
     pageOverflow: () =>

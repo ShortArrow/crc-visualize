@@ -11,12 +11,13 @@ import {
   Table2,
   type LucideIcon,
 } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { useMessages } from "../i18n/I18n";
 import { LOCALE_NAMES, LOCALES, type Locale } from "../i18n/locale";
 import { namesHash, narrowHash, type Route } from "./route";
 import { Splitter } from "./Splitter";
 import { fitLayout, type PaneLayout } from "./panes";
+import { usePhone } from "./phone";
 import { viewWidth } from "./zoom";
 
 type Props = Readonly<{
@@ -49,13 +50,21 @@ const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: L
 /**
  * VS Code-style screen frame. Divides into the activity bar on the left, a collapsible sidebar, the editor area and the status bar at the bottom,
  * filling the whole screen. The page itself does not scroll; only each area scrolls internally.
+ * On a phone (class phone), the activity bar runs along the bottom instead, and the sidebar is a drawer over the editor area: closed at
+ * first, and closed again on choosing a link or button in it or tapping beside it. The drawer's state is not saved in layout.
  */
 export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, editor, status }: Props) {
   const m = useMessages();
-  const open = layout.sidebarOpen;
+  const phone = usePhone();
+  const [drawer, setDrawer] = useState(false);
+  const open = phone ? drawer : layout.sidebarOpen;
+  const toggle = () => (phone ? setDrawer(!drawer) : onLayout({ ...layout, sidebarOpen: !open }));
+  const closeOnChoice = (e: MouseEvent) => {
+    if (phone && (e.target as Element).closest("a, button")) setDrawer(false);
+  };
   const style = { "--sidebar-width": `${layout.sidebarWidth}px` } as CSSProperties;
   return (
-    <div className={`workbench ${open ? "" : "sidebar-closed"}`} style={style}>
+    <div className={`workbench ${phone ? "phone" : ""} ${open ? "" : "sidebar-closed"}`} style={style}>
       <nav className="activity">
         {PAGE_LINKS.map(({ page, href, Icon }) => (
           <a
@@ -69,24 +78,23 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
             <Icon size={ICON_SIZE} />
           </a>
         ))}
-        <button
-          type="button"
-          className="sidebar-toggle"
-          title={m.workbench.sidebarToggle}
-          aria-pressed={open}
-          onClick={() => onLayout({ ...layout, sidebarOpen: !open })}
-        >
+        <button type="button" className="sidebar-toggle" title={m.workbench.sidebarToggle} aria-pressed={open} onClick={toggle}>
           <PanelLeft size={ICON_SIZE} />
         </button>
       </nav>
       {open ? (
         <>
-          <aside className="sidebar">{sidebar}</aside>
-          <Splitter
-            axis="x"
-            name="sidebar"
-            onMove={(x) => onLayout(fitLayout({ ...layout, sidebarWidth: x - ACTIVITY_WIDTH }, viewWidth()))}
-          />
+          {phone ? <div className="drawer-shade" onClick={() => setDrawer(false)} /> : null}
+          <aside className="sidebar" onClick={closeOnChoice}>
+            {sidebar}
+          </aside>
+          {phone ? null : (
+            <Splitter
+              axis="x"
+              name="sidebar"
+              onMove={(x) => onLayout(fitLayout({ ...layout, sidebarWidth: x - ACTIVITY_WIDTH }, viewWidth()))}
+            />
+          )}
         </>
       ) : null}
       <section className="editor">{editor}</section>

@@ -31,6 +31,7 @@ import { Splitter } from "./ui/Splitter";
 import { StepLog } from "./ui/StepLog";
 import { Workbench } from "./ui/Workbench";
 import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
+import { usePhone } from "./ui/phone";
 import { screenZoom, viewWidth } from "./ui/zoom";
 import { initialSettings, persistSettings, type Settings } from "./settings";
 
@@ -242,11 +243,15 @@ const KEY_MSG: Record<string, PlayerMsg> = {
   End: { type: "last" },
 };
 
-/** Step sequence and playback state for one configuration; when the configuration changes, key recreates it, back at the first step and stopped. */
+/**
+ * Step sequence and playback state for one configuration; when the configuration changes, key recreates it, back at the first step and stopped.
+ * On a phone it has no splitters: the diagram, the code and the log stack and scroll as one.
+ */
 function Visualizer(props: VisualizerProps) {
   const { params, bits, presetName, check, speedMode, rate, loop, codeLang, focus, layout, frame } = props;
   const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout } = props;
   const m = useMessages();
+  const phone = usePhone();
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const ratioIn = (el: HTMLElement | null, f: (rect: DOMRect) => number) => {
@@ -322,13 +327,17 @@ function Visualizer(props: VisualizerProps) {
             focused={focus.focused}
           />
         </section>
-        <Splitter
-          axis="y"
-          name="panel"
-          onMove={(y) =>
-            onLayout(fitLayout({ ...layout, panelRatio: ratioIn(split.current, (r) => (r.bottom - y) / r.height) }, viewWidth()))
-          }
-        />
+        {phone ? null : (
+          <Splitter
+            axis="y"
+            name="panel"
+            onMove={(y) =>
+              onLayout(
+                fitLayout({ ...layout, panelRatio: ratioIn(split.current, (r) => (r.bottom - y) / r.height) }, viewWidth()),
+              )
+            }
+          />
+        )}
         <section
           className="panel"
           ref={panel}
@@ -341,13 +350,15 @@ function Visualizer(props: VisualizerProps) {
             </h2>
             <CodeView params={params} step={step} focus={focus} lang={codeLang} />
           </div>
-          <Splitter
-            axis="x"
-            name="code"
-            onMove={(x) =>
-              onLayout(fitLayout({ ...layout, codeRatio: ratioIn(panel.current, (r) => (x - r.left) / r.width) }, viewWidth()))
-            }
-          />
+          {phone ? null : (
+            <Splitter
+              axis="x"
+              name="code"
+              onMove={(x) =>
+                onLayout(fitLayout({ ...layout, codeRatio: ratioIn(panel.current, (r) => (x - r.left) / r.width) }, viewWidth()))
+              }
+            />
+          )}
           <div className="log-pane">
             <h2>{m.visualizer.log}</h2>
             <StepLog steps={steps} current={player.index} input={bits} check={check} />
