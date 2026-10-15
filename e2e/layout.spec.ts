@@ -20,4 +20,23 @@ test.describe("Page layout", () => {
       });
     });
   }
+
+  for (const hash of [...PAGES, "#estimate"]) {
+    test(`on a wide screen, the cards of ${hash} are spaced apart, aligned row by row and hold their content`, async ({
+      page,
+    }) => {
+      const v = await given(`${hash} is open on a 1366 px wide screen`, async () => {
+        await page.goto(`/?width=16&poly=0x1021&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789${hash}`);
+        const v = Visualizer.on(page);
+        await expect(page.locator(".editor > *").first()).toBeVisible();
+        return v;
+      });
+      await then("no two cards touch, cards side by side share their top and height, and no card overflows", async () => {
+        const layout = await v.workbench.cardLayout();
+        expect(layout.minGap).toBeGreaterThanOrEqual(8);
+        expect(layout.ragged).toBe(0);
+        expect(layout.overflowing).toBe(0);
+      });
+    });
+  }
 });

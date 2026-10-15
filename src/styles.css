@@ -1537,10 +1537,6 @@ h2 {
   overflow: auto;
 }
 
-.redundancy-page section {
-  margin-bottom: 20px;
-}
-
 .redundancy-page h3 {
   margin: 0 0 8px;
   font-size: 0.95rem;
@@ -1614,7 +1610,7 @@ button.bit-cell:hover {
 .space-counts,
 .check-result {
   display: grid;
-  grid-template-columns: max-content max-content;
+  grid-template-columns: minmax(0, max-content) max-content;
   gap: 4px 12px;
   margin: 8px 0;
 }
@@ -1716,7 +1712,6 @@ button.bit-cell:hover {
 }
 
 .equivalence-item {
-  margin-bottom: 12px;
   padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1932,15 +1927,17 @@ button.bit-cell:hover {
   line-height: 1.6;
 }
 
-/* Columns that spread a page's cards across the editor area */
+/* Spreads a page's cards across the editor area row by row: the cards of a row are as tall as each other and share out the whole width */
 .page-columns {
-  columns: 380px;
-  column-gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .page-columns > * {
-  break-inside: avoid;
-  margin-bottom: 12px;
+  flex: 1 1 300px;
+  min-width: 0;
 }
 
 .card {
@@ -1981,7 +1978,6 @@ button.bit-cell:hover {
 .names-page {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
   grid-auto-flow: dense;
-  align-items: start;
 }
 
 .names-page .families,
