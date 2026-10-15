@@ -31,12 +31,17 @@ test.describe("Page layout", () => {
         await expect(page.locator(".editor > *").first()).toBeVisible();
         return v;
       });
-      await then("no two cards touch, cards side by side share their top and height, and no card overflows", async () => {
-        const layout = await v.workbench.cardLayout();
-        expect(layout.minGap).toBeGreaterThanOrEqual(8);
-        expect(layout.ragged).toBe(0);
-        expect(layout.overflowing).toBe(0);
-      });
+      await then(
+        "the page is made of cards, no two cards touch, cards side by side share their top and height, and no card overflows or is left mostly empty",
+        async () => {
+          const layout = await v.workbench.cardLayout();
+          expect(layout.minGap).toBeGreaterThanOrEqual(8);
+          expect(layout.ragged).toBe(0);
+          expect(layout.overflowing).toBe(0);
+          expect(layout.sparse).toBe(0);
+          expect(layout.count).toBeGreaterThan(0);
+        },
+      );
     });
   }
 });

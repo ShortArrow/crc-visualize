@@ -23,7 +23,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
     <div className="redundancy-page">
       <h2>{m.redundancy.heading}</h2>
       <div className="page-columns">
-        <section className="card">
+        <section className="card redundancy-summary">
           <h3>{m.redundancy.whatSection}</h3>
           <div className="sent-row">
             <div className="part">

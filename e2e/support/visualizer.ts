@@ -195,7 +195,8 @@ export class Visualizer {
     /**
      * How the cards in the editor's .page-columns (or the names page) sit. minGap: the smallest space (px) between two cards that share a column span
      * (one above the other) or a row (side by side); Infinity if none. ragged: pairs of cards side by side whose top or height differ
-     * by more than 1 px. overflowing: cards whose content is wider than the card.
+     * by more than 1 px. overflowing: cards whose content is wider than the card. sparse: cards whose content ends above 60 % of
+     * their height (left mostly empty by a taller neighbour). count: the number of cards.
      */
     cardLayout: () =>
       this.page.evaluate(() => {
@@ -216,7 +217,11 @@ export class Visualizer {
           }
         }
         const overflowing = cards.filter(({ el }) => el.scrollWidth > el.clientWidth + 1).length;
-        return { minGap, ragged, overflowing };
+        const sparse = cards.filter(({ el, r }) => {
+          const bottom = Math.max(...[...el.children].map((c) => c.getBoundingClientRect().bottom));
+          return bottom - r.top < 0.6 * r.height;
+        }).length;
+        return { minGap, ragged, overflowing, sparse, count: cards.length };
       }),
     /**
      * How far across the editor area the content reaches in the first screen: the editor is cut into horizontal strips 40 px high,
