@@ -42,10 +42,14 @@ export const period = (g: Generator): number => powerCycle(g).length;
 /** Remainder of bits (first is highest degree) as a polynomial divided by g(x). */
 export const remainder = (g: Generator, bits: readonly Bit[]): number => bits.reduce<number>((r, bit) => timesX(g, r) ^ bit, 0);
 
+/** CRC of message (first is highest degree): the remainder of message · x^width divided by g(x). */
+export const crcFor = (g: Generator, message: readonly Bit[]): number =>
+  remainder(g, [...message, ...Array<Bit>(g.width).fill(0)]);
+
 /** Codeword of length n: the message (first n − width bits of repeated 1101) followed by its CRC; first is highest degree. */
 export function codeword(g: Generator): Bit[] {
   const message = Array.from({ length: period(g) - g.width }, (_, i) => MESSAGE_PATTERN[i % MESSAGE_PATTERN.length]!);
-  const crc = remainder(g, [...message, ...Array<Bit>(g.width).fill(0)]);
+  const crc = crcFor(g, message);
   const crcBits = Array.from({ length: g.width }, (_, i): Bit => ((crc >> (g.width - 1 - i)) & 1 ? 1 : 0));
   return [...message, ...crcBits];
 }
