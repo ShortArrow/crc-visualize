@@ -1,11 +1,13 @@
 import type { PointerEvent } from "react";
+import { screenZoom } from "./zoom";
 
 /**
- * Boundary between areas. While dragging, keeps passing the pointer position (clientX if axis is "x", clientY if "y") to onMove.
+ * Boundary between areas. While dragging, keeps passing the pointer position (clientX if axis is "x", clientY if "y") to onMove,
+ * in the app's own CSS px (undoing the enlargement by screenZoom).
  * An "x" boundary splits left and right areas; a "y" boundary splits top and bottom areas.
  */
 export function Splitter({ axis, name, onMove }: { axis: "x" | "y"; name: string; onMove: (position: number) => void }) {
-  const position = (e: PointerEvent) => (axis === "x" ? e.clientX : e.clientY);
+  const position = (e: PointerEvent) => (axis === "x" ? e.clientX : e.clientY) / screenZoom();
   return (
     <div
       className={`splitter splitter-${axis}`}

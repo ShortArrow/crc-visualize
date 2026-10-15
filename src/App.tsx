@@ -31,6 +31,7 @@ import { Splitter } from "./ui/Splitter";
 import { StepLog } from "./ui/StepLog";
 import { Workbench } from "./ui/Workbench";
 import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
+import { screenZoom, viewWidth } from "./ui/zoom";
 import { initialSettings, persistSettings, type Settings } from "./settings";
 
 const CHECK_BITS = bitsFromBytes([...new TextEncoder().encode("123456789")]);
@@ -186,7 +187,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
 
 /** Screen layout; restored from localStorage and fitted to the current screen, saved on every change. Ctrl+B (⌘+B) toggles the sidebar. */
 function useLayout(): [PaneLayout, (layout: PaneLayout) => void] {
-  const [layout, setLayout] = useState(() => fitLayout(loadLayout(), innerWidth));
+  const [layout, setLayout] = useState(() => fitLayout(loadLayout(), viewWidth()));
   useEffect(() => saveLayout(layout), [layout]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -248,7 +249,11 @@ function Visualizer(props: VisualizerProps) {
   const m = useMessages();
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
-  const ratioIn = (el: HTMLElement | null, f: (rect: DOMRect) => number) => (el ? f(el.getBoundingClientRect()) : 0.5);
+  const ratioIn = (el: HTMLElement | null, f: (rect: DOMRect) => number) => {
+    if (!el) return 0.5;
+    const [r, z] = [el.getBoundingClientRect(), screenZoom()];
+    return f(new DOMRect(r.x / z, r.y / z, r.width / z, r.height / z));
+  };
   const steps = useMemo(() => trace(params, bits), [params, bits]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const [player, setPlayer] = useState(initialPlayer);
@@ -321,7 +326,7 @@ function Visualizer(props: VisualizerProps) {
           axis="y"
           name="panel"
           onMove={(y) =>
-            onLayout(fitLayout({ ...layout, panelRatio: ratioIn(split.current, (r) => (r.bottom - y) / r.height) }, innerWidth))
+            onLayout(fitLayout({ ...layout, panelRatio: ratioIn(split.current, (r) => (r.bottom - y) / r.height) }, viewWidth()))
           }
         />
         <section
@@ -340,7 +345,7 @@ function Visualizer(props: VisualizerProps) {
             axis="x"
             name="code"
             onMove={(x) =>
-              onLayout(fitLayout({ ...layout, codeRatio: ratioIn(panel.current, (r) => (x - r.left) / r.width) }, innerWidth))
+              onLayout(fitLayout({ ...layout, codeRatio: ratioIn(panel.current, (r) => (x - r.left) / r.width) }, viewWidth()))
             }
           />
           <div className="log-pane">

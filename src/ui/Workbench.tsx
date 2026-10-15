@@ -17,6 +17,7 @@ import { LOCALE_NAMES, LOCALES, type Locale } from "../i18n/locale";
 import { namesHash, narrowHash, type Route } from "./route";
 import { Splitter } from "./Splitter";
 import { fitLayout, type PaneLayout } from "./panes";
+import { viewWidth } from "./zoom";
 
 type Props = Readonly<{
   route: Route;
@@ -84,7 +85,7 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
           <Splitter
             axis="x"
             name="sidebar"
-            onMove={(x) => onLayout(fitLayout({ ...layout, sidebarWidth: x - ACTIVITY_WIDTH }, innerWidth))}
+            onMove={(x) => onLayout(fitLayout({ ...layout, sidebarWidth: x - ACTIVITY_WIDTH }, viewWidth()))}
           />
         </>
       ) : null}
