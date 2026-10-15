@@ -1,3 +1,5 @@
+[English](0003-diagram-follows-steps.md) | **日本語**
+
 # ADR-0003: LFSR 図の XOR はステップの分け方に合わせ、箱の真下で箱自身とフィードバックを合流させる
 
 - 状態: 採用

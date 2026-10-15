@@ -1,8 +1,10 @@
+[English](README.md) | **日本語**
+
 # CRC Visualizer
 
 LFSR（ハードウェア）の 1 クロックと、ビット単位 CRC 実装（ソフトウェア）の 1 行を同期させて見せる SPA。CRC 設定は Rocksoft モデル（width / poly / init / refin / refout / xorout）で切り替えられる。
 
-仕様は [docs/spec.md](docs/spec.md)、設計判断は [docs/adr/](docs/adr/) にある。
+仕様は [docs/spec.ja.md](docs/spec.ja.md)、設計判断は [docs/adr/](docs/adr/) にある。
 
 ## 使い方
 
@@ -31,4 +33,8 @@ npm run build      # dist/ に静的ファイルを出力
 | `e2e`             | 機能ごとの E2E シナリオ。1 テスト 1 シナリオで、`given` / `when` / `then` の手順に分けて書く。ブラウザの言語は日本語（`ja-JP`）で動かす                                                                                                                                                                                                                                                                                |
 | `e2e/support`     | 画面をステップ・図・コード・経過の言葉で操作し観察するドライバ (`Visualizer`)、名前の規則のページのドライバ (`NamesPage`)、絞り込みのページのドライバ (`NarrowPage`)、巡回のページのドライバ (`CyclicPage`)、冗長のページのドライバ (`RedundancyPage`)、検査のページのドライバ (`CheckPage`)、置き換えのページのドライバ (`EquivalencePage`)、手順の並びを確かめる `test` と `given` / `when` / `then` (`scenario.ts`) |
 
-テストは単体・E2E とも 1 テスト 1 シナリオで、Given / When / Then に分けて書く。単体テストは入れ子にせず `describe("<対象>")` の直下に `it("Given <前提>, When <操作>, Then <結果>")` を並べ、前提は `src/testing` の関数で各テストの中に用意する。この形は `src/testing/setup.ts` が全テストの前に確かめ、崩れたテストは失敗する。E2E は `test.describe("<機能>")` の直下に要約の名前でテストを置き、`e2e/support/scenario.ts` の `given` / `when` / `then` を「Given 1 つ → When と 1 つ以上の Then の組の繰り返し」の順に並べる。この並びは同じファイルの `test` が通ったテストごとに確かめる。
+テストは単体・E2E とも 1 テスト 1 シナリオで、Given / When / Then に分けて書き、テストの名前と手順の文は英語で書く。単体テストは入れ子にせず `describe("<subject>")` の直下に `it("Given <precondition>, When <action>, Then <result>")` を並べ、前提は `src/testing` の関数で各テストの中に用意する。この形は `src/testing/setup.ts` が全テストの前に確かめ、崩れたテストは失敗する。E2E は `test.describe("<feature>")` の直下に要約の名前でテストを置き、`e2e/support/scenario.ts` の `given` / `when` / `then` を「Given 1 つ → When と 1 つ以上の Then の組の繰り返し」の順に並べる。この並びは同じファイルの `test` が通ったテストごとに確かめる。E2E の確かめる対象は日本語の画面なので、ブラウザの言語は日本語（`ja-JP`）で動かす。
+
+## 文書とコメントの言語
+
+文書は英語（`*.md`）と日本語（`*.ja.md`）の 2 つを置き、片方を変えるときはもう片方も同時に直す。コードのコメントと docstring は英語で書く。
