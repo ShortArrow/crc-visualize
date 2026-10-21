@@ -2383,11 +2383,11 @@ button.bit-cell:hover {
 
 /*
  * Phone (Workbench adds .phone): the page links run along the bottom above the status bar, the editor area takes the whole width,
- * and the sidebar is a drawer over it.
+ * and the sidebar is a drawer over it. The dock between the editor area and the page links holds the parts that are tapped.
  */
 .workbench.phone {
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto 24px;
+  grid-template-rows: minmax(0, 1fr) auto auto 24px;
 }
 
 .workbench.phone > .editor {
@@ -2396,7 +2396,7 @@ button.bit-cell:hover {
 }
 
 .workbench.phone > .activity {
-  grid-row: 2;
+  grid-row: 3;
   flex-direction: row;
   gap: 0;
   padding: 0;
@@ -2422,7 +2422,7 @@ button.bit-cell:hover {
 }
 
 .workbench.phone > .statusbar {
-  grid-row: 3;
+  grid-row: 4;
   gap: 12px;
   overflow: hidden;
   white-space: nowrap;
@@ -2445,35 +2445,111 @@ button.bit-cell:hover {
   background: rgb(0 0 0 / 0.5);
 }
 
-/* The visualizer stacks the controls, the diagram (shrunk to the width), the code and the log, and scrolls down through them */
-.phone .visualizer {
-  display: block;
-  overflow: auto;
+.workbench.phone > .dock {
+  grid-row: 2;
+  container-type: inline-size;
+  max-height: 40vh;
+  overflow-y: auto;
 }
 
-.phone .viz-split,
-.phone .hardware,
-.phone .panel {
-  display: block;
+.dock:not(:empty) {
+  border-top: 1px solid var(--border);
 }
 
-.phone .controls {
+/* Docked parts keep their page's class for their styles, but not its size and scrolling */
+.dock > .docked {
+  height: auto;
+  padding: 6px 12px;
+  overflow: visible;
+  font-size: 16px;
+}
+
+.dock > .docked + .docked {
+  padding-top: 0;
+}
+
+.dock :is(.cyclic-controls, .cyclic-result, .check-actions) {
+  margin: 0 0 4px;
+}
+
+/*
+ * The playback controls take two rows: the buttons and the counter, then the seek bar and the speed. The seek bar cannot share the
+ * first row, so it wraps and grows to the rest of the second.
+ */
+.dock .controls {
   flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.dock .controls .counter {
+  flex: 1 0 auto;
+}
+
+.dock .controls .seek {
+  order: 1;
+  flex: 1 1 100px;
+  min-width: 0;
+}
+
+.dock .controls select {
+  order: 1;
+  max-width: 9em;
+  font-size: 0.8rem;
+}
+
+/* The visualizer keeps the diagram on top, at the size the diagram sets as its minimum, and scrolls the code and the log below it */
+.phone .visualizer {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.phone .viz-split {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.phone .hardware {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.phone .hardware h2 {
+  position: sticky;
+  left: 0;
 }
 
 .phone .lfsr {
   height: auto;
-  min-width: 0 !important;
+}
+
+.phone .panel {
+  display: block;
+  overflow: auto;
+  border-top: 1px solid var(--border);
 }
 
 .phone .panel > .software {
   overflow-x: auto;
-  border-top: 1px solid var(--border);
 }
 
 .phone .panel > .log-pane {
   overflow: visible;
   border-top: 1px solid var(--border);
+}
+
+/* The table page puts the entry card right after the byte-by-byte card, and keeps the row headings of the table T while it scrolls */
+.phone .table-page .entry-card {
+  order: -1;
+}
+
+.phone .table-page .page-columns > :first-child {
+  order: -2;
+}
+
+.phone .crc-table tbody th {
+  position: sticky;
+  left: 0;
+  background: var(--bg);
+  box-shadow: 1px 0 var(--border);
 }
 
 /* The name breakdown wraps its parts */
