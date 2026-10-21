@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { codeword, period, powerCycle, remainder, rotate, type Generator } from "../domain/cyclic";
 import { useMessages } from "../i18n/I18n";
+import { Docked } from "./Dock";
 import { powerText } from "./format";
 
 const SIZE = 340;
@@ -15,7 +16,10 @@ const at = (d: number, n: number, r: number) => {
 
 const binary = (value: number, width: number) => value.toString(2).padStart(width, "0");
 
-/** Shows the codeword ring and the state ring of the generator polynomial generator side by side, sharing the rotation count k. */
+/**
+ * Shows the codeword ring and the state ring of the generator polynomial generator side by side, sharing the rotation count k.
+ * The rotate buttons and the rotated codeword with its remainder are docked.
+ */
 export function CyclicPage({ generator }: Readonly<{ generator: Generator }>) {
   const m = useMessages();
   const [turns, setTurns] = useState(0);
@@ -38,39 +42,41 @@ export function CyclicPage({ generator }: Readonly<{ generator: Generator }>) {
           <p className="note">{m.cyclic.stateNote}</p>
         </figure>
         <section className="card cyclic-side">
-          <div className="cyclic-controls">
-            <button
-              type="button"
-              className="rotate-back"
-              title={m.cyclic.back}
-              aria-label={m.cyclic.back}
-              onClick={() => setTurns(turns - 1)}
-            >
-              ◀
-            </button>
-            <span className="rotated">{m.cyclic.rotated(k)}</span>
-            <button
-              type="button"
-              className="rotate-forward"
-              title={m.cyclic.forward}
-              aria-label={m.cyclic.forward}
-              onClick={() => setTurns(turns + 1)}
-            >
-              ▶
-            </button>
-          </div>
-          <dl className="cyclic-result">
-            <dt>{m.cyclic.word}</dt>
-            <dd className="cyclic-word">
-              {rotated.map((bit, i) => (
-                <span key={i} className={bit ? "one" : ""}>
-                  {bit}
-                </span>
-              ))}
-            </dd>
-            <dt>{m.cyclic.remainder}</dt>
-            <dd className="cyclic-remainder">{binary(remainder(generator, rotated), generator.width)}</dd>
-          </dl>
+          <Docked className="cyclic-dock">
+            <div className="cyclic-controls">
+              <button
+                type="button"
+                className="rotate-back"
+                title={m.cyclic.back}
+                aria-label={m.cyclic.back}
+                onClick={() => setTurns(turns - 1)}
+              >
+                ◀
+              </button>
+              <span className="rotated">{m.cyclic.rotated(k)}</span>
+              <button
+                type="button"
+                className="rotate-forward"
+                title={m.cyclic.forward}
+                aria-label={m.cyclic.forward}
+                onClick={() => setTurns(turns + 1)}
+              >
+                ▶
+              </button>
+            </div>
+            <dl className="cyclic-result">
+              <dt>{m.cyclic.word}</dt>
+              <dd className="cyclic-word">
+                {rotated.map((bit, i) => (
+                  <span key={i} className={bit ? "one" : ""}>
+                    {bit}
+                  </span>
+                ))}
+              </dd>
+              <dt>{m.cyclic.remainder}</dt>
+              <dd className="cyclic-remainder">{binary(remainder(generator, rotated), generator.width)}</dd>
+            </dl>
+          </Docked>
           <p className="cyclic-explain">{m.cyclic.explain(n)}</p>
           <p className="note">{m.cyclic.shortened}</p>
         </section>

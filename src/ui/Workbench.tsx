@@ -15,6 +15,7 @@ import { useState, type CSSProperties, type MouseEvent, type ReactNode } from "r
 import { useMessages } from "../i18n/I18n";
 import { LOCALE_NAMES, LOCALES, type Locale } from "../i18n/locale";
 import { namesHash, narrowHash, type Route } from "./route";
+import { DockSlot } from "./Dock";
 import { Splitter } from "./Splitter";
 import { fitLayout, type PaneLayout } from "./panes";
 import { usePhone } from "./phone";
@@ -51,12 +52,14 @@ const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: L
  * VS Code-style screen frame. Divides into the activity bar on the left, a collapsible sidebar, the editor area and the status bar at the bottom,
  * filling the whole screen. The page itself does not scroll; only each area scrolls internally.
  * On a phone (class phone), the activity bar runs along the bottom instead, and the sidebar is a drawer over the editor area: closed at
- * first, and closed again on choosing a link or button in it or tapping beside it. The drawer's state is not saved in layout.
+ * first, and closed again on choosing a link or button in it or tapping beside it. The drawer's state is not saved in layout. The
+ * dock between the editor area and the page links holds the parts the page shows with Docked.
  */
 export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, editor, status }: Props) {
   const m = useMessages();
   const phone = usePhone();
   const [drawer, setDrawer] = useState(false);
+  const [dock, setDock] = useState<HTMLElement | null>(null);
   const open = phone ? drawer : layout.sidebarOpen;
   const toggle = () => (phone ? setDrawer(!drawer) : onLayout({ ...layout, sidebarOpen: !open }));
   const closeOnChoice = (e: MouseEvent) => {
@@ -97,7 +100,10 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
           )}
         </>
       ) : null}
-      <section className="editor">{editor}</section>
+      <section className="editor">
+        <DockSlot.Provider value={phone ? dock : null}>{editor}</DockSlot.Provider>
+      </section>
+      {phone ? <div className="dock" ref={setDock} /> : null}
       <footer className="statusbar">
         {status}
         <select

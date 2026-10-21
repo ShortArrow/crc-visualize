@@ -6,6 +6,7 @@ import type { Preset } from "../domain/presets";
 import { flip, noError, xorBits } from "../domain/redundancy";
 import { bitsFromBytes, toRegister, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
+import { Docked } from "./Dock";
 import { toHex } from "./format";
 
 const CHECK_INPUT = bitsFromBytes([...new TextEncoder().encode("123456789")]);
@@ -35,7 +36,7 @@ export function CheckPage({ config, preset }: Props) {
 
 type ChecksProps = Readonly<{ params: CrcParams; message: readonly Bit[]; preset: Preset | undefined }>;
 
-/** The two ways to check, on the sent sequence and on a received sequence with a flipped bit, and the check value. */
+/** The two ways to check, on the sent sequence and on a received sequence with a flipped bit, and the check value. The sent sequence is docked. */
 function Checks({ params, message, preset }: ChecksProps) {
   const m = useMessages();
   const sent = frame(params, message);
@@ -48,19 +49,21 @@ function Checks({ params, message, preset }: ChecksProps) {
     <>
       <h3>{m.check.frameSection}</h3>
       <p className="note">{m.check.frameNote}</p>
-      <div className="frame-row">
-        {received.map((bit, i) => (
-          <button
-            key={i}
-            type="button"
-            className={`bit-cell ${i < message.length ? "message" : "crc"} ${i === message.length ? "crc-start" : ""} ${bit ? "one" : ""} ${flips[i] ? "flipped" : ""}`}
-            data-index={i}
-            onClick={() => setFlips(flip(flips, i))}
-          >
-            {bit}
-          </button>
-        ))}
-      </div>
+      <Docked className="check-page">
+        <div className="frame-row">
+          {received.map((bit, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`bit-cell ${i < message.length ? "message" : "crc"} ${i === message.length ? "crc-start" : ""} ${bit ? "one" : ""} ${flips[i] ? "flipped" : ""}`}
+              data-index={i}
+              onClick={() => setFlips(flip(flips, i))}
+            >
+              {bit}
+            </button>
+          ))}
+        </div>
+      </Docked>
       <ul className="frame-legend">
         <li data-key="message">
           <span className="bit-cell message">0</span>

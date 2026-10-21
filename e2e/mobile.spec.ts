@@ -1,9 +1,12 @@
-import { expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import { given, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
 const PHONE = { width: 390, height: 844 };
 const QUERY = "?width=16&poly=0x1021&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789";
+/** The bounding box of the first element matching selector. */
+const boxOf = async (page: Page, selector: string) => (await page.locator(selector).first().boundingBox())!;
+
 const PAGES = [
   "",
   "#names",
@@ -86,26 +89,93 @@ test.describe("On a phone", () => {
     });
   }
 
-  test("the visualizer stacks the controls, the whole diagram, the code and the log, and scrolls down through them", async ({
+  test("the visualizer keeps a readable diagram at the top and the controls at the bottom, and scrolls the code and the log between them", async ({
     page,
   }) => {
-    await given("the visualizer is open on a 390×844 screen", () => Visualizer.open(page, QUERY));
-    await then("the diagram fits the width, and the code and the log follow below it", async () => {
-      const box = (selector: string) =>
-        page
-          .locator(selector)
-          .boundingBox()
-          .then((b) => b!);
-      const [editor, diagram, code, log] = await Promise.all([
-        box(".editor"),
-        box("svg.lfsr"),
-        box(".software"),
-        box(".log-pane"),
-      ]);
-      expect(diagram.width).toBeLessThanOrEqual(editor.width);
-      expect(code.y).toBeGreaterThanOrEqual(diagram.y + diagram.height - 1);
-      expect(log.y).toBeGreaterThanOrEqual(code.y + code.height - 1);
+    const v = await given("the visualizer is open on a 390×844 screen", () => Visualizer.open(page, QUERY));
+    await then("the controls lie under the editor area, above the page links", async () => {
+      const [editor, controls, activity] = [
+        await boxOf(page, ".editor"),
+        await boxOf(page, ".controls"),
+        await boxOf(page, ".activity"),
+      ];
+      expect(controls.y).toBeGreaterThanOrEqual(editor.y + editor.height - 1);
+      expect(activity.y).toBeGreaterThanOrEqual(controls.y + controls.height - 1);
+    });
+    await then("the registers are drawn large enough to read their values", async () => {
+      expect((await page.locator(".reg rect").first().boundingBox())!.width).toBeGreaterThanOrEqual(32);
+    });
+    await when("scrolling down to the end of the log", () => page.locator(".log-entry").last().scrollIntoViewIfNeeded());
+    await then("the diagram and the step button are still in view, and the log comes below the diagram", async () => {
+      await expect(page.locator("svg.lfsr")).toBeInViewport();
+      await expect(page.locator(`.controls button[title="${"1 ステップ進む（→）"}"]`)).toBeInViewport({ ratio: 1 });
+      const diagram = await boxOf(page, "svg.lfsr");
+      const last = (await page.locator(".log-entry").last().boundingBox())!;
+      expect(last.y).toBeGreaterThanOrEqual(diagram.y + diagram.height - 1);
     });
     await then("there are no splitters", () => expect(page.locator(".splitter")).toHaveCount(0));
+    await when("scrolling the diagram to its right end and stepping to the first feedback", async () => {
+      await page.locator('.reg[data-bit="0"]').scrollIntoViewIfNeeded();
+      await v.goTo("feedback");
+    });
+    await then("the diagram is scrolled back to the most significant register being read", () =>
+      expect(page.locator(".reg.msb")).toBeInViewport({ ratio: 1 }),
+    );
+  });
+
+  test("on the cyclic page, the rotate buttons and the rotated codeword stay at the bottom while the rings are read", async ({
+    page,
+  }) => {
+    await given("the cyclic page is open, scrolled to the codeword ring", async () => {
+      await page.goto(`/${QUERY}#cyclic`);
+      await page.locator(".cyclic-rings figure").first().scrollIntoViewIfNeeded();
+    });
+    await then("the rotate buttons and the rotated codeword are in view beside the ring", async () => {
+      await expect(page.locator(".rotate-forward")).toBeInViewport({ ratio: 1 });
+      await expect(page.locator(".cyclic-word")).toBeInViewport({ ratio: 1 });
+      await expect(page.locator(".cyclic-rings figure").first()).toBeInViewport();
+    });
+    await when("rotating", () => page.locator(".rotate-forward").click());
+    await then("the codeword ring is still in view", () => expect(page.locator(".cyclic-rings figure").first()).toBeInViewport());
+  });
+
+  test("on the redundancy page, the received sequence stays at the bottom while the grid of all sequences is read", async ({
+    page,
+  }) => {
+    await given("the redundancy page is open, scrolled to the grid of all sequences", async () => {
+      await page.goto(`/${QUERY}#redundancy`);
+      await page.locator(".word-grid").scrollIntoViewIfNeeded();
+    });
+    await then("the received sequence and its buttons are in view with the grid", async () => {
+      await expect(page.locator(".received-row")).toBeInViewport({ ratio: 1 });
+      await expect(page.locator(".missed-example")).toBeInViewport({ ratio: 1 });
+      await expect(page.locator(".word-grid")).toBeInViewport();
+    });
+  });
+
+  test("on the check page, the sent sequence stays at the bottom while the verdicts are read", async ({ page }) => {
+    await given("the check page is open, scrolled to the last verdict", async () => {
+      await page.goto(`/${QUERY}#check`);
+      await page.locator(".method .verdict").last().scrollIntoViewIfNeeded();
+    });
+    await then("the sent sequence is in view with the verdict", async () => {
+      await expect(page.locator(".frame-row")).toBeInViewport({ ratio: 1 });
+      await expect(page.locator(".method .verdict").last()).toBeInViewport({ ratio: 1 });
+    });
+  });
+
+  test("on the table page, the entry card follows the byte-by-byte card, and the row headings of the table T stay while it scrolls sideways", async ({
+    page,
+  }) => {
+    await given("the table page is open", () => page.goto(`/${QUERY}#table`));
+    await then("the entry card comes before the table T", async () => {
+      expect((await boxOf(page, ".entry-card")).y).toBeLessThan((await boxOf(page, ".crc-table-scroll")).y);
+    });
+    await when("scrolling the table T to its right end", async () => {
+      await page.locator(".crc-table tbody td").last().scrollIntoViewIfNeeded();
+    });
+    await then("the row headings are in view", () =>
+      expect(page.locator(".crc-table tbody th").last()).toBeInViewport({ ratio: 1 }),
+    );
   });
 });

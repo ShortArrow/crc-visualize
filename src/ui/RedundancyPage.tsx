@@ -13,13 +13,17 @@ import {
 } from "../domain/redundancy";
 import type { Bit } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
+import { Docked } from "./Dock";
 import { powerOfTwoText, powerText } from "./format";
 
 const GRID_LIMIT = 128;
 
 const binary = (value: number, width: number) => value.toString(2).padStart(width, "0");
 
-/** Uses codewords of the generator polynomial generator to show that the CRC is redundant bits appended to the message, and how they detect errors. */
+/**
+ * Uses codewords of the generator polynomial generator to show that the CRC is redundant bits appended to the message, and how they detect errors.
+ * The received sequence and the buttons that set its error are docked.
+ */
 export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>) {
   const m = useMessages();
   const sent = codeword(generator);
@@ -29,8 +33,9 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
   const received = xorBits(sent, error);
   const result = verdict(generator, error);
   const rowStyle = { "--bits": n } as CSSProperties;
+  const pageStyle = { "--n": n } as CSSProperties;
   return (
-    <div className="redundancy-page" style={{ "--n": n } as CSSProperties}>
+    <div className="redundancy-page" style={pageStyle}>
       <h2>{m.redundancy.heading}</h2>
       <div className="page-columns">
         <section className="card redundancy-summary">
@@ -67,10 +72,12 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
         </section>
         <section className="card">
           <h3>{m.redundancy.checkSection}</h3>
-          <p className="row-label">{m.redundancy.received}</p>
-          <div className="bit-row received-row" style={rowStyle}>
-            <BitCells bits={received} width={generator.width} flipped={error} onFlip={(i) => setError(flip(error, i))} />
-          </div>
+          <Docked className="redundancy-page" style={pageStyle}>
+            <p className="row-label">{m.redundancy.received}</p>
+            <div className="bit-row received-row" style={rowStyle}>
+              <BitCells bits={received} width={generator.width} flipped={error} onFlip={(i) => setError(flip(error, i))} />
+            </div>
+          </Docked>
           <dl className="check-result">
             <dt>{m.redundancy.error}</dt>
             <dd className="error-bits">{error.join("")}</dd>
@@ -82,14 +89,16 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
           <p className="verdict" data-verdict={result}>
             {m.redundancy.verdict[result]}
           </p>
-          <div className="check-actions">
-            <button type="button" className="reset-error" onClick={() => setError(noError(n))}>
-              {m.redundancy.reset}
-            </button>
-            <button type="button" className="missed-example" onClick={() => setError(generatorError(generator, n))}>
-              {m.redundancy.missedExample}
-            </button>
-          </div>
+          <Docked className="redundancy-page" style={pageStyle}>
+            <div className="check-actions">
+              <button type="button" className="reset-error" onClick={() => setError(noError(n))}>
+                {m.redundancy.reset}
+              </button>
+              <button type="button" className="missed-example" onClick={() => setError(generatorError(generator, n))}>
+                {m.redundancy.missedExample}
+              </button>
+            </div>
+          </Docked>
           <p className="note">{m.redundancy.remainderNote}</p>
           <p className="note">{m.redundancy.guarantee(generator.width)}</p>
         </section>

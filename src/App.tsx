@@ -11,6 +11,8 @@ import type { CodeLang } from "./ui/code";
 import { CodeLangSelect, CodeView } from "./ui/CodeView";
 import { ConfigPanel, formFromParams, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
+import { Docked } from "./ui/Dock";
+import { followElements } from "./ui/follow";
 import { LfsrView } from "./ui/LfsrView";
 import { logEntries } from "./ui/log";
 import { NamesPage, NamesToc } from "./ui/NamesPage";
@@ -243,9 +245,13 @@ const KEY_MSG: Record<string, PlayerMsg> = {
   End: { type: "last" },
 };
 
+/** Parts of the diagram that take part in the step shown. */
+const ACTIVE_PARTS = ".reg.msb, .reg.hit, .gate.active, .fb-box.arriving";
+
 /**
  * Step sequence and playback state for one configuration; when the configuration changes, key recreates it, back at the first step and stopped.
- * On a phone it has no splitters: the diagram, the code and the log stack and scroll as one.
+ * On a phone it has no splitters: the controls are docked, the diagram stays on top at a readable size, and the code and the log
+ * scroll below it. At each step, the diagram is scrolled sideways to bring the parts being computed (ACTIVE_PARTS) into view.
  */
 function Visualizer(props: VisualizerProps) {
   const { params, bits, presetName, check, speedMode, rate, loop, codeLang, focus, layout, frame } = props;
@@ -254,6 +260,7 @@ function Visualizer(props: VisualizerProps) {
   const phone = usePhone();
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
+  const hardware = useRef<HTMLElement>(null);
   const ratioIn = (el: HTMLElement | null, f: (rect: DOMRect) => number) => {
     if (!el) return 0.5;
     const [r, z] = [el.getBoundingClientRect(), screenZoom()];
@@ -286,27 +293,35 @@ function Visualizer(props: VisualizerProps) {
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  useEffect(() => {
+    if (phone && hardware.current) followElements(hardware.current, ACTIVE_PARTS);
+  }, [phone, player.index]);
+
   const [latest] = logEntries(steps, player.index, 1, m);
 
   return frame(
     <div className="visualizer" style={{ "--anim-ms": `${animMs}ms` } as CSSProperties}>
-      <Controls
-        player={player}
-        length={steps.length}
-        speedMode={speedMode}
-        rate={rate}
-        loop={loop}
-        send={send}
-        onSpeedMode={onSpeedMode}
-        onRate={onRate}
-        onLoop={onLoop}
-      />
+      <Docked>
+        <Controls
+          player={player}
+          length={steps.length}
+          speedMode={speedMode}
+          rate={rate}
+          loop={loop}
+          send={send}
+          onSpeedMode={onSpeedMode}
+          onRate={onRate}
+          onLoop={onLoop}
+        />
+      </Docked>
       <div
         className="viz-split"
         ref={split}
-        style={{ gridTemplateRows: `minmax(0, ${1 - layout.panelRatio}fr) auto minmax(0, ${layout.panelRatio}fr)` }}
+        style={
+          phone ? undefined : { gridTemplateRows: `minmax(0, ${1 - layout.panelRatio}fr) auto minmax(0, ${layout.panelRatio}fr)` }
+        }
       >
-        <section className="hardware">
+        <section className="hardware" ref={hardware}>
           <h2>
             {m.visualizer.hardware}
             <span className="legend">
