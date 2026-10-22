@@ -19,7 +19,7 @@ npm run build      # output static files to dist/
 npm run deploy     # build and publish dist/ to crc.shortarrow.jp (Cloudflare Workers, wrangler.jsonc)
 ```
 
-Pushing to `main` runs the type check, unit tests and E2E tests in GitHub Actions (`.github/workflows/ci.yml`), and deploys when they pass. The deploy uses the repository secret `CLOUDFLARE_API_TOKEN` (a Cloudflare API token with the Edit Cloudflare Workers permission).
+Pushing to `main` runs the type check, unit tests and E2E tests in GitHub Actions (`.github/workflows/ci.yml`). When they pass, the commit is moved to the `production` branch, and Cloudflare Workers Builds, connected to this repository, builds that branch and deploys it to crc.shortarrow.jp. No Cloudflare credentials are kept in GitHub.
 
 Keys: Space plays / pauses, ← → move one step, Home / End jump to the first / last step, and L toggles loop playback.
 
