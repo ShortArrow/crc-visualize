@@ -19,6 +19,8 @@ npm run build      # output static files to dist/
 npm run deploy     # build and publish dist/ to crc.shortarrow.jp (Cloudflare Workers, wrangler.jsonc)
 ```
 
+Pushing to `main` runs the type check, unit tests and E2E tests in GitHub Actions (`.github/workflows/ci.yml`), and deploys when they pass. The deploy uses the repository secret `CLOUDFLARE_API_TOKEN` (a Cloudflare API token with the Edit Cloudflare Workers permission).
+
 Keys: Space plays / pauses, ← → move one step, Home / End jump to the first / last step, and L toggles loop playback.
 
 The settings (CRC parameters, input, speed, loop) are saved in the browser's localStorage and restored the next time the page is opened. The same settings are also carried in the URL query, so passing on the URL from the address bar opens the page with the same settings (settings in the URL take precedence over saved values).
