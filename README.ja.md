@@ -19,7 +19,7 @@ npm run build      # dist/ に静的ファイルを出力
 npm run deploy     # ビルドして dist/ を crc.shortarrow.jp に公開 (Cloudflare Workers、wrangler.jsonc)
 ```
 
-`main` に push すると、GitHub Actions（`.github/workflows/ci.yml`）で型検査・単体テスト・E2E テストが走り、通れば公開する。公開にはリポジトリのシークレット `CLOUDFLARE_API_TOKEN`（Cloudflare の API トークン。権限は Edit Cloudflare Workers）を使う。
+`main` に push すると、GitHub Actions（`.github/workflows/ci.yml`）で型検査・単体テスト・E2E テストが走る。通るとその commit を `production` ブランチへ進め、このリポジトリにつないだ Cloudflare Workers Builds がそのブランチをビルドして crc.shortarrow.jp に公開する。Cloudflare の認証情報は GitHub に置かない。
 
 キー操作: Space で再生 / 一時停止、← → で 1 ステップ移動、Home / End で先頭 / 末尾、L でループ再生の切り替え。
 
