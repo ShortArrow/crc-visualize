@@ -19,7 +19,7 @@ npm run build      # output static files to dist/
 npm run deploy     # build and publish dist/ to crc.shortarrow.jp (Cloudflare Workers, wrangler.jsonc)
 ```
 
-Pushing to `main` runs the type check, unit tests and E2E tests in GitHub Actions (`.github/workflows/ci.yml`). When they pass, the commit is moved to the `production` branch, and Cloudflare Workers Builds, connected to this repository, builds that branch and deploys it to crc.shortarrow.jp. No Cloudflare credentials are kept in GitHub.
+Changes go to `main` through pull requests. Each pull request runs the type check, unit tests and E2E tests in GitHub Actions (`.github/workflows/ci.yml`), and can be merged only when they pass on a branch up to date with `main`. Cloudflare Workers Builds, connected to this repository, deploys `main` to crc.shortarrow.jp and each pull request branch to its own preview URL. No Cloudflare credentials are kept in GitHub.
 
 Keys: Space plays / pauses, ← → move one step, Home / End jump to the first / last step, and L toggles loop playback.
 

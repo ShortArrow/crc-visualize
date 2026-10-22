@@ -23,16 +23,3 @@ jobs:
         with:
           name: test-results
           path: test-results/
-
-  promote:
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    concurrency: promote
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-      - run: git push origin ${{ github.sha }}:refs/heads/production
