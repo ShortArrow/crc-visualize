@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "crc-visualize",
+  "account_id": "ad4a81a27e7a727f08daa449d62bf713",
   "compatibility_date": "2026-10-01",
   "assets": { "directory": "./dist" },
   "routes": [{ "pattern": "crc.shortarrow.jp", "zone_name": "shortarrow.jp", "custom_domain": true }],
