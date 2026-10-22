@@ -4,6 +4,8 @@
 
 An SPA that shows one clock of an LFSR (hardware) in step with one line of a bitwise CRC implementation (software). The CRC configuration can be switched using the Rocksoft model (width / poly / init / refin / refout / xorout).
 
+Live at https://crc.shortarrow.jp/.
+
 The specification is in [docs/spec.md](docs/spec.md), and the design decisions are in [docs/adr/](docs/adr/).
 
 ## Usage
@@ -14,6 +16,7 @@ npm run dev        # development server
 npm test           # unit tests (Vitest)
 npm run e2e        # E2E tests (Playwright, using the installed Chrome)
 npm run build      # output static files to dist/
+npm run deploy     # build and publish dist/ to crc.shortarrow.jp (Cloudflare Workers, wrangler.jsonc)
 ```
 
 Keys: Space plays / pauses, ← → move one step, Home / End jump to the first / last step, and L toggles loop playback.
@@ -38,3 +41,7 @@ Both unit and E2E tests are one scenario per test, split into Given / When / The
 ## Languages of docs and comments
 
 Docs are kept in English (`*.md`) and Japanese (`*.ja.md`); when one is changed, the other must be updated together. Code comments and docstrings are written in English.
+
+## License
+
+[MIT](LICENSE)

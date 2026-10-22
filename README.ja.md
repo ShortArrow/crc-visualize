@@ -4,6 +4,8 @@
 
 LFSR（ハードウェア）の 1 クロックと、ビット単位 CRC 実装（ソフトウェア）の 1 行を同期させて見せる SPA。CRC 設定は Rocksoft モデル（width / poly / init / refin / refout / xorout）で切り替えられる。
 
+公開先: https://crc.shortarrow.jp/
+
 仕様は [docs/spec.ja.md](docs/spec.ja.md)、設計判断は [docs/adr/](docs/adr/) にある。
 
 ## 使い方
@@ -14,6 +16,7 @@ npm run dev        # 開発サーバ
 npm test           # 単体テスト (Vitest)
 npm run e2e        # E2E テスト (Playwright、インストール済みの Chrome を使う)
 npm run build      # dist/ に静的ファイルを出力
+npm run deploy     # ビルドして dist/ を crc.shortarrow.jp に公開 (Cloudflare Workers、wrangler.jsonc)
 ```
 
 キー操作: Space で再生 / 一時停止、← → で 1 ステップ移動、Home / End で先頭 / 末尾、L でループ再生の切り替え。
@@ -38,3 +41,7 @@ npm run build      # dist/ に静的ファイルを出力
 ## 文書とコメントの言語
 
 文書は英語（`*.md`）と日本語（`*.ja.md`）の 2 つを置き、片方を変えるときはもう片方も同時に直す。コードのコメントと docstring は英語で書く。
+
+## ライセンス
+
+[MIT](LICENSE)
