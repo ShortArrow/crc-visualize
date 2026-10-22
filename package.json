@@ -11,7 +11,8 @@
     "test": "vitest run",
     "typecheck": "tsc -b",
     "e2e": "playwright test",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "og-image": "node scripts/og-image.mjs"
   },
   "dependencies": {
     "lucide-react": "1.52.0",
