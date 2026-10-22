@@ -3,5 +3,5 @@
   "name": "crc-visualize",
   "compatibility_date": "2026-10-01",
   "assets": { "directory": "./dist" },
-  "routes": [{ "pattern": "crc.shortarrow.jp", "custom_domain": true }],
+  "routes": [{ "pattern": "crc.shortarrow.jp", "zone_name": "shortarrow.jp", "custom_domain": true }],
 }
