@@ -16,6 +16,7 @@ npm run dev        # development server
 npm test           # unit tests (Vitest)
 npm run e2e        # E2E tests (Playwright, using the installed Chrome)
 npm run build      # output static files to dist/
+npm run og-image   # regenerate public/og.png, the image shown when the site is shared (pass the dev server URL)
 npm run deploy     # build and publish dist/ to crc.shortarrow.jp (Cloudflare Workers, wrangler.jsonc)
 ```
 

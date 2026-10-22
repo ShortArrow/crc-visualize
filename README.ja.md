@@ -16,6 +16,7 @@ npm run dev        # 開発サーバ
 npm test           # 単体テスト (Vitest)
 npm run e2e        # E2E テスト (Playwright、インストール済みの Chrome を使う)
 npm run build      # dist/ に静的ファイルを出力
+npm run og-image   # 共有時に表示する画像 public/og.png を作り直す（開発サーバの URL を渡す）
 npm run deploy     # ビルドして dist/ を crc.shortarrow.jp に公開 (Cloudflare Workers、wrangler.jsonc)
 ```
 
