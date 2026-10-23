@@ -87,7 +87,7 @@ export const zh: Messages = {
     breakpoints: "断点",
     bitsRead: "已读输入位",
     xorCount: "XOR 次数",
-    empty: "点击代码行号左侧或输入流中的字节即可添加。",
+    empty: "点击代码行号左侧、输入流中的位，或位下方的字节线即可添加。",
     removeAll: "全部删除",
     remove: "删除",
     enabled: "启用",
@@ -96,6 +96,8 @@ export const zh: Messages = {
     byte: (k: number, hex: string) => `byte ${k}（${hex}）`,
     toggleLine: "切换此行的断点",
     toggleByte: (k: number) => `切换 byte ${k} 的断点`,
+    bit: (n: number, b: string) => `bit ${n}（${b}）`,
+    toggleBit: (n: number) => `切换 bit ${n} 的断点`,
   },
   help: {
     idle: "将鼠标移到设置项或代码中的参数上，即可显示其名称和说明。",

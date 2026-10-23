@@ -87,7 +87,8 @@ export const de: Messages = {
     breakpoints: "Haltepunkte",
     bitsRead: "gelesene Eingabebits",
     xorCount: "ausgeführte XORs",
-    empty: "Links neben eine Zeilennummer im Code oder auf ein Byte des Eingabestroms drücken, um einen hinzuzufügen.",
+    empty:
+      "Links neben eine Zeilennummer im Code, auf ein Bit des Eingabestroms oder auf die Linie unter einem seiner Bytes drücken, um einen hinzuzufügen.",
     removeAll: "Alle entfernen",
     remove: "Entfernen",
     enabled: "Aktiv",
@@ -96,6 +97,8 @@ export const de: Messages = {
     byte: (k: number, hex: string) => `Byte ${k} (${hex})`,
     toggleLine: "Haltepunkt in dieser Zeile setzen oder entfernen",
     toggleByte: (k: number) => `Haltepunkt auf Byte ${k} setzen oder entfernen`,
+    bit: (n: number, b: string) => `Bit ${n} (${b})`,
+    toggleBit: (n: number) => `Haltepunkt auf Bit ${n} setzen oder entfernen`,
   },
   help: {
     idle: "Fahre mit der Maus über eine Einstellung oder einen Parameter im Code, um Namen und Beschreibung zu sehen.",

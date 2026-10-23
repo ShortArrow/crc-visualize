@@ -87,7 +87,7 @@ export const en: Messages = {
     breakpoints: "Breakpoints",
     bitsRead: "input bits read",
     xorCount: "XORs done",
-    empty: "Press left of a line number in the code, or a byte of the input stream, to add one.",
+    empty: "Press left of a line number in the code, a bit of the input stream, or the line under a byte of it, to add one.",
     removeAll: "Remove all",
     remove: "Remove",
     enabled: "Enabled",
@@ -96,6 +96,8 @@ export const en: Messages = {
     byte: (k: number, hex: string) => `byte ${k} (${hex})`,
     toggleLine: "Toggle a breakpoint on this line",
     toggleByte: (k: number) => `Toggle a breakpoint on byte ${k}`,
+    bit: (n: number, b: string) => `bit ${n} (${b})`,
+    toggleBit: (n: number) => `Toggle a breakpoint on bit ${n}`,
   },
   help: {
     idle: "Hover over a setting or a parameter in the code to see its name and description.",

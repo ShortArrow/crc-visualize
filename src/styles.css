@@ -348,6 +348,12 @@ button.bp-gutter::before {
   border-radius: 50%;
 }
 
+/* A faint ring shows where a breakpoint goes: on the line under the mouse, and always on a phone, which has no hover */
+.code-line:hover button.bp-gutter::before,
+.phone button.bp-gutter::before {
+  box-shadow: inset 0 0 0 1px rgb(255 92 92 / 0.45);
+}
+
 button.bp-gutter:hover::before {
   background: rgb(255 92 92 / 0.35);
 }
@@ -360,14 +366,31 @@ button.bp-gutter.bp-off::before {
   background: var(--muted);
 }
 
-/* Bytes of the input stream that set or remove a breakpoint, and their marks */
+/* Bits of the input stream, and the lines under its bytes, that set or remove a breakpoint, and their marks */
+.bit-hit,
 .byte-hit {
   fill: transparent;
   cursor: pointer;
 }
 
+.bit-hit:hover,
 .byte-hit:hover {
   fill: rgb(255 92 92 / 0.12);
+}
+
+.byte-rail {
+  fill: var(--muted);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.bit-bp {
+  fill: var(--hot);
+  pointer-events: none;
+}
+
+.bit-bp.off {
+  fill: var(--muted);
 }
 
 .byte-bp {

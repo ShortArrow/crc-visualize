@@ -155,6 +155,9 @@ type Props = Readonly<{
   /** Byte breakpoints by byte number: true if enabled, false if disabled. */
   byteBreaks: ReadonlyMap<number, boolean>;
   onToggleByte: (byte: number) => void;
+  /** Bit breakpoints by bit number of the input stream: true if enabled, false if disabled. */
+  bitBreaks: ReadonlyMap<number, boolean>;
+  onToggleBit: (bit: number) => void;
 }>;
 
 /** Where in the diagram the focused parameter, or the input, takes effect. */
@@ -171,9 +174,11 @@ const PARAM_TARGET: Record<ParamName | "input", "registers" | "taps" | "stream">
 /**
  * LFSR (hardware representation). Rendering depends only on step, and the animation replays for each stepIndex.
  * Value flow is shown by wire colours (wireLevels) and particles (particles); no formula text is shown.
- * When the input is whole bytes, pressing a byte of the input stream sets or removes a breakpoint on it, marked under the byte.
+ * Pressing a bit of the input stream sets or removes a breakpoint on it, marked above the bit. When the input is whole bytes, a
+ * line under each byte does the same for the byte, and the mark is drawn on that line.
  */
-export function LfsrView({ params, step, next, stepIndex, animMs, focused, byteBreaks, onToggleByte }: Props) {
+export function LfsrView(props: Props) {
+  const { params, step, next, stepIndex, animMs, focused, byteBreaks, onToggleByte, bitBreaks, onToggleBit } = props;
   const m = useMessages();
   const layout = lfsrLayout(params);
   const { box, regY, streamY, gateR, inputGate: ig, feedbackBox: fb, taps, entry } = layout;
@@ -257,19 +262,42 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused, byteB
               </text>
             );
           })}
+          {step.stream.map((_, k) => {
+            const x = streamX(k, grouped);
+            const mark = bitBreaks.get(k);
+            return (
+              <g key={`bit-${k}`}>
+                <rect
+                  className="bit-hit"
+                  data-bit={k}
+                  x={x - STREAM_PITCH / 2}
+                  y={streamY - 18}
+                  width={STREAM_PITCH}
+                  height={22}
+                  onClick={() => onToggleBit(k)}
+                >
+                  <title>{m.debug.toggleBit(k)}</title>
+                </rect>
+                {mark === undefined ? null : (
+                  <circle className={`bit-bp ${mark ? "" : "off"}`} data-bit={k} cx={x} cy={streamY - 18} r={2.5} />
+                )}
+              </g>
+            );
+          })}
           {grouped
             ? Array.from({ length: step.stream.length / 8 }, (_, k) => {
                 const [left, right] = [streamX(k * 8, true) - STREAM_PITCH / 2, streamX(k * 8 + 7, true) + STREAM_PITCH / 2];
                 const mark = byteBreaks.get(k);
                 return (
                   <g key={`byte-${k}`}>
+                    <rect className="byte-rail" x={left + 2} y={streamY + 7} width={right - left - 4} height={3} rx={1.5} />
                     <rect
                       className="byte-hit"
                       data-byte={k}
                       x={left}
-                      y={streamY - 18}
+                      y={streamY + 4}
                       width={right - left}
-                      height={30}
+                      height={10}
                       onClick={() => onToggleByte(k)}
                     >
                       <title>{m.debug.toggleByte(k)}</title>

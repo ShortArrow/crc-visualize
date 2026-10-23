@@ -87,7 +87,8 @@ export const es: Messages = {
     breakpoints: "Puntos de interrupción",
     bitsRead: "bits de entrada leídos",
     xorCount: "XOR realizados",
-    empty: "Pulsa a la izquierda de un número de línea del código, o un byte del flujo de entrada, para añadir uno.",
+    empty:
+      "Pulsa a la izquierda de un número de línea del código, un bit del flujo de entrada o la línea bajo uno de sus bytes, para añadir uno.",
     removeAll: "Quitar todos",
     remove: "Quitar",
     enabled: "Activado",
@@ -96,6 +97,8 @@ export const es: Messages = {
     byte: (k: number, hex: string) => `byte ${k} (${hex})`,
     toggleLine: "Poner o quitar un punto de interrupción en esta línea",
     toggleByte: (k: number) => `Poner o quitar un punto de interrupción en el byte ${k}`,
+    bit: (n: number, b: string) => `bit ${n} (${b})`,
+    toggleBit: (n: number) => `Poner o quitar un punto de interrupción en el bit ${n}`,
   },
   help: {
     idle: "Pasa el ratón sobre un ajuste o un parámetro del código para ver su nombre y descripción.",
