@@ -423,7 +423,7 @@ export const ja = {
     byte: "バイト",
     before: "前の crc",
     index: "インデックス",
-    entry: "T[インデックス]",
+    entry: "表の値",
     after: "後の crc",
     result: "表引きの結果",
     bitwise: "1 ビットずつ計算した CRC",
