@@ -72,6 +72,40 @@ test.describe("Breakpoints", () => {
     await then("the breakpoint is in the URL", async () => expect(v.settings.query().get("bp")).toBe("xor@2"));
   });
 
+  test("a bit breakpoint stops playback once that bit has been read, and pressing the bit again removes it", async ({ page }) => {
+    const v = await given("2 bytes are open", () => Visualizer.open(page, TWO_BYTES));
+    await when("pressing bit 2 of the input stream", () => v.debug.bit(2).click());
+    await then("bit 2 has a mark, and is listed with its value, and byte 0 has none", async () => {
+      await expect(v.debug.bitMark(2)).toBeVisible();
+      await expect(v.debug.entry("bit2")).toContainText("bit 2（1）");
+      await expect(v.debug.byteMark(0)).toHaveCount(0);
+    });
+    await when("playing", () => v.settings.play().click());
+    await then("playback pauses with 3 bits read", async () => {
+      await expect(v.settings.play()).toHaveAttribute("aria-label", PAUSED);
+      await expect(v.debug.value("bitsRead")).toHaveText("3 / 16");
+    });
+    await when("pressing bit 2 again", () => v.debug.bit(2).click());
+    await then("the breakpoint is gone", async () => {
+      await expect(v.debug.bitMark(2)).toHaveCount(0);
+      await expect(v.debug.entries()).toHaveCount(0);
+    });
+  });
+
+  test("a bit breakpoint can be set on an input that is not whole bytes", async ({ page }) => {
+    const v = await given("5 bits are open", () =>
+      Visualizer.open(
+        page,
+        "?width=3&poly=0x3&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=bits&input=10101&speed=steady&rate=8",
+      ),
+    );
+    await when("pressing bit 4 of the input stream", () => v.debug.bit(4).click());
+    await then("bit 4 has a mark, and there is no byte to press", async () => {
+      await expect(v.debug.bitMark(4)).toBeVisible();
+      await expect(v.debug.byte(0)).toHaveCount(0);
+    });
+  });
+
   test("a byte breakpoint stops playback once the byte has been read, and playing again goes on to the end", async ({ page }) => {
     const v = await given("2 bytes are open", () => Visualizer.open(page, TWO_BYTES));
     await when("pressing byte 0 of the input stream", () => v.debug.byte(0).click());

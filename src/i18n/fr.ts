@@ -87,7 +87,8 @@ export const fr: Messages = {
     breakpoints: "Points d’arrêt",
     bitsRead: "bits d’entrée lus",
     xorCount: "XOR effectués",
-    empty: "Appuyez à gauche d’un numéro de ligne du code, ou sur un octet du flux d’entrée, pour en ajouter un.",
+    empty:
+      "Appuyez à gauche d’un numéro de ligne du code, sur un bit du flux d’entrée ou sur la ligne sous l’un de ses octets, pour en ajouter un.",
     removeAll: "Tout supprimer",
     remove: "Supprimer",
     enabled: "Activé",
@@ -96,6 +97,8 @@ export const fr: Messages = {
     byte: (k: number, hex: string) => `octet ${k} (${hex})`,
     toggleLine: "Placer ou retirer un point d’arrêt sur cette ligne",
     toggleByte: (k: number) => `Placer ou retirer un point d’arrêt sur l’octet ${k}`,
+    bit: (n: number, b: string) => `bit ${n} (${b})`,
+    toggleBit: (n: number) => `Placer ou retirer un point d’arrêt sur le bit ${n}`,
   },
   help: {
     idle: "Survolez un paramètre des réglages ou du code pour afficher son nom et sa description.",

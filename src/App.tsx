@@ -6,7 +6,7 @@ import { MessagesProvider, useMessages } from "./i18n/I18n";
 import { pickLocale, type Locale } from "./i18n/locale";
 import { MESSAGES } from "./i18n/messages";
 import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "./domain/trace";
-import { breakIndices, toggleByte, toggleLine, type Breakpoint } from "./playback/breakpoints";
+import { breakIndices, toggleBit, toggleByte, toggleLine, type Breakpoint } from "./playback/breakpoints";
 import { animationMs, initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
 import { BreakpointList } from "./ui/BreakpointList";
 import type { CodeLang } from "./ui/code";
@@ -293,6 +293,7 @@ function Visualizer(props: VisualizerProps) {
   const breaks = useMemo(() => breakIndices(steps, breakpoints), [steps, breakpoints]);
   const lineBreaks = new Map(breakpoints.flatMap((b) => (b.kind === "line" ? [[b.runs, b.enabled] as const] : [])));
   const byteBreaks = new Map(breakpoints.flatMap((b) => (b.kind === "byte" ? [[b.byte, b.enabled] as const] : [])));
+  const bitBreaks = new Map(breakpoints.flatMap((b) => (b.kind === "bit" ? [[b.bit, b.enabled] as const] : [])));
   const step = steps[player.index]!;
   const stepMs = durations[player.index]! / rate;
   const animMs = animationMs(stepMs);
@@ -388,6 +389,8 @@ function Visualizer(props: VisualizerProps) {
             focused={focus.focused}
             byteBreaks={byteBreaks}
             onToggleByte={(k) => onBreakpoints(toggleByte(breakpoints, k))}
+            bitBreaks={bitBreaks}
+            onToggleBit={(n) => onBreakpoints(toggleBit(breakpoints, n))}
           />
         </section>
         {phone ? null : (
