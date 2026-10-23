@@ -144,7 +144,7 @@ test.describe("Register boxes", () => {
     page,
   }) => {
     const v = await given("the page is open with the default settings", () => Visualizer.open(page));
-    await when("advancing to the shift step", () => v.goTo("shift"));
+    await when("advancing to the shift step", () => v.goToFrozen("shift"));
     await then(
       "at every point, the value leaving r2, the value entering r0 from the right and the value moving r0 to r1 have moved the same distance",
       async () => {

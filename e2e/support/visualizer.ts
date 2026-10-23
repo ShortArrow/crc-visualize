@@ -46,6 +46,39 @@ export class Visualizer {
     }
   }
 
+  /**
+   * Advances one step and, as soon as the step is shown and before the next frame, pauses every animation at its start, so the start
+   * of the step can be read however slowly the browser runs. resume() lets the animations run on.
+   */
+  async stepForwardFrozen(): Promise<void> {
+    await this.page.evaluate(async () => {
+      const counter = document.querySelector(".counter")!;
+      const before = counter.textContent;
+      await new Promise<void>((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (counter.textContent === before) return;
+          observer.disconnect();
+          resolve();
+        });
+        observer.observe(counter, { childList: true, characterData: true, subtree: true });
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+      });
+      document.getAnimations().forEach((a) => a.pause());
+    });
+  }
+
+  /** Advances to the nth step of kind as goTo does, with every animation paused at the start of that step (see stepForwardFrozen). */
+  async goToFrozen(kind: StepKind, nth = 1): Promise<void> {
+    await this.goTo(kind, nth);
+    await this.stepBack();
+    await this.stepForwardFrozen();
+  }
+
+  /** Lets the animations paused by stepForwardFrozen run on. */
+  resume(): Promise<void> {
+    return this.page.evaluate(() => document.getAnimations().forEach((a) => a.play()));
+  }
+
   async stepBack(): Promise<void> {
     const before = await this.counter.textContent();
     await this.page.keyboard.press("ArrowLeft");
