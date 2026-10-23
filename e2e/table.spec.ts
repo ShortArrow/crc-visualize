@@ -40,6 +40,22 @@ test.describe("Table", () => {
     });
   });
 
+  test("each clock that makes a table value shows its feedback bit, the shifted register and what is XORed in", async ({
+    page,
+  }) => {
+    const t = await given("width 7 and poly 0x9 are open on the table page", () =>
+      TablePage.open(page, "?width=7&poly=0x9&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=text&input=123456789"),
+    );
+    await when("selecting the cell for index 0x41", () => t.cell(0x41).click());
+    await then("the 2nd clock feeds 1, so poly is XORed in, and the 3rd feeds 0 with the top bit 0, so nothing is", async () => {
+      await expect(t.entryTitle()).toContainText("T[0x41] = 0x6D");
+      await expect(t.clockHeadings()).toHaveText(["クロック", "入るビット", "帰還", "シフト後", "XOR する値", "レジスタ"]);
+      await expect(t.clocks().nth(1).locator("td")).toHaveText(["2", "1", "1", "0000000", "0001001", "0001001"]);
+      await expect(t.clocks().nth(2).locator("td")).toHaveText(["3", "0", "0", "0010010", "なし", "0010010"]);
+      await expect(t.clocks().last().locator("td").last()).toHaveText("1101101");
+    });
+  });
+
   test("an input that is not whole bytes shows the table but not the byte-at-a-time steps", async ({ page }) => {
     const t = await given("CRC-3/TUTORIAL with a 5-bit input is open", () => TablePage.open(page));
     await then("the reason is shown instead of the steps, and the table is still there", async () => {

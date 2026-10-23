@@ -43,6 +43,19 @@ describe("table", () => {
     expect(clocks[7]!.reg).toBe(0x77073096);
   });
 
+  it("Given width 7 and poly 0x9 and index 0x41, When the 8 clocks are listed, Then each shows its feedback, the shifted register and poly XORed in only when the feedback is 1", () => {
+    const clocks = entryClocks({ ...params("CRC-16/XMODEM"), width: 7, poly: 0x9 }, 0x41);
+    expect(clocks.map((c) => c.feedback)).toEqual([0, 1, 0, 0, 0, 1, 0, 1]);
+    expect(clocks.map((c) => c.shifted)).toEqual([0, 0, 0b0010010, 0b0100100, 0b1001000, 0b0010000, 0b0110010, 0b1100100]);
+    expect(clocks.map((c) => c.xor)).toEqual([0, 0x9, 0, 0, 0, 0x9, 0, 0x9]);
+    expect(clocks.map((c) => c.reg)).toEqual([0, 0b0001001, 0b0010010, 0b0100100, 0b1001000, 0b0011001, 0b0110010, 0x6d]);
+  });
+
+  it("Given CRC-32/ISO-HDLC and index 1, When the first clock is listed, Then the bit shifted out on the right sets the feedback and the reversed poly is XORed in", () => {
+    const [first] = entryClocks(params("CRC-32/ISO-HDLC"), 1);
+    expect(first).toEqual({ bit: 1, feedback: 1, shifted: 0, xor: 0xedb88320, reg: 0xedb88320 });
+  });
+
   it.each(CATALOGUE)("Given $name, When every table value is remade from its 8 clocks, Then it matches the table", (preset) => {
     const t = crcTable(preset.params);
     for (const i of [0, 1, 0x80, 0xa5, 0xff]) expect(entryClocks(preset.params, i)[7]!.reg).toBe(t[i]);
