@@ -57,6 +57,32 @@ test.describe("Page layout", () => {
     }
   }
 
+  for (const lang of ["en", "de", "fr", "es", "zh"]) {
+    for (const [width, height] of [
+      [1366, 1000],
+      [1600, 1000],
+      [2560, 1440],
+    ] as const) {
+      test(`in ${lang} on a ${width}×${height} screen, the cards of #table are aligned row by row and none is left mostly empty`, async ({
+        page,
+      }) => {
+        const v = await given(`#table is open in ${lang} on a ${width}×${height} screen`, async () => {
+          await page.setViewportSize({ width, height });
+          await page.goto(
+            `/?width=16&poly=0x1021&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789&lang=${lang}#table`,
+          );
+          const v = Visualizer.on(page);
+          await expect(page.locator(".editor > *").first()).toBeVisible();
+          return v;
+        });
+        await then("no card is ragged, overflowing, left mostly empty or squeezed", async () => {
+          const layout = await v.workbench.cardLayout();
+          expect(layout).toMatchObject({ ragged: 0, overflowing: 0, sparse: 0, narrow: 0, scrolling: 0, squeezed: 0 });
+        });
+      });
+    }
+  }
+
   for (const hash of ["#cyclic", "#redundancy", "#redundancy/width=4/poly=0x3", "#check", "#table"]) {
     for (const [width, height] of [
       [1366, 768],
