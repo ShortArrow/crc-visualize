@@ -9,12 +9,13 @@ export type { CodePart, ParamChip } from "./codeTemplate";
 /**
  * Display state of one line of code.
  * text: the line's string with chips replaced by their label. active: the line the current step is executing.
- * note: a note appended to the end of the line. skipped: a line not executed because of the branch. disabled: a line not executed because its parameter is disabled.
+ * runs: the kind of step the line executes, if any. note: a note appended to the end of the line. skipped: a line not executed because of the branch. disabled: a line not executed because its parameter is disabled.
  */
 export type CodeLine = Readonly<{
   parts: readonly CodePart[];
   text: string;
   active: boolean;
+  runs?: StepKind;
   skipped: boolean;
   disabled: boolean;
   note?: string;
@@ -51,6 +52,7 @@ export function codeLines(params: CrcParams, step: Step, m: Messages, lang: Code
       parts,
       text: lineText(parts),
       active,
+      ...(runs === undefined ? {} : { runs }),
       skipped: role === "ifBody" && taken === false,
       disabled: disabled !== undefined,
       ...(note === undefined ? {} : { note }),

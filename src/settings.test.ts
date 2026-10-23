@@ -8,6 +8,7 @@ const defaults: Settings = {
   loop: false,
   codeLang: "pseudo",
   locale: "ja",
+  breakpoints: [],
 };
 
 const saved: Settings = {
@@ -26,6 +27,10 @@ const saved: Settings = {
   loop: true,
   codeLang: "haskell",
   locale: "de",
+  breakpoints: [
+    { kind: "line", runs: "xor", hit: 5, enabled: true },
+    { kind: "byte", byte: 3, enabled: false },
+  ],
 };
 
 describe("restoreSettings", () => {
@@ -52,6 +57,7 @@ describe("restoreSettings", () => {
       loop: true,
       codeLang: "cobol",
       locale: "ru",
+      breakpoints: "xor",
     });
 
     expect(restoreSettings(raw, defaults)).toEqual({
@@ -61,6 +67,7 @@ describe("restoreSettings", () => {
       loop: true,
       codeLang: defaults.codeLang,
       locale: defaults.locale,
+      breakpoints: defaults.breakpoints,
     });
   });
 });
@@ -79,6 +86,7 @@ describe("settingsToQuery / settingsFromQuery", () => {
     expect(query.get("inputMode")).toBe("text");
     expect(query.get("code")).toBe("haskell");
     expect(query.get("lang")).toBe("de");
+    expect(query.get("bp")).toBe("xor@5,!byte3");
   });
 
   it("Given an input value containing symbols and Japanese text, When written to a query and read back, Then the original input value results", () => {

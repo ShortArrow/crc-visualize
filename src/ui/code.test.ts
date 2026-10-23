@@ -111,6 +111,17 @@ describe("CODE_LANGS", () => {
     },
   );
 
+  it.each(LANG_IDS)(
+    "Given language %s, When building the code, Then the lines that run steps name their step kind once each, ",
+    (lang) => {
+      const lines = codeLines(plain3, initStep(plain3), ja, lang);
+      const kinds = lines.flatMap((l) => (l.runs ? [l.runs] : []));
+
+      expect(new Set(kinds).size).toBe(kinds.length);
+      expect(kinds).toEqual(expect.arrayContaining(["init", "feedback", "shift", "xor"]));
+    },
+  );
+
   it.each(LANG_IDS)("Given language %s, When building the code, Then each of the 6 parameters appears as a chip", (lang) => {
     for (const params of [plain3, full3]) {
       const used = new Set(codeLines(params, initStep(params), ja, lang).flatMap((l) => chips(l).map((c) => c.param)));

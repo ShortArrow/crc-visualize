@@ -6,7 +6,9 @@ import { MessagesProvider, useMessages } from "./i18n/I18n";
 import { pickLocale, type Locale } from "./i18n/locale";
 import { MESSAGES } from "./i18n/messages";
 import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "./domain/trace";
+import { breakIndices, toggleByte, toggleLine, type Breakpoint } from "./playback/breakpoints";
 import { animationMs, initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
+import { BreakpointList } from "./ui/BreakpointList";
 import type { CodeLang } from "./ui/code";
 import { CodeLangSelect, CodeView } from "./ui/CodeView";
 import { ConfigPanel, formFromParams, formFromPreset } from "./ui/ConfigPanel";
@@ -30,7 +32,9 @@ import type { ParamFocus } from "./ui/paramFocus";
 import type { FieldName } from "./ui/paramInfo";
 import { parseRoute, type Route } from "./ui/route";
 import { Splitter } from "./ui/Splitter";
+import { SidebarSections } from "./ui/SidebarSections";
 import { StepLog } from "./ui/StepLog";
+import { VariablesView } from "./ui/VariablesView";
 import { Workbench } from "./ui/Workbench";
 import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
 import { usePhone } from "./ui/phone";
@@ -45,6 +49,7 @@ const DEFAULT_SETTINGS: Settings = {
   loop: false,
   codeLang: "pseudo",
   locale: pickLocale(navigator.languages),
+  breakpoints: [],
 };
 const sameBits = (a: readonly Bit[], b: readonly Bit[]) => a.length === b.length && a.every((x, i) => x === b[i]);
 
@@ -70,10 +75,11 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   const [rate, setRate] = useState(restored.rate);
   const [loop, setLoop] = useState(restored.loop);
   const [codeLang, setCodeLang] = useState<CodeLang>(restored.codeLang);
+  const [breakpoints, setBreakpoints] = useState<readonly Breakpoint[]>(restored.breakpoints);
   const [estimateCount, setEstimateCount] = useState<number | undefined>(undefined);
   useEffect(
-    () => persistSettings({ form, speedMode, rate, loop, codeLang, locale }),
-    [form, speedMode, rate, loop, codeLang, locale],
+    () => persistSettings({ form, speedMode, rate, loop, codeLang, locale, breakpoints }),
+    [form, speedMode, rate, loop, codeLang, locale, breakpoints],
   );
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -87,9 +93,8 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   const preset = config.ok ? findPreset(config.params) : undefined;
   const route = useRoute();
 
-  const settingsSidebar = (
+  const settingsBody = (
     <>
-      <h2>{m.settings.heading}</h2>
       <ConfigPanel
         form={form}
         presetName={preset?.name}
@@ -99,6 +104,12 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
         onFieldHover={setHoveredField}
       />
       <ParamHelp topic={focused ?? hoveredField} params={config.ok ? config.params : undefined} />
+    </>
+  );
+  const settingsSidebar = (
+    <>
+      <h2>{m.settings.heading}</h2>
+      {settingsBody}
     </>
   );
   const frame =
@@ -178,7 +189,10 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       codeLang={codeLang}
       focus={focus}
       layout={layout}
-      frame={frame(settingsSidebar)}
+      settings={settingsBody}
+      breakpoints={breakpoints}
+      onBreakpoints={setBreakpoints}
+      frame={frame}
       onSpeedMode={setSpeedMode}
       onRate={setRate}
       onLoop={setLoop}
@@ -226,7 +240,12 @@ type VisualizerProps = Readonly<{
   codeLang: CodeLang;
   focus: ParamFocus;
   layout: PaneLayout;
-  frame: Frame;
+  /** The settings panel and the description pane, shown in the Settings section of the sidebar. */
+  settings: ReactNode;
+  breakpoints: readonly Breakpoint[];
+  onBreakpoints: (breakpoints: readonly Breakpoint[]) => void;
+  /** Fits the editor area and status bar into the screen frame with the given sidebar. */
+  frame: (sidebar: ReactNode) => Frame;
   onSpeedMode: (mode: SpeedMode) => void;
   onRate: (rate: number) => void;
   onLoop: (loop: boolean) => void;
@@ -255,8 +274,8 @@ const ACTIVE_PARTS = ".reg.msb, .reg.hit, .gate.active, .fb-box.arriving";
  * being computed (ACTIVE_PARTS) into view.
  */
 function Visualizer(props: VisualizerProps) {
-  const { params, bits, presetName, check, speedMode, rate, loop, codeLang, focus, layout, frame } = props;
-  const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout } = props;
+  const { params, bits, presetName, check, speedMode, rate, loop, codeLang, focus, layout, settings, breakpoints, frame } = props;
+  const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints } = props;
   const m = useMessages();
   const phone = usePhone();
   const split = useRef<HTMLDivElement>(null);
@@ -271,13 +290,16 @@ function Visualizer(props: VisualizerProps) {
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const [player, setPlayer] = useState(initialPlayer);
   const send = (msg: PlayerMsg) => setPlayer((p) => updatePlayer(p, msg, steps.length));
+  const breaks = useMemo(() => breakIndices(steps, breakpoints), [steps, breakpoints]);
+  const lineBreaks = new Map(breakpoints.flatMap((b) => (b.kind === "line" ? [[b.runs, b.enabled] as const] : [])));
+  const byteBreaks = new Map(breakpoints.flatMap((b) => (b.kind === "byte" ? [[b.byte, b.enabled] as const] : [])));
   const step = steps[player.index]!;
   const stepMs = durations[player.index]! / rate;
   const animMs = animationMs(stepMs);
 
   useEffect(() => {
     if (!player.playing) return;
-    const timer = setTimeout(() => send({ type: "tick", loop }), stepMs);
+    const timer = setTimeout(() => send({ type: "tick", loop, breaks }), stepMs);
     return () => clearTimeout(timer);
   });
 
@@ -299,8 +321,31 @@ function Visualizer(props: VisualizerProps) {
   }, [phone, player.index]);
 
   const [latest] = logEntries(steps, player.index, 1, m);
+  const variables = <VariablesView steps={steps} index={player.index} />;
+  const sidebar = (
+    <SidebarSections
+      sections={[
+        { id: "settings", title: m.settings.heading, body: settings },
+        ...(phone ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
+        {
+          id: "breakpoints",
+          title: m.debug.breakpoints,
+          body: (
+            <BreakpointList
+              breakpoints={breakpoints}
+              params={params}
+              steps={steps}
+              index={player.index}
+              lang={codeLang}
+              onChange={onBreakpoints}
+            />
+          ),
+        },
+      ]}
+    />
+  );
 
-  return frame(
+  return frame(sidebar)(
     <div className="visualizer" style={{ "--anim-ms": `${animMs}ms` } as CSSProperties}>
       <Docked>
         <Controls
@@ -341,6 +386,8 @@ function Visualizer(props: VisualizerProps) {
             stepIndex={player.index}
             animMs={animMs}
             focused={focus.focused}
+            byteBreaks={byteBreaks}
+            onToggleByte={(k) => onBreakpoints(toggleByte(breakpoints, k))}
           />
         </section>
         {phone ? null : (
@@ -364,8 +411,21 @@ function Visualizer(props: VisualizerProps) {
               {m.visualizer.software}
               <CodeLangSelect value={codeLang} onChange={onCodeLang} />
             </h2>
-            <CodeView params={params} step={step} focus={focus} lang={codeLang} />
+            <CodeView
+              params={params}
+              step={step}
+              focus={focus}
+              lang={codeLang}
+              lineBreaks={lineBreaks}
+              onToggleLine={(runs) => onBreakpoints(toggleLine(breakpoints, runs))}
+            />
           </div>
+          {phone ? (
+            <div className="variables-pane">
+              <h2>{m.debug.variables}</h2>
+              {variables}
+            </div>
+          ) : null}
           {phone ? null : (
             <Splitter
               axis="x"

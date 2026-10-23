@@ -42,7 +42,7 @@ export type PlayerMsg =
   | { type: "play" }
   | { type: "pause" }
   | { type: "toggle" }
-  | { type: "tick"; loop: boolean }
+  | { type: "tick"; loop: boolean; breaks?: ReadonlySet<number> }
   | { type: "next" }
   | { type: "prev" }
   | { type: "first" }
@@ -52,7 +52,10 @@ export type PlayerMsg =
 
 export const initialPlayer: Player = { index: 0, playing: false };
 
-/** Playback state transitions; length is the number of steps (at least 1). When loop on tick is true, the step after the last wraps to the first. */
+/**
+ * Playback state transitions; length is the number of steps (at least 1). When loop on tick is true, the step after the last wraps
+ * to the first. A tick onto an index in breaks shows that step and pauses.
+ */
 export function updatePlayer(player: Player, msg: PlayerMsg, length: number): Player {
   const last = length - 1;
   const stopAt = (index: number): Player => ({ index: Math.min(Math.max(index, 0), last), playing: false });
@@ -63,10 +66,12 @@ export function updatePlayer(player: Player, msg: PlayerMsg, length: number): Pl
       return { ...player, playing: false };
     case "toggle":
       return updatePlayer(player, { type: player.playing ? "pause" : "play" }, length);
-    case "tick":
+    case "tick": {
       if (!player.playing) return player;
-      if (msg.loop) return { index: player.index >= last ? 0 : player.index + 1, playing: true };
-      return { index: Math.min(player.index + 1, last), playing: player.index + 1 < last };
+      const index = msg.loop && player.index >= last ? 0 : Math.min(player.index + 1, last);
+      const ends = !msg.loop && index >= last;
+      return { index, playing: !ends && !msg.breaks?.has(index) };
+    }
     case "next":
       return stopAt(player.index + 1);
     case "prev":
