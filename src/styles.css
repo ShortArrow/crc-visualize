@@ -2979,3 +2979,13 @@ button.bit-cell:hover {
 .table-steps th {
   word-break: keep-all;
 }
+
+/* The clocks that make a table value keep their columns and scroll sideways inside the card */
+.phone .entry-clocks {
+  display: block;
+  overflow-x: auto;
+}
+
+.phone .entry-clocks th {
+  white-space: nowrap;
+}
