@@ -222,6 +222,7 @@ export const fr: Messages = {
     fixed: "Valeurs fixées",
     none: "Aucune pour l’instant",
     status: (n: number) => `Affiner : ${n} candidats`,
+    shift: { right: "décalage à droite", left: "décalage à gauche" },
   },
   generators: "Polynômes générateurs",
   cyclic: {

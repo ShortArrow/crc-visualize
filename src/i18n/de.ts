@@ -222,6 +222,7 @@ export const de: Messages = {
     fixed: "Festgelegte Werte",
     none: "Noch keine",
     status: (n: number) => `Eingrenzen: ${n} Kandidaten`,
+    shift: { right: "Rechtsschieben", left: "Linksschieben" },
   },
   generators: "Generatorpolynome",
   cyclic: {

@@ -1665,7 +1665,7 @@ button.bp-gutter.bp-off::before {
   margin: 2px 0 6px 14px;
 }
 
-.branch .preset-name {
+.branch :is(.preset-name, .shift) {
   color: var(--muted);
 }
 
