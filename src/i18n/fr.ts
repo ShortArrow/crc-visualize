@@ -228,10 +228,10 @@ export const fr: Messages = {
     heading: "Pourquoi un contrôle de redondance « cyclique » ?",
     wordRing: "Anneau du mot de code",
     wordNote:
-      "Un mot de code (le message suivi de son CRC) disposé dans le sens horaire, x^0 en haut. Le tourner une fois revient à le multiplier par x.",
+      "Un mot de code (le message suivi de son CRC) disposé dans le sens horaire, x^0 en haut. Le tourner une fois revient à le multiplier par x. Tourner n’est pas un calcul du Matériel (LFSR) de la Visualisation, mais une suite tournée laisse elle aussi le registre à 0 une fois passée dans le LFSR.",
     stateRing: "Anneau des états",
     stateNote:
-      "Les états du registre quand il part de 1 et reçoit sans cesse le bit d’entrée 0. Le j-ième état est x^j mod g(x).",
+      "Les états du registre du Matériel (LFSR) de la Visualisation quand il part de 1 et reçoit sans cesse le bit d’entrée 0. Chaque flèche est un coup d’horloge, et le j-ième état est x^j mod g(x).",
     forward: "Multiplier par x (tourner une fois)",
     back: "Diviser par x (tourner une fois en arrière)",
     rotated: (k: number) => `rotations k = ${k}`,

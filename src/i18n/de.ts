@@ -228,10 +228,10 @@ export const de: Messages = {
     heading: "Warum „zyklische“ Redundanzprüfung?",
     wordRing: "Ring des Codeworts",
     wordNote:
-      "Ein Codewort (Nachricht gefolgt von ihrem CRC), im Uhrzeigersinn angeordnet, x^0 oben. Einmal drehen heißt mit x multiplizieren.",
+      "Ein Codewort (Nachricht gefolgt von ihrem CRC), im Uhrzeigersinn angeordnet, x^0 oben. Einmal drehen heißt mit x multiplizieren. Das Drehen rechnet die Hardware (LFSR) der Visualisierung nicht, aber auch eine gedrehte Folge lässt das Register auf 0, wenn sie das LFSR durchläuft.",
     stateRing: "Ring der Zustände",
     stateNote:
-      "Die Registerzustände, wenn es bei 1 beginnt und fortlaufend das Eingabebit 0 erhält. Der j-te Zustand ist x^j mod g(x).",
+      "Die Zustände des Registers der Hardware (LFSR) der Visualisierung, wenn es bei 1 beginnt und fortlaufend das Eingabebit 0 erhält. Jeder Pfeil ist ein Takt, und der j-te Zustand ist x^j mod g(x).",
     forward: "Mit x multiplizieren (einmal drehen)",
     back: "Durch x teilen (einmal zurückdrehen)",
     rotated: (k: number) => `Drehungen k = ${k}`,

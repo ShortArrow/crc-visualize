@@ -217,9 +217,11 @@ export const zh: Messages = {
   cyclic: {
     heading: "为什么叫“循环”冗余校验",
     wordRing: "码字环",
-    wordNote: "在消息后附上 CRC 得到的码字，以 x^0 为顶端顺时针排列。旋转一次相当于乘以 x。",
+    wordNote:
+      "在消息后附上 CRC 得到的码字，以 x^0 为顶端顺时针排列。旋转一次相当于乘以 x。旋转本身不是可视化中硬件（LFSR）的计算，但旋转后的序列送入 LFSR 后，寄存器最后同样为 0。",
     stateRing: "状态环",
-    stateNote: "寄存器从 1 开始、持续输入比特 0 时的状态。第 j 个状态是 x^j 除以 g(x) 的余数。",
+    stateNote:
+      "可视化中硬件（LFSR）的寄存器从 1 开始、持续输入比特 0 时的状态。每个箭头是一个时钟，第 j 个状态是 x^j 除以 g(x) 的余数。",
     forward: "乘以 x（旋转一次）",
     back: "除以 x（反向旋转一次）",
     rotated: (k: number) => `旋转次数 k = ${k}`,

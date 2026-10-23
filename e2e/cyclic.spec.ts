@@ -78,6 +78,21 @@ test.describe("Cyclic", () => {
       await expect(c.generator(3, "0x3")).toHaveAttribute("aria-current", "true");
     });
   });
+
+  test("the notes under the rings tie them to the Visualizer's Hardware (LFSR)", async ({ page }) => {
+    const c = await given("the cyclic page is open", () => CyclicPage.open(page));
+    await then("the state ring is the LFSR's register, one clock per arrow", async () => {
+      await expect(c.ringNote("state")).toContainText("ハードウェア（LFSR）のレジスタ");
+      await expect(c.ringNote("state")).toContainText("1 クロック");
+    });
+    await then(
+      "rotating the codeword is not an LFSR computation, but the rotated string still leaves the register at 0",
+      async () => {
+        await expect(c.ringNote("word")).toContainText("ハードウェア（LFSR）");
+        await expect(c.ringNote("word")).toContainText("レジスタが 0");
+      },
+    );
+  });
 });
 
 test.describe("Cyclic page layout", () => {
