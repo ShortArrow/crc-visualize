@@ -170,3 +170,19 @@ describe("parseConfig with frames", () => {
     expect(parseConfig(frames({ input: "", from: "3" }))).toMatchObject({ ok: true, bits: [] });
   });
 });
+
+describe("limits on frames", () => {
+  it("Given 64 and 65 frames, When parsed, Then up to 64 frames is valid", () => {
+    expect(errorsOf(frames({ input: Array(64).fill("A5").join("\n") }))).toEqual({});
+    expect(errorsOf(frames({ input: Array(65).fill("A5").join("\n") })).input).toEqual({ code: "tooManyFrames", max: 64 });
+  });
+
+  it("Given a frame of 256 and 257 bytes, When parsed with a range of 1 byte, Then up to 256 bytes is valid", () => {
+    expect(errorsOf(frames({ input: "00".repeat(256), to: "0" }))).toEqual({});
+    expect(errorsOf(frames({ input: "00".repeat(257), to: "0" })).input).toEqual({ code: "frameTooLong", max: 256 });
+  });
+
+  it("Given too many frames, When read, Then there are no frames to show", () => {
+    expect(readFrames(frames({ input: Array(65).fill("A5").join("\n") }))).toBeUndefined();
+  });
+});

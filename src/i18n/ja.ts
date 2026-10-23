@@ -30,6 +30,8 @@ export const ja = {
     notBits: "0 と 1 だけで入れてください",
     oddHex: "2 桁ずつ（バイト単位）で入れてください",
     tooLong: (max: number) => `入力は ${max} ビットまでです`,
+    tooManyFrames: (max: number) => `フレームは ${max} 行までです`,
+    frameTooLong: (max: number) => `1 フレームは ${max} バイトまでです`,
     refinBytes: "refin を使うときは 8 ビット単位で入れてください",
     notIndex: "バイト番号は 0 以上の整数で入れてください",
     outsideFrame: "範囲か CRC 欄が、選んだフレームに収まっていません",

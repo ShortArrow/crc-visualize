@@ -27,6 +27,8 @@ export const en: Messages = {
     notBits: "Use only 0 and 1",
     oddHex: "Enter two digits per byte",
     tooLong: (max: number) => `Input is limited to ${max} bits`,
+    tooManyFrames: (max: number) => `Up to ${max} frames (lines)`,
+    frameTooLong: (max: number) => `A frame is limited to ${max} bytes`,
     refinBytes: "With refin, enter whole bytes (multiples of 8 bits)",
     notIndex: "Enter a byte number as a whole number of 0 or more",
     outsideFrame: "The range or the CRC field does not fit the selected frame",

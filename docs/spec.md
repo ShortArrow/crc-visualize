@@ -36,7 +36,7 @@ The input mode is one of the following 3.
 
 ### Frames and the CRC range
 
-In hexadecimal, each non-blank line of the input is one frame, and each line must be whole bytes. All frames share one layout:
+In hexadecimal, each non-blank line of the input is one frame, and each line must be whole bytes. There are at most 64 frames of at most 256 bytes each, which bounds the work of listing and checking them whatever a shared URL carries. All frames share one layout:
 
 - CRC range: the bytes the CRC is computed over, as byte numbers from 0 at the start of each frame, both ends included. Without a start, the range starts at byte 0. Without an end, it runs to the frame's last byte, or to the byte before the CRC field when there is one, so frames of different lengths can share one layout.
 - CRC field: none, or the received CRC right after the range, taking ⌈`width`/8⌉ bytes. `BE` reads it high byte first and `LE` low byte first, and it is compared with the CRC computed over the range.

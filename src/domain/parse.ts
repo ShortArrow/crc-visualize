@@ -3,6 +3,9 @@ import type { InputMode } from "./presets";
 import { bitsFromBytes, type Bit, type CrcParams } from "./trace";
 
 export const MAX_INPUT_BITS = 256;
+/** Limits on hex input, which bound the work of listing and checking every frame, whatever a shared URL carries. */
+export const MAX_FRAMES = 64;
+export const MAX_FRAME_BYTES = 256;
 
 /** Raw values of the settings form. */
 export type ConfigForm = Readonly<{
@@ -27,12 +30,13 @@ export type ConfigField = "width" | "poly" | "init" | "xorout" | "input" | "rang
  * Field errors. widthRange: width is not an integer from 1 to 32. notHex: not a hex number. tooWide: does not fit in width bits.
  * zero: 0 is not allowed. notBits: contains characters other than 0 and 1. oddHex: odd number of hex digits (not whole bytes).
  * tooLong: input exceeds max bits. refinBytes: refin is used but the input is not a multiple of 8 bits. notIndex: a byte number
- * is not an integer of 0 or more. outsideFrame: the range or the CRC field does not fit the selected frame.
+ * is not an integer of 0 or more. outsideFrame: the range or the CRC field does not fit the selected frame. tooManyFrames: hex
+ * input has more than max lines. frameTooLong: a line of hex input is longer than max bytes.
  */
 export type ConfigError =
   | Readonly<{ code: "widthRange" | "notHex" | "zero" | "notBits" | "oddHex" | "refinBytes" | "notIndex" | "outsideFrame" }>
   | Readonly<{ code: "tooWide"; width: number }>
-  | Readonly<{ code: "tooLong"; max: number }>;
+  | Readonly<{ code: "tooLong" | "tooManyFrames" | "frameTooLong"; max: number }>;
 
 /** The frames of hex input, one per non-blank line, the layout shared by all of them, and the frame being visualized. */
 export type Frames = Readonly<{ list: readonly (readonly number[])[]; layout: FrameLayout; selected: number }>;
@@ -85,6 +89,8 @@ function parseHexFrames(text: string): Parsed<number[][]> {
     .filter((l) => l !== "");
   if (!lines.every((l) => /^[0-9a-f]*$/i.test(l))) return fail({ code: "notHex" });
   if (!lines.every((l) => l.length % 2 === 0)) return fail({ code: "oddHex" });
+  if (lines.length > MAX_FRAMES) return fail({ code: "tooManyFrames", max: MAX_FRAMES });
+  if (lines.some((l) => l.length / 2 > MAX_FRAME_BYTES)) return fail({ code: "frameTooLong", max: MAX_FRAME_BYTES });
   return ok(lines.map((l) => l.match(/../g)!.map((h) => Number.parseInt(h, 16))));
 }
 

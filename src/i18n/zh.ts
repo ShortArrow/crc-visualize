@@ -27,6 +27,8 @@ export const zh: Messages = {
     notBits: "只能输入 0 和 1",
     oddHex: "请按每字节两位输入",
     tooLong: (max: number) => `输入最多 ${max} 位`,
+    tooManyFrames: (max: number) => `帧最多 ${max} 行`,
+    frameTooLong: (max: number) => `每帧最多 ${max} 字节`,
     refinBytes: "使用 refin 时请按 8 位（整字节）输入",
     notIndex: "字节序号请输入 0 以上的整数",
     outsideFrame: "范围或 CRC 字段超出了所选帧",

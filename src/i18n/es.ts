@@ -27,6 +27,8 @@ export const es: Messages = {
     notBits: "Usa solo 0 y 1",
     oddHex: "Introduce dos dígitos por byte",
     tooLong: (max: number) => `La entrada admite como máximo ${max} bits`,
+    tooManyFrames: (max: number) => `Como máximo ${max} tramas (líneas)`,
+    frameTooLong: (max: number) => `Una trama admite como máximo ${max} bytes`,
     refinBytes: "Con refin, introduce bytes completos (múltiplos de 8 bits)",
     notIndex: "Introduce el número de byte como un entero de 0 o más",
     outsideFrame: "El rango o el campo CRC no cabe en la trama seleccionada",

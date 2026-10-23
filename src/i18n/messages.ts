@@ -18,7 +18,9 @@ export function errorText(m: Messages, error: ConfigError): string {
     case "tooWide":
       return m.errors.tooWide(error.width);
     case "tooLong":
-      return m.errors.tooLong(error.max);
+    case "tooManyFrames":
+    case "frameTooLong":
+      return m.errors[error.code](error.max);
     default:
       return m.errors[error.code];
   }

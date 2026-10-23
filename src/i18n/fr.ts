@@ -27,6 +27,8 @@ export const fr: Messages = {
     notBits: "Utilisez uniquement 0 et 1",
     oddHex: "Saisissez deux chiffres par octet",
     tooLong: (max: number) => `L’entrée est limitée à ${max} bits`,
+    tooManyFrames: (max: number) => `Au plus ${max} trames (lignes)`,
+    frameTooLong: (max: number) => `Une trame est limitée à ${max} octets`,
     refinBytes: "Avec refin, saisissez des octets entiers (multiples de 8 bits)",
     notIndex: "Saisissez le numéro d’octet comme un entier de 0 ou plus",
     outsideFrame: "La plage ou le champ CRC ne tient pas dans la trame choisie",

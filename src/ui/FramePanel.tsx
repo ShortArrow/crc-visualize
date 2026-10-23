@@ -1,4 +1,4 @@
-import { useEffect, useState, type PointerEvent } from "react";
+import { useEffect, useMemo, useState, type PointerEvent } from "react";
 import { checkFrame, CRC_FIELDS, frameSpan, type CrcField } from "../domain/frames";
 import { readFrames, readWidth, type ConfigError, type ConfigForm } from "../domain/parse";
 import type { CrcParams } from "../domain/trace";
@@ -39,7 +39,8 @@ export function FramePanel({ form, params, rangeError, onChange, onFieldHover }:
       window.removeEventListener("pointercancel", end);
     };
   }, []);
-  const frames = readFrames(form);
+  const frames = useMemo(() => readFrames(form), [form]);
+  const checks = useMemo(() => params && frames?.list.map((bytes) => checkFrame(params, bytes, frames.layout)), [params, frames]);
   if (!frames) return null;
   const width = params?.width ?? readWidth(form);
 
@@ -98,7 +99,7 @@ export function FramePanel({ form, params, rangeError, onChange, onFieldHover }:
       </div>
       <ol className="frame-list" onPointerMove={dragOver}>
         {frames.list.map((bytes, i) => {
-          const check = params && checkFrame(params, bytes, frames.layout);
+          const check = checks?.[i];
           const span = width === undefined ? undefined : frameSpan(bytes.length, frames.layout, width);
           const inRange = (k: number) => span !== undefined && k >= span.from && k <= span.to;
           const inField = (k: number) => span?.field !== undefined && k >= span.field.from && k <= span.field.to;
