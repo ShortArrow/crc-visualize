@@ -9,13 +9,14 @@ const PHASE = { timeout: 3000 };
 test.describe("Timing within one step", () => {
   test("wires, gates and boxes do not show the result before the particle arrives", async ({ page }) => {
     const v = await given("the page is open with slow playback settings", () => Visualizer.open(page, SLOW));
-    await when("right after advancing to the feedback step", () => v.goTo("feedback"));
+    await when("right after advancing to the feedback step", () => v.goToFrozen("feedback"));
     await then("the result wire is unpainted, the input gate is unlit, and the feedback box is empty and grey", async () => {
       expect(await v.diagram.painted("result")).toBeLessThan(0.1);
       expect(await v.diagram.gateLit("input")).toBe(false);
       expect(await v.diagram.feedbackShown()).toBe(false);
       expect(await v.diagram.feedbackRed()).toBe(false);
     });
+    await when("the step plays on", () => v.resume());
     await then("at the end of the first half the input wire is fully painted and the input gate lights", async () => {
       await expect.poll(() => v.diagram.painted("input"), PHASE).toBeGreaterThan(0.99);
       await expect.poll(() => v.diagram.gateLit("input"), PHASE).toBe(true);
