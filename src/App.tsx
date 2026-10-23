@@ -33,6 +33,7 @@ import type { FieldName } from "./ui/paramInfo";
 import { parseRoute, type Route } from "./ui/route";
 import { Splitter } from "./ui/Splitter";
 import { SidebarSections } from "./ui/SidebarSections";
+import { FramePanel } from "./ui/FramePanel";
 import { StepLog } from "./ui/StepLog";
 import { VariablesView } from "./ui/VariablesView";
 import { Workbench } from "./ui/Workbench";
@@ -102,6 +103,13 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
         errors={config.ok ? {} : config.errors}
         onChange={setForm}
         focus={focus}
+        onFieldHover={setHoveredField}
+      />
+      <FramePanel
+        form={form}
+        params={config.ok ? config.params : undefined}
+        rangeError={config.ok ? undefined : config.errors.range}
+        onChange={setForm}
         onFieldHover={setHoveredField}
       />
       <ParamHelp topic={focused ?? hoveredField} params={config.ok ? config.params : undefined} />

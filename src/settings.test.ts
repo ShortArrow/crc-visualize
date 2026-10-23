@@ -2,7 +2,20 @@ import { describe, expect, it } from "vitest";
 import { restoreSettings, settingsFromQuery, settingsToQuery, type Settings } from "./settings";
 
 const defaults: Settings = {
-  form: { width: "3", poly: "0x3", init: "0x0", refin: false, refout: false, xorout: "0x0", inputMode: "bits", input: "10101" },
+  form: {
+    width: "3",
+    poly: "0x3",
+    init: "0x0",
+    refin: false,
+    refout: false,
+    xorout: "0x0",
+    inputMode: "bits",
+    input: "10101",
+    from: "",
+    to: "",
+    crcField: "none",
+    frame: "0",
+  },
   speedMode: "auto",
   rate: 1,
   loop: false,
@@ -21,6 +34,10 @@ const saved: Settings = {
     xorout: "0x0",
     inputMode: "text",
     input: "123456789",
+    from: "1",
+    to: "",
+    crcField: "le",
+    frame: "2",
   },
   speedMode: "steady",
   rate: 4,
@@ -51,7 +68,7 @@ describe("restoreSettings", () => {
 
   it("Given a stored value with items of the wrong shape or range, When restored, Then only those items fall back to the defaults", () => {
     const raw = JSON.stringify({
-      form: { ...saved.form, refin: "yes", inputMode: "octal", input: undefined },
+      form: { ...saved.form, refin: "yes", inputMode: "octal", input: undefined, crcField: "mid", frame: 2 },
       speedMode: "fast",
       rate: 3,
       loop: true,
@@ -61,7 +78,14 @@ describe("restoreSettings", () => {
     });
 
     expect(restoreSettings(raw, defaults)).toEqual({
-      form: { ...saved.form, refin: defaults.form.refin, inputMode: defaults.form.inputMode, input: defaults.form.input },
+      form: {
+        ...saved.form,
+        refin: defaults.form.refin,
+        inputMode: defaults.form.inputMode,
+        input: defaults.form.input,
+        crcField: defaults.form.crcField,
+        frame: defaults.form.frame,
+      },
       speedMode: defaults.speedMode,
       rate: defaults.rate,
       loop: true,
@@ -87,6 +111,7 @@ describe("settingsToQuery / settingsFromQuery", () => {
     expect(query.get("code")).toBe("haskell");
     expect(query.get("lang")).toBe("de");
     expect(query.get("bp")).toBe("xor@5,!byte3");
+    expect([query.get("from"), query.get("to"), query.get("crcField"), query.get("frame")]).toEqual(["1", "", "le", "2"]);
   });
 
   it("Given an input value containing symbols and Japanese text, When written to a query and read back, Then the original input value results", () => {
@@ -101,6 +126,8 @@ describe("settingsToQuery / settingsFromQuery", () => {
   });
 
   it("Given base settings, When a query with an invalid value is read, Then that item keeps the base value", () => {
-    expect(settingsFromQuery("?refin=maybe&inputMode=octal&rate=3&speed=fast&loop=2&lang=ko&code=cobol", saved)).toEqual(saved);
+    expect(
+      settingsFromQuery("?refin=maybe&inputMode=octal&rate=3&speed=fast&loop=2&lang=ko&code=cobol&crcField=mid", saved),
+    ).toEqual(saved);
   });
 });

@@ -1,3 +1,4 @@
+import { frameSpan, type CrcField, type FrameLayout } from "./frames";
 import type { InputMode } from "./presets";
 import { bitsFromBytes, type Bit, type CrcParams } from "./trace";
 
@@ -13,20 +14,30 @@ export type ConfigForm = Readonly<{
   xorout: string;
   inputMode: InputMode;
   input: string;
+  /** CRC range and selected frame in hex input; see FrameLayout. Empty to means the range runs to the end. */
+  from: string;
+  to: string;
+  crcField: CrcField;
+  frame: string;
 }>;
 
-export type ConfigField = "width" | "poly" | "init" | "xorout" | "input";
+export type ConfigField = "width" | "poly" | "init" | "xorout" | "input" | "range";
 
 /**
  * Field errors. widthRange: width is not an integer from 1 to 32. notHex: not a hex number. tooWide: does not fit in width bits.
  * zero: 0 is not allowed. notBits: contains characters other than 0 and 1. oddHex: odd number of hex digits (not whole bytes).
- * tooLong: input exceeds max bits. refinBytes: refin is used but the input is not a multiple of 8 bits.
+ * tooLong: input exceeds max bits. refinBytes: refin is used but the input is not a multiple of 8 bits. notIndex: a byte number
+ * is not an integer of 0 or more. outsideFrame: the range or the CRC field does not fit the selected frame.
  */
 export type ConfigError =
-  | Readonly<{ code: "widthRange" | "notHex" | "zero" | "notBits" | "oddHex" | "refinBytes" }>
+  | Readonly<{ code: "widthRange" | "notHex" | "zero" | "notBits" | "oddHex" | "refinBytes" | "notIndex" | "outsideFrame" }>
   | Readonly<{ code: "tooWide"; width: number }>
   | Readonly<{ code: "tooLong"; max: number }>;
 
+/** The frames of hex input, one per non-blank line, the layout shared by all of them, and the frame being visualized. */
+export type Frames = Readonly<{ list: readonly (readonly number[])[]; layout: FrameLayout; selected: number }>;
+
+/** bits are what is visualized: the input, or with hex input, the CRC range of the selected frame. */
 export type ConfigResult =
   { ok: true; params: CrcParams; bits: Bit[] } | { ok: false; errors: Partial<Record<ConfigField, ConfigError>> };
 
@@ -58,14 +69,73 @@ function parseInputBits(mode: InputMode, text: string): Parsed<Bit[]> {
       return /^[01]*$/.test(t) ? ok([...t].map((c) => (c === "1" ? 1 : 0))) : fail({ code: "notBits" });
     }
     case "hex": {
-      const t = text.replace(/\s/g, "");
-      if (!/^[0-9a-f]*$/i.test(t)) return fail({ code: "notHex" });
-      if (t.length % 2 !== 0) return fail({ code: "oddHex" });
-      return ok(bitsFromBytes(t.match(/../g)?.map((h) => Number.parseInt(h, 16)) ?? []));
+      const frames = parseHexFrames(text);
+      return frames.ok ? ok(bitsFromBytes(frames.value.flat())) : frames;
     }
     case "text":
       return ok(bitsFromBytes([...new TextEncoder().encode(text)]));
   }
+}
+
+/** Reads hex input as frames: each non-blank line is one frame of whole bytes, whitespace ignored. */
+function parseHexFrames(text: string): Parsed<number[][]> {
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.replace(/\s/g, ""))
+    .filter((l) => l !== "");
+  if (!lines.every((l) => /^[0-9a-f]*$/i.test(l))) return fail({ code: "notHex" });
+  if (!lines.every((l) => l.length % 2 === 0)) return fail({ code: "oddHex" });
+  return ok(lines.map((l) => l.match(/../g)!.map((h) => Number.parseInt(h, 16))));
+}
+
+/** Reads a byte number; empty is undefined. */
+function parseIndex(text: string): Parsed<number | undefined> {
+  const t = text.trim();
+  if (t === "") return ok(undefined);
+  return /^\d+$/.test(t) ? ok(Number(t)) : fail({ code: "notIndex" });
+}
+
+function parseFrameLayout(form: ConfigForm): Parsed<FrameLayout> {
+  const from = parseIndex(form.from);
+  const to = parseIndex(form.to);
+  if (!from.ok) return from;
+  if (!to.ok) return to;
+  return ok({ from: from.value ?? 0, crcField: form.crcField, ...(to.value === undefined ? {} : { to: to.value }) });
+}
+
+/** Number of the selected frame, clamped to the count frames there are; 0 when it cannot be read. */
+function selectedFrame(form: ConfigForm, count: number): number {
+  const t = form.frame.trim();
+  return Math.max(0, Math.min(/^\d+$/.test(t) ? Number(t) : 0, count - 1));
+}
+
+/**
+ * The frames of hex input as far as they can be read, so they can be shown while the form has errors: a layout that cannot be read
+ * is taken as the whole frame with the CRC field chosen. undefined unless the input mode is hex and the hex can be read.
+ */
+export function readFrames(form: ConfigForm): Frames | undefined {
+  if (form.inputMode !== "hex") return undefined;
+  const list = parseHexFrames(form.input);
+  if (!list.ok) return undefined;
+  const layout = parseFrameLayout(form);
+  return {
+    list: list.value,
+    layout: layout.ok ? layout.value : { from: 0, crcField: form.crcField },
+    selected: selectedFrame(form, list.value.length),
+  };
+}
+
+/** The bits to visualize from hex input: the CRC range of the selected frame, or none with no frames. Errors go on input or range. */
+function frameBits(form: ConfigForm, width: number): { input: Parsed<Bit[]>; range?: ConfigError } {
+  const list = parseHexFrames(form.input);
+  if (!list.ok) return { input: list };
+  const layout = parseFrameLayout(form);
+  if (!layout.ok) return { input: ok([]), range: layout.error };
+  const frame = list.value[selectedFrame(form, list.value.length)];
+  if (!frame) return { input: ok([]) };
+  const span = frameSpan(frame.length, layout.value, width);
+  if (!span) return { input: ok([]), range: { code: "outsideFrame" } };
+  return { input: ok(bitsFromBytes(frame.slice(span.from, span.to + 1))) };
 }
 
 function checkInput(bits: Parsed<Bit[]>, refin: boolean): Parsed<Bit[]> {
@@ -75,12 +145,20 @@ function checkInput(bits: Parsed<Bit[]>, refin: boolean): Parsed<Bit[]> {
   return bits;
 }
 
+/** The width of the form when it can be read, so the frame layout can be shown while other fields have errors. */
+export function readWidth(form: ConfigForm): number | undefined {
+  const width = parseWidth(form.width);
+  return width.ok ? width.value : undefined;
+}
+
 /** Validates the form values and turns them into CRC parameters and input bits; errors are returned per field. */
 export function parseConfig(form: ConfigForm): ConfigResult {
   const errors: Partial<Record<ConfigField, ConfigError>> = {};
   const width = parseWidth(form.width);
-  const input = checkInput(parseInputBits(form.inputMode, form.input), form.refin);
+  const hex = form.inputMode === "hex" && width.ok ? frameBits(form, width.value) : undefined;
+  const input = checkInput(hex?.input ?? parseInputBits(form.inputMode, form.input), form.refin);
   if (!input.ok) errors.input = input.error;
+  if (hex?.range) errors.range = hex.range;
   if (!width.ok) {
     return { ok: false, errors: { width: width.error, ...errors } };
   }
@@ -91,7 +169,7 @@ export function parseConfig(form: ConfigForm): ConfigResult {
   if (!poly.ok) errors.poly = poly.error;
   if (!init.ok) errors.init = init.error;
   if (!xorout.ok) errors.xorout = xorout.error;
-  if (!poly.ok || !init.ok || !xorout.ok || !input.ok) return { ok: false, errors };
+  if (!poly.ok || !init.ok || !xorout.ok || !input.ok || hex?.range) return { ok: false, errors };
 
   return {
     ok: true,

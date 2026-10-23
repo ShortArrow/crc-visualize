@@ -2,13 +2,19 @@ import { reflectValue, type CrcParams, type ParamName } from "../domain/trace";
 import type { Messages } from "../i18n/messages";
 
 /** Settings items other than parameters. Item names are shown in English; each language's name and description appear in the description pane. */
-export type FieldName = "preset" | "inputMode" | "input";
+export type FieldName = "preset" | "inputMode" | "input" | "range" | "crcField";
 
 /** Items explained in the description pane. */
 export type HelpTopic = ParamName | FieldName;
 
 /** Item names in the settings panel. Shown in English in every language. */
-export const FIELD_LABELS: Record<FieldName, string> = { preset: "preset", inputMode: "input mode", input: "input" };
+export const FIELD_LABELS: Record<FieldName, string> = {
+  preset: "preset",
+  inputMode: "input mode",
+  input: "input",
+  range: "range",
+  crcField: "crc field",
+};
 
 const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;
 

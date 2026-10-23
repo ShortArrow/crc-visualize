@@ -459,6 +459,126 @@ button.bp-gutter.bp-off::before {
   border-color: var(--hot);
 }
 
+/* Frames of hex input: the shared CRC range and field, and one row per frame with its bytes */
+.config textarea {
+  width: 100%;
+  min-width: 0;
+  resize: vertical;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+}
+
+.config .invalid textarea {
+  border-color: var(--hot);
+}
+
+.frames {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.frame-layout {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+.frame-layout label[data-field] {
+  grid-column: auto;
+}
+
+.frame-range {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.frame-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.frame-row {
+  display: grid;
+  gap: 4px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.frame-row.selected {
+  border-color: var(--param);
+}
+
+.frame-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.frame-pick {
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: none;
+  color: var(--fg);
+  font-family: var(--mono);
+  cursor: pointer;
+}
+
+.frame-row.selected .frame-pick {
+  border-color: var(--param);
+  color: var(--param);
+}
+
+.frame-value code {
+  color: var(--fg);
+}
+
+.frame-verdict[data-ok="true"] {
+  color: var(--ok);
+}
+
+.frame-verdict[data-ok="false"],
+.frame-unfit {
+  color: var(--hot);
+}
+
+.frame-bytes {
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  touch-action: none;
+  user-select: none;
+}
+
+.frame-byte {
+  padding: 1px 3px;
+  color: var(--muted);
+  cursor: col-resize;
+}
+
+.frame-byte.in-range {
+  background: rgb(86 182 194 / 0.18);
+  color: var(--fg);
+}
+
+.frame-byte.crc-field {
+  background: rgb(78 201 139 / 0.18);
+  color: var(--ok);
+}
+
 .error {
   color: var(--hot);
   max-width: 16em;

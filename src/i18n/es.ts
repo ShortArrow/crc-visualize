@@ -28,6 +28,8 @@ export const es: Messages = {
     oddHex: "Introduce dos dígitos por byte",
     tooLong: (max: number) => `La entrada admite como máximo ${max} bits`,
     refinBytes: "Con refin, introduce bytes completos (múltiplos de 8 bits)",
+    notIndex: "Introduce el número de byte como un entero de 0 o más",
+    outsideFrame: "El rango o el campo CRC no cabe en la trama seleccionada",
   },
   controls: {
     first: "Inicio (Home)",
@@ -81,6 +83,14 @@ export const es: Messages = {
     refinOff: "no se ejecuta porque refin es false",
     refoutOff: "no se ejecuta porque refout es false",
     xoroutZero: "sin cambios porque xorout es 0",
+  },
+  frames: {
+    toEnd: "final",
+    noField: "ninguno",
+    pick: (i: number) => `Visualizar la trama ${i}`,
+    match: "Coincide con el campo CRC",
+    mismatch: "No coincide con el campo CRC",
+    unfit: "El rango no cabe",
   },
   debug: {
     variables: "Variables",
@@ -160,7 +170,17 @@ export const es: Messages = {
     input: {
       title: "Entrada",
       summary:
-        "Los datos cuyo CRC se calcula. Se escriben según el formato de entrada y entran en el registro bit a bit desde el primero.",
+        "Los datos cuyo CRC se calcula. Se escriben según el formato de entrada y entran en el registro bit a bit desde el primero. En hex, cada línea es una trama, y se introduce el rango CRC de la trama seleccionada.",
+    },
+    range: {
+      title: "Rango CRC",
+      summary:
+        "Los bytes sobre los que se calcula el CRC, por número de byte desde 0 al inicio de cada trama, ambos extremos incluidos. Sin final, llega al final de la trama (antes del campo CRC si lo hay). También se elige arrastrando sobre los bytes de una trama.",
+    },
+    crcField: {
+      title: "Campo CRC",
+      summary:
+        "El CRC recibido, justo después del rango. Ocupa width redondeado a bytes enteros; BE pone primero el byte alto, LE el bajo. Se compara con el CRC calculado.",
     },
   },
   names: {

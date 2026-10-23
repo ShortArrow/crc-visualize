@@ -25,6 +25,10 @@ export function formFromParams(params: CrcParams, input: Preset["input"]): Confi
     xorout: hex(params.xorout),
     inputMode: input.mode,
     input: input.text,
+    from: "",
+    to: "",
+    crcField: "none",
+    frame: "0",
   };
 }
 
@@ -103,7 +107,17 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus, onField
       </label>
       <label className={`input-field ${errors.input ? "invalid" : ""}`} data-field="input" {...hover("input")}>
         <span>{FIELD_LABELS.input}</span>
-        <input value={form.input} spellCheck={false} onChange={(e) => set("input", e.target.value)} />
+        {form.inputMode === "hex" ? (
+          <textarea
+            wrap="off"
+            rows={Math.min(Math.max(form.input.split("\n").length, 2), 8)}
+            value={form.input}
+            spellCheck={false}
+            onChange={(e) => set("input", e.target.value)}
+          />
+        ) : (
+          <input value={form.input} spellCheck={false} onChange={(e) => set("input", e.target.value)} />
+        )}
         {errors.input ? <small className="error">{errorText(m, errors.input)}</small> : null}
       </label>
     </form>

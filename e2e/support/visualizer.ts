@@ -379,12 +379,35 @@ export class Visualizer {
     removeAll: () => this.page.locator(".bp-remove-all"),
   };
 
+  /** The frames of hex input under the settings: the shared layout and one row per frame, numbered from 0. */
+  readonly frames = {
+    from: () => this.page.locator('.frame-layout input[data-range="from"]'),
+    to: () => this.page.locator('.frame-layout input[data-range="to"]'),
+    crcField: () => this.page.locator(".frame-layout select"),
+    rangeError: () => this.page.locator(".frame-layout .error"),
+    rows: () => this.page.locator(".frame-row"),
+    row: (i: number) => this.page.locator(`.frame-row[data-frame="${i}"]`),
+    pick: (i: number) => this.page.locator(`.frame-row[data-frame="${i}"] .frame-pick`),
+    byte: (i: number, k: number) => this.page.locator(`.frame-row[data-frame="${i}"] .frame-byte[data-byte="${k}"]`),
+    crc: (i: number) => this.page.locator(`.frame-row[data-frame="${i}"] .frame-crc`),
+    field: (i: number) => this.page.locator(`.frame-row[data-frame="${i}"] .frame-field`),
+    verdict: (i: number) => this.page.locator(`.frame-row[data-frame="${i}"] .frame-verdict`),
+    /** Drags across the bytes of frame i from byte a to byte b. */
+    drag: async (i: number, a: number, b: number) => {
+      await this.frames.byte(i, a).hover();
+      await this.page.mouse.down();
+      await this.frames.byte(i, b).hover();
+      await this.page.mouse.up();
+    },
+  };
+
   readonly settings = {
     preset: () => this.page.locator('label[data-field="preset"] select'),
     /** The field names of the settings panel. */
     labels: () => this.page.locator(".config label > span:first-child"),
     /** The inputs of the non-parameter fields (preset, inputMode, input). */
-    field: (name: "preset" | "inputMode" | "input") => this.page.locator(`label[data-field="${name}"] :is(input, select)`),
+    field: (name: "preset" | "inputMode" | "input") =>
+      this.page.locator(`label[data-field="${name}"] :is(input, select, textarea)`),
     param: (name: string) => this.page.locator(`label[data-param="${name}"]`),
     help: () => this.page.locator(".param-help"),
     currentHelp: () => this.page.locator(".param-help .current"),

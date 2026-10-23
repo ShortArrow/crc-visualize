@@ -31,6 +31,8 @@ export const ja = {
     oddHex: "2 桁ずつ（バイト単位）で入れてください",
     tooLong: (max: number) => `入力は ${max} ビットまでです`,
     refinBytes: "refin を使うときは 8 ビット単位で入れてください",
+    notIndex: "バイト番号は 0 以上の整数で入れてください",
+    outsideFrame: "範囲か CRC 欄が、選んだフレームに収まっていません",
   },
   controls: {
     first: "先頭（Home）",
@@ -84,6 +86,14 @@ export const ja = {
     refinOff: "refin が false なので実行しない",
     refoutOff: "refout が false なので実行しない",
     xoroutZero: "xorout が 0 なので値は変わらない",
+  },
+  frames: {
+    toEnd: "末尾",
+    noField: "なし",
+    pick: (i: number) => `フレーム ${i} を可視化する`,
+    match: "CRC 欄と一致",
+    mismatch: "CRC 欄と不一致",
+    unfit: "範囲が収まらない",
   },
   debug: {
     variables: "変数",
@@ -155,7 +165,18 @@ export const ja = {
     },
     input: {
       title: "入力",
-      summary: "CRC を計算するデータ。入力形式に従って書き、先頭のビットから順にレジスタへ投入する。",
+      summary:
+        "CRC を計算するデータ。入力形式に従って書き、先頭のビットから順にレジスタへ投入する。hex では 1 行が 1 フレームになり、選んだフレームの CRC の範囲を投入する。",
+    },
+    range: {
+      title: "CRC の範囲",
+      summary:
+        "CRC を計算するバイトの範囲。各フレームの先頭を 0 とするバイト番号で、両端を含む。終わりを空にすると、フレームの末尾（CRC 欄があればその手前）まで。フレームのバイトをドラッグしても選べる。",
+    },
+    crcField: {
+      title: "CRC 欄",
+      summary:
+        "範囲の直後にある、送られてきた CRC の欄。width を 8 ビット単位に切り上げたバイト数で、BE は上位バイトから、LE は下位バイトから並ぶ。計算した CRC と比べる。",
     },
   },
   names: {

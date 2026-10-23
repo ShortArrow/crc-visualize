@@ -28,6 +28,8 @@ export const fr: Messages = {
     oddHex: "Saisissez deux chiffres par octet",
     tooLong: (max: number) => `L’entrée est limitée à ${max} bits`,
     refinBytes: "Avec refin, saisissez des octets entiers (multiples de 8 bits)",
+    notIndex: "Saisissez le numéro d’octet comme un entier de 0 ou plus",
+    outsideFrame: "La plage ou le champ CRC ne tient pas dans la trame choisie",
   },
   controls: {
     first: "Début (Home)",
@@ -81,6 +83,14 @@ export const fr: Messages = {
     refinOff: "non exécuté car refin vaut false",
     refoutOff: "non exécuté car refout vaut false",
     xoroutZero: "aucun changement car xorout vaut 0",
+  },
+  frames: {
+    toEnd: "fin",
+    noField: "aucun",
+    pick: (i: number) => `Visualiser la trame ${i}`,
+    match: "Correspond au champ CRC",
+    mismatch: "Ne correspond pas au champ CRC",
+    unfit: "La plage ne tient pas",
   },
   debug: {
     variables: "Variables",
@@ -157,7 +167,17 @@ export const fr: Messages = {
     input: {
       title: "Entrée",
       summary:
-        "Les données dont on calcule le CRC. Écrites selon le format d’entrée, elles entrent dans le registre bit par bit à partir du premier.",
+        "Les données dont on calcule le CRC. Écrites selon le format d’entrée, elles entrent dans le registre bit par bit à partir du premier. En hex, chaque ligne est une trame, et la plage CRC de la trame choisie est injectée.",
+    },
+    range: {
+      title: "Plage CRC",
+      summary:
+        "Les octets sur lesquels le CRC est calculé, par numéro d’octet depuis 0 au début de chaque trame, bornes incluses. Sans fin, elle va jusqu’à la fin de la trame (avant le champ CRC s’il y en a un). On peut aussi la choisir en glissant sur les octets d’une trame.",
+    },
+    crcField: {
+      title: "Champ CRC",
+      summary:
+        "Le CRC reçu, juste après la plage. Il occupe width arrondi à l’octet ; BE place l’octet de poids fort en premier, LE celui de poids faible. Il est comparé au CRC calculé.",
     },
   },
   names: {
