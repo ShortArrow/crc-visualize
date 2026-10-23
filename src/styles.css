@@ -2970,3 +2970,12 @@ button.bit-cell:hover {
   width: 100%;
   min-width: 0;
 }
+
+/* The byte-by-byte card starts as narrow as its table can wrap its headings between words, so it fits beside table T in any language */
+.table-page .page-columns > :first-child {
+  flex-basis: min-content;
+}
+
+.table-steps th {
+  word-break: keep-all;
+}
