@@ -168,3 +168,43 @@ test.describe("Settings validation and notation", () => {
     }
   });
 });
+
+test.describe("Typing the settings", () => {
+  test("typing into the input keeps the focus, even when the value is invalid on the way", async ({ page }) => {
+    const v = await given("1 byte in hex is open", () =>
+      Visualizer.open(page, "?width=3&poly=0x3&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=hex&input=A5"),
+    );
+    await when("typing 0F after it, which is an odd number of digits after the 0", async () => {
+      await v.settings.field("input").click();
+      await page.keyboard.press("End");
+      await page.keyboard.type("0F");
+    });
+    await then("all of it is typed and the diagram shows the 2 bytes", async () => {
+      await expect(v.settings.field("input")).toHaveValue("A50F");
+      await expect(v.settings.field("input")).toBeFocused();
+      await expect(v.debug.value("bitsRead")).toHaveText("0 / 16");
+    });
+  });
+
+  test("while the settings are invalid, only the settings are in the sidebar, and the visualizer starts over once they are fixed", async ({
+    page,
+  }) => {
+    const v = await given("1 byte in hex is open, played 3 steps", async () => {
+      const v = await Visualizer.open(page, "?width=3&poly=0x3&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=hex&input=A5");
+      for (let i = 0; i < 3; i++) await v.stepForward();
+      return v;
+    });
+    await when("typing one more digit", async () => {
+      await v.settings.field("input").click();
+      await page.keyboard.press("End");
+      await page.keyboard.type("0");
+    });
+    await then("the settings are invalid: no diagram, and no variables or breakpoints sections", async () => {
+      await expect(v.diagram.root()).toHaveCount(0);
+      await expect(v.debug.section("variables")).toHaveCount(0);
+      await expect(v.debug.section("breakpoints")).toHaveCount(0);
+    });
+    await when("typing the last digit", () => page.keyboard.type("F"));
+    await then("the visualizer is back at the first step", () => expect(v.counter).toHaveText(/^1 \//));
+  });
+});
