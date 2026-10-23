@@ -16,6 +16,14 @@ test.describe("Parameter help and highlighting", () => {
     });
   });
 
+  test("hovering the input field highlights the input stream in the diagram", async ({ page }) => {
+    const v = await given("the page is open with the default settings", () => Visualizer.open(page));
+    await when("hovering the input field", () => v.settings.field("input").hover());
+    await then("the input stream is highlighted", () => expect(v.diagram.stream()).toHaveClass(/\bparam-hl\b/));
+    await when("moving the mouse away to the width field", () => v.settings.param("width").hover());
+    await then("the input stream is no longer highlighted", () => expect(v.diagram.stream()).not.toHaveClass(/\bparam-hl\b/));
+  });
+
   test("hovering a code chip highlights the matching settings field", async ({ page }) => {
     const v = await given("the page is open with the default settings", () => Visualizer.open(page));
     await when("hovering the init chip", () => v.code.chip("init").hover());

@@ -150,20 +150,22 @@ type Props = Readonly<{
   stepIndex: number;
   /** Animation time of this step. */
   animMs: number;
-  focused: ParamName | undefined;
+  /** The focused parameter, or input while the input field is hovered or focused. */
+  focused: ParamName | "input" | undefined;
   /** Byte breakpoints by byte number: true if enabled, false if disabled. */
   byteBreaks: ReadonlyMap<number, boolean>;
   onToggleByte: (byte: number) => void;
 }>;
 
-/** Where in the diagram the focused parameter takes effect. */
-const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
+/** Where in the diagram the focused parameter, or the input, takes effect. */
+const PARAM_TARGET: Record<ParamName | "input", "registers" | "taps" | "stream"> = {
   width: "registers",
   poly: "taps",
   init: "registers",
   refin: "stream",
   refout: "registers",
   xorout: "registers",
+  input: "stream",
 };
 
 /**

@@ -188,6 +188,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       loop={loop}
       codeLang={codeLang}
       focus={focus}
+      inputHovered={hoveredField === "input"}
       layout={layout}
       settings={settingsBody}
       breakpoints={breakpoints}
@@ -239,6 +240,8 @@ type VisualizerProps = Readonly<{
   loop: boolean;
   codeLang: CodeLang;
   focus: ParamFocus;
+  /** Whether the input field is under the mouse or focus, which highlights the input stream. */
+  inputHovered: boolean;
   layout: PaneLayout;
   /** The settings panel and the description pane, shown in the Settings section of the sidebar. */
   settings: ReactNode;
@@ -274,7 +277,22 @@ const ACTIVE_PARTS = ".reg.msb, .reg.hit, .gate.active, .fb-box.arriving";
  * being computed (ACTIVE_PARTS) into view.
  */
 function Visualizer(props: VisualizerProps) {
-  const { params, bits, presetName, check, speedMode, rate, loop, codeLang, focus, layout, settings, breakpoints, frame } = props;
+  const {
+    params,
+    bits,
+    presetName,
+    check,
+    speedMode,
+    rate,
+    loop,
+    codeLang,
+    focus,
+    inputHovered,
+    layout,
+    settings,
+    breakpoints,
+    frame,
+  } = props;
   const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints } = props;
   const m = useMessages();
   const phone = usePhone();
@@ -385,7 +403,7 @@ function Visualizer(props: VisualizerProps) {
             next={steps[player.index + 1]}
             stepIndex={player.index}
             animMs={animMs}
-            focused={focus.focused}
+            focused={focus.focused ?? (inputHovered ? "input" : undefined)}
             byteBreaks={byteBreaks}
             onToggleByte={(k) => onBreakpoints(toggleByte(breakpoints, k))}
           />
