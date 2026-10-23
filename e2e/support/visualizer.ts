@@ -174,6 +174,31 @@ export class Visualizer {
             .some((a) => a instanceof CSSTransition && a.transitionProperty === "font-size"),
         }));
       }, key),
+    /**
+     * Once the log's previous motion has finished, moves the step with key and samples every frame until the motion ends: the
+     * space between the bottom of the first entry and the top of the second (px, negative when they overlap), the first entry's
+     * opacity, and whether the part of the first entry above the top of the list is hidden.
+     */
+    framesAfter: (key: string) =>
+      this.page.evaluate(async (k) => {
+        const log = document.querySelector(".log")!;
+        await Promise.all(log.getAnimations({ subtree: true }).map((a) => a.finished));
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: k }));
+        const frames: { space: number; opacity: number; clipped: boolean }[] = [];
+        do {
+          await new Promise((r) => requestAnimationFrame(r));
+          const [first, second] = [...document.querySelectorAll<HTMLElement>(".log-entry")];
+          const list = document.querySelector(".log-list")!;
+          frames.push({
+            space: second!.getBoundingClientRect().top - first!.getBoundingClientRect().bottom,
+            opacity: Number(getComputedStyle(first!).opacity),
+            clipped:
+              first!.getBoundingClientRect().top >= list.getBoundingClientRect().top ||
+              getComputedStyle(list).overflowY !== "visible",
+          });
+        } while (log.getAnimations({ subtree: true }).some((a) => a.playState === "running"));
+        return frames;
+      }, key),
   };
 
   readonly workbench = {
