@@ -366,6 +366,9 @@ export class Visualizer {
     /** The part of the input stream that sets or removes a breakpoint on byte k, and its mark. */
     byte: (k: number) => this.page.locator(`.lfsr .byte-hit[data-byte="${k}"]`),
     byteMark: (k: number) => this.page.locator(`.lfsr .byte-bp[data-byte="${k}"]`),
+    /** The part of the input stream that sets or removes a breakpoint on bit n, and its mark. */
+    bit: (n: number) => this.page.locator(`.lfsr .bit-hit[data-bit="${n}"]`),
+    bitMark: (n: number) => this.page.locator(`.lfsr .bit-bp[data-bit="${n}"]`),
     /** The entries of the breakpoint list; key is as in the bp parameter, such as xor or byte0. */
     entries: () => this.page.locator(".bp-entry"),
     entry: (key: string) => this.page.locator(`.bp-entry[data-bp="${key}"]`),

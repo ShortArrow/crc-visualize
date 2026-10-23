@@ -90,7 +90,7 @@ export const ja = {
     breakpoints: "ブレークポイント",
     bitsRead: "読んだ入力ビット",
     xorCount: "XOR した回数",
-    empty: "コードの行番号の左か、入力ストリームのバイトを押すと付く。",
+    empty: "コードの行番号の左、入力ストリームのビット、ビットの下にあるバイトの線のどれかを押すと付く。",
     removeAll: "全部消す",
     remove: "消す",
     enabled: "有効",
@@ -99,6 +99,8 @@ export const ja = {
     byte: (k: number, hex: string) => `byte ${k}（${hex}）`,
     toggleLine: "この行のブレークポイントを付け外し",
     toggleByte: (k: number) => `byte ${k} のブレークポイントを付け外し`,
+    bit: (n: number, b: string) => `bit ${n}（${b}）`,
+    toggleBit: (n: number) => `bit ${n} のブレークポイントを付け外し`,
   },
   help: {
     idle: "設定項目かコードのパラメータにマウスを乗せると、日本語名と説明を表示する。",

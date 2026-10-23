@@ -24,7 +24,7 @@ Changes go to `main` through pull requests. Each pull request runs the type chec
 
 Keys: Space plays / pauses, ← → move one step, Home / End jump to the first / last step, and L toggles loop playback.
 
-Like a debugger, the sidebar shows the variables at the step shown, and playback pauses at breakpoints. Press left of a line number in the code to stop at that line (optionally at its n-th hit, such as the 5th XOR), or a byte of the input stream to stop once that byte has been read.
+Like a debugger, the sidebar shows the variables at the step shown, and playback pauses at breakpoints. Press left of a line number in the code to stop at that line (optionally at its n-th hit, such as the 5th XOR), or a bit of the input stream, or the line under one of its bytes, to stop once that bit or byte has been read.
 
 The settings (CRC parameters, input, speed, loop, breakpoints) are saved in the browser's localStorage and restored the next time the page is opened. The same settings are also carried in the URL query, so passing on the URL from the address bar opens the page with the same settings (settings in the URL take precedence over saved values).
 

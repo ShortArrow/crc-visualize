@@ -7,6 +7,7 @@ import {
   breakpointsToParam,
   editBreakpoint,
   hitsUpTo,
+  toggleBit,
   toggleByte,
   toggleLine,
   type Breakpoint,
@@ -56,6 +57,25 @@ describe("breakIndices", () => {
     expect([...breakIndices(steps, [{ kind: "byte", byte: 0, enabled: true }])]).toEqual([xorOut - 1]);
   });
 
+  it("Given a bit breakpoint on bit 2, When 10101 is fed, Then it hits at the last step before the feedback of bit 3", () => {
+    const steps = trace(plain3, bits("10101"));
+    const feedbackOfBit3 = steps.findIndex((s) => s.kind === "feedback" && s.cursor === 3);
+
+    expect([...breakIndices(steps, [{ kind: "bit", bit: 2, enabled: true }])]).toEqual([feedbackOfBit3 - 1]);
+  });
+
+  it("Given a bit breakpoint on bit 7 and a byte breakpoint on byte 0, When 2 bytes are fed, Then both hit at the same step", () => {
+    const steps = trace(plain3, bits("1010101111110000"));
+
+    expect([...breakIndices(steps, [{ kind: "bit", bit: 7, enabled: true }])]).toEqual([
+      ...breakIndices(steps, [{ kind: "byte", byte: 0, enabled: true }]),
+    ]);
+  });
+
+  it("Given a bit breakpoint beyond the input, When 5 bits are fed, Then it never hits", () => {
+    expect(breakIndices(trace(plain3, bits("10101")), [{ kind: "bit", bit: 5, enabled: true }]).size).toBe(0);
+  });
+
   it("Given a byte breakpoint beyond the input, When 1 byte is fed, Then it never hits", () => {
     expect(breakIndices(trace(plain3, bits("10101011")), [{ kind: "byte", byte: 1, enabled: true }]).size).toBe(0);
   });
@@ -73,7 +93,7 @@ describe("hitsUpTo", () => {
   });
 });
 
-describe("toggleLine and toggleByte", () => {
+describe("toggleLine, toggleByte and toggleBit", () => {
   it("Given no breakpoints, When toggling the xor line twice, Then it is added and then removed", () => {
     const once = toggleLine([], "xor");
 
@@ -84,6 +104,14 @@ describe("toggleLine and toggleByte", () => {
   it("Given a line breakpoint, When toggling byte 3, Then the byte breakpoint is added after it and the line breakpoint is kept", () => {
     expect(toggleByte([xorLine], 3)).toEqual([xorLine, { kind: "byte", byte: 3, enabled: true }]);
   });
+
+  it("Given a byte breakpoint on byte 0, When toggling bit 7 twice, Then the bit breakpoint is added and removed, and the byte one is kept", () => {
+    const byte0: Breakpoint = { kind: "byte", byte: 0, enabled: true };
+    const once = toggleBit([byte0], 7);
+
+    expect(once).toEqual([byte0, { kind: "bit", bit: 7, enabled: true }]);
+    expect(toggleBit(once, 7)).toEqual([byte0]);
+  });
 });
 
 describe("breakpointsToParam and breakpointsFromParam", () => {
@@ -91,18 +119,21 @@ describe("breakpointsToParam and breakpointsFromParam", () => {
     { kind: "line", runs: "xor", hit: 5, enabled: true },
     { kind: "byte", byte: 3, enabled: true },
     { kind: "line", runs: "feedback", enabled: false },
+    { kind: "bit", bit: 13, enabled: true },
   ];
 
-  it("Given breakpoints, When written to the bp parameter, Then they read xor@5,byte3,!feedback", () => {
-    expect(breakpointsToParam(list)).toBe("xor@5,byte3,!feedback");
+  it("Given breakpoints, When written to the bp parameter, Then they read xor@5,byte3,!feedback,bit13", () => {
+    expect(breakpointsToParam(list)).toBe("xor@5,byte3,!feedback,bit13");
   });
 
-  it("Given the parameter xor@5,byte3,!feedback, When read, Then it gives back the same breakpoints", () => {
-    expect(breakpointsFromParam("xor@5,byte3,!feedback")).toEqual(list);
+  it("Given the parameter xor@5,byte3,!feedback,bit13, When read, Then it gives back the same breakpoints", () => {
+    expect(breakpointsFromParam("xor@5,byte3,!feedback,bit13")).toEqual(list);
   });
 
   it("Given entries that cannot be read, When read, Then they are dropped and the rest is kept", () => {
-    expect(breakpointsFromParam("foo,byte-1,xor@0,xor@x,,shift,shift")).toEqual([{ kind: "line", runs: "shift", enabled: true }]);
+    expect(breakpointsFromParam("foo,byte-1,bit,bit1@2,xor@0,xor@x,,shift,shift")).toEqual([
+      { kind: "line", runs: "shift", enabled: true },
+    ]);
   });
 });
 
