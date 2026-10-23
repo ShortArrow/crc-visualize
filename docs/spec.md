@@ -25,14 +25,24 @@ Each preset carries the reveng catalogue's check value (check, the CRC of the in
 
 The input mode is one of the following 3.
 
-| Mode         | Example    | Conversion to a bit string                            |
-| ------------ | ---------- | ----------------------------------------------------- |
-| Binary       | `10101`    | As is. Any length                                     |
-| Hexadecimal  | `31 32 33` | Whitespace is ignored. 1 byte = 8 bits, MSB first     |
-| Text (UTF-8) | `123`      | Encoded as UTF-8 bytes, then converted as hexadecimal |
+| Mode         | Example    | Conversion to a bit string                                      |
+| ------------ | ---------- | --------------------------------------------------------------- |
+| Binary       | `10101`    | As is. Any length                                               |
+| Hexadecimal  | `31 32 33` | Whitespace within a line is ignored. 1 byte = 8 bits, MSB first |
+| Text (UTF-8) | `123`      | Encoded as UTF-8 bytes, then converted as hexadecimal           |
 
 - An input whose bit length is not a multiple of 8 is invalid when `refin` is true.
-- The input is limited to 256 bits.
+- The input (in hexadecimal, the CRC range of the selected frame) is limited to 256 bits.
+
+### Frames and the CRC range
+
+In hexadecimal, each non-blank line of the input is one frame, and each line must be whole bytes. There are at most 64 frames of at most 256 bytes each, which bounds the work of listing and checking them whatever a shared URL carries. All frames share one layout:
+
+- CRC range: the bytes the CRC is computed over, as byte numbers from 0 at the start of each frame, both ends included. Without a start, the range starts at byte 0. Without an end, it runs to the frame's last byte, or to the byte before the CRC field when there is one, so frames of different lengths can share one layout.
+- CRC field: none, or the received CRC right after the range, taking ⌈`width`/8⌉ bytes. `BE` reads it high byte first and `LE` low byte first, and it is compared with the CRC computed over the range.
+- Selected frame: the frame that is visualized, numbered from 0. A number past the last frame selects the last one.
+
+The bits visualized are the CRC range of the selected frame. A byte number that is not an integer of 0 or more is an error on the range, and so is a range or CRC field that does not fit the selected frame (including an end before the start). The binary and text modes have no frames, and the CRC range is ignored there.
 
 ## 3. Hardware model (direct LFSR)
 
@@ -115,11 +125,11 @@ The computation is returned as a `Step[]` by the pure function `trace(params, in
   - Each breakpoint can be enabled or disabled; a disabled one never hits.
 - Speed ramp: in auto mode, playback is slow (900 ms per step) until at least one clock with feedback bit 0 and one with feedback bit 1 have each been shown, and later clocks are fast (120 ms). Even for an input where only one of the values occurs, slow playback lasts at most the first 6 clocks. `init`, `reflectOut`, `xorOut` and `done` are always slow. In steady mode every step is 600 ms. In both modes the time is divided by the speed multiplier.
 - When the settings or the input change, the step sequence is rebuilt, playback returns to the start and stops.
-- Keeping settings: the CRC parameters, input mode, input value, speed mode, speed multiplier, loop on/off, code language (chapter 4), display language (chapter 17) and breakpoints are saved to localStorage each time they change, and restored the next time the app is opened. The playback position is not saved; playback starts at the start, stopped. Among the saved values, any item whose shape or value range is wrong is reset to its own default only (`CRC-3/TUTORIAL`, auto, ×1, no loop, pseudocode, the language determined from the browser's preferred languages, no breakpoints).
+- Keeping settings: the CRC parameters, input mode, input value, speed mode, speed multiplier, loop on/off, code language (chapter 4), display language (chapter 17), breakpoints, and the CRC range, CRC field and selected frame (chapter 2) are saved to localStorage each time they change, and restored the next time the app is opened. The playback position is not saved; playback starts at the start, stopped. Among the saved values, any item whose shape or value range is wrong is reset to its own default only (`CRC-3/TUTORIAL`, auto, ×1, no loop, pseudocode, the language determined from the browser's preferred languages, no breakpoints, no CRC field).
 - Keeping the layout: the sidebar's open/closed state and width, the boundary between the diagram and the panel below, and the boundary between the pseudocode and the Progress panel are saved to localStorage each time they change, and restored the next time the app is opened. These settings adapt to the viewer's screen, so they are not put in the URL query. Saved values that are invalid, or that do not fit the current screen, are corrected to the default or into the range that fits.
-- Sharing by URL: the same items as the kept settings are also put in the URL query (`width`, `poly`, `init`, `refin`, `refout`, `xorout`, `inputMode`, `input`, `speed`, `rate`, `loop`, `code`, `lang`, `bp`; booleans are `1`/`0`), and rewritten each time they change without adding history entries. When the app is opened, items in the URL take precedence over the values saved in localStorage. Items missing from the URL or invalid ones take the saved value (or the default if none).
+- Sharing by URL: the same items as the kept settings are also put in the URL query (`width`, `poly`, `init`, `refin`, `refout`, `xorout`, `inputMode`, `input`, `speed`, `rate`, `loop`, `code`, `lang`, `bp`, `from`, `to`, `crcField`, `frame`; booleans are `1`/`0`, and `crcField` is `none`, `be` or `le`), and rewritten each time they change without adding history entries. When the app is opened, items in the URL take precedence over the values saved in localStorage. Items missing from the URL or invalid ones take the saved value (or the default if none).
   - `bp` lists the breakpoints separated by commas. A line breakpoint is written as the step kind (such as `xor`), followed by `@` and the hit count if it has one (`xor@5`). A byte breakpoint is written as `byte` followed by its number (`byte3`), and a bit breakpoint as `bit` followed by its number (`bit13`). A disabled one is prefixed with `!`. Entries that cannot be read are dropped.
-- When the settings are invalid, an error is shown for each field, and the rendering is cleared rather than keeping the last valid state.
+- When the settings are invalid, an error is shown for each field, and the rendering is cleared rather than keeping the last valid state. The sidebar then has only the Settings section. The field being typed in keeps its focus while the value is invalid on the way.
 
 ## 7. Screen
 
@@ -136,7 +146,8 @@ On pages other than the Visualizer, the content blocks (cards) are laid out in r
 - The LFSR diagram scales up and down to fit the size of the upper part of the editor area, keeping its aspect ratio.
 
 1. Settings panel (sidebar): preset selection, each parameter, input mode and input value.
-   - Field labels are in English only. Parameters use the parameter name (`width`, `poly` and so on); the others are `preset`, `input mode` and `input`. The input mode options are `bits`, `hex` and `text (UTF-8)`, and settings that match no preset are shown as `custom`.
+   - Field labels are in English only. Parameters use the parameter name (`width`, `poly` and so on); the others are `preset`, `input mode`, `input`, `range` and `crc field`. The input mode options are `bits`, `hex` and `text (UTF-8)`, and settings that match no preset are shown as `custom`.
+   - In hexadecimal, the input field takes several lines and does not wrap them. Below the panel, the frames (chapter 2) are listed. First come the CRC range (`range`: the start and the end, the end showing that it runs to the end when empty) and the CRC field (`crc field`: none, `BE` or `LE`). Then each frame has a row with its number, its bytes, the CRC computed over its range, the value in its CRC field, and ✓ or ✗ for whether they agree. The bytes of the range and of the CRC field are coloured. A frame the layout does not fit says so instead of showing a CRC. Pressing a frame's number visualizes it. Dragging across the bytes of any frame, with a mouse or a finger, sets the range.
    - Hovering over a field shows its full name and description in the description pane. For parameters, the aliases and notes are shown too.
    - A description pane is placed below the panel, showing the full name and description of the focused field, and for parameters the aliases and notes that depend on the setting values. The notes are the value of `poly` in reflected notation, and whether the combination of `refin` and `refout` corresponds to a right-shift or a left-shift implementation.
    - The height of the description pane is set to the longest description among all parameters. Regardless of the width, descriptions are never cut off, and the layout does not move when the focus changes.

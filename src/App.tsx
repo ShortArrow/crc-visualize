@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { parseConfig, type ConfigForm } from "./domain/parse";
+import { parseConfig, type ConfigForm, type ConfigResult } from "./domain/parse";
 import { fitPath, matching } from "./domain/narrow";
 import { CATALOGUE, findPreset, TUTORIAL, type Preset } from "./domain/presets";
 import { MessagesProvider, useMessages } from "./i18n/I18n";
@@ -33,6 +33,7 @@ import type { FieldName } from "./ui/paramInfo";
 import { parseRoute, type Route } from "./ui/route";
 import { Splitter } from "./ui/Splitter";
 import { SidebarSections } from "./ui/SidebarSections";
+import { FramePanel } from "./ui/FramePanel";
 import { StepLog } from "./ui/StepLog";
 import { VariablesView } from "./ui/VariablesView";
 import { Workbench } from "./ui/Workbench";
@@ -90,6 +91,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   const focus: ParamFocus = { focused, onFocus: setFocused };
   const [hoveredField, setHoveredField] = useState<FieldName | undefined>(undefined);
   const config = useMemo(() => parseConfig(form), [form]);
+  const shown = useLastValid(config);
   const preset = config.ok ? findPreset(config.params) : undefined;
   const route = useRoute();
 
@@ -103,13 +105,14 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
         focus={focus}
         onFieldHover={setHoveredField}
       />
+      <FramePanel
+        form={form}
+        params={config.ok ? config.params : undefined}
+        rangeError={config.ok ? undefined : config.errors.range}
+        onChange={setForm}
+        onFieldHover={setHoveredField}
+      />
       <ParamHelp topic={focused ?? hoveredField} params={config.ok ? config.params : undefined} />
-    </>
-  );
-  const settingsSidebar = (
-    <>
-      <h2>{m.settings.heading}</h2>
-      {settingsBody}
     </>
   );
   const frame =
@@ -170,19 +173,13 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       <span>{config.ok ? (preset?.name ?? "custom") : m.settings.invalidStatus}</span>,
     );
   }
-  if (!config.ok) {
-    return frame(settingsSidebar)(
-      <p className="invalid-config">{m.settings.invalid}</p>,
-      <span>{m.settings.invalidStatus}</span>,
-    );
-  }
   return (
     <Visualizer
-      key={JSON.stringify([config.params, config.bits])}
-      params={config.params}
-      bits={config.bits}
+      params={shown.params}
+      bits={shown.bits}
+      invalid={!config.ok}
       presetName={preset?.name ?? "custom"}
-      check={preset && sameBits(config.bits, CHECK_BITS) ? preset.check : undefined}
+      check={preset && sameBits(shown.bits, CHECK_BITS) ? preset.check : undefined}
       speedMode={speedMode}
       rate={rate}
       loop={loop}
@@ -201,6 +198,16 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       onLayout={setLayout}
     />
   );
+}
+
+/**
+ * The parameters and bits of config, or while config is invalid, those of the last valid config (CRC-3/TUTORIAL with no input
+ * before there was one). The visualizer keeps them so it stays mounted, and the field being typed in keeps its focus.
+ */
+function useLastValid(config: ConfigResult): Readonly<{ params: CrcParams; bits: Bit[] }> {
+  const last = useRef(config.ok ? config : { params: TUTORIAL.params, bits: [] as Bit[] });
+  if (config.ok) last.current = config;
+  return last.current;
 }
 
 /** Screen layout; restored from localStorage and fitted to the current screen, saved on every change. Ctrl+B (⌘+B) toggles the sidebar. */
@@ -233,6 +240,8 @@ function useRoute(): Route {
 type VisualizerProps = Readonly<{
   params: CrcParams;
   bits: Bit[];
+  /** The settings are invalid: params and bits are the last valid ones, and only the settings are shown. */
+  invalid: boolean;
   presetName: string;
   check: number | undefined;
   speedMode: SpeedMode;
@@ -271,7 +280,8 @@ const KEY_MSG: Record<string, PlayerMsg> = {
 const ACTIVE_PARTS = ".reg.msb, .reg.hit, .gate.active, .fb-box.arriving";
 
 /**
- * Step sequence and playback state for one configuration; when the configuration changes, key recreates it, back at the first step and stopped.
+ * Step sequence and playback state for one configuration; when the configuration changes, playback goes back to the first step and
+ * stops. While the settings are invalid, the sidebar has only the settings and the editor area says so.
  * On a phone it has no splitters: the controls are docked, the diagram stays on top at a readable size, and the code and the log
  * scroll below it. On any screen, a diagram wider than its area scrolls sideways, and at each step it is scrolled to bring the parts
  * being computed (ACTIVE_PARTS) into view.
@@ -280,6 +290,7 @@ function Visualizer(props: VisualizerProps) {
   const {
     params,
     bits,
+    invalid,
     presetName,
     check,
     speedMode,
@@ -304,9 +315,16 @@ function Visualizer(props: VisualizerProps) {
     const [r, z] = [el.getBoundingClientRect(), screenZoom()];
     return f(new DOMRect(r.x / z, r.y / z, r.width / z, r.height / z));
   };
-  const steps = useMemo(() => trace(params, bits), [params, bits]);
+  const run = JSON.stringify([params, bits]);
+  const steps = useMemo(() => trace(params, bits), [run]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
-  const [player, setPlayer] = useState(initialPlayer);
+  const [playerState, setPlayer] = useState(initialPlayer);
+  const [playerRun, setPlayerRun] = useState(run);
+  if (playerRun !== run) {
+    setPlayerRun(run);
+    setPlayer(initialPlayer);
+  }
+  const player = playerRun === run ? playerState : initialPlayer;
   const send = (msg: PlayerMsg) => setPlayer((p) => updatePlayer(p, msg, steps.length));
   const breaks = useMemo(() => breakIndices(steps, breakpoints), [steps, breakpoints]);
   const lineBreaks = new Map(breakpoints.flatMap((b) => (b.kind === "line" ? [[b.runs, b.enabled] as const] : [])));
@@ -345,24 +363,31 @@ function Visualizer(props: VisualizerProps) {
     <SidebarSections
       sections={[
         { id: "settings", title: m.settings.heading, body: settings },
-        ...(phone ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
-        {
-          id: "breakpoints",
-          title: m.debug.breakpoints,
-          body: (
-            <BreakpointList
-              breakpoints={breakpoints}
-              params={params}
-              steps={steps}
-              index={player.index}
-              lang={codeLang}
-              onChange={onBreakpoints}
-            />
-          ),
-        },
+        ...(phone || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
+        ...(invalid
+          ? []
+          : [
+              {
+                id: "breakpoints",
+                title: m.debug.breakpoints,
+                body: (
+                  <BreakpointList
+                    breakpoints={breakpoints}
+                    params={params}
+                    steps={steps}
+                    index={player.index}
+                    lang={codeLang}
+                    onChange={onBreakpoints}
+                  />
+                ),
+              },
+            ]),
       ]}
     />
   );
+  if (invalid) {
+    return frame(sidebar)(<p className="invalid-config">{m.settings.invalid}</p>, <span>{m.settings.invalidStatus}</span>);
+  }
 
   return frame(sidebar)(
     <div className="visualizer" style={{ "--anim-ms": `${animMs}ms` } as CSSProperties}>

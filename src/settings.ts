@@ -1,3 +1,4 @@
+import { CRC_FIELDS } from "./domain/frames";
 import type { ConfigForm } from "./domain/parse";
 import type { InputMode } from "./domain/presets";
 import { isLocale, type Locale } from "./i18n/locale";
@@ -45,6 +46,10 @@ function restoreForm(v: unknown, d: ConfigForm): ConfigForm {
     xorout: pick(f.xorout, isString, d.xorout),
     inputMode: pick(f.inputMode, oneOf(INPUT_MODES), d.inputMode),
     input: pick(f.input, isString, d.input),
+    from: pick(f.from, isString, d.from),
+    to: pick(f.to, isString, d.to),
+    crcField: pick(f.crcField, oneOf(CRC_FIELDS), d.crcField),
+    frame: pick(f.frame, isString, d.frame),
   };
 }
 
@@ -77,7 +82,7 @@ function validate(v: unknown, defaults: Settings): Settings {
   };
 }
 
-const TEXT_FIELDS = ["width", "poly", "init", "xorout", "inputMode", "input"] as const;
+const TEXT_FIELDS = ["width", "poly", "init", "xorout", "inputMode", "input", "from", "to", "crcField", "frame"] as const;
 const FLAG_FIELDS = ["refin", "refout"] as const;
 const flag = (b: boolean) => (b ? "1" : "0");
 const unflag = (v: string): unknown => (v === "1" ? true : v === "0" ? false : v);

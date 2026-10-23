@@ -27,7 +27,11 @@ export const zh: Messages = {
     notBits: "只能输入 0 和 1",
     oddHex: "请按每字节两位输入",
     tooLong: (max: number) => `输入最多 ${max} 位`,
+    tooManyFrames: (max: number) => `帧最多 ${max} 行`,
+    frameTooLong: (max: number) => `每帧最多 ${max} 字节`,
     refinBytes: "使用 refin 时请按 8 位（整字节）输入",
+    notIndex: "字节序号请输入 0 以上的整数",
+    outsideFrame: "范围或 CRC 字段超出了所选帧",
   },
   controls: {
     first: "开头（Home）",
@@ -81,6 +85,14 @@ export const zh: Messages = {
     refinOff: "refin 为 false，因此不执行",
     refoutOff: "refout 为 false，因此不执行",
     xoroutZero: "xorout 为 0，因此值不变",
+  },
+  frames: {
+    toEnd: "末尾",
+    noField: "无",
+    pick: (i: number) => `可视化帧 ${i}`,
+    match: "与 CRC 字段一致",
+    mismatch: "与 CRC 字段不一致",
+    unfit: "范围放不下",
   },
   debug: {
     variables: "变量",
@@ -150,7 +162,16 @@ export const zh: Messages = {
     },
     input: {
       title: "输入",
-      summary: "要计算 CRC 的数据。按输入格式书写，从第一位开始依次送入寄存器。",
+      summary: "要计算 CRC 的数据。按输入格式书写，从第一位开始依次送入寄存器。hex 中每行是一帧，送入所选帧的 CRC 范围。",
+    },
+    range: {
+      title: "CRC 范围",
+      summary:
+        "计算 CRC 的字节范围。以每帧开头为 0 的字节序号表示，包含两端。终点留空则到帧末尾（有 CRC 字段时到其前面）。也可以在帧的字节上拖动来选择。",
+    },
+    crcField: {
+      title: "CRC 字段",
+      summary: "紧接在范围之后的、收到的 CRC。字节数为 width 向上取整到字节；BE 高字节在前，LE 低字节在前。与计算出的 CRC 比较。",
     },
   },
   names: {

@@ -27,7 +27,11 @@ export const en: Messages = {
     notBits: "Use only 0 and 1",
     oddHex: "Enter two digits per byte",
     tooLong: (max: number) => `Input is limited to ${max} bits`,
+    tooManyFrames: (max: number) => `Up to ${max} frames (lines)`,
+    frameTooLong: (max: number) => `A frame is limited to ${max} bytes`,
     refinBytes: "With refin, enter whole bytes (multiples of 8 bits)",
+    notIndex: "Enter a byte number as a whole number of 0 or more",
+    outsideFrame: "The range or the CRC field does not fit the selected frame",
   },
   controls: {
     first: "First (Home)",
@@ -81,6 +85,14 @@ export const en: Messages = {
     refinOff: "not run because refin is false",
     refoutOff: "not run because refout is false",
     xoroutZero: "no change because xorout is 0",
+  },
+  frames: {
+    toEnd: "end",
+    noField: "none",
+    pick: (i: number) => `Visualize frame ${i}`,
+    match: "Matches the CRC field",
+    mismatch: "Does not match the CRC field",
+    unfit: "The range does not fit",
   },
   debug: {
     variables: "Variables",
@@ -156,7 +168,17 @@ export const en: Messages = {
     input: {
       title: "Input",
       summary:
-        "The data to compute the CRC of. Write it in the input mode; it enters the register one bit at a time from the first bit.",
+        "The data to compute the CRC of. Write it in the input mode; it enters the register one bit at a time from the first bit. In hex, each line is one frame, and the CRC range of the selected frame is fed.",
+    },
+    range: {
+      title: "CRC range",
+      summary:
+        "The bytes the CRC is computed over, by byte number from 0 at the start of each frame, both ends included. With no end, it runs to the end of the frame (before the CRC field if there is one). Dragging across a frame's bytes also sets it.",
+    },
+    crcField: {
+      title: "CRC field",
+      summary:
+        "The received CRC, right after the range. It takes width rounded up to whole bytes; BE puts the high byte first, LE the low byte first. It is compared with the computed CRC.",
     },
   },
   names: {

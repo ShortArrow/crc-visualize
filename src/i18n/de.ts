@@ -27,7 +27,11 @@ export const de: Messages = {
     notBits: "Nur 0 und 1 verwenden",
     oddHex: "Gib zwei Ziffern pro Byte ein",
     tooLong: (max: number) => `Die Eingabe ist auf ${max} Bit begrenzt`,
+    tooManyFrames: (max: number) => `Höchstens ${max} Rahmen (Zeilen)`,
+    frameTooLong: (max: number) => `Ein Rahmen ist auf ${max} Bytes begrenzt`,
     refinBytes: "Mit refin ganze Bytes eingeben (Vielfache von 8 Bit)",
+    notIndex: "Bytenummer als ganze Zahl ab 0 eingeben",
+    outsideFrame: "Bereich oder CRC-Feld passt nicht in den gewählten Rahmen",
   },
   controls: {
     first: "Anfang (Home)",
@@ -81,6 +85,14 @@ export const de: Messages = {
     refinOff: "wird nicht ausgeführt, da refin false ist",
     refoutOff: "wird nicht ausgeführt, da refout false ist",
     xoroutZero: "keine Änderung, da xorout 0 ist",
+  },
+  frames: {
+    toEnd: "Ende",
+    noField: "keins",
+    pick: (i: number) => `Rahmen ${i} darstellen`,
+    match: "Stimmt mit dem CRC-Feld überein",
+    mismatch: "Stimmt nicht mit dem CRC-Feld überein",
+    unfit: "Bereich passt nicht",
   },
   debug: {
     variables: "Variablen",
@@ -157,7 +169,17 @@ export const de: Messages = {
     input: {
       title: "Eingabe",
       summary:
-        "Die Daten, deren CRC berechnet wird. Im Eingabeformat geschrieben; sie gehen Bit für Bit ab dem ersten Bit ins Register.",
+        "Die Daten, deren CRC berechnet wird. Im Eingabeformat geschrieben; sie gehen Bit für Bit ab dem ersten Bit ins Register. Bei hex ist jede Zeile ein Rahmen, und der CRC-Bereich des gewählten Rahmens wird eingespeist.",
+    },
+    range: {
+      title: "CRC-Bereich",
+      summary:
+        "Die Bytes, über die der CRC berechnet wird, als Bytenummer ab 0 am Anfang jedes Rahmens, beide Enden eingeschlossen. Ohne Ende reicht er bis zum Rahmenende (vor dem CRC-Feld, falls vorhanden). Auch durch Ziehen über die Bytes eines Rahmens wählbar.",
+    },
+    crcField: {
+      title: "CRC-Feld",
+      summary:
+        "Der empfangene CRC direkt nach dem Bereich. Er belegt width aufgerundet auf ganze Bytes; BE beginnt mit dem höchsten, LE mit dem niedrigsten Byte. Er wird mit dem berechneten CRC verglichen.",
     },
   },
   names: {
