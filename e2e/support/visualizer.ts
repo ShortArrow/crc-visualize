@@ -353,6 +353,28 @@ export class Visualizer {
     },
   };
 
+  readonly debug = {
+    /** A section of the visualizer's sidebar, and the heading that opens and closes it. */
+    section: (name: "settings" | "variables" | "breakpoints") => this.page.locator(`.sidebar-section[data-section="${name}"]`),
+    sectionHeading: (name: "settings" | "variables" | "breakpoints") =>
+      this.page.locator(`.sidebar-section[data-section="${name}"] > h2 button`),
+    /** The row of a variable, and its value. */
+    variable: (name: string) => this.page.locator(`.variables [data-var="${name}"]`),
+    value: (name: string) => this.page.locator(`.variables [data-var="${name}"] .var-value`),
+    /** The place left of a line number that sets or removes a breakpoint on the line containing text. */
+    gutter: (text: string | RegExp) => this.page.locator(".code-line", { hasText: text }).locator(".bp-gutter"),
+    /** The part of the input stream that sets or removes a breakpoint on byte k, and its mark. */
+    byte: (k: number) => this.page.locator(`.lfsr .byte-hit[data-byte="${k}"]`),
+    byteMark: (k: number) => this.page.locator(`.lfsr .byte-bp[data-byte="${k}"]`),
+    /** The entries of the breakpoint list; key is as in the bp parameter, such as xor or byte0. */
+    entries: () => this.page.locator(".bp-entry"),
+    entry: (key: string) => this.page.locator(`.bp-entry[data-bp="${key}"]`),
+    enabled: (key: string) => this.page.locator(`.bp-entry[data-bp="${key}"] input[type="checkbox"]`),
+    hitCount: (key: string) => this.page.locator(`.bp-entry[data-bp="${key}"] input.bp-hit`),
+    hits: (key: string) => this.page.locator(`.bp-entry[data-bp="${key}"] .bp-hits`),
+    removeAll: () => this.page.locator(".bp-remove-all"),
+  };
+
   readonly settings = {
     preset: () => this.page.locator('label[data-field="preset"] select'),
     /** The field names of the settings panel. */

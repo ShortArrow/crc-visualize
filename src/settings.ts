@@ -1,6 +1,7 @@
 import type { ConfigForm } from "./domain/parse";
 import type { InputMode } from "./domain/presets";
 import { isLocale, type Locale } from "./i18n/locale";
+import { breakpointsFromParam, breakpointsToParam, type Breakpoint } from "./playback/breakpoints";
 import type { SpeedMode } from "./playback/playback";
 import { CODE_LANGS, type CodeLang } from "./ui/codeLangs";
 import { RATES } from "./ui/Controls";
@@ -13,6 +14,7 @@ export type Settings = Readonly<{
   loop: boolean;
   codeLang: CodeLang;
   locale: Locale;
+  breakpoints: readonly Breakpoint[];
 }>;
 
 /** localStorage key; bump the version when the stored format changes. */
@@ -46,6 +48,10 @@ function restoreForm(v: unknown, d: ConfigForm): ConfigForm {
   };
 }
 
+/** Breakpoints of unknown shape, kept only where they read back the same through the bp parameter. */
+const restoreBreakpoints = (v: unknown, d: readonly Breakpoint[]): readonly Breakpoint[] =>
+  Array.isArray(v) && v.every(isRecord) ? breakpointsFromParam(breakpointsToParam(v as Breakpoint[])) : d;
+
 /** Restores settings from the stored string raw; unreadable items and items with the wrong shape or range take the defaults value. */
 export function restoreSettings(raw: string | null, defaults: Settings): Settings {
   let parsed: unknown;
@@ -67,6 +73,7 @@ function validate(v: unknown, defaults: Settings): Settings {
     loop: pick(s.loop, isBoolean, defaults.loop),
     codeLang: pick(s.codeLang, oneOf(CODE_LANG_IDS), defaults.codeLang),
     locale: pick(s.locale, isLocale, defaults.locale),
+    breakpoints: restoreBreakpoints(s.breakpoints, defaults.breakpoints),
   };
 }
 
@@ -75,8 +82,8 @@ const FLAG_FIELDS = ["refin", "refout"] as const;
 const flag = (b: boolean) => (b ? "1" : "0");
 const unflag = (v: string): unknown => (v === "1" ? true : v === "0" ? false : v);
 
-/** Turns settings into a URL query string (without the leading ?); booleans are 1/0, the speed mode is speed, the code language is code, the display language is lang. */
-export function settingsToQuery({ form, speedMode, rate, loop, codeLang, locale }: Settings): string {
+/** Turns settings into a URL query string (without the leading ?); booleans are 1/0, the speed mode is speed, the code language is code, the display language is lang, the breakpoints are bp. */
+export function settingsToQuery({ form, speedMode, rate, loop, codeLang, locale, breakpoints }: Settings): string {
   const q = new URLSearchParams();
   for (const k of TEXT_FIELDS) q.set(k, form[k]);
   for (const k of FLAG_FIELDS) q.set(k, flag(form[k]));
@@ -85,6 +92,7 @@ export function settingsToQuery({ form, speedMode, rate, loop, codeLang, locale 
   q.set("loop", flag(loop));
   q.set("code", codeLang);
   q.set("lang", locale);
+  q.set("bp", breakpointsToParam(breakpoints));
   return q.toString();
 }
 
@@ -104,6 +112,7 @@ export function settingsFromQuery(search: string, base: Settings): Settings {
       loop: has("loop") ? unflag(get("loop")) : base.loop,
       codeLang: has("code") ? get("code") : base.codeLang,
       locale: has("lang") ? get("lang") : base.locale,
+      breakpoints: has("bp") ? breakpointsFromParam(get("bp")) : base.breakpoints,
     },
     base,
   );

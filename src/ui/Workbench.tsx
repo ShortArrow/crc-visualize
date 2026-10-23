@@ -52,7 +52,7 @@ const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: L
  * VS Code-style screen frame. Divides into the activity bar on the left, a collapsible sidebar, the editor area and the status bar at the bottom,
  * filling the whole screen. The page itself does not scroll; only each area scrolls internally.
  * On a phone (class phone), the activity bar runs along the bottom instead, and the sidebar is a drawer over the editor area: closed at
- * first, and closed again on choosing a link or button in it or tapping beside it. The drawer's state is not saved in layout. The
+ * first, and closed again on choosing a link or button in it (other than one marked data-stay) or tapping beside it. The drawer's state is not saved in layout. The
  * dock between the editor area and the page links holds the parts the page shows with Docked.
  */
 export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, editor, status }: Props) {
@@ -63,7 +63,7 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
   const open = phone ? drawer : layout.sidebarOpen;
   const toggle = () => (phone ? setDrawer(!drawer) : onLayout({ ...layout, sidebarOpen: !open }));
   const closeOnChoice = (e: MouseEvent) => {
-    if (phone && (e.target as Element).closest("a, button")) setDrawer(false);
+    if (phone && (e.target as Element).closest("a, button:not([data-stay])")) setDrawer(false);
   };
   const style = { "--sidebar-width": `${layout.sidebarWidth}px` } as CSSProperties;
   return (

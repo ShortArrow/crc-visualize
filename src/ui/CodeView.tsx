@@ -1,4 +1,4 @@
-import type { CrcParams, Step } from "../domain/trace";
+import type { CrcParams, Step, StepKind } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { CODE_LANGS, codeLines, type CodeLang, type CodePart } from "./code";
 import { focusHandlers, type ParamFocus } from "./paramFocus";
@@ -18,10 +18,22 @@ function Part({ part, focus }: { part: CodePart; focus: ParamFocus }) {
   );
 }
 
-type Props = Readonly<{ params: CrcParams; step: Step; focus: ParamFocus; lang: CodeLang }>;
+type Props = Readonly<{
+  params: CrcParams;
+  step: Step;
+  focus: ParamFocus;
+  lang: CodeLang;
+  /** Line breakpoints by the step kind their line runs: true if enabled, false if disabled. */
+  lineBreaks: ReadonlyMap<StepKind, boolean>;
+  onToggleLine: (runs: StepKind) => void;
+}>;
 
-/** Writes the code (software representation) in lang. Highlights the line of the current step and shows parameters as chips. */
-export function CodeView({ params, step, focus, lang }: Props) {
+/**
+ * Writes the code (software representation) in lang. Highlights the line of the current step and shows parameters as chips.
+ * Left of the line number of each line that runs a step, pressing sets or removes a breakpoint, shown as a dot (bp-set, or bp-off
+ * when disabled).
+ */
+export function CodeView({ params, step, focus, lang, lineBreaks, onToggleLine }: Props) {
   const m = useMessages();
   return (
     <pre className="code" data-lang={lang}>
@@ -29,6 +41,17 @@ export function CodeView({ params, step, focus, lang }: Props) {
         const flags = [line.active && "active", line.skipped && "skipped", line.disabled && "disabled"];
         return (
           <div key={i} className={["code-line", ...flags].filter(Boolean).join(" ")}>
+            {line.runs ? (
+              <button
+                type="button"
+                className={`bp-gutter ${{ true: "bp-set", false: "bp-off", undefined: "" }[String(lineBreaks.get(line.runs))]}`}
+                title={m.debug.toggleLine}
+                aria-label={m.debug.toggleLine}
+                onClick={() => onToggleLine(line.runs!)}
+              />
+            ) : (
+              <span className="bp-gutter" />
+            )}
             <span className="ln">{i + 1}</span>
             <span className="code-text">
               {line.parts.map((part, k) => (

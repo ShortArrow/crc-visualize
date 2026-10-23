@@ -151,6 +151,9 @@ type Props = Readonly<{
   /** Animation time of this step. */
   animMs: number;
   focused: ParamName | undefined;
+  /** Byte breakpoints by byte number: true if enabled, false if disabled. */
+  byteBreaks: ReadonlyMap<number, boolean>;
+  onToggleByte: (byte: number) => void;
 }>;
 
 /** Where in the diagram the focused parameter takes effect. */
@@ -166,8 +169,9 @@ const PARAM_TARGET: Record<ParamName, "registers" | "taps" | "stream"> = {
 /**
  * LFSR (hardware representation). Rendering depends only on step, and the animation replays for each stepIndex.
  * Value flow is shown by wire colours (wireLevels) and particles (particles); no formula text is shown.
+ * When the input is whole bytes, pressing a byte of the input stream sets or removes a breakpoint on it, marked under the byte.
  */
-export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Props) {
+export function LfsrView({ params, step, next, stepIndex, animMs, focused, byteBreaks, onToggleByte }: Props) {
   const m = useMessages();
   const layout = lfsrLayout(params);
   const { box, regY, streamY, gateR, inputGate: ig, feedbackBox: fb, taps, entry } = layout;
@@ -251,6 +255,38 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
               </text>
             );
           })}
+          {grouped
+            ? Array.from({ length: step.stream.length / 8 }, (_, k) => {
+                const [left, right] = [streamX(k * 8, true) - STREAM_PITCH / 2, streamX(k * 8 + 7, true) + STREAM_PITCH / 2];
+                const mark = byteBreaks.get(k);
+                return (
+                  <g key={`byte-${k}`}>
+                    <rect
+                      className="byte-hit"
+                      data-byte={k}
+                      x={left}
+                      y={streamY - 18}
+                      width={right - left}
+                      height={30}
+                      onClick={() => onToggleByte(k)}
+                    >
+                      <title>{m.debug.toggleByte(k)}</title>
+                    </rect>
+                    {mark === undefined ? null : (
+                      <rect
+                        className={`byte-bp ${mark ? "" : "off"}`}
+                        data-byte={k}
+                        x={left + 2}
+                        y={streamY + 7}
+                        width={right - left - 4}
+                        height={3}
+                        rx={1.5}
+                      />
+                    )}
+                  </g>
+                );
+              })
+            : null}
         </g>
       </g>
       <text className="label" x={8} y={streamY - 22}>

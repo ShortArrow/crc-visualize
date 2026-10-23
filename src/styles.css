@@ -190,6 +190,195 @@ h2 {
   letter-spacing: 0.05em;
 }
 
+/* Sidebar sections (accordion) */
+.sidebar-section {
+  display: grid;
+  gap: 8px;
+}
+
+.sidebar-section + .sidebar-section {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-section > h2 {
+  margin: 0;
+}
+
+.sidebar-section > h2 button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+/* Variables */
+.variables {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 2px 12px;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.variables .var {
+  display: contents;
+}
+
+.variables .var-name {
+  color: #9cdcfe;
+}
+
+.variables .counter-name {
+  color: var(--muted);
+  font-family: system-ui, "Segoe UI", "Hiragino Sans", sans-serif;
+}
+
+.variables .var-value {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.variables .var.changed .var-value {
+  color: var(--warn);
+}
+
+/* Breakpoints */
+.bp-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.breakpoints {
+  display: grid;
+  gap: 6px;
+}
+
+.bp-remove-all {
+  justify-self: start;
+}
+
+.bp-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bp-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 0.85rem;
+}
+
+.bp-entry .bp-title {
+  grid-column: 1 / 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bp-entry.off .bp-title {
+  color: var(--muted);
+}
+
+.bp-entry .bp-remove {
+  grid-column: 3;
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.bp-entry .bp-line {
+  grid-column: 1;
+  overflow: hidden;
+  padding-left: 22px;
+  color: var(--muted);
+  font-family: var(--mono);
+  white-space: pre;
+  text-overflow: ellipsis;
+}
+
+.bp-entry .bp-hit {
+  width: 4.5em;
+}
+
+.bp-entry .bp-hits {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* The place left of a line number that sets or removes a breakpoint */
+.code-line .bp-gutter {
+  width: 12px;
+  margin-right: -8px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+button.bp-gutter {
+  cursor: pointer;
+}
+
+button.bp-gutter::before {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin: auto;
+  border-radius: 50%;
+}
+
+button.bp-gutter:hover::before {
+  background: rgb(255 92 92 / 0.35);
+}
+
+button.bp-gutter.bp-set::before {
+  background: var(--hot);
+}
+
+button.bp-gutter.bp-off::before {
+  background: var(--muted);
+}
+
+/* Bytes of the input stream that set or remove a breakpoint, and their marks */
+.byte-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.byte-hit:hover {
+  fill: rgb(255 92 92 / 0.12);
+}
+
+.byte-bp {
+  fill: var(--hot);
+  pointer-events: none;
+}
+
+.byte-bp.off {
+  fill: var(--muted);
+}
+
 /* 設定パネル */
 .config {
   display: grid;
@@ -2537,6 +2726,17 @@ button.bit-cell:hover {
 .phone .panel > .log-pane {
   overflow: visible;
   border-top: 1px solid var(--border);
+}
+
+.phone .panel > .variables-pane {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* Wide enough for a finger */
+.phone .code-line .bp-gutter {
+  width: 28px;
+  margin-right: -4px;
 }
 
 /* The table page puts the entry card right after the byte-by-byte card, and keeps the row headings of the table T while it scrolls */
