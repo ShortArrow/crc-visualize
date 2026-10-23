@@ -205,6 +205,8 @@ While the mouse or keyboard focus is on a settings panel field or a pseudocode c
 | `refout`  | Field          | `refout` chip            | Register boxes          |
 | `xorout`  | Field          | `xorout` chip            | Register boxes          |
 
+While the mouse or keyboard focus is on the input field, the input stream of the LFSR diagram is emphasized in the same colour.
+
 ### Colours
 
 Each colour has exactly one meaning.

@@ -84,6 +84,7 @@ export class Visualizer {
           .filter((a) => !(a instanceof CSSAnimation) && !(a instanceof CSSTransition))
           .forEach((a) => a.cancel()),
       ),
+    stream: () => this.page.locator(".lfsr g.stream"),
     particles: () => this.page.locator(".lfsr .particle"),
     particle: (route: string) => this.page.locator(`.lfsr .particle[data-route="${route}"]`),
     gate: (id: "input" | number) => this.page.locator(`.gate[data-gate="${id}"]`),
