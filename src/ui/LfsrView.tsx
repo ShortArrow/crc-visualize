@@ -7,9 +7,6 @@ import { heldFeedback, particleWire, particles, upcomingValues, wireLevels, type
 
 const STREAM_PITCH = 22;
 const BYTE_GAP = 8;
-/** Minimum display scale at which text stays readable even for wide CRCs. Anything wider scrolls horizontally. */
-const MIN_SCALE = 0.8;
-
 /**
  * Fraction of the step's animation time that a particle takes to travel its path, in each of the first and second halves.
  * Second-half particles arrive at twice this point; the after-gate and flip timings in styles.css match it.
@@ -214,7 +211,7 @@ export function LfsrView({ params, step, next, stepIndex, animMs, focused }: Pro
       className="lfsr"
       data-step={step.kind}
       viewBox={`0 0 ${layout.viewWidth} ${layout.viewHeight}`}
-      style={{ minWidth: layout.viewWidth * MIN_SCALE }}
+      style={{ "--view-width": layout.viewWidth } as CSSProperties}
       role="img"
       aria-label="LFSR"
     >

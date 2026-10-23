@@ -210,3 +210,37 @@ test.describe("Gate lighting", () => {
     });
   });
 });
+
+test.describe("Diagram size on a PC screen of 1280×1024 less the browser frame and taskbar (1280×850)", () => {
+  const SCREEN = { width: 1280, height: 850 };
+  const CRC16 = "?width=16&poly=0x1021&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789";
+  const CRC32 = "?width=32&poly=0x4c11db7&init=0xffffffff&refin=1&refout=1&xorout=0xffffffff&inputMode=text&input=123456789";
+
+  test("a 16-bit diagram is shrunk to fit the width of its area, with every register in view", async ({ page }) => {
+    await given("a 16-bit CRC is open on the screen", async () => {
+      await page.setViewportSize(SCREEN);
+      return Visualizer.open(page, CRC16);
+    });
+    await then("the diagram area does not scroll sideways, and every register is wholly in view", async () => {
+      const hardware = page.locator(".hardware");
+      expect(await hardware.evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(0);
+      for (const reg of await page.locator(".reg").all()) await expect(reg).toBeInViewport({ ratio: 1 });
+    });
+  });
+
+  test("a 32-bit diagram scrolls sideways, and is scrolled back to the most significant register being read", async ({
+    page,
+  }) => {
+    const v = await given("a 32-bit CRC is open on the screen", async () => {
+      await page.setViewportSize(SCREEN);
+      return Visualizer.open(page, CRC32);
+    });
+    await when("scrolling the diagram to its right end and stepping to the first feedback", async () => {
+      await page.locator('.reg[data-bit="0"]').scrollIntoViewIfNeeded();
+      await v.goTo("feedback");
+    });
+    await then("the most significant register is wholly in view", () =>
+      expect(page.locator(".reg.msb")).toBeInViewport({ ratio: 1 }),
+    );
+  });
+});

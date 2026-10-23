@@ -283,9 +283,16 @@ h2 {
 .hardware {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   min-height: 0;
   padding: 10px 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.hardware h2 {
+  position: sticky;
+  left: 0;
 }
 
 .panel {
@@ -370,10 +377,12 @@ h2 {
 }
 
 /* LFSR 図 */
+/* Shrinks to the area, but not below the scale at which the registers stay readable; anything wider scrolls sideways. */
 .lfsr {
   display: block;
   width: 100%;
   height: 100%;
+  min-width: calc(var(--view-width) * 0.55px);
   min-height: 0;
   font-family: var(--mono);
 }
@@ -2508,17 +2517,11 @@ button.bit-cell:hover {
 
 .phone .hardware {
   display: block;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.phone .hardware h2 {
-  position: sticky;
-  left: 0;
 }
 
 .phone .lfsr {
   height: auto;
+  min-width: calc(var(--view-width) * 0.8px);
 }
 
 .phone .panel {

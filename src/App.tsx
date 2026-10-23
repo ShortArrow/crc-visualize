@@ -251,7 +251,8 @@ const ACTIVE_PARTS = ".reg.msb, .reg.hit, .gate.active, .fb-box.arriving";
 /**
  * Step sequence and playback state for one configuration; when the configuration changes, key recreates it, back at the first step and stopped.
  * On a phone it has no splitters: the controls are docked, the diagram stays on top at a readable size, and the code and the log
- * scroll below it. At each step, the diagram is scrolled sideways to bring the parts being computed (ACTIVE_PARTS) into view.
+ * scroll below it. On any screen, a diagram wider than its area scrolls sideways, and at each step it is scrolled to bring the parts
+ * being computed (ACTIVE_PARTS) into view.
  */
 function Visualizer(props: VisualizerProps) {
   const { params, bits, presetName, check, speedMode, rate, loop, codeLang, focus, layout, frame } = props;
@@ -294,7 +295,7 @@ function Visualizer(props: VisualizerProps) {
   });
 
   useEffect(() => {
-    if (phone && hardware.current) followElements(hardware.current, ACTIVE_PARTS);
+    if (hardware.current) followElements(hardware.current, ACTIVE_PARTS);
   }, [phone, player.index]);
 
   const [latest] = logEntries(steps, player.index, 1, m);
