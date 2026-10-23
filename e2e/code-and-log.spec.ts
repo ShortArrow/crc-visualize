@@ -82,6 +82,30 @@ test.describe("Log", () => {
     });
   });
 
+  test("on a step forward the new entry slides in from above together with the entry below it, so the two never overlap", async ({
+    page,
+  }) => {
+    const v = await given("the visualizer has advanced to the xor step", async () => {
+      const v = await Visualizer.open(page);
+      await v.goTo("xor");
+      return v;
+    });
+    const frames = await when("stepping forward once and watching every frame of the motion", () =>
+      v.log.framesAfter("ArrowRight"),
+    );
+    await then(
+      "in every frame the new entry stays above the one below, is fully opaque, and nothing above the list is shown",
+      async () => {
+        expect(frames.length).toBeGreaterThan(3);
+        for (const f of frames) {
+          expect(f.space).toBeGreaterThanOrEqual(0);
+          expect(f.opacity).toBe(1);
+          expect(f.clipped).toBe(true);
+        }
+      },
+    );
+  });
+
   test("the software pane keeps a constant height regardless of the number of log entries", async ({ page }) => {
     const v = await given("the page is open with the default settings", () => Visualizer.open(page));
     const height = () => page.locator(".software").evaluate((el) => el.getBoundingClientRect().height);

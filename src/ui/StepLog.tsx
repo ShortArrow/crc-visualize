@@ -72,7 +72,8 @@ export function StepLog({ steps, current, input, check }: Props) {
 
 /**
  * On each render, slides rows whose position changed since the previous render (identified by data-index) from their old position to the new one.
- * Newly appearing rows fade in while dropping from above.
+ * A newly appearing row slides as far as its nearest row that was already there, so they move together without overlapping;
+ * with no such row (the first render) it fades in.
  */
 function useSlidingRows(current: number) {
   const ref = useRef<HTMLOListElement>(null);
@@ -80,19 +81,20 @@ function useSlidingRows(current: number) {
   useLayoutEffect(() => {
     const rows = [...(ref.current?.children ?? [])] as HTMLElement[];
     const next = new Map(rows.map((row) => [row.dataset.index ?? "", row.offsetTop]));
-    for (const row of rows) {
-      const before = tops.current.get(row.dataset.index ?? "");
-      const after = next.get(row.dataset.index ?? "")!;
-      if (before === undefined) {
-        row.animate([{ opacity: 0, transform: "translateY(-8px)" }, {}], { duration: MOTION_MS, easing: "ease-out" });
-        continue;
-      }
-      if (before === after) continue;
-      row.animate([{ transform: `translateY(${before - after}px)` }, { transform: "none" }], {
-        duration: MOTION_MS,
-        easing: "ease-out",
-      });
-    }
+    const shiftOf = (row: HTMLElement | undefined) => {
+      const before = tops.current.get(row?.dataset.index ?? "");
+      return before === undefined ? undefined : before - row!.offsetTop;
+    };
+    rows.forEach((row, i) => {
+      const shift = shiftOf(row) ?? shiftOf(rows[i + 1]) ?? shiftOf(rows[i - 1]);
+      const keyframes =
+        shift === undefined
+          ? [{ opacity: 0 }, {}]
+          : shift === 0
+            ? undefined
+            : [{ transform: `translateY(${shift}px)` }, { transform: "none" }];
+      if (keyframes) row.animate(keyframes, { duration: MOTION_MS, easing: "ease-out" });
+    });
     tops.current = next;
   }, [current]);
   return ref;
