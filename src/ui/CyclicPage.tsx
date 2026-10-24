@@ -1,5 +1,14 @@
 import { useState, type CSSProperties } from "react";
-import { codeword, period, powerCycle, remainder, rotate, stateRingSettings, type Generator } from "../domain/cyclic";
+import {
+  codeword,
+  period,
+  powerCycle,
+  remainder,
+  rotate,
+  stateRingSettings,
+  wordRingSettings,
+  type Generator,
+} from "../domain/cyclic";
 import type { Preset } from "../domain/presets";
 import { useMessages } from "../i18n/I18n";
 import { Docked } from "./Dock";
@@ -38,6 +47,9 @@ export function CyclicPage({
           <figcaption>{m.cyclic.wordRing}</figcaption>
           <WordRing generator={generator} turns={turns} />
           <p className="note">{m.cyclic.wordNote}</p>
+          <button type="button" className="see-in-visualizer" onClick={() => onOpen(wordRingSettings(generator, k))}>
+            {m.cyclic.seeWord}
+          </button>
           <p className="note crc-legend">{m.cyclic.crcBit}</p>
         </figure>
         <figure className="card">
@@ -45,7 +57,7 @@ export function CyclicPage({
           <StateRing generator={generator} k={k} />
           <p className="note">{m.cyclic.stateNote}</p>
           <button type="button" className="see-in-visualizer" onClick={() => onOpen(stateRingSettings(generator))}>
-            {m.cyclic.seeInVisualizer}
+            {m.cyclic.seeState}
           </button>
         </figure>
         <section className="card cyclic-side">

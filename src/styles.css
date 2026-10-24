@@ -1759,7 +1759,7 @@ button.bp-gutter.bp-off::before {
   display: block;
   width: 100%;
   height: auto;
-  max-height: max(240px, calc(100cqh - 420px));
+  max-height: max(240px, calc(100cqh - 450px));
   margin: 0 auto;
 }
 

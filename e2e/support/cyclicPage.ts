@@ -64,9 +64,9 @@ export class CyclicPage {
       .first();
   }
 
-  /** The button that opens the state ring's settings in the visualizer. */
-  seeInVisualizer(): Locator {
-    return this.root.locator(".see-in-visualizer");
+  /** The button that opens the settings of the codeword ring (which = "word") or the state ring (which = "state") in the visualizer. */
+  seeInVisualizer(which: "word" | "state"): Locator {
+    return this.root.locator("figure.card", { has: this.page.locator(`.${which}-ring`) }).locator(".see-in-visualizer");
   }
 
   /** Multiplies by x once (▶). */

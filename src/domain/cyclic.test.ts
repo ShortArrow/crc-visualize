@@ -9,6 +9,7 @@ import {
   remainder,
   rotate,
   stateRingSettings,
+  wordRingSettings,
 } from "./cyclic";
 import { registerValue, trace, type Bit } from "./trace";
 
@@ -75,6 +76,18 @@ describe("cyclic", () => {
       const steps = trace(params, bits(input.text));
       const starts = steps.filter((s) => s.kind === "feedback").map((s) => registerValue(s.reg));
       expect(starts).toEqual(powerCycle(g));
+    },
+  );
+
+  it.each(GENERATORS)(
+    "Given width $width and poly $poly, When the visualizer runs the codeword ring's settings at every rotation, Then the input is the rotated codeword and the final register is 0",
+    (g) => {
+      for (let k = 0; k < period(g); k++) {
+        const { params, input } = wordRingSettings(g, k);
+        expect(input).toEqual({ mode: "bits", text: rotate(codeword(g), k).join("") });
+        const steps = trace(params, bits(input.text));
+        expect(registerValue(steps.at(-1)!.reg)).toBe(0);
+      }
     },
   );
 });

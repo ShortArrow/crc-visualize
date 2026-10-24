@@ -66,3 +66,9 @@ export const stateRingSettings = (g: Generator): Pick<Preset, "params" | "input"
   params: { width: g.width, poly: g.poly, init: 1, refin: false, refout: false, xorout: 0 },
   input: { mode: "bits", text: "0".repeat(period(g)) },
 });
+
+/** Visualizer settings that feed the codeword rotated by k bits (highest degree first) into a zero register with no reflection and xorout 0, so the final register is 0. */
+export const wordRingSettings = (g: Generator, k: number): Pick<Preset, "params" | "input"> => ({
+  params: { width: g.width, poly: g.poly, init: 0, refin: false, refout: false, xorout: 0 },
+  input: { mode: "bits", text: rotate(codeword(g), k).join("") },
+});

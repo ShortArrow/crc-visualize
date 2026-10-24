@@ -228,11 +228,12 @@ export const fr: Messages = {
     heading: "Pourquoi un contrôle de redondance « cyclique » ?",
     wordRing: "Anneau du mot de code",
     wordNote:
-      "Un mot de code (le message suivi de son CRC) disposé dans le sens horaire, x^0 en haut. Le tourner une fois revient à le multiplier par x. Tourner n’est pas un calcul du Matériel (LFSR) de la Visualisation, mais une suite tournée laisse elle aussi le registre à 0 une fois passée dans le LFSR.",
+      "Un message suivi de son CRC (un mot de code), disposé dans le sens horaire, x^0 en haut. Le tourner une fois revient à le multiplier par x. Tourner n’est pas un calcul du Matériel (LFSR) de la Visualisation, mais la suite tournée laisse elle aussi toutes les cases du registre à 0 une fois passée dans le LFSR.",
     stateRing: "Anneau des états",
     stateNote:
-      "Les valeurs des cases du registre (à partir de r0) du Matériel (LFSR) de la Visualisation quand elles partent de 0…01 et reçoivent sans cesse le bit d’entrée 0. Chaque flèche est un cycle, et le j-ième état est x^j mod g(x). « Voir dans la Visualisation », ci-dessous, montre les cases passer par eux dans cet ordre.",
-    seeInVisualizer: "Voir dans la Visualisation",
+      "Les valeurs des cases du registre (à partir de r0) du Matériel (LFSR) de la Visualisation quand elles partent de 0…01 et reçoivent sans cesse le bit d’entrée 0. Chaque flèche est un cycle, et le j-ième état est x^j mod g(x).",
+    seeWord: "Passer la suite tournée dans le LFSR de la Visualisation",
+    seeState: "Voir dans le LFSR de la Visualisation",
     forward: "Multiplier par x (tourner une fois)",
     back: "Diviser par x (tourner une fois en arrière)",
     rotated: (k: number) => `rotations k = ${k}`,
