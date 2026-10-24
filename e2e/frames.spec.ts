@@ -22,6 +22,10 @@ test.describe("Frames", () => {
       await expect(v.frames.field(1)).toHaveText("0x906E");
       await expect(v.frames.verdict(1)).toHaveAttribute("data-ok", "false");
     });
+    await then("each verdict says which two values it compares", async () => {
+      await expect(v.frames.verdict(0)).toHaveAttribute("title", "計算した CRC が CRC 欄（送られてきた CRC）と同じ");
+      await expect(v.frames.verdict(1)).toHaveAttribute("title", "計算した CRC が CRC 欄（送られてきた CRC）と違う");
+    });
     await then("byte 0 is outside the range, bytes 1 to 9 are in it, and bytes 10 and 11 are the CRC field", async () => {
       await expect(v.frames.byte(0, 0)).not.toHaveClass(/\bin-range\b|\bcrc-field\b/);
       await expect(v.frames.byte(0, 1)).toHaveClass(/\bin-range\b/);

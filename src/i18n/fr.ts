@@ -90,8 +90,8 @@ export const fr: Messages = {
     toEnd: "fin",
     noField: "aucun",
     pick: (i: number) => `Visualiser la trame ${i}`,
-    match: "Correspond au champ CRC",
-    mismatch: "Ne correspond pas au champ CRC",
+    match: "Le CRC calculé est égal au champ CRC (le CRC reçu avec la trame)",
+    mismatch: "Le CRC calculé diffère du champ CRC (le CRC reçu avec la trame)",
     unfit: "La plage ne tient pas",
   },
   debug: {

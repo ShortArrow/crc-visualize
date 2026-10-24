@@ -90,8 +90,8 @@ export const zh: Messages = {
     toEnd: "末尾",
     noField: "无",
     pick: (i: number) => `可视化帧 ${i}`,
-    match: "与 CRC 字段一致",
-    mismatch: "与 CRC 字段不一致",
+    match: "计算出的 CRC 与 CRC 字段（随帧送来的 CRC）相同",
+    mismatch: "计算出的 CRC 与 CRC 字段（随帧送来的 CRC）不同",
     unfit: "范围放不下",
   },
   debug: {
