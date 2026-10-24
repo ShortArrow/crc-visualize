@@ -313,7 +313,7 @@ Shows why a CRC is called a "redundancy" check, with the appended bits and how t
 
 ## 12. Check page
 
-Shows the part that gives a CRC the name "check", that is, how the receiver actually checks the data, using the current settings and input (the same as on the Visualizer page).
+Shows the part that gives a CRC the name "check", that is, how the receiver actually checks the data, using the current settings and input (shown under "Current settings" in the sidebar, and changed on the Visualizer page).
 
 - The sent string: the input (message) followed by its CRC, appended in the following order.
   - `refin` = `refout` = false: the CRC, `width` bits from the most significant bit.
@@ -336,7 +336,7 @@ Shows the relations between parameters in two sections.
 
 ### Substitutions that give the same CRC
 
-Lists the relations under which different setting values, or operations applied to the input or output instead of a setting, give the same CRC. Each item shows the left side (the original setting), the right side (the substituted setting or operation), an explanation of why it holds, and the values of both sides computed with the current settings and input (the same as on the Visualizer page), showing that they match.
+Lists the relations under which different setting values, or operations applied to the input or output instead of a setting, give the same CRC. Each item shows the left side (the original setting), the right side (the substituted setting or operation), an explanation of why it holds, and the values of both sides computed with the current settings and input (shown under "Current settings" in the sidebar, and changed on the Visualizer page), showing that they match.
 
 | Item                       | Left side                 | Right side                                                                                                                                    | Condition for showing an example              |
 | -------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
@@ -368,12 +368,12 @@ When some parameters or part of an implementation's code are known, lists what i
 ### Common
 
 - When the settings are invalid, the examples and the supplement for the current settings are not shown; instead it is shown that the settings are invalid.
-- The sidebar holds the current settings (the 6 parameters and the input) and a link to the Visualizer page. The status bar shows the preset name (`custom` if none).
+- The sidebar holds the current settings (the 6 parameters and the input) and a link to the Visualizer page. The input is shown as it was entered on the Visualizer page (its format and the text entered). The status bar shows the preset name (`custom` if none).
 - The URL fragment is `#equivalence`.
 
 ## 14. Table page
 
-Shows, with the current settings and input (the same as on the Visualizer page), the byte-at-a-time method that many libraries use, with a table of 256 values (table T). It shows that the result equals the bit-at-a-time computation (chapter 3), and that each table value is 8 clocks of the bit-at-a-time computation.
+Shows, with the current settings and input (shown under "Current settings" in the sidebar, and changed on the Visualizer page), the byte-at-a-time method that many libraries use, with a table of 256 values (table T). It shows that the result equals the bit-at-a-time computation (chapter 3), and that each table value is 8 clocks of the bit-at-a-time computation.
 
 - Direction: a right-shift table when `refin` = `refout` = true, otherwise a left-shift table. For left shift, a note says that when `refin` is true the bit order of each input byte is reversed before use, and that when `refout` is true the result is reversed at the end.
 - Table T: the values for indices 0 to 255 are laid out in a 16 × 16 grid (rows are the upper 4 bits, columns the lower 4 bits; values in hexadecimal with as many digits as `width` needs).

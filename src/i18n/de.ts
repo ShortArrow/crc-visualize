@@ -286,7 +286,7 @@ export const de: Messages = {
   },
   equivalence: {
     heading: "Äquivalenzen",
-    note: "Wie die Parameter zusammenhängen. Die Beispiele werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (wie auf der Visualisierungsseite).",
+    note: "Wie die Parameter zusammenhängen. Die Beispiele werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (in der Seitenleiste unter „Aktuelle Einstellungen“).",
     sameSection: "Ersetzungen mit demselben CRC",
     left: "Ursprüngliche Einstellung",
     right: "Ersetzung",
@@ -377,7 +377,7 @@ export const de: Messages = {
   },
   check: {
     heading: "Warum „Prüfung“?",
-    note: "Wie der Empfänger die Daten tatsächlich prüft. Die Werte werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (wie auf der Visualisierungsseite).",
+    note: "Wie der Empfänger die Daten tatsächlich prüft. Die Werte werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (in der Seitenleiste unter „Aktuelle Einstellungen“).",
     frameSection: "Gesendete Bitfolge",
     frameNote:
       "Die Nachricht wird gefolgt von ihrem CRC gesendet. CRCs mit refin und refout true werden mit dem niedrigsten Byte zuerst angehängt. Ein Bit auswählen, um es zu kippen (als wäre es unterwegs beschädigt worden).",
@@ -418,7 +418,7 @@ export const de: Messages = {
   },
   table: {
     heading: "Tabellenverfahren (byteweise)",
-    note: "Viele Bibliotheken bauen zuerst eine Tabelle T mit 256 Werten und rechnen dann byteweise. Die Werte werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (wie auf der Visualisierungsseite).",
+    note: "Viele Bibliotheken bauen zuerst eine Tabelle T mit 256 Werten und rechnen dann byteweise. Die Werte werden mit den aktuellen Einstellungen und der aktuellen Eingabe berechnet (in der Seitenleiste unter „Aktuelle Einstellungen“).",
     direction: { left: "Tabelle mit Linksschieben", right: "Tabelle mit Rechtsschieben (refin und refout sind true)" },
     reflectNote:
       "Ist refin true, wird die Bitreihenfolge jedes Eingabebytes vorher umgedreht; ist refout true, wird das Ergebnis am Ende umgedreht.",
