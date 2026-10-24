@@ -26,7 +26,7 @@ Keys: Space plays / pauses, ← → move one step, Home / End jump to the first 
 
 Like a debugger, the sidebar shows the variables at the step shown, and playback pauses at breakpoints. Press left of a line number in the code to stop at that line (optionally at its n-th hit, such as the 5th XOR), or a bit of the input stream, or the line under one of its bytes, to stop once that bit or byte has been read.
 
-In hex, paste whole frames, one per line, and choose the CRC range by dragging across a frame's bytes. With a CRC field after the range, each frame's computed CRC is checked against the one it carries, and any frame can be picked to watch.
+In hex, paste whole frames, one per line, and choose the CRC range by dragging across a frame's bytes. When the input holds a CRC as well, as received frames do, each frame's computed CRC is checked against the CRC in input, and any frame can be picked to watch.
 
 The settings (CRC parameters, input, CRC range, speed, loop, breakpoints) are saved in the browser's localStorage and restored the next time the page is opened. The same settings are also carried in the URL query, so passing on the URL from the address bar opens the page with the same settings (settings in the URL take precedence over saved values).
 

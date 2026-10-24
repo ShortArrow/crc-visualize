@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type PointerEvent } from "react";
-import { checkFrame, CRC_FIELDS, frameSpan, type CrcField } from "../domain/frames";
+import { checkFrame, frameSpan, type CrcField } from "../domain/frames";
 import { readFrames, readWidth, type ConfigError, type ConfigForm } from "../domain/parse";
 import type { CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
@@ -22,14 +22,21 @@ const hexOf = (value: number, width: number) =>
     .padStart(Math.ceil(width / 4), "0")}`;
 const byteHex = (b: number) => b.toString(16).toUpperCase().padStart(2, "0");
 
+/** Byte orders of a CRC in input. */
+type CrcOrder = Exclude<CrcField, "none">;
+const ORDERS: readonly CrcOrder[] = ["be", "le"];
+
 /**
- * The frames of hex input, one row per line: the byte numbers of the CRC range and the CRC field, shared by every frame, and for
- * each frame its bytes (the range and the field marked), its computed CRC, the value in its CRC field and whether they agree.
- * Dragging across the bytes of any frame sets the range; picking a frame visualizes it. Nothing is shown unless the input is hex.
+ * The frames of hex input, one row per line: the byte numbers of the CRC range and whether the input holds a CRC after it, shared
+ * by every frame, and for each frame its bytes (the range and the CRC in input marked), its computed CRC, the CRC in input and
+ * whether they agree. While the input holds a CRC, its byte order and which bytes of the selected frame it is read from are shown;
+ * unchecking and checking again brings back the previous order. Dragging across the bytes of any frame sets the range; picking a
+ * frame visualizes it. Nothing is shown unless the input is hex.
  */
 export function FramePanel({ form, params, rangeError, onChange, onFieldHover }: Props) {
   const m = useMessages();
   const [anchor, setAnchor] = useState<number | undefined>(undefined);
+  const [lastOrder, setLastOrder] = useState<CrcOrder>(form.crcField === "none" ? "be" : form.crcField);
   useEffect(() => {
     const end = () => setAnchor(undefined);
     window.addEventListener("pointerup", end);
@@ -44,6 +51,12 @@ export function FramePanel({ form, params, rangeError, onChange, onFieldHover }:
   if (!frames) return null;
   const width = params?.width ?? readWidth(form);
 
+  const setCrcField = (crcField: CrcField) => {
+    if (crcField !== "none") setLastOrder(crcField);
+    onChange({ ...form, crcField });
+  };
+  const selected = frames.list[frames.selected];
+  const selectedField = selected && width !== undefined ? frameSpan(selected.length, frames.layout, width)?.field : undefined;
   const setRange = (a: number, b: number) => onChange({ ...form, from: String(Math.min(a, b)), to: String(Math.max(a, b)) });
   const startDrag = (e: PointerEvent, k: number) => {
     e.preventDefault();
@@ -86,16 +99,40 @@ export function FramePanel({ form, params, rangeError, onChange, onFieldHover }:
           </span>
           {rangeError ? <small className="error">{errorText(m, rangeError)}</small> : null}
         </label>
-        <label data-field="crcField" {...hover("crcField")}>
+        <div className="crc-in-input-field" data-field="crcField" {...hover("crcField")}>
           <span>{FIELD_LABELS.crcField}</span>
-          <select value={form.crcField} onChange={(e) => onChange({ ...form, crcField: e.target.value as CrcField })}>
-            {CRC_FIELDS.map((f) => (
-              <option key={f} value={f}>
-                {f === "none" ? m.frames.noField : f.toUpperCase()}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="check-field">
+            <input
+              type="checkbox"
+              className="crc-in-input"
+              checked={form.crcField !== "none"}
+              onChange={(e) => setCrcField(e.target.checked ? lastOrder : "none")}
+            />
+            {m.frames.holdsCrc}
+          </label>
+          {form.crcField === "none" ? null : (
+            <>
+              <span className="crc-orders" role="radiogroup" aria-label={m.frames.order}>
+                {ORDERS.map((order) => (
+                  <label key={order} className="check-field">
+                    <input
+                      type="radio"
+                      className="crc-order"
+                      name="crc-order"
+                      value={order}
+                      checked={form.crcField === order}
+                      onChange={() => setCrcField(order)}
+                    />
+                    {m.frames.orders[order]}
+                  </label>
+                ))}
+              </span>
+              {selectedField ? (
+                <small className="crc-in-input-note">{m.frames.readAs(selectedField.from, selectedField.to)}</small>
+              ) : null}
+            </>
+          )}
+        </div>
       </div>
       <ol className="frame-list" onPointerMove={dragOver}>
         {frames.list.map((bytes, i) => {
@@ -127,7 +164,7 @@ export function FramePanel({ form, params, rangeError, onChange, onFieldHover }:
                     </span>
                     {check.field === undefined ? null : (
                       <span className="frame-value">
-                        field <code className="frame-field">{hexOf(check.field, params!.width)}</code>
+                        in input <code className="frame-field">{hexOf(check.field, params!.width)}</code>
                       </span>
                     )}
                     {ok === undefined ? null : (

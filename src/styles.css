@@ -437,7 +437,7 @@ button.bp-gutter.bp-off::before {
   align-items: center;
 }
 
-.config input:not([type="checkbox"]),
+.config input:not([type="checkbox"], [type="radio"]),
 .config select,
 .controls select {
   background: var(--bg);
@@ -449,7 +449,7 @@ button.bp-gutter.bp-off::before {
   font-size: 0.9rem;
 }
 
-.config input:not([type="checkbox"]),
+.config input:not([type="checkbox"], [type="radio"]),
 .config select {
   width: 100%;
   min-width: 0;
@@ -483,12 +483,31 @@ button.bp-gutter.bp-off::before {
   margin-top: 10px;
 }
 
+/* The range and the CRC in input each take a row, so the byte order and the note beside the checkbox have room */
 .frame-layout {
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .frame-layout label[data-field] {
   grid-column: auto;
+}
+
+.crc-in-input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.crc-in-input-field label {
+  color: var(--fg);
+}
+
+.crc-orders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
 }
 
 .frame-range {

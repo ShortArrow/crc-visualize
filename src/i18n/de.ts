@@ -31,7 +31,7 @@ export const de: Messages = {
     frameTooLong: (max: number) => `Ein Rahmen ist auf ${max} Bytes begrenzt`,
     refinBytes: "Mit refin ganze Bytes eingeben (Vielfache von 8 Bit)",
     notIndex: "Bytenummer als ganze Zahl ab 0 eingeben",
-    outsideFrame: "Bereich oder CRC-Feld passt nicht in den gewählten Rahmen",
+    outsideFrame: "Bereich oder CRC in der Eingabe passt nicht in den gewählten Rahmen",
   },
   controls: {
     first: "Anfang (Home)",
@@ -88,10 +88,16 @@ export const de: Messages = {
   },
   frames: {
     toEnd: "Ende",
-    noField: "keins",
+    holdsCrc: "Die Eingabe enthält eine CRC",
+    order: "Bytereihenfolge",
+    orders: { be: "Höchstes Byte zuerst (BE)", le: "Niedrigstes Byte zuerst (LE)" },
+    readAs: (from: number, to: number) =>
+      from === to
+        ? `Byte ${from} wird als CRC gelesen und mit der berechneten verglichen`
+        : `Bytes ${from}–${to} werden als CRC gelesen und mit der berechneten verglichen`,
     pick: (i: number) => `Rahmen ${i} darstellen`,
-    match: "Die berechnete CRC ist gleich dem CRC-Feld (der mitgesendeten CRC)",
-    mismatch: "Die berechnete CRC weicht vom CRC-Feld (der mitgesendeten CRC) ab",
+    match: "Die berechnete CRC ist gleich der CRC in der Eingabe",
+    mismatch: "Die berechnete CRC weicht von der CRC in der Eingabe ab",
     unfit: "Bereich passt nicht",
   },
   debug: {
@@ -177,9 +183,9 @@ export const de: Messages = {
         "Die Bytes, über die der CRC berechnet wird, als Bytenummer ab 0 am Anfang jedes Rahmens, beide Enden eingeschlossen. Ohne Ende reicht er bis zum Rahmenende (vor dem CRC-Feld, falls vorhanden). Auch durch Ziehen über die Bytes eines Rahmens wählbar.",
     },
     crcField: {
-      title: "CRC-Feld",
+      title: "CRC in der Eingabe",
       summary:
-        "Der empfangene CRC direkt nach dem Bereich. Er belegt width aufgerundet auf ganze Bytes; BE beginnt mit dem höchsten, LE mit dem niedrigsten Byte. Er wird mit dem berechneten CRC verglichen.",
+        "Ankreuzen, wenn die Eingabe auch eine CRC enthält, wie ein empfangener Rahmen. Die Bytes direkt nach dem Bereich, width aufgerundet auf ganze Bytes, werden als CRC gelesen und mit der berechneten verglichen. BE beginnt mit dem höchsten, LE mit dem niedrigsten Byte.",
     },
   },
   names: {
