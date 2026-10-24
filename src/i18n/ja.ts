@@ -16,7 +16,7 @@ export const ja = {
     table: "表引き",
     estimate: "推定",
   },
-  workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", language: "表示言語" },
+  workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", sidebarLabel: "設定", language: "表示言語" },
   settings: {
     heading: "設定",
     invalid: "設定に誤りがあります。赤い項目を直してください。",

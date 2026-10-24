@@ -13,7 +13,7 @@ export const en: Messages = {
     table: "Table",
     estimate: "Estimate",
   },
-  workbench: { sidebarToggle: "Toggle sidebar (Ctrl+B)", language: "Language" },
+  workbench: { sidebarToggle: "Toggle sidebar (Ctrl+B)", sidebarLabel: "Settings", language: "Language" },
   settings: {
     heading: "Settings",
     invalid: "The settings contain errors. Fix the fields marked in red.",
