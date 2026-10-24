@@ -40,6 +40,17 @@ test.describe("Table", () => {
     });
   });
 
+  test("the note names the sidebar's current settings, where the input is shown as it was entered", async ({ page }) => {
+    const t = await given("the table page is open with the text input 123456789", () =>
+      TablePage.open(page, "?width=16&poly=0x1021&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789"),
+    );
+    await then("the note points to the current settings in the sidebar, which show the input as text 123456789", async () => {
+      await expect(t.note()).toContainText("サイドバーの「今の設定」");
+      await expect(t.currentSetting("inputMode")).toHaveText("text");
+      await expect(t.currentSetting("input")).toHaveText("123456789");
+    });
+  });
+
   test("each clock that makes a table value shows its feedback bit, the shifted register and what is XORed in", async ({
     page,
   }) => {
