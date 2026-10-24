@@ -31,7 +31,7 @@ export const fr: Messages = {
     frameTooLong: (max: number) => `Une trame est limitée à ${max} octets`,
     refinBytes: "Avec refin, saisissez des octets entiers (multiples de 8 bits)",
     notIndex: "Saisissez le numéro d’octet comme un entier de 0 ou plus",
-    outsideFrame: "La plage ou le champ CRC ne tient pas dans la trame choisie",
+    outsideFrame: "La plage ou le CRC de l’entrée ne tient pas dans la trame choisie",
   },
   controls: {
     first: "Début (Home)",
@@ -88,10 +88,16 @@ export const fr: Messages = {
   },
   frames: {
     toEnd: "fin",
-    noField: "aucun",
+    holdsCrc: "L’entrée contient un CRC",
+    order: "Ordre des octets",
+    orders: { be: "Octet de poids fort en premier (BE)", le: "Octet de poids faible en premier (LE)" },
+    readAs: (from: number, to: number) =>
+      from === to
+        ? `L’octet ${from} est lu comme CRC et comparé au CRC calculé`
+        : `Les octets ${from}–${to} sont lus comme CRC et comparés au CRC calculé`,
     pick: (i: number) => `Visualiser la trame ${i}`,
-    match: "Le CRC calculé est égal au champ CRC (le CRC reçu avec la trame)",
-    mismatch: "Le CRC calculé diffère du champ CRC (le CRC reçu avec la trame)",
+    match: "Le CRC calculé est égal au CRC de l’entrée",
+    mismatch: "Le CRC calculé diffère du CRC de l’entrée",
     unfit: "La plage ne tient pas",
   },
   debug: {
@@ -177,9 +183,9 @@ export const fr: Messages = {
         "Les octets sur lesquels le CRC est calculé, par numéro d’octet depuis 0 au début de chaque trame, bornes incluses. Sans fin, elle va jusqu’à la fin de la trame (avant le champ CRC s’il y en a un). On peut aussi la choisir en glissant sur les octets d’une trame.",
     },
     crcField: {
-      title: "Champ CRC",
+      title: "CRC de l’entrée",
       summary:
-        "Le CRC reçu, juste après la plage. Il occupe width arrondi à l’octet ; BE place l’octet de poids fort en premier, LE celui de poids faible. Il est comparé au CRC calculé.",
+        "À cocher quand l’entrée contient aussi un CRC, comme une trame reçue. Les octets juste après la plage, width arrondi à l’octet, sont lus comme CRC et comparés au CRC calculé. BE place l’octet de poids fort en premier, LE celui de poids faible.",
     },
   },
   names: {

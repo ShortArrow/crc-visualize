@@ -23,8 +23,8 @@ test.describe("Frames", () => {
       await expect(v.frames.verdict(1)).toHaveAttribute("data-ok", "false");
     });
     await then("each verdict says which two values it compares", async () => {
-      await expect(v.frames.verdict(0)).toHaveAttribute("title", "計算した CRC が CRC 欄（送られてきた CRC）と同じ");
-      await expect(v.frames.verdict(1)).toHaveAttribute("title", "計算した CRC が CRC 欄（送られてきた CRC）と違う");
+      await expect(v.frames.verdict(0)).toHaveAttribute("title", "計算した CRC が入力中の CRC と同じ");
+      await expect(v.frames.verdict(1)).toHaveAttribute("title", "計算した CRC が入力中の CRC と違う");
     });
     await then("byte 0 is outside the range, bytes 1 to 9 are in it, and bytes 10 and 11 are the CRC field", async () => {
       await expect(v.frames.byte(0, 0)).not.toHaveClass(/\bin-range\b|\bcrc-field\b/);
@@ -36,6 +36,36 @@ test.describe("Frames", () => {
     await then("the 1st frame's 9 bytes are visualized", async () => {
       await expect(v.frames.row(0)).toHaveClass(/\bselected\b/);
       await expect(v.debug.value("bitsRead")).toHaveText("0 / 72");
+    });
+  });
+
+  test("a checkbox says whether the input holds a CRC, and while checked its byte order and which bytes are read are shown", async ({
+    page,
+  }) => {
+    const v = await given("2 frames holding an LE CRC after bytes 1 to 9 are open", () => Visualizer.open(page, TWO_FRAMES));
+    await then("the box is checked, low byte first is chosen, and bytes 10 to 11 are said to be read as the CRC", async () => {
+      await expect(v.frames.crcInInput()).toBeChecked();
+      await expect(v.frames.order("le")).toBeChecked();
+      await expect(v.frames.crcNote()).toHaveText("10〜11 バイト目を CRC として読み、計算した CRC と比べる");
+      await expect(v.frames.row(0)).toContainText("in input 0x906E");
+    });
+    await when("unchecking the box", () => v.frames.crcInInput().uncheck());
+    await then("the order and the note are gone, no frame is compared, and the URL says none", async () => {
+      await expect(v.frames.order("le")).toHaveCount(0);
+      await expect(v.frames.crcNote()).toHaveCount(0);
+      await expect(v.frames.verdict(0)).toHaveCount(0);
+      expect(v.settings.query().get("crcField")).toBe("none");
+    });
+    await when("checking it again", () => v.frames.crcInInput().check());
+    await then("low byte first comes back and the frames are compared again", async () => {
+      await expect(v.frames.order("le")).toBeChecked();
+      await expect(v.frames.verdict(0)).toHaveAttribute("data-ok", "true");
+    });
+    await when("choosing high byte first", () => v.frames.order("be").check());
+    await then("the CRC is read the other way round, so the 1st frame no longer agrees", async () => {
+      await expect(v.frames.field(0)).toHaveText("0x6E90");
+      await expect(v.frames.verdict(0)).toHaveAttribute("data-ok", "false");
+      expect(v.settings.query().get("crcField")).toBe("be");
     });
   });
 

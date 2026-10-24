@@ -13,7 +13,7 @@ export const FIELD_LABELS: Record<FieldName, string> = {
   inputMode: "input mode",
   input: "input",
   range: "range",
-  crcField: "crc field",
+  crcField: "crc in input",
 };
 
 const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;

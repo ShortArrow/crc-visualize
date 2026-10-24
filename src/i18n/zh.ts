@@ -31,7 +31,7 @@ export const zh: Messages = {
     frameTooLong: (max: number) => `每帧最多 ${max} 字节`,
     refinBytes: "使用 refin 时请按 8 位（整字节）输入",
     notIndex: "字节序号请输入 0 以上的整数",
-    outsideFrame: "范围或 CRC 字段超出了所选帧",
+    outsideFrame: "范围或输入中的 CRC 超出了所选帧",
   },
   controls: {
     first: "开头（Home）",
@@ -88,10 +88,16 @@ export const zh: Messages = {
   },
   frames: {
     toEnd: "末尾",
-    noField: "无",
+    holdsCrc: "输入中包含 CRC",
+    order: "字节顺序",
+    orders: { be: "高字节在前（BE）", le: "低字节在前（LE）" },
+    readAs: (from: number, to: number) =>
+      from === to
+        ? `将第 ${from} 字节作为 CRC 读取，并与计算出的 CRC 比较`
+        : `将第 ${from}～${to} 字节作为 CRC 读取，并与计算出的 CRC 比较`,
     pick: (i: number) => `可视化帧 ${i}`,
-    match: "计算出的 CRC 与 CRC 字段（随帧送来的 CRC）相同",
-    mismatch: "计算出的 CRC 与 CRC 字段（随帧送来的 CRC）不同",
+    match: "计算出的 CRC 与输入中的 CRC 相同",
+    mismatch: "计算出的 CRC 与输入中的 CRC 不同",
     unfit: "范围放不下",
   },
   debug: {
@@ -170,8 +176,9 @@ export const zh: Messages = {
         "计算 CRC 的字节范围。以每帧开头为 0 的字节序号表示，包含两端。终点留空则到帧末尾（有 CRC 字段时到其前面）。也可以在帧的字节上拖动来选择。",
     },
     crcField: {
-      title: "CRC 字段",
-      summary: "紧接在范围之后的、收到的 CRC。字节数为 width 向上取整到字节；BE 高字节在前，LE 低字节在前。与计算出的 CRC 比较。",
+      title: "输入中的 CRC",
+      summary:
+        "像收到的帧那样，输入中也包含 CRC 时勾选。把紧接在范围之后、width 向上取整到字节的字节数作为 CRC 读取，与计算出的 CRC 比较。BE 高字节在前，LE 低字节在前。",
     },
   },
   names: {

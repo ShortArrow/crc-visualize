@@ -31,7 +31,7 @@ export const es: Messages = {
     frameTooLong: (max: number) => `Una trama admite como máximo ${max} bytes`,
     refinBytes: "Con refin, introduce bytes completos (múltiplos de 8 bits)",
     notIndex: "Introduce el número de byte como un entero de 0 o más",
-    outsideFrame: "El rango o el campo CRC no cabe en la trama seleccionada",
+    outsideFrame: "El rango o el CRC de la entrada no cabe en la trama seleccionada",
   },
   controls: {
     first: "Inicio (Home)",
@@ -88,10 +88,16 @@ export const es: Messages = {
   },
   frames: {
     toEnd: "final",
-    noField: "ninguno",
+    holdsCrc: "La entrada contiene un CRC",
+    order: "Orden de bytes",
+    orders: { be: "Byte alto primero (BE)", le: "Byte bajo primero (LE)" },
+    readAs: (from: number, to: number) =>
+      from === to
+        ? `El byte ${from} se lee como el CRC y se compara con el calculado`
+        : `Los bytes ${from}–${to} se leen como el CRC y se comparan con el calculado`,
     pick: (i: number) => `Visualizar la trama ${i}`,
-    match: "El CRC calculado es igual al campo CRC (el CRC que llegó con la trama)",
-    mismatch: "El CRC calculado es distinto del campo CRC (el CRC que llegó con la trama)",
+    match: "El CRC calculado es igual al CRC de la entrada",
+    mismatch: "El CRC calculado es distinto del CRC de la entrada",
     unfit: "El rango no cabe",
   },
   debug: {
@@ -180,9 +186,9 @@ export const es: Messages = {
         "Los bytes sobre los que se calcula el CRC, por número de byte desde 0 al inicio de cada trama, ambos extremos incluidos. Sin final, llega al final de la trama (antes del campo CRC si lo hay). También se elige arrastrando sobre los bytes de una trama.",
     },
     crcField: {
-      title: "Campo CRC",
+      title: "CRC de la entrada",
       summary:
-        "El CRC recibido, justo después del rango. Ocupa width redondeado a bytes enteros; BE pone primero el byte alto, LE el bajo. Se compara con el CRC calculado.",
+        "Márcalo cuando la entrada también contiene un CRC, como una trama recibida. Los bytes justo después del rango, width redondeado a bytes enteros, se leen como el CRC y se comparan con el calculado. BE pone primero el byte alto, LE el bajo.",
     },
   },
   names: {

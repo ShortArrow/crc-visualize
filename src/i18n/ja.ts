@@ -34,7 +34,7 @@ export const ja = {
     frameTooLong: (max: number) => `1 フレームは ${max} バイトまでです`,
     refinBytes: "refin を使うときは 8 ビット単位で入れてください",
     notIndex: "バイト番号は 0 以上の整数で入れてください",
-    outsideFrame: "範囲か CRC 欄が、選んだフレームに収まっていません",
+    outsideFrame: "範囲か入力中の CRC が、選んだフレームに収まっていません",
   },
   controls: {
     first: "先頭（Home）",
@@ -91,10 +91,16 @@ export const ja = {
   },
   frames: {
     toEnd: "末尾",
-    noField: "なし",
+    holdsCrc: "入力に CRC が含まれている",
+    order: "並び",
+    orders: { be: "上位バイトから（BE）", le: "下位バイトから（LE）" },
+    readAs: (from: number, to: number) =>
+      from === to
+        ? `${from} バイト目を CRC として読み、計算した CRC と比べる`
+        : `${from}〜${to} バイト目を CRC として読み、計算した CRC と比べる`,
     pick: (i: number) => `フレーム ${i} を可視化する`,
-    match: "計算した CRC が CRC 欄（送られてきた CRC）と同じ",
-    mismatch: "計算した CRC が CRC 欄（送られてきた CRC）と違う",
+    match: "計算した CRC が入力中の CRC と同じ",
+    mismatch: "計算した CRC が入力中の CRC と違う",
     unfit: "範囲が収まらない",
   },
   debug: {
@@ -176,9 +182,9 @@ export const ja = {
         "CRC を計算するバイトの範囲。各フレームの先頭を 0 とするバイト番号で、両端を含む。終わりを空にすると、フレームの末尾（CRC 欄があればその手前）まで。フレームのバイトをドラッグしても選べる。",
     },
     crcField: {
-      title: "CRC 欄",
+      title: "入力中の CRC",
       summary:
-        "範囲の直後にある、送られてきた CRC の欄。width を 8 ビット単位に切り上げたバイト数で、BE は上位バイトから、LE は下位バイトから並ぶ。計算した CRC と比べる。",
+        "通信で受け取ったフレームのように、入力に CRC も含まれているときにチェックする。範囲のすぐ後ろの、width を 8 ビット単位に切り上げたバイト数を CRC として読み、計算した CRC と比べる。BE は上位バイトから、LE は下位バイトから並ぶ。",
     },
   },
   names: {

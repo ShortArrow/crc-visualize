@@ -31,7 +31,7 @@ export const en: Messages = {
     frameTooLong: (max: number) => `A frame is limited to ${max} bytes`,
     refinBytes: "With refin, enter whole bytes (multiples of 8 bits)",
     notIndex: "Enter a byte number as a whole number of 0 or more",
-    outsideFrame: "The range or the CRC field does not fit the selected frame",
+    outsideFrame: "The range or the CRC in input does not fit the selected frame",
   },
   controls: {
     first: "First (Home)",
@@ -88,10 +88,16 @@ export const en: Messages = {
   },
   frames: {
     toEnd: "end",
-    noField: "none",
+    holdsCrc: "The input holds a CRC",
+    order: "Byte order",
+    orders: { be: "High byte first (BE)", le: "Low byte first (LE)" },
+    readAs: (from: number, to: number) =>
+      from === to
+        ? `Byte ${from} is read as the CRC and compared with the computed one`
+        : `Bytes ${from}–${to} are read as the CRC and compared with the computed one`,
     pick: (i: number) => `Visualize frame ${i}`,
-    match: "The computed CRC equals the CRC field (the CRC that came with the frame)",
-    mismatch: "The computed CRC differs from the CRC field (the CRC that came with the frame)",
+    match: "The computed CRC equals the CRC in input",
+    mismatch: "The computed CRC differs from the CRC in input",
     unfit: "The range does not fit",
   },
   debug: {
@@ -176,9 +182,9 @@ export const en: Messages = {
         "The bytes the CRC is computed over, by byte number from 0 at the start of each frame, both ends included. With no end, it runs to the end of the frame (before the CRC field if there is one). Dragging across a frame's bytes also sets it.",
     },
     crcField: {
-      title: "CRC field",
+      title: "CRC in input",
       summary:
-        "The received CRC, right after the range. It takes width rounded up to whole bytes; BE puts the high byte first, LE the low byte first. It is compared with the computed CRC.",
+        "Check this when the input holds a CRC as well, as a received frame does. The bytes right after the range, width rounded up to whole bytes, are read as the CRC and compared with the computed one. BE puts the high byte first, LE the low byte first.",
     },
   },
   names: {

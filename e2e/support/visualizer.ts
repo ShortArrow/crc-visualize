@@ -443,7 +443,12 @@ export class Visualizer {
   readonly frames = {
     from: () => this.page.locator('.frame-layout input[data-range="from"]'),
     to: () => this.page.locator('.frame-layout input[data-range="to"]'),
-    crcField: () => this.page.locator(".frame-layout select"),
+    /** The checkbox saying whether the input holds a CRC right after the range. */
+    crcInInput: () => this.page.locator(".frame-layout input.crc-in-input"),
+    /** The byte order choice of the CRC in input, shown only while the input holds one. */
+    order: (order: "be" | "le") => this.page.locator(`.frame-layout input.crc-order[value="${order}"]`),
+    /** The sentence saying which bytes of the selected frame are read as the CRC in input. */
+    crcNote: () => this.page.locator(".frame-layout .crc-in-input-note"),
     rangeError: () => this.page.locator(".frame-layout .error"),
     rows: () => this.page.locator(".frame-row"),
     row: (i: number) => this.page.locator(`.frame-row[data-frame="${i}"]`),
