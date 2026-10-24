@@ -23,6 +23,11 @@ test.describe("Redundancy", () => {
       await expect(r.gridDots("codeword")).toHaveCount(16);
       await expect(r.gridDots("received")).toHaveClass(/codeword/);
     });
+    await then("the 8 CRCs that could follow the message are shown as well, under the grid", async () => {
+      const r = await RedundancyPage.shown(page);
+      await expect(r.stripCells()).toHaveCount(8);
+      await expect(r.stripCells("received")).toHaveClass(/fitting/);
+    });
   });
 
   test("flipping bits of the received sequence finds the error, but an error shaped like g(x) is missed", async ({ page }) => {
