@@ -231,10 +231,12 @@ export const es: Messages = {
     heading: "¿Por qué comprobación de redundancia «cíclica»?",
     wordRing: "Anillo de la palabra de código",
     wordNote:
-      "Una palabra de código (el mensaje seguido de su CRC) dispuesta en sentido horario con x^0 arriba. Girarla una vez equivale a multiplicarla por x.",
+      "Un mensaje seguido de su CRC (una palabra de código), dispuesto en sentido horario con x^0 arriba. Girarlo una vez equivale a multiplicarlo por x. Girar no es un cálculo del Hardware (LFSR) del Visualizador, pero la secuencia girada también deja todas las casillas del registro en 0 al pasar por el LFSR.",
     stateRing: "Anillo de estados",
     stateNote:
-      "Los estados del registro cuando empieza en 1 y recibe continuamente el bit de entrada 0. El estado j es x^j mod g(x).",
+      "Los valores de las casillas del registro (desde r0) del Hardware (LFSR) del Visualizador cuando empiezan en 0…01 y reciben continuamente el bit de entrada 0. Cada flecha es un ciclo, y el estado j es x^j mod g(x).",
+    seeWord: "Pasar la secuencia girada por el LFSR del Visualizador",
+    seeState: "Ver en el LFSR del Visualizador",
     forward: "Multiplicar por x (girar una vez)",
     back: "Dividir por x (girar una vez hacia atrás)",
     rotated: (k: number) => `giros k = ${k}`,

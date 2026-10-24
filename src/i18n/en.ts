@@ -226,9 +226,13 @@ export const en: Messages = {
   cyclic: {
     heading: 'Why a "cyclic" redundancy check?',
     wordRing: "Codeword ring",
-    wordNote: "A codeword (message followed by its CRC) laid out clockwise with x^0 at the top. One rotation multiplies it by x.",
+    wordNote:
+      "A message followed by its CRC (a codeword), laid out clockwise with x^0 at the top. One rotation multiplies it by x. Rotating is not something the Visualizer's Hardware (LFSR) computes, but the rotated string, too, leaves every register box at 0 once fed through the LFSR.",
     stateRing: "State ring",
-    stateNote: "The register states when it starts at 1 and keeps receiving input bit 0. The j-th state is x^j mod g(x).",
+    stateNote:
+      "The values of the register boxes (from r0) of the Visualizer's Hardware (LFSR) when they start at 0…01 and keep receiving input bit 0. Each arrow is one clock, and the j-th state is x^j mod g(x).",
+    seeWord: "Feed the rotated string through the Visualizer's LFSR",
+    seeState: "See in the Visualizer's LFSR",
     forward: "Multiply by x (rotate once)",
     back: "Divide by x (rotate back once)",
     rotated: (k: number) => `rotations k = ${k}`,
