@@ -1,3 +1,4 @@
+import type { Preset } from "./presets";
 import type { Bit } from "./trace";
 
 /** Generator polynomial g(x) = x^width + poly(x); poly holds the coefficients without the x^width term, and the constant term (the LSB of poly) is 1. */
@@ -59,3 +60,15 @@ export function rotate(bits: readonly Bit[], k: number): Bit[] {
   const n = bits.length;
   return bits.map((_, i) => bits[(((i + k) % n) + n) % n]!);
 }
+
+/** Visualizer settings whose register, at the start of each clock, goes through the states of powerCycle(g): init 1, no reflection, xorout 0 and n input bits of 0. */
+export const stateRingSettings = (g: Generator): Pick<Preset, "params" | "input"> => ({
+  params: { width: g.width, poly: g.poly, init: 1, refin: false, refout: false, xorout: 0 },
+  input: { mode: "bits", text: "0".repeat(period(g)) },
+});
+
+/** Visualizer settings that feed the codeword rotated by k bits (highest degree first) into a zero register with no reflection and xorout 0, so the final register is 0. */
+export const wordRingSettings = (g: Generator, k: number): Pick<Preset, "params" | "input"> => ({
+  params: { width: g.width, poly: g.poly, init: 0, refin: false, refout: false, xorout: 0 },
+  input: { mode: "bits", text: rotate(codeword(g), k).join("") },
+});

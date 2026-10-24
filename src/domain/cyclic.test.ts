@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { codeword, DEFAULT_GENERATOR, findGenerator, GENERATORS, period, powerCycle, remainder, rotate } from "./cyclic";
-import type { Bit } from "./trace";
+import {
+  codeword,
+  DEFAULT_GENERATOR,
+  findGenerator,
+  GENERATORS,
+  period,
+  powerCycle,
+  remainder,
+  rotate,
+  stateRingSettings,
+  wordRingSettings,
+} from "./cyclic";
+import { registerValue, trace, type Bit } from "./trace";
 
 const bits = (s: string): Bit[] => [...s].map((c) => (c === "1" ? 1 : 0));
 const X3_X_1 = { width: 3, poly: 0x3 };
@@ -56,4 +67,27 @@ describe("cyclic", () => {
     expect(findGenerator(4, 0x5)).toBeUndefined();
     expect(DEFAULT_GENERATOR).toEqual(X3_X_1);
   });
+
+  it.each(GENERATORS)(
+    "Given width $width and poly $poly, When the visualizer runs the state ring's settings, Then the register at the start of each clock goes through the ring's states",
+    (g) => {
+      const { params, input } = stateRingSettings(g);
+      expect(input.mode).toBe("bits");
+      const steps = trace(params, bits(input.text));
+      const starts = steps.filter((s) => s.kind === "feedback").map((s) => registerValue(s.reg));
+      expect(starts).toEqual(powerCycle(g));
+    },
+  );
+
+  it.each(GENERATORS)(
+    "Given width $width and poly $poly, When the visualizer runs the codeword ring's settings at every rotation, Then the input is the rotated codeword and the final register is 0",
+    (g) => {
+      for (let k = 0; k < period(g); k++) {
+        const { params, input } = wordRingSettings(g, k);
+        expect(input).toEqual({ mode: "bits", text: rotate(codeword(g), k).join("") });
+        const steps = trace(params, bits(input.text));
+        expect(registerValue(steps.at(-1)!.reg)).toBe(0);
+      }
+    },
+  );
 });
