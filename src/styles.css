@@ -2759,8 +2759,20 @@ button.bit-cell:hover {
   border-top-color: var(--accent);
 }
 
+/* On a phone the sidebar button is set apart at the right end and labeled, so that it is not taken for a page link */
 .workbench.phone .activity .sidebar-toggle {
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 1px;
   margin-top: 0;
+  padding: 0 8px;
+  border-left: 1px solid var(--border);
+}
+
+.workbench.phone .activity .sidebar-toggle-label {
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .workbench.phone > .statusbar {

@@ -13,7 +13,7 @@ export const de: Messages = {
     table: "Tabelle",
     estimate: "Schätzung",
   },
-  workbench: { sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)", language: "Sprache" },
+  workbench: { sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)", sidebarLabel: "Optionen", language: "Sprache" },
   settings: {
     heading: "Einstellungen",
     invalid: "Die Einstellungen enthalten Fehler. Korrigiere die rot markierten Felder.",

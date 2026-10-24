@@ -13,7 +13,7 @@ export const es: Messages = {
     table: "Tabla",
     estimate: "Estimación",
   },
-  workbench: { sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)", language: "Idioma" },
+  workbench: { sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)", sidebarLabel: "Ajustes", language: "Idioma" },
   settings: {
     heading: "Configuración",
     invalid: "La configuración tiene errores. Corrige los campos marcados en rojo.",

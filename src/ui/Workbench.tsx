@@ -3,7 +3,8 @@ import {
   BookOpen,
   Cpu,
   ListTree,
-  PanelLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
   RefreshCw,
   Search,
   SearchCheck,
@@ -82,7 +83,8 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
           </a>
         ))}
         <button type="button" className="sidebar-toggle" title={m.workbench.sidebarToggle} aria-pressed={open} onClick={toggle}>
-          <PanelLeft size={ICON_SIZE} />
+          {open ? <PanelLeftClose size={ICON_SIZE} /> : <PanelLeftOpen size={ICON_SIZE} />}
+          {phone ? <span className="sidebar-toggle-label">{m.workbench.sidebarLabel}</span> : null}
         </button>
       </nav>
       {open ? (

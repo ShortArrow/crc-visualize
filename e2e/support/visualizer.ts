@@ -243,6 +243,8 @@ export class Visualizer {
     localeSelect: () => this.page.locator(".statusbar .locale-select"),
     sidebar: () => this.page.locator(".sidebar"),
     sidebarToggle: () => this.page.locator(".activity .sidebar-toggle"),
+    /** The icon of the sidebar toggle, whose lucide class names the panel opening or closing. */
+    sidebarToggleIcon: () => this.page.locator(".activity .sidebar-toggle svg"),
     statusbar: () => this.page.locator(".statusbar"),
     /** The shade behind the sidebar drawn over the editor on a phone; tapping it closes the sidebar. */
     drawerShade: () => this.page.locator(".drawer-shade"),

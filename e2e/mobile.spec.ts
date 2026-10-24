@@ -46,6 +46,24 @@ test.describe("On a phone", () => {
     });
   });
 
+  test("the sidebar button sits at the right end apart from the page links, labeled Settings, with an icon that opens or closes", async ({
+    page,
+  }) => {
+    const v = await given("the page is open on a 390×844 screen", () => Visualizer.open(page, QUERY));
+    await then("the button is the rightmost item of the bar, set off by a line, with 設定 under an opening icon", async () => {
+      const toggle = (await v.workbench.sidebarToggle().boundingBox())!;
+      expect(toggle.x + toggle.width).toBeCloseTo(PHONE.width, 0);
+      for (const link of await page.locator(".activity a").all()) expect((await link.boundingBox())!.x).toBeLessThan(toggle.x);
+      expect(await v.workbench.sidebarToggle().evaluate((e) => getComputedStyle(e).borderLeftStyle)).toBe("solid");
+      await expect(v.workbench.sidebarToggle()).toHaveText("設定");
+      await expect(v.workbench.sidebarToggleIcon()).toHaveClass(/lucide-panel-left-open/);
+    });
+    await when("tapping the button", () => v.workbench.sidebarToggle().click());
+    await then("its icon becomes a closing one", () =>
+      expect(v.workbench.sidebarToggleIcon()).toHaveClass(/lucide-panel-left-close/),
+    );
+  });
+
   test("the sidebar opens over the editor area, and closes on choosing an item or tapping beside it", async ({ page }) => {
     const v = await given("the redundancy page is open on a 390×844 screen", async () => {
       await page.goto(`/${QUERY}#redundancy`);
