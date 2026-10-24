@@ -234,7 +234,8 @@ export const es: Messages = {
       "Una palabra de código (el mensaje seguido de su CRC) dispuesta en sentido horario con x^0 arriba. Girarla una vez equivale a multiplicarla por x. Girar no es un cálculo del Hardware (LFSR) del Visualizador, pero una secuencia girada también deja el registro en 0 al pasar por el LFSR.",
     stateRing: "Anillo de estados",
     stateNote:
-      "Los estados del registro del Hardware (LFSR) del Visualizador cuando empieza en 1 y recibe continuamente el bit de entrada 0. Cada flecha es un ciclo, y el estado j es x^j mod g(x).",
+      "Los valores de las casillas del registro (desde r0) del Hardware (LFSR) del Visualizador cuando empiezan en 0…01 y reciben continuamente el bit de entrada 0. Cada flecha es un ciclo, y el estado j es x^j mod g(x). «Ver en el Visualizador», abajo, muestra cómo las casillas pasan por ellos en este orden.",
+    seeInVisualizer: "Ver en el Visualizador",
     forward: "Multiplicar por x (girar una vez)",
     back: "Dividir por x (girar una vez hacia atrás)",
     rotated: (k: number) => `giros k = ${k}`,

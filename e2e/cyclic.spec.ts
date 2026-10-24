@@ -79,10 +79,29 @@ test.describe("Cyclic", () => {
     });
   });
 
+  test("seeing the state ring in the visualizer opens settings whose register goes through the ring's states", async ({
+    page,
+  }) => {
+    const c = await given("the cyclic page of x³ + x + 1 is open", () => CyclicPage.open(page));
+    const v = await when("choosing to see it in the visualizer", async () => {
+      await c.seeInVisualizer().click();
+      return Visualizer.on(page);
+    });
+    await then("the visualizer runs width 3, poly 0x3 and init 0x1 on 7 bits of 0, starting from the register 001", async () => {
+      await expect(v.settings.param("width").locator("input")).toHaveValue("3");
+      await expect(v.settings.param("poly").locator("input")).toHaveValue("0x3");
+      await expect(v.settings.param("init").locator("input")).toHaveValue("0x1");
+      await expect(v.settings.field("input")).toHaveValue("0000000");
+      await expect(v.diagram.register(0)).toContainText("1");
+      await expect(v.diagram.register(1)).toContainText("0");
+      await expect(v.diagram.register(2)).toContainText("0");
+    });
+  });
+
   test("the notes under the rings tie them to the Visualizer's Hardware (LFSR)", async ({ page }) => {
     const c = await given("the cyclic page is open", () => CyclicPage.open(page));
     await then("the state ring is the LFSR's register, one clock per arrow", async () => {
-      await expect(c.ringNote("state")).toContainText("ハードウェア（LFSR）のレジスタ");
+      await expect(c.ringNote("state")).toContainText("ハードウェア（LFSR）のレジスタの箱");
       await expect(c.ringNote("state")).toContainText("1 クロック");
     });
     await then(

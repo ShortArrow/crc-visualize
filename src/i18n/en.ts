@@ -230,7 +230,8 @@ export const en: Messages = {
       "A codeword (message followed by its CRC) laid out clockwise with x^0 at the top. One rotation multiplies it by x. Rotating is not something the Visualizer's Hardware (LFSR) computes, but a rotated string, too, leaves the register at 0 once fed through the LFSR.",
     stateRing: "State ring",
     stateNote:
-      "The states of the register of the Visualizer's Hardware (LFSR) when it starts at 1 and keeps receiving input bit 0. Each arrow is one clock, and the j-th state is x^j mod g(x).",
+      "The values of the register boxes (from r0) of the Visualizer's Hardware (LFSR) when they start at 0…01 and keep receiving input bit 0. Each arrow is one clock, and the j-th state is x^j mod g(x). “See in the Visualizer” below shows the boxes go through them in this order.",
+    seeInVisualizer: "See in the Visualizer",
     forward: "Multiply by x (rotate once)",
     back: "Divide by x (rotate back once)",
     rotated: (k: number) => `rotations k = ${k}`,

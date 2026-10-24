@@ -231,7 +231,8 @@ export const de: Messages = {
       "Ein Codewort (Nachricht gefolgt von ihrem CRC), im Uhrzeigersinn angeordnet, x^0 oben. Einmal drehen heißt mit x multiplizieren. Das Drehen rechnet die Hardware (LFSR) der Visualisierung nicht, aber auch eine gedrehte Folge lässt das Register auf 0, wenn sie das LFSR durchläuft.",
     stateRing: "Ring der Zustände",
     stateNote:
-      "Die Zustände des Registers der Hardware (LFSR) der Visualisierung, wenn es bei 1 beginnt und fortlaufend das Eingabebit 0 erhält. Jeder Pfeil ist ein Takt, und der j-te Zustand ist x^j mod g(x).",
+      "Die Werte der Registerkästchen (ab r0) der Hardware (LFSR) der Visualisierung, wenn sie bei 0…01 beginnen und fortlaufend das Eingabebit 0 erhalten. Jeder Pfeil ist ein Takt, und der j-te Zustand ist x^j mod g(x). „In der Visualisierung ansehen“ unten zeigt, wie die Kästchen sie der Reihe nach durchlaufen.",
+    seeInVisualizer: "In der Visualisierung ansehen",
     forward: "Mit x multiplizieren (einmal drehen)",
     back: "Durch x teilen (einmal zurückdrehen)",
     rotated: (k: number) => `Drehungen k = ${k}`,

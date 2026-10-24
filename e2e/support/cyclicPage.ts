@@ -64,6 +64,11 @@ export class CyclicPage {
       .first();
   }
 
+  /** The button that opens the state ring's settings in the visualizer. */
+  seeInVisualizer(): Locator {
+    return this.root.locator(".see-in-visualizer");
+  }
+
   /** Multiplies by x once (▶). */
   forward(): Locator {
     return this.root.locator(".rotate-forward");
