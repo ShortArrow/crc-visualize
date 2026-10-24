@@ -467,6 +467,8 @@ export class Visualizer {
     field: (name: "preset" | "inputMode" | "input") =>
       this.page.locator(`label[data-field="${name}"] :is(input, select, textarea)`),
     param: (name: string) => this.page.locator(`label[data-param="${name}"]`),
+    /** The generator polynomial shown under the poly field. */
+    generator: () => this.page.locator('label[data-param="poly"] .generator'),
     help: () => this.page.locator(".param-help"),
     currentHelp: () => this.page.locator(".param-help .current"),
     speedMode: () => this.page.getByTitle("速度モード"),

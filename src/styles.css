@@ -2980,6 +2980,12 @@ button.bit-cell:hover {
   word-break: keep-all;
 }
 
+/* The generator polynomial under poly wraps between its terms */
+.config .generator {
+  font-family: var(--mono);
+  color: var(--fg);
+}
+
 /* The input keeps the lines it was entered with, such as one hex frame per line */
 .current-settings .input-text {
   white-space: pre-wrap;

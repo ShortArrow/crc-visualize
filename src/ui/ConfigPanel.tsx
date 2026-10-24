@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { ConfigError, ConfigField, ConfigForm } from "../domain/parse";
 import { PRESETS, type InputMode, type Preset } from "../domain/presets";
+import { polynomialText } from "./format";
 import { presetLabel } from "./presetLabel";
 import type { CrcParams, ParamName } from "../domain/trace";
 import { focusHandlers, type ParamFocus } from "./paramFocus";
@@ -34,6 +35,8 @@ export function formFromParams(params: CrcParams, input: Preset["input"]): Confi
 
 type Props = Readonly<{
   form: ConfigForm;
+  /** The parsed parameters, or undefined while the settings are invalid. */
+  params: CrcParams | undefined;
   presetName: string | undefined;
   errors: Partial<Record<ConfigField, ConfigError>>;
   onChange: (form: ConfigForm) => void;
@@ -45,7 +48,7 @@ type Props = Readonly<{
 const CUSTOM = "";
 
 /** Settings panel for the CRC parameters and input. */
-export function ConfigPanel({ form, presetName, errors, onChange, focus, onFieldHover }: Props) {
+export function ConfigPanel({ form, params, presetName, errors, onChange, focus, onFieldHover }: Props) {
   const m = useMessages();
   const set = <K extends keyof ConfigForm>(key: K, value: ConfigForm[K]) => onChange({ ...form, [key]: value });
   const paramField = (param: ParamName, control: ReactNode, className = "") => {
@@ -66,7 +69,15 @@ export function ConfigPanel({ form, presetName, errors, onChange, focus, onField
     onBlur: () => onFieldHover(undefined),
   });
   const text = (key: "width" | "poly" | "init" | "xorout") =>
-    paramField(key, <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />);
+    paramField(
+      key,
+      <>
+        <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />
+        {key === "poly" && params ? (
+          <small className="generator">g(x) = {polynomialText(params.width, params.poly)}</small>
+        ) : null}
+      </>,
+    );
   const check = (key: "refin" | "refout") =>
     paramField(key, <input type="checkbox" checked={form[key]} onChange={(e) => set(key, e.target.checked)} />, "check-field");
 

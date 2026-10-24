@@ -99,6 +99,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     <>
       <ConfigPanel
         form={form}
+        params={config.ok ? config.params : undefined}
         presetName={preset?.name}
         errors={config.ok ? {} : config.errors}
         onChange={setForm}
