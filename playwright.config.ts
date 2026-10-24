@@ -17,7 +17,7 @@ export default defineConfig({
     viewport: { width: 1366, height: 1000 },
   },
   webServer: {
-    command: `npx vite --port ${PORT} --strictPort`,
+    command: `npm run dev -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}/`,
     reuseExistingServer: true,
   },
