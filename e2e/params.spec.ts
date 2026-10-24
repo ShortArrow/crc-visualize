@@ -130,6 +130,19 @@ test.describe("Settings validation and notation", () => {
     });
   });
 
+  test("the poly field shows the generator polynomial it stands for, and hides it while the settings are invalid", async ({
+    page,
+  }) => {
+    const v = await given("the page is open with width 16 and poly 0x1021", () =>
+      Visualizer.open(page, "?width=16&poly=0x1021&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=text&input=123456789"),
+    );
+    await then("g(x) = x¹⁶ + x¹² + x⁵ + 1 is shown under poly", async () => {
+      await expect(v.settings.generator()).toHaveText("g(x) = x¹⁶ + x¹² + x⁵ + 1");
+    });
+    await when("entering 0 for width", () => page.getByLabel("width").fill("0"));
+    await then("the generator polynomial is not shown", () => expect(v.settings.generator()).toHaveCount(0));
+  });
+
   test("invalid settings show an error on the field and remove the diagram", async ({ page }) => {
     const v = await given("the page is open with the default settings", () => Visualizer.open(page));
     await when("entering 0 for width", () => page.getByLabel("width").fill("0"));

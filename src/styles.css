@@ -2979,3 +2979,9 @@ button.bit-cell:hover {
 .table-steps th {
   word-break: keep-all;
 }
+
+/* The generator polynomial under poly wraps between its terms */
+.config .generator {
+  font-family: var(--mono);
+  color: var(--fg);
+}
