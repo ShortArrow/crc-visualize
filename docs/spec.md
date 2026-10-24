@@ -463,4 +463,4 @@ A CRC with `refin` and `refout` both true can be computed by a right-shift (LSB-
 ## 18. Unspecified
 
 - `width` above 32 bits (such as CRC-64) is not handled.
-- The layout is not optimized for mobile devices (a width of 1024px or more is assumed).
+- A window 700 CSS px wide or wider, such as a tablet's, gets the same layout as a PC; no layout is set out for those widths (chapter 7).
