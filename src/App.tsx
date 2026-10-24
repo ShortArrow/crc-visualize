@@ -148,8 +148,16 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   if (route.page === "cyclic" || route.page === "redundancy") {
     const { page, generator } = route;
     const key = `${generator.width}/${generator.poly}`;
+    const open = ({ params, input }: Pick<Preset, "params" | "input">) => {
+      setForm(formFromParams(params, input));
+      location.hash = "";
+    };
     return frame(<GeneratorSidebar page={page} generator={generator} />)(
-      page === "cyclic" ? <CyclicPage key={key} generator={generator} /> : <RedundancyPage key={key} generator={generator} />,
+      page === "cyclic" ? (
+        <CyclicPage key={key} generator={generator} onOpen={open} />
+      ) : (
+        <RedundancyPage key={key} generator={generator} />
+      ),
       <span>{generatorStatus(generator)}</span>,
     );
   }

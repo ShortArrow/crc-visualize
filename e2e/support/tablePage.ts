@@ -56,6 +56,11 @@ export class TablePage {
     return this.root.locator(".entry-title");
   }
 
+  /** The column headings of the clocks that make the selected value. */
+  clockHeadings(): Locator {
+    return this.root.locator(".entry-clocks thead th");
+  }
+
   /** The rows of the 8 clocks that make the selected value. */
   clocks(): Locator {
     return this.root.locator(".entry-clocks tbody tr");

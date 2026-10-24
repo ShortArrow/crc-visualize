@@ -3,8 +3,11 @@ import { reflectValue, type Bit, type CrcParams } from "./trace";
 /** Direction of the table method: right shift when refin and refout are both true, left shift otherwise. */
 export type TableDirection = "left" | "right";
 
-/** One clock while making a table value: the bit fed in and the register afterwards. */
-export type EntryClock = Readonly<{ bit: Bit; reg: number }>;
+/**
+ * One clock while making a table value: the bit fed in, the feedback bit (the bit shifted out XOR bit), the register after
+ * the shift by one, the value XORed in (poly, reversed for right shift, when feedback is 1, else 0) and the register afterwards.
+ */
+export type EntryClock = Readonly<{ bit: Bit; feedback: Bit; shifted: number; xor: number; reg: number }>;
 
 /** One byte of the byte-at-a-time computation: crc before, table index, table value at that index, and crc after. */
 export type TableStep = Readonly<{ byte: number; before: number; index: number; entry: number; after: number }>;
@@ -29,14 +32,11 @@ export function entryClocks(params: CrcParams, i: number): EntryClock[] {
   let reg = 0;
   for (let k = 0; k < 8; k++) {
     const bit: Bit = (right ? (i >> k) & 1 : (i >> (7 - k)) & 1) ? 1 : 0;
-    if (right) {
-      const feedback = (reg ^ bit) & 1;
-      reg = ((reg >>> 1) ^ (feedback ? poly : 0)) >>> 0;
-    } else {
-      const feedback = ((reg >>> (width - 1)) & 1) ^ bit;
-      reg = (((reg * 2) & mask(width)) ^ (feedback ? poly : 0)) >>> 0;
-    }
-    clocks.push({ bit, reg });
+    const feedback: Bit = ((right ? reg : reg >>> (width - 1)) & 1) ^ bit ? 1 : 0;
+    const shifted = right ? reg >>> 1 : (reg * 2) & mask(width);
+    const xor = feedback ? poly : 0;
+    reg = (shifted ^ xor) >>> 0;
+    clocks.push({ bit, feedback, shifted, xor, reg });
   }
   return clocks;
 }

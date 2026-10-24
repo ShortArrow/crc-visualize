@@ -1665,7 +1665,7 @@ button.bp-gutter.bp-off::before {
   margin: 2px 0 6px 14px;
 }
 
-.branch .preset-name {
+.branch :is(.preset-name, .shift) {
   color: var(--muted);
 }
 
@@ -1759,7 +1759,7 @@ button.bp-gutter.bp-off::before {
   display: block;
   width: 100%;
   height: auto;
-  max-height: max(240px, calc(100cqh - 400px));
+  max-height: max(240px, calc(100cqh - 460px));
   margin: 0 auto;
 }
 
@@ -2983,4 +2983,14 @@ button.bit-cell:hover {
 /* The input keeps the lines it was entered with, such as one hex frame per line */
 .current-settings .input-text {
   white-space: pre-wrap;
+}
+
+/* The clocks that make a table value keep their columns and scroll sideways inside the card */
+.phone .entry-clocks {
+  display: block;
+  overflow-x: auto;
+}
+
+.phone .entry-clocks th {
+  white-space: nowrap;
 }

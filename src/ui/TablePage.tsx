@@ -154,6 +154,9 @@ function TableMethod({ params, bits }: MethodProps) {
             <tr>
               <th>{t.clock}</th>
               <th>{t.bit}</th>
+              <th>{t.feedback}</th>
+              <th>{t.shifted}</th>
+              <th>{t.xor}</th>
               <th>{t.reg}</th>
             </tr>
           </thead>
@@ -162,6 +165,11 @@ function TableMethod({ params, bits }: MethodProps) {
               <tr key={k}>
                 <td>{k + 1}</td>
                 <td>{c.bit}</td>
+                <td>{c.feedback}</td>
+                <td>
+                  <code>{binary(c.shifted, w)}</code>
+                </td>
+                <td>{c.feedback ? <code>{binary(c.xor, w)}</code> : t.noXor}</td>
                 <td>
                   <code>{binary(c.reg, w)}</code>
                 </td>

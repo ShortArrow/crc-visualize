@@ -1,5 +1,15 @@
 import { useState, type CSSProperties } from "react";
-import { codeword, period, powerCycle, remainder, rotate, type Generator } from "../domain/cyclic";
+import {
+  codeword,
+  period,
+  powerCycle,
+  remainder,
+  rotate,
+  stateRingSettings,
+  wordRingSettings,
+  type Generator,
+} from "../domain/cyclic";
+import type { Preset } from "../domain/presets";
 import { useMessages } from "../i18n/I18n";
 import { Docked } from "./Dock";
 import { powerText } from "./format";
@@ -18,9 +28,12 @@ const binary = (value: number, width: number) => value.toString(2).padStart(widt
 
 /**
  * Shows the codeword ring and the state ring of the generator polynomial generator side by side, sharing the rotation count k.
- * The rotate buttons and the rotated codeword with its remainder are docked.
+ * The rotate buttons and the rotated codeword with its remainder are docked. onOpen opens settings in the visualizer.
  */
-export function CyclicPage({ generator }: Readonly<{ generator: Generator }>) {
+export function CyclicPage({
+  generator,
+  onOpen,
+}: Readonly<{ generator: Generator; onOpen: (settings: Pick<Preset, "params" | "input">) => void }>) {
   const m = useMessages();
   const [turns, setTurns] = useState(0);
   const n = period(generator);
@@ -34,12 +47,18 @@ export function CyclicPage({ generator }: Readonly<{ generator: Generator }>) {
           <figcaption>{m.cyclic.wordRing}</figcaption>
           <WordRing generator={generator} turns={turns} />
           <p className="note">{m.cyclic.wordNote}</p>
+          <button type="button" className="see-in-visualizer" onClick={() => onOpen(wordRingSettings(generator, k))}>
+            {m.cyclic.seeWord}
+          </button>
           <p className="note crc-legend">{m.cyclic.crcBit}</p>
         </figure>
         <figure className="card">
           <figcaption>{m.cyclic.stateRing}</figcaption>
           <StateRing generator={generator} k={k} />
           <p className="note">{m.cyclic.stateNote}</p>
+          <button type="button" className="see-in-visualizer" onClick={() => onOpen(stateRingSettings(generator))}>
+            {m.cyclic.seeState}
+          </button>
         </figure>
         <section className="card cyclic-side">
           <Docked className="cyclic-dock">
