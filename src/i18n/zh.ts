@@ -212,6 +212,7 @@ export const zh: Messages = {
     fixed: "已固定的值",
     none: "暂无",
     status: (n: number) => `筛选：候选 ${n}`,
+    shift: { right: "右移", left: "左移" },
   },
   generators: "生成多项式",
   cyclic: {

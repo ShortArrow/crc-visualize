@@ -221,6 +221,7 @@ export const en: Messages = {
     fixed: "Fixed values",
     none: "None yet",
     status: (n: number) => `Narrow down: ${n} candidates`,
+    shift: { right: "right shift", left: "left shift" },
   },
   generators: "Generator polynomials",
   cyclic: {

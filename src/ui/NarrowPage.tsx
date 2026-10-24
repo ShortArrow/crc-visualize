@@ -62,6 +62,7 @@ function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
                 <a href={narrowHash({ fixed: [...prefix, { param, value: branch.value }] })}>
                   {param} = {text}
                 </a>
+                {param === "refin" ? <span className="shift">{m.narrow.shift[branch.value ? "right" : "left"]}</span> : null}
                 <span className="count">{branch.presets.length}</span>
                 {branch.presets.length === 1 && single && !onPath ? <span className="preset-name">{single.name}</span> : null}
                 {onPath ? <NarrowNode presets={presets} path={path} depth={depth + 1} onOpen={onOpen} /> : null}

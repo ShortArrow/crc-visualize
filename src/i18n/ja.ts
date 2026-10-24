@@ -219,6 +219,8 @@ export const ja = {
     fixed: "固定した値",
     none: "まだ無い",
     status: (n: number) => `絞り込み: 候補 ${n}`,
+    /** Direction in which the register shifts for refin = true (right) and false (left). */
+    shift: { right: "右送り", left: "左送り" },
   },
   /** Headings of the generator polynomial list. */
   generators: "生成多項式",

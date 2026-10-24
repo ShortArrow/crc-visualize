@@ -71,6 +71,16 @@ test.describe("Narrowing", () => {
     });
   });
 
+  test("the branches of refin name the shift direction, so a right- or left-shift implementation can be looked up", async ({
+    page,
+  }) => {
+    const n = await given("#narrow/refin, split by refin at the root, is open", () => NarrowPage.open(page, "#narrow/refin"));
+    await then("refin = true says right shift and refin = false says left shift", async () => {
+      await expect(n.branch(0, "true")).toContainText("右送り");
+      await expect(n.branch(0, "false")).toContainText("左送り");
+    });
+  });
+
   test("a path that cannot be interpreted opens up to the point before it", async ({ page }) => {
     const n = await given("#narrow/width=16/poly=0x7, which contains a value with no candidates, is open", () =>
       NarrowPage.open(page, "#narrow/width=16/poly=0x7"),

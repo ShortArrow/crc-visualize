@@ -225,6 +225,7 @@ export const es: Messages = {
     fixed: "Valores fijados",
     none: "Ninguno todavía",
     status: (n: number) => `Filtrar: ${n} candidatos`,
+    shift: { right: "desplazamiento a la derecha", left: "desplazamiento a la izquierda" },
   },
   generators: "Polinomios generadores",
   cyclic: {
