@@ -283,7 +283,7 @@ export const fr: Messages = {
   },
   equivalence: {
     heading: "Équivalences",
-    note: "Comment les paramètres sont liés entre eux. Les exemples sont calculés avec les réglages et l’entrée actuels (les mêmes que sur la page de visualisation).",
+    note: "Comment les paramètres sont liés entre eux. Les exemples sont calculés avec les réglages et l’entrée actuels (ceux de « Réglages actuels » dans la barre latérale).",
     sameSection: "Substitutions qui donnent le même CRC",
     left: "Réglage d’origine",
     right: "Substitution",
@@ -376,7 +376,7 @@ export const fr: Messages = {
   },
   check: {
     heading: "Pourquoi un « contrôle » ?",
-    note: "Comment le récepteur vérifie réellement les données. Les valeurs sont calculées avec les réglages et l’entrée actuels (les mêmes que sur la page de visualisation).",
+    note: "Comment le récepteur vérifie réellement les données. Les valeurs sont calculées avec les réglages et l’entrée actuels (ceux de « Réglages actuels » dans la barre latérale).",
     frameSection: "Suite envoyée",
     frameNote:
       "Le message est envoyé suivi de son CRC. Les CRC avec refin et refout à true sont ajoutés octet de poids faible en premier. Sélectionnez un bit pour l’inverser (comme s’il avait été abîmé en route).",
@@ -417,7 +417,7 @@ export const fr: Messages = {
   },
   table: {
     heading: "Méthode par table (octet par octet)",
-    note: "Beaucoup de bibliothèques construisent d’abord une table T de 256 valeurs, puis calculent octet par octet. Les valeurs sont calculées avec les réglages et l’entrée actuels (les mêmes que sur la page de visualisation).",
+    note: "Beaucoup de bibliothèques construisent d’abord une table T de 256 valeurs, puis calculent octet par octet. Les valeurs sont calculées avec les réglages et l’entrée actuels (ceux de « Réglages actuels » dans la barre latérale).",
     direction: { left: "Table à décalage à gauche", right: "Table à décalage à droite (refin et refout valent true)" },
     reflectNote:
       "Si refin vaut true, l’ordre des bits de chaque octet d’entrée est inversé avant usage ; si refout vaut true, le résultat est inversé à la fin.",

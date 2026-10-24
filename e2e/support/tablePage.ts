@@ -41,6 +41,16 @@ export class TablePage {
     return this.root.locator(".crc-table .table-cell.used");
   }
 
+  /** The note under the page heading. */
+  note(): Locator {
+    return this.root.locator(":scope > .note").first();
+  }
+
+  /** The value of name (a parameter, inputMode or input) in the sidebar's current settings. */
+  currentSetting(name: string): Locator {
+    return this.page.locator(`.current-settings [data-setting="${name}"] dd`);
+  }
+
   /** The heading of how the selected value is made, such as "T[1] = 0x1189". */
   entryTitle(): Locator {
     return this.root.locator(".entry-title");

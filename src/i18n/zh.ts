@@ -267,7 +267,7 @@ export const zh: Messages = {
   },
   equivalence: {
     heading: "等价替换",
-    note: "参数之间的关系。计算示例使用当前的设置和输入（与可视化页面相同）求得。",
+    note: "参数之间的关系。计算示例使用当前的设置和输入（即侧栏“当前设置”中显示的）求得。",
     sameSection: "得到相同 CRC 的替换",
     left: "原设置",
     right: "替换",
@@ -346,7 +346,7 @@ export const zh: Messages = {
   },
   check: {
     heading: "为什么叫“校验”",
-    note: "接收方实际上如何校验。数值使用当前的设置和输入（与可视化页面相同）求得。",
+    note: "接收方实际上如何校验。数值使用当前的设置和输入（即侧栏“当前设置”中显示的）求得。",
     frameSection: "发送的比特串",
     frameNote:
       "在消息后附上其 CRC 发送。refin 和 refout 为 true 的 CRC 从低位字节开始附加。选择比特即可翻转（视为在传输中损坏）。",
@@ -385,7 +385,7 @@ export const zh: Messages = {
   },
   table: {
     heading: "查表法（每次一个字节）",
-    note: "许多库先建好 256 个值的表 T，再每次计算一个字节。数值使用当前的设置和输入（与可视化页面相同）求得。",
+    note: "许多库先建好 256 个值的表 T，再每次计算一个字节。数值使用当前的设置和输入（即侧栏“当前设置”中显示的）求得。",
     direction: { left: "左移的表", right: "右移的表（refin 和 refout 为 true）" },
     reflectNote: "refin 为 true 时，先把输入每个字节的比特顺序反转再使用；refout 为 true 时，最后把结果反转。",
     tableTitle: "表 T（256 个值）",

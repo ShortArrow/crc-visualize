@@ -286,7 +286,7 @@ export const es: Messages = {
   },
   equivalence: {
     heading: "Equivalencias",
-    note: "Cómo se relacionan los parámetros entre sí. Los ejemplos se calculan con la configuración y la entrada actuales (las mismas que en el visualizador).",
+    note: "Cómo se relacionan los parámetros entre sí. Los ejemplos se calculan con la configuración y la entrada actuales (las de «Configuración actual» en la barra lateral).",
     sameSection: "Sustituciones que dan el mismo CRC",
     left: "Configuración original",
     right: "Sustitución",
@@ -379,7 +379,7 @@ export const es: Messages = {
   },
   check: {
     heading: "¿Por qué «comprobación»?",
-    note: "Cómo comprueba realmente el receptor los datos. Los valores se calculan con la configuración y la entrada actuales (las mismas que en el visualizador).",
+    note: "Cómo comprueba realmente el receptor los datos. Los valores se calculan con la configuración y la entrada actuales (las de «Configuración actual» en la barra lateral).",
     frameSection: "Cadena enviada",
     frameNote:
       "Se envía el mensaje seguido de su CRC. Los CRC con refin y refout true se añaden empezando por el byte bajo. Selecciona un bit para invertirlo (como si se dañara por el camino).",
@@ -420,7 +420,7 @@ export const es: Messages = {
   },
   table: {
     heading: "Método de tabla (byte a byte)",
-    note: "Muchas bibliotecas construyen primero una tabla T de 256 valores y luego calculan byte a byte. Los valores se calculan con la configuración y la entrada actuales (las mismas que en el visualizador).",
+    note: "Muchas bibliotecas construyen primero una tabla T de 256 valores y luego calculan byte a byte. Los valores se calculan con la configuración y la entrada actuales (las de «Configuración actual» en la barra lateral).",
     direction: {
       left: "Tabla con desplazamiento a la izquierda",
       right: "Tabla con desplazamiento a la derecha (refin y refout son true)",

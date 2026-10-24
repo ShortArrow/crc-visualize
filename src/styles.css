@@ -2251,7 +2251,7 @@ button.bit-cell:hover {
 
 .current-settings > div {
   display: grid;
-  grid-template-columns: 5em 1fr;
+  grid-template-columns: 6em 1fr;
 }
 
 .current-settings dt {
@@ -2978,4 +2978,9 @@ button.bit-cell:hover {
 
 .table-steps th {
   word-break: keep-all;
+}
+
+/* The input keeps the lines it was entered with, such as one hex frame per line */
+.current-settings .input-text {
+  white-space: pre-wrap;
 }

@@ -280,7 +280,7 @@ export const en: Messages = {
   },
   equivalence: {
     heading: "Equivalences",
-    note: "How the parameters relate to each other. The examples are computed with the current settings and input (the same as on the visualizer page).",
+    note: "How the parameters relate to each other. The examples are computed with the current settings and input (shown under “Current settings” in the sidebar).",
     sameSection: "Substitutions that give the same CRC",
     left: "Original setting",
     right: "Substitute",
@@ -368,7 +368,7 @@ export const en: Messages = {
   },
   check: {
     heading: 'Why a "check"?',
-    note: "How the receiver actually checks the data. Values are computed with the current settings and input (the same as on the visualizer page).",
+    note: "How the receiver actually checks the data. Values are computed with the current settings and input (shown under “Current settings” in the sidebar).",
     frameSection: "Sent bit string",
     frameNote:
       "The message is sent followed by its CRC. CRCs with refin and refout true are appended lowest byte first. Select a bit to flip it (as if it were corrupted in transit).",
@@ -409,7 +409,7 @@ export const en: Messages = {
   },
   table: {
     heading: "Table method (a byte at a time)",
-    note: "Many libraries first build a table T of 256 values and then compute a byte at a time. Values are computed with the current settings and input (the same as on the visualizer page).",
+    note: "Many libraries first build a table T of 256 values and then compute a byte at a time. Values are computed with the current settings and input (shown under “Current settings” in the sidebar).",
     direction: { left: "Left-shift table", right: "Right-shift table (refin and refout are true)" },
     reflectNote:
       "When refin is true, the bit order of each input byte is reversed before use; when refout is true, the result is reversed at the end.",
