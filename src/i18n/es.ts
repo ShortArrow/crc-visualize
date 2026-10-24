@@ -90,8 +90,8 @@ export const es: Messages = {
     toEnd: "final",
     noField: "ninguno",
     pick: (i: number) => `Visualizar la trama ${i}`,
-    match: "Coincide con el campo CRC",
-    mismatch: "No coincide con el campo CRC",
+    match: "El CRC calculado es igual al campo CRC (el CRC que llegó con la trama)",
+    mismatch: "El CRC calculado es distinto del campo CRC (el CRC que llegó con la trama)",
     unfit: "El rango no cabe",
   },
   debug: {

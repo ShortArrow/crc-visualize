@@ -90,8 +90,8 @@ export const en: Messages = {
     toEnd: "end",
     noField: "none",
     pick: (i: number) => `Visualize frame ${i}`,
-    match: "Matches the CRC field",
-    mismatch: "Does not match the CRC field",
+    match: "The computed CRC equals the CRC field (the CRC that came with the frame)",
+    mismatch: "The computed CRC differs from the CRC field (the CRC that came with the frame)",
     unfit: "The range does not fit",
   },
   debug: {

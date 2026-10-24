@@ -93,8 +93,8 @@ export const ja = {
     toEnd: "末尾",
     noField: "なし",
     pick: (i: number) => `フレーム ${i} を可視化する`,
-    match: "CRC 欄と一致",
-    mismatch: "CRC 欄と不一致",
+    match: "計算した CRC が CRC 欄（送られてきた CRC）と同じ",
+    mismatch: "計算した CRC が CRC 欄（送られてきた CRC）と違う",
     unfit: "範囲が収まらない",
   },
   debug: {

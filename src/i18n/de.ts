@@ -90,8 +90,8 @@ export const de: Messages = {
     toEnd: "Ende",
     noField: "keins",
     pick: (i: number) => `Rahmen ${i} darstellen`,
-    match: "Stimmt mit dem CRC-Feld überein",
-    mismatch: "Stimmt nicht mit dem CRC-Feld überein",
+    match: "Die berechnete CRC ist gleich dem CRC-Feld (der mitgesendeten CRC)",
+    mismatch: "Die berechnete CRC weicht vom CRC-Feld (der mitgesendeten CRC) ab",
     unfit: "Bereich passt nicht",
   },
   debug: {
