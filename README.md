@@ -22,6 +22,8 @@ npm run deploy     # build and publish dist/ to crc.shortarrow.jp (Cloudflare Wo
 
 Changes go to `main` through pull requests. Each pull request runs the type check, unit tests and E2E tests in GitHub Actions (`.github/workflows/ci.yml`), and can be merged only when they pass on a branch up to date with `main`. Cloudflare Workers Builds, connected to this repository, deploys `main` to crc.shortarrow.jp and each pull request branch to its own preview URL. No Cloudflare credentials are kept in GitHub.
 
+To look for tests that fail only on a slow machine without loading your own, run the Stress E2E workflow (`.github/workflows/stress.yml`) by hand from the Actions tab. It runs the E2E tests with each page's CPU slowed down 1, 2, 4 or 6 times by Chrome's CPU throttling, repeats each test, and does not retry, so a test that passes only sometimes shows up as a failure. The number of runs, the browsers running at once and a title pattern can be chosen as well. Locally, `npx playwright test --config playwright.stress.config.ts --project x4 --workers 1` does the same for one rate.
+
 Keys: Space plays / pauses, ← → move one step, Home / End jump to the first / last step, and L toggles loop playback.
 
 Like a debugger, the sidebar shows the variables at the step shown, and playback pauses at breakpoints. Press left of a line number in the code to stop at that line (optionally at its n-th hit, such as the 5th XOR), or a bit of the input stream, or the line under one of its bytes, to stop once that bit or byte has been read.

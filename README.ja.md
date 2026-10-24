@@ -22,6 +22,8 @@ npm run deploy     # ビルドして dist/ を crc.shortarrow.jp に公開 (Clou
 
 `main` への変更は pull request を通す。pull request ごとに GitHub Actions（`.github/workflows/ci.yml`）で型検査・単体テスト・E2E テストが走り、`main` に追いついたブランチで通ったときだけマージできる。このリポジトリにつないだ Cloudflare Workers Builds が、`main` を crc.shortarrow.jp に、pull request のブランチをそれぞれの preview URL に公開する。Cloudflare の認証情報は GitHub に置かない。
 
+遅いマシンでだけ落ちるテストを、手元のマシンに負荷をかけずに探すには、Actions のタブから Stress E2E のワークフロー（`.github/workflows/stress.yml`）を手で起動する。Chrome の CPU スロットリングで各ページの CPU を 1・2・4・6 倍遅くして E2E テストを回し、各テストを繰り返し、やり直しはしないので、ときどきしか通らないテストは失敗として出る。繰り返す回数、同時に動かすブラウザの数、テストの名前のパターンも選べる。手元では `npx playwright test --config playwright.stress.config.ts --project x4 --workers 1` で、1 つの倍率について同じことをする。
+
 キー操作: Space で再生 / 一時停止、← → で 1 ステップ移動、Home / End で先頭 / 末尾、L でループ再生の切り替え。
 
 デバッガのように、サイドバーに表示中のステップでの変数を出し、ブレークポイントで再生を止められる。コードの行番号の左を押すとその行で止まり（5 回目の XOR のように、何回目で止めるかも指定できる）、入力ストリームのビットか、バイトの下の線を押すと、そのビットやバイトを読み終えたところで止まる。
