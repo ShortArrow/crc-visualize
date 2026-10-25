@@ -27,6 +27,15 @@ export const then = step("Then");
 export type ThrottleOptions = { cpuThrottle: number };
 
 /**
+ * A wait of ms milliseconds on the machine, made as many times longer as the page is slowed down, for waits longer than the
+ * default that last as long as playback does. Call it inside a test.
+ */
+export function patience(ms: number): { timeout: number } {
+  const { cpuThrottle = 1 } = test.info().project.use as Partial<ThrottleOptions>;
+  return { timeout: ms * cpuThrottle };
+}
+
+/**
  * The E2E test. A passing test is failed if its top-level steps break the writing rule (scenarioStepsViolation).
  * Only steps written with given / when / then are counted. With cpuThrottle above 1, the page runs that many times slower.
  */

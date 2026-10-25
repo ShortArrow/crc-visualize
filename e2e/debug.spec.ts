@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { given, test, then, when } from "./support/scenario";
+import { given, patience, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
 /** CRC-3/TUTORIAL fed 2 bytes, AB F0, playing fast at a steady speed. */
@@ -119,7 +119,7 @@ test.describe("Breakpoints", () => {
       await expect(v.debug.value("bitsRead")).toHaveText("8 / 16");
     });
     await when("playing again", () => v.settings.play().click());
-    await then("playback goes on to the end", () => expect(v.counter).toHaveText(/^(\d+) \/ \1$/, { timeout: 10_000 }));
+    await then("playback goes on to the end", () => expect(v.counter).toHaveText(/^(\d+) \/ \1$/, patience(10_000)));
   });
 
   test("breakpoints from the URL are restored, a disabled one does not stop playback, and removing all clears them", async ({

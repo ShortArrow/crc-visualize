@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { given, test, then, when } from "./support/scenario";
+import { given, patience, test, then, when } from "./support/scenario";
 import { TUTORIAL_STEPS, Visualizer } from "./support/visualizer";
 
 test.describe("Playback", () => {
@@ -11,7 +11,7 @@ test.describe("Playback", () => {
     });
     await when("playing", () => v.settings.play().click());
     await then("it stops at the end and the button returns to play", async () => {
-      await expect(v.counter).toHaveText(`${TUTORIAL_STEPS} / ${TUTORIAL_STEPS}`, { timeout: 10_000 });
+      await expect(v.counter).toHaveText(`${TUTORIAL_STEPS} / ${TUTORIAL_STEPS}`, patience(10_000));
       await expect(v.settings.play()).toHaveAttribute("aria-label", "再生");
     });
   });
@@ -29,7 +29,7 @@ test.describe("Playback", () => {
     await when("playing", () => v.settings.play().click());
     await then("after showing the end, it returns to the start and keeps playing", async () => {
       await expect(v.counter).toHaveText(`${TUTORIAL_STEPS} / ${TUTORIAL_STEPS}`);
-      await expect(v.counter).toHaveText(`1 / ${TUTORIAL_STEPS}`, { timeout: 5_000 });
+      await expect(v.counter).toHaveText(`1 / ${TUTORIAL_STEPS}`, patience(5_000));
       await expect(v.settings.play()).toHaveAttribute("aria-label", "一時停止");
     });
   });

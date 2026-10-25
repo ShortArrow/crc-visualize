@@ -1,10 +1,10 @@
 import { expect } from "@playwright/test";
-import { given, test, then, when } from "./support/scenario";
+import { given, patience, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
 /** Steady speed ×0.25: one step takes 2400 ms, and particles take 768 ms for each of the first and second halves. */
 const SLOW = "?speed=steady&rate=0.25";
-const PHASE = { timeout: 3000 };
+const phase = () => patience(3000);
 
 test.describe("Timing within one step", () => {
   test("wires, gates and boxes do not show the result before the particle arrives", async ({ page }) => {
@@ -18,19 +18,19 @@ test.describe("Timing within one step", () => {
     });
     await when("the step plays on", () => v.resume());
     await then("at the end of the first half the input wire is fully painted and the input gate lights", async () => {
-      await expect.poll(() => v.diagram.painted("input"), PHASE).toBeGreaterThan(0.99);
-      await expect.poll(() => v.diagram.gateLit("input"), PHASE).toBe(true);
+      await expect.poll(() => v.diagram.painted("input"), phase()).toBeGreaterThan(0.99);
+      await expect.poll(() => v.diagram.gateLit("input"), phase()).toBe(true);
     });
     await then("the input-bit particle disappears once it arrives", async () => {
       const opacity = () => v.diagram.particle("input").evaluate((el) => getComputedStyle(el).opacity);
-      await expect.poll(opacity, PHASE).toBe("0");
+      await expect.poll(opacity, phase()).toBe("0");
     });
     await then(
       "at the end of the second half the result wire is fully painted and the feedback box gets 1 and turns red",
       async () => {
-        await expect.poll(() => v.diagram.painted("result"), PHASE).toBeGreaterThan(0.99);
-        await expect.poll(() => v.diagram.feedbackShown(), PHASE).toBe(true);
-        await expect.poll(() => v.diagram.feedbackRed(), PHASE).toBe(true);
+        await expect.poll(() => v.diagram.painted("result"), phase()).toBeGreaterThan(0.99);
+        await expect.poll(() => v.diagram.feedbackShown(), phase()).toBe(true);
+        await expect.poll(() => v.diagram.feedbackRed(), phase()).toBe(true);
       },
     );
   });
@@ -60,7 +60,7 @@ test.describe("Timing within one step", () => {
     const v = await given("with slow playback, at a feedback step where the input gate is lit", async () => {
       const v = await Visualizer.open(page, SLOW);
       await v.goTo("feedback");
-      await expect.poll(() => v.diagram.gateLit("input"), PHASE).toBe(true);
+      await expect.poll(() => v.diagram.gateLit("input"), phase()).toBe(true);
       return v;
     });
     await when("right after advancing to the shift step", () => v.stepForward());
