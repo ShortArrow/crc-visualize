@@ -1,0 +1,50 @@
+name: Stress E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      throttle:
+        description: How many times slower each page's CPU runs
+        type: choice
+        options: ["1", "2", "4", "6"]
+        default: "4"
+      repeat:
+        description: Runs of each test
+        type: number
+        default: 3
+      workers:
+        description: Browsers running at once
+        type: number
+        default: 2
+      grep:
+        description: Only the tests whose title matches this pattern (empty for all)
+        type: string
+        default: ""
+
+jobs:
+  e2e:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - name: Run the E2E tests slowed down, without retries
+        shell: bash
+        env:
+          THROTTLE: ${{ inputs.throttle }}
+          REPEAT: ${{ inputs.repeat }}
+          WORKERS: ${{ inputs.workers }}
+          GREP: ${{ inputs.grep }}
+        run: |
+          args=(--config playwright.stress.config.ts --project "x$THROTTLE" --repeat-each "$REPEAT" --workers "$WORKERS" --retries 0)
+          if [ -n "$GREP" ]; then args+=(--grep "$GREP"); fi
+          npx playwright test "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: stress-test-results
+          path: test-results/
