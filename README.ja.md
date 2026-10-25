@@ -22,7 +22,7 @@ npm run deploy     # ビルドして dist/ を crc.shortarrow.jp に公開 (Clou
 
 `main` への変更は pull request を通す。pull request ごとに GitHub Actions（`.github/workflows/ci.yml`）で型検査・単体テスト・E2E テストが走り、`main` に追いついたブランチで通ったときだけマージできる。このリポジトリにつないだ Cloudflare Workers Builds が、`main` を crc.shortarrow.jp に、pull request のブランチをそれぞれの preview URL に公開する。Cloudflare の認証情報は GitHub に置かない。
 
-遅いマシンでだけ落ちるテストを、手元のマシンに負荷をかけずに探すには、Actions のタブから Stress E2E のワークフロー（`.github/workflows/stress.yml`）を手で起動する。Chrome の CPU スロットリングで各ページの CPU を 1・2・4・6 倍遅くして E2E テストを回し、各テストを繰り返し、やり直しはしないので、ときどきしか通らないテストは失敗として出る。繰り返す回数、同時に動かすブラウザの数、テストの名前のパターンも選べる。手元では `npx playwright test --config playwright.stress.config.ts --project x4 --workers 1` で、1 つの倍率について同じことをする。
+遅いマシンでだけ落ちるテストを、手元のマシンに負荷をかけずに探すには、Actions のタブから Stress E2E のワークフロー（`.github/workflows/stress.yml`）を手で起動する。Chrome の CPU スロットリングで各ページの CPU を 1・2・4・6 倍遅くして E2E テストを回し、各テストを繰り返し、やり直しはしないので、ときどきしか通らないテストは失敗として出る。各テストと各確認に許す時間も同じ倍率で延ばすので、遅いことではなく、おかしな動きだけが失敗になる。再生の長さに合わせて既定より長く待つところは `patience(ms)` で書き、この待ち時間も延びるようにする。繰り返す回数、同時に動かすブラウザの数、テストの名前のパターンも選べる。手元では `npx playwright test --config playwright.stress.config.ts --project x4 --workers 1` で、1 つの倍率について同じことをする。
 
 キー操作: Space で再生 / 一時停止、← → で 1 ステップ移動、Home / End で先頭 / 末尾、L でループ再生の切り替え。
 

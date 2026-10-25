@@ -1,12 +1,10 @@
 import { expect } from "@playwright/test";
-import { given, test, then, when } from "./support/scenario";
+import { given, patience, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
 /** CRC-3/TUTORIAL fed 2 bytes, AB F0, playing fast at a steady speed. */
 const TWO_BYTES = "?width=3&poly=0x3&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=hex&input=ABF0&speed=steady&rate=8";
 const PAUSED = "再生";
-/** Wait for playback to reach a step; each step waits for its drawing, so on a slow machine playback runs slower than its rate. */
-const PLAYING = { timeout: 15_000 };
 /** The line XORing poly into crc, in any code language. */
 const XOR_LINE = /\^=\s*poly/;
 
@@ -66,7 +64,7 @@ test.describe("Breakpoints", () => {
       await v.settings.play().click();
     });
     await then("playback pauses at the 2nd XOR", async () => {
-      await expect(v.settings.play()).toHaveAttribute("aria-label", PAUSED, PLAYING);
+      await expect(v.settings.play()).toHaveAttribute("aria-label", PAUSED);
       await expect(v.debug.value("xorCount")).toHaveText("2");
       expect(await v.stepKind()).toBe("xor");
       await expect(v.debug.hits("xor")).toContainText("2");
@@ -84,7 +82,7 @@ test.describe("Breakpoints", () => {
     });
     await when("playing", () => v.settings.play().click());
     await then("playback pauses with 3 bits read", async () => {
-      await expect(v.settings.play()).toHaveAttribute("aria-label", PAUSED, PLAYING);
+      await expect(v.settings.play()).toHaveAttribute("aria-label", PAUSED);
       await expect(v.debug.value("bitsRead")).toHaveText("3 / 16");
     });
     await when("pressing bit 2 again", () => v.debug.bit(2).click());
@@ -117,11 +115,11 @@ test.describe("Breakpoints", () => {
     });
     await when("playing", () => v.settings.play().click());
     await then("playback pauses with the 8 bits of byte 0 read", async () => {
-      await expect(v.settings.play()).toHaveAttribute("aria-label", PAUSED, PLAYING);
+      await expect(v.settings.play()).toHaveAttribute("aria-label", PAUSED);
       await expect(v.debug.value("bitsRead")).toHaveText("8 / 16");
     });
     await when("playing again", () => v.settings.play().click());
-    await then("playback goes on to the end", () => expect(v.counter).toHaveText(/^(\d+) \/ \1$/, PLAYING));
+    await then("playback goes on to the end", () => expect(v.counter).toHaveText(/^(\d+) \/ \1$/, patience(10_000)));
   });
 
   test("breakpoints from the URL are restored, a disabled one does not stop playback, and removing all clears them", async ({
@@ -137,7 +135,7 @@ test.describe("Breakpoints", () => {
     });
     await when("playing", () => v.settings.play().click());
     await then("playback does not stop at the XORs, and pauses after byte 0", async () => {
-      await expect(v.settings.play()).toHaveAttribute("aria-label", PAUSED, PLAYING);
+      await expect(v.settings.play()).toHaveAttribute("aria-label", PAUSED);
       await expect(v.debug.value("bitsRead")).toHaveText("8 / 16");
     });
     await when("removing all breakpoints", () => v.debug.removeAll().click());
