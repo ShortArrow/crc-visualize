@@ -211,7 +211,9 @@ for (const screen of SCREENS) {
         await then("the row and its index and table value in the dock are in view", async () => {
           const result = Visualizer.on(page).workbench.dockResult();
           await allInView(page, { row: t.step(1), "index and value in the dock": result });
-          await expect(result).toContainText((await t.usedCell().textContent())!.trim());
+          const index = Number(await t.step(1).getAttribute("data-index"));
+          const value = (await t.usedCell().textContent())!.trim();
+          await expect(result).toHaveText(`T[0x${index.toString(16).toUpperCase().padStart(2, "0")}] = 0x${value}`);
         });
       } else {
         await then("the row, the highlighted value of table T and the start of how it is made are in view", () =>

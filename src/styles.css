@@ -315,6 +315,7 @@ h2 {
   font-family: var(--mono);
   white-space: pre;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .bp-entry .bp-hit {
@@ -2845,6 +2846,15 @@ button.bit-cell:hover {
 
 .dock :is(.cyclic-controls, .cyclic-result, .check-actions) {
   margin: 0 0 4px;
+}
+
+/* The result of a tap in the dock stays on one line, so the drawing above keeps its height */
+.dock .dock-result {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 /*

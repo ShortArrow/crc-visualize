@@ -65,9 +65,9 @@ export class RedundancyPage {
     return this.root.locator(".received-remainder");
   }
 
-  /** The verdict. Holds clean, detected or missed in data-verdict. */
+  /** The verdict in the page, not its copy in the phone dock. Holds clean, detected or missed in data-verdict. */
   verdict(): Locator {
-    return this.root.locator(".verdict");
+    return this.root.locator(".verdict:not([data-dock-result])");
   }
 
   resetError(): Locator {

@@ -13,7 +13,7 @@ import {
 } from "../domain/redundancy";
 import type { Bit } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
-import { Docked } from "./Dock";
+import { Docked, DockedResult } from "./Dock";
 import { powerOfTwoText, powerText } from "./format";
 
 const GRID_LIMIT = 128;
@@ -78,6 +78,11 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
               <BitCells bits={received} width={generator.width} flipped={error} onFlip={(i) => setError(flip(error, i))} />
             </div>
           </Docked>
+          <DockedResult className="redundancy-page" style={pageStyle}>
+            <p className="verdict dock-result" data-dock-result data-verdict={result}>
+              {m.redundancy.verdict[result]}
+            </p>
+          </DockedResult>
           <dl className="check-result">
             <dt>{m.redundancy.error}</dt>
             <dd className="error-bits">{error.join("")}</dd>

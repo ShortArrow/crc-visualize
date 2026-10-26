@@ -16,9 +16,22 @@ type Props = Readonly<{
  * with className and style (CSS custom properties are inherited along the DOM, not along React's tree). Elsewhere, they are shown in
  * place, without a wrapper.
  */
-export function Docked({ className = "", style, children }: Props) {
+export function Docked(props: Props) {
   const slot = useContext(DockSlot);
-  if (!slot) return <>{children}</>;
+  return slot ? inDock(slot, props) : <>{props.children}</>;
+}
+
+/**
+ * The line in the dock that tells what a tap there resulted in, such as a verdict. Shown only on a phone, where the result in the page
+ * is scrolled out of view above the dock; elsewhere the page's own result is in view, so nothing is shown.
+ */
+export function DockedResult(props: Props) {
+  const slot = useContext(DockSlot);
+  return slot ? inDock(slot, props) : null;
+}
+
+/** Puts children into the dock slot, inside a wrapper with className and style. */
+function inDock(slot: HTMLElement, { className = "", style, children }: Props) {
   return createPortal(
     <div className={`docked ${className}`} style={style}>
       {children}

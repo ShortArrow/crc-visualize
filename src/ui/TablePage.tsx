@@ -4,6 +4,7 @@ import type { ConfigResult } from "../domain/parse";
 import { crcTable, entryClocks, tableDirection, tableRun, type TableDirection } from "../domain/table";
 import { toRegister, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
+import { DockedResult } from "./Dock";
 import { toHex } from "./format";
 
 const hex = (value: number, width: number) => toHex(toRegister(value, width));
@@ -50,6 +51,11 @@ function TableMethod({ params, bits }: MethodProps) {
   const shown = picked ?? used ?? 0;
   return (
     <div className="page-columns">
+      <DockedResult>
+        <p className="dock-result" data-dock-result>
+          T[{byteHex(shown)}] = {hex(table[shown]!, w)}
+        </p>
+      </DockedResult>
       <section className="card">
         <h3>{t.stepsTitle}</h3>
         <p className="table-direction" data-direction={direction}>
