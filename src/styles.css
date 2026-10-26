@@ -370,11 +370,15 @@ button.bp-gutter.bp-off::before {
   background: var(--muted);
 }
 
-/* Bits of the input stream, and the lines under its bytes, that set or remove a breakpoint, and their marks */
+/*
+ * Bits of the input stream, and the lines under its bytes, that set or remove a breakpoint, and their marks; one scrolled into view
+ * to be pressed stops a little inside the pane, never cut by a fraction of a pixel at its edge
+ */
 .bit-hit,
 .byte-hit {
   fill: transparent;
   cursor: pointer;
+  scroll-margin: 4px;
 }
 
 .bit-hit:hover,
