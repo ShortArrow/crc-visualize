@@ -204,6 +204,29 @@ On pages other than the Visualizer, the content blocks (cards) are laid out in r
 
 At `done` the register glows green, and the bit string "input + CRC" is shown.
 
+### Target screens
+
+The screen rules (this chapter and each page's chapter) hold on at least the following screens. Sizes are in CSS px: for a phone, the portrait size without the browser's bars; for a PC, the resolution divided by the OS scaling, less 130 px of height for the browser's tabs and address bar and the taskbar. Browser zoom (Ctrl + +) makes CSS px smaller just as OS scaling does, so this list covers it too. The screens are the most common sizes in Japan (StatCounter) and those at the ends of width and height.
+
+| Kind              | Model, or resolution and scaling | Screen (CSS px) | Why                                                 |
+| ----------------- | -------------------------------- | --------------- | --------------------------------------------------- |
+| Phone             | iPhone SE (3rd generation)       | 375×667         | The smallest                                        |
+| Phone             | iPhone 11 / XR                   | 414×896         | The most common in Japan                            |
+| Phone             | iPhone 12 to 14                  | 390×844         | Common                                              |
+| Phone             | iPhone 15 / 16                   | 393×852         | Growing                                             |
+| Phone             | iPhone 16 Pro Max                | 440×956         | The largest                                         |
+| Phone             | Pixel 8                          | 412×915         | Typical Android                                     |
+| Phone             | Galaxy S24                       | 360×780         | The narrowest                                       |
+| Phone (landscape) | iPhone 12 to 14                  | 844×390         | The lowest; 700 or wider, so it gets the PC layout  |
+| PC                | 1920×1080 at 100%                | 1920×950        | The most common                                     |
+| PC                | 1920×1080 at 125%                | 1536×734        | The default on laptops                              |
+| PC                | 1920×1080 at 150%                | 1280×590        | The lowest PC screen                                |
+| PC                | 1366×768 at 100%                 | 1366×638        | Older laptops                                       |
+| PC                | 2560×1440 at 100%                | 2560×1310       | Large screens                                       |
+| PC                | 3840×2160 at 150%                | 2560×1310       | The 4K default (the same size as 2560×1440 at 100%) |
+| PC                | 3840×2160 at 100%                | 3840×2030       | The largest                                         |
+| PC                | MacBook Air 13-inch              | 1470×826        | The Mac default                                     |
+
 ### Parameter mapping
 
 While the mouse or keyboard focus is on a settings panel field or a pseudocode chip, that parameter is "focused", and the places it is used are emphasized in cyan.
