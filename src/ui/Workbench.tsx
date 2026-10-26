@@ -12,7 +12,7 @@ import {
   Table2,
   type LucideIcon,
 } from "lucide-react";
-import { useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { useMessages } from "../i18n/I18n";
 import { LOCALE_NAMES, LOCALES, type Locale } from "../i18n/locale";
 import { namesHash, narrowHash, type Route } from "./route";
@@ -54,7 +54,7 @@ const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: L
  * filling the whole screen. The page itself does not scroll; only each area scrolls internally.
  * On a phone (class phone), the activity bar runs along the bottom instead, and the sidebar is a drawer over the editor area: closed at
  * first, and closed again on choosing a link or button in it (other than one marked data-stay) or tapping beside it. The drawer's state is not saved in layout. The
- * dock between the editor area and the page links holds the parts the page shows with Docked. On a short screen (class short), the
+ * dock between the editor area and the page links holds the parts the page shows with Docked. Ctrl+B (⌘+B) toggles the sidebar. On a short screen (class short), the
  * layout is the PC one with the parts that take height packed (docs/spec.md, Screen tiers).
  */
 export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, editor, status }: Props) {
@@ -65,6 +65,15 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
   const [dock, setDock] = useState<HTMLElement | null>(null);
   const open = phone ? drawer : layout.sidebarOpen;
   const toggle = () => (phone ? setDrawer(!drawer) : onLayout({ ...layout, sidebarOpen: !open }));
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "b") return;
+      e.preventDefault();
+      onLayout({ ...layout, sidebarOpen: !layout.sidebarOpen });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
   const closeOnChoice = (e: MouseEvent) => {
     if (phone && (e.target as Element).closest("a, button:not([data-stay])")) setDrawer(false);
   };
