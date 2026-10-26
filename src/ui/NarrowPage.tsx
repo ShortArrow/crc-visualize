@@ -1,8 +1,10 @@
+import { useEffect, useRef } from "react";
 import { branches, formatValue, matching, splittingParams, type NarrowPath } from "../domain/narrow";
 import type { Preset } from "../domain/presets";
 import { useMessages } from "../i18n/I18n";
 import { narrowHash } from "./route";
 import { Explanation } from "./Explanation";
+import { PresetTable } from "./PresetTable";
 
 type Props = Readonly<{
   presets: readonly Preset[];
@@ -10,14 +12,34 @@ type Props = Readonly<{
   onOpen: (preset: Preset) => void;
 }>;
 
-/** Tree that narrows the preset candidates to one by fixing values one at a time. path is already applied to presets. */
+/**
+ * Tree that narrows the preset candidates to one by fixing values one at a time, beside a table of the remaining candidates whose
+ * column headings are emphasized for the parameters that still split them. Whenever the path changes, the deepest node (its choice
+ * of parameter, or the single candidate) is scrolled into view.
+ */
 export function NarrowPage({ presets, path, onOpen }: Props) {
   const m = useMessages();
+  const candidates = matching(presets, path.fixed);
+  const tree = useRef<HTMLElement>(null);
+  const key = narrowHash(path);
+  useEffect(() => {
+    const deepest = [...(tree.current?.querySelectorAll(".narrow-node") ?? [])].at(-1);
+    (deepest?.querySelector(":scope > .split-by") ?? deepest)?.scrollIntoView({ block: "nearest" });
+  }, [key]);
   return (
     <div className="narrow-page">
       <h2>{m.narrow.heading}</h2>
       <Explanation>{m.narrow.note}</Explanation>
-      <NarrowNode presets={presets} path={path} depth={0} onOpen={onOpen} />
+      <div className="page-columns">
+        <section className="card narrow-tree" ref={tree}>
+          <NarrowNode presets={presets} path={path} depth={0} onOpen={onOpen} />
+        </section>
+        <section className="card narrow-table">
+          <h3>{m.narrow.candidates(candidates.length)}</h3>
+          <PresetTable presets={candidates} splits={new Set(splittingParams(candidates))} />
+          <p className="note">{m.presetCheckNote}</p>
+        </section>
+      </div>
     </div>
   );
 }

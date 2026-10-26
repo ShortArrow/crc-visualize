@@ -4,6 +4,25 @@ import { given, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
 test.describe("Narrowing", () => {
+  test("beside the tree, a table lists the remaining candidates with their check values and emphasizes the parameters that split them", async ({
+    page,
+  }) => {
+    const n = await given("the path width = 16, poly = 0x1021 is open", () =>
+      NarrowPage.open(page, "#narrow/width=16/poly=0x1021"),
+    );
+    await then("the table has a row per remaining candidate, as many as the sidebar lists", async () => {
+      await expect(n.tableRow()).toHaveCount(11);
+      await expect(n.candidates()).toHaveCount(11);
+    });
+    await then("CRC-16/KERMIT's row shows its parameters and its check value", () =>
+      expect(n.tableRow("CRC-16/KERMIT")).toContainText(/0x1021.*0x0.*true.*true.*0x0.*0x2189/),
+    );
+    await then("init, whose values differ, is emphasized, and poly, which all share, is not", async () => {
+      await expect(n.tableHead("init")).toHaveClass(/\bsplits\b/);
+      await expect(n.tableHead("poly")).not.toHaveClass(/\bsplits\b/);
+    });
+  });
+
   test("fixes values one at a time down to a single algorithm and opens it in the visualizer", async ({ page }) => {
     const v = await given("the visualizer page is open", () => Visualizer.open(page));
     await when("switching to the narrowing page in the activity bar", () => v.workbench.pageLink("narrow").click());

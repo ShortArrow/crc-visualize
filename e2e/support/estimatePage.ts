@@ -45,6 +45,11 @@ export class EstimatePage {
     return this.root.locator(".run-search");
   }
 
+  /** The rows of the catalogue table, or the row of the preset named name; a matching row has the class match. */
+  catalogueRow(name?: string): Locator {
+    return this.root.locator(name === undefined ? ".preset-table tbody tr" : `.preset-table tbody tr[data-preset="${name}"]`);
+  }
+
   /** Presets from the catalogue that match every pair. */
   catalogueMatches(): Locator {
     return this.root.locator(".catalogue-matches li");

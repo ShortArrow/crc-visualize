@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { crcOf } from "./equivalence";
-import { bruteForce, catalogueMatches, crcBytes, parseCrc, parseData, type Sample } from "./estimate";
+import { bruteForce, catalogueByWidth, catalogueMatches, crcBytes, parseCrc, parseData, type Sample } from "./estimate";
 import { CATALOGUE } from "./presets";
 import { bitsFromBytes, type CrcParams } from "./trace";
 
@@ -66,5 +66,12 @@ describe("estimate", () => {
     const samples = [sample(p, "hello"), sample(p, "world")];
     expect(bruteForce(samples, 32).status).toBe("tooWide");
     expect(catalogueMatches(samples, 32).map((f) => f.name)).toContain("CRC-32/ISO-HDLC");
+  });
+
+  it("Given the catalogue, When it is ordered for width 16, Then the 16-bit presets come first and the rest keep the catalogue order", () => {
+    const ordered = catalogueByWidth(16);
+    const sixteen = CATALOGUE.filter((p) => p.params.width === 16);
+    expect(ordered.slice(0, sixteen.length)).toEqual(sixteen);
+    expect(ordered.slice(sixteen.length)).toEqual(CATALOGUE.filter((p) => p.params.width !== 16));
   });
 });

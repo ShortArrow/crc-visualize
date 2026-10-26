@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MAX_BRUTE_WIDTH,
   bruteForce,
+  catalogueByWidth,
   catalogueMatches,
   parseCrc,
   parseData,
@@ -14,6 +15,7 @@ import { toRegister, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { toHex } from "./format";
 import { Explanation } from "./Explanation";
+import { PresetTable } from "./PresetTable";
 
 /** A row of the form: data and CRC as typed. */
 type Row = Readonly<{ data: string; crc: string }>;
@@ -44,7 +46,11 @@ type Props = Readonly<{
   onCount: (count: number | undefined) => void;
 }>;
 
-/** Pairs of data and CRC, and the parameters found for them in the catalogue and by brute force. */
+/**
+ * Pairs of data and CRC, the parameters found for them in the catalogue and by brute force, and the catalogue as a table with the
+ * presets of the current width first; after a search the matching rows are green (class match), the other widths dimmed. The
+ * results card is scrolled to its start when a search finishes and it is not wholly in view.
+ */
 export function EstimatePage({ onOpen, onCount }: Props) {
   const m = useMessages();
   const e = m.estimate;
@@ -53,6 +59,11 @@ export function EstimatePage({ onOpen, onCount }: Props) {
   const [rows, setRows] = useState<readonly Row[]>([EMPTY_ROW, EMPTY_ROW]);
   const [errors, setErrors] = useState<readonly RowErrors[]>([]);
   const [results, setResults] = useState<Results | undefined>(undefined);
+  const resultsCard = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const box = resultsCard.current?.getBoundingClientRect();
+    if (box && (box.top < 0 || box.bottom > window.innerHeight)) resultsCard.current?.scrollIntoView({ block: "start" });
+  }, [results]);
   const w = effectiveWidth(width, rows);
   const edit = (i: number, row: Row) => setRows(rows.map((r, j) => (j === i ? row : r)));
 
@@ -160,7 +171,7 @@ export function EstimatePage({ onOpen, onCount }: Props) {
           </div>
         </section>
         {results ? (
-          <section className="card estimate-results">
+          <section className="card estimate-results" ref={resultsCard}>
             <h3>{e.catalogueTitle}</h3>
             {results.catalogue.length ? (
               <ul className="catalogue-matches">
@@ -179,6 +190,16 @@ export function EstimatePage({ onOpen, onCount }: Props) {
             <BruteResults brute={results.brute} width={w} onOpen={(params) => onOpen(params, firstInput)} />
           </section>
         ) : null}
+        <section className="card estimate-catalogue">
+          <h3>{e.catalogueTable(w)}</h3>
+          <PresetTable
+            presets={catalogueByWidth(w)}
+            rowClass={(p) =>
+              [results?.catalogue.includes(p) ? "match" : "", p.params.width === w ? "" : "other-width"].filter(Boolean).join(" ")
+            }
+          />
+          <p className="note">{m.presetCheckNote}</p>
+        </section>
       </div>
     </div>
   );
@@ -188,7 +209,8 @@ type BruteProps = Readonly<{ brute: BruteForce; width: number; onOpen: (params: 
 
 /** The brute-force state and up to SHOWN_CANDIDATES candidates, each with its official name if it is a preset. Placed in the results card below the catalogue matches. */
 function BruteResults({ brute, width, onOpen }: BruteProps) {
-  const e = useMessages().estimate;
+  const m = useMessages();
+  const e = m.estimate;
   const shown = brute.candidates.slice(0, SHOWN_CANDIDATES);
   const message = {
     ok: brute.candidates.length ? undefined : e.none,
@@ -211,7 +233,7 @@ function BruteResults({ brute, width, onOpen }: BruteProps) {
               <th>refin</th>
               <th>refout</th>
               <th>xorout</th>
-              <th>{e.name}</th>
+              <th>{m.presetName}</th>
               <th />
             </tr>
           </thead>

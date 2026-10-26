@@ -476,6 +476,7 @@ export const de: Messages = {
     removeRow: "Dieses Paar entfernen",
     search: "Suchen",
     catalogueTitle: "Aus dem Katalog",
+    catalogueTable: (w: number) => `Katalog (width ${w} zuerst)`,
     noCatalogue: "Keine Voreinstellung passt.",
     bruteTitle: "Brute Force",
     tooWide: (max: number) => `Brute Force läuft nur, wenn width höchstens ${max} ist.`,
@@ -483,7 +484,6 @@ export const de: Messages = {
     none: "Keine passenden Parameter gefunden.",
     initUnknown: "Ohne Paare unterschiedlicher Länge sind init und xorout nicht eindeutig (Werte für init = 0).",
     more: (n: number) => `${n} weitere`,
-    name: "Offizieller Name",
     open: "In der Visualisierung öffnen",
     hintsTitle: "Paare sammeln",
     hints: [
@@ -495,4 +495,8 @@ export const de: Messages = {
     errors: { notHex: "Nicht als hexadezimale Bytes lesbar", crc: "Einen Hexwert eingeben, der in width Bits passt" },
   },
   listSeparator: ", ",
+  /** Heading of the official name of a preset in tables. */
+  presetName: "Offizieller Name",
+  /** Note under a preset table on its check column. */
+  presetCheckNote: "check ist die CRC der Eingabe 123456789.",
 };

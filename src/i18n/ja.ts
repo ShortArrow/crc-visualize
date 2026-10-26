@@ -460,6 +460,7 @@ export const ja = {
     removeRow: "この組を消す",
     search: "探す",
     catalogueTitle: "カタログから",
+    catalogueTable: (w: number) => `カタログ（width ${w} を先に）`,
     noCatalogue: "当てはまるプリセットは無い。",
     bruteTitle: "総当たり",
     tooWide: (max: number) => `総当たりは width が ${max} 以下のときだけ行う。`,
@@ -467,7 +468,6 @@ export const ja = {
     none: "当てはまるパラメータは見つからなかった。",
     initUnknown: "長さの違う組が無いので init と xorout は 1 つに決まらない（init = 0 としたときの値）。",
     more: (n: number) => `ほかに ${n} 個`,
-    name: "正式名",
     open: "可視化で開く",
     hintsTitle: "組の集め方",
     hints: [
@@ -480,6 +480,10 @@ export const ja = {
   },
   /** List separator. */
   listSeparator: "、",
+  /** Heading of the official name of a preset in tables. */
+  presetName: "正式名",
+  /** Note under a preset table on its check column. */
+  presetCheckNote: "check は入力 123456789 の CRC。",
 };
 
 export type Messages = typeof ja;

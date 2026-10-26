@@ -471,6 +471,7 @@ export const en: Messages = {
     removeRow: "Remove this pair",
     search: "Search",
     catalogueTitle: "From the catalogue",
+    catalogueTable: (w: number) => `Catalogue (width ${w} first)`,
     noCatalogue: "No preset matches.",
     bruteTitle: "Brute force",
     tooWide: (max: number) => `Brute force runs only when width is ${max} or less.`,
@@ -478,7 +479,6 @@ export const en: Messages = {
     none: "No matching parameters were found.",
     initUnknown: "Without pairs of different lengths, init and xorout are not unique (values for init = 0).",
     more: (n: number) => `${n} more`,
-    name: "Official name",
     open: "Open in visualizer",
     hintsTitle: "Collecting pairs",
     hints: [
@@ -490,4 +490,8 @@ export const en: Messages = {
     errors: { notHex: "Not readable as hexadecimal bytes", crc: "Enter a hex value that fits in width bits" },
   },
   listSeparator: ", ",
+  /** Heading of the official name of a preset in tables. */
+  presetName: "Official name",
+  /** Note under a preset table on its check column. */
+  presetCheckNote: "check is the CRC of the input 123456789.",
 };
