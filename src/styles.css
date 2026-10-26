@@ -3091,9 +3091,22 @@ button.bit-cell:hover {
   scrollbar-width: none;
 }
 
-/* A short screen packs what takes height: the playback controls share one height in one row, and the panel shows one pane under tabs */
+/*
+ * A short screen packs what takes height: the playback controls share one height in one row (the seek bar shrinks first, and a row
+ * still wider than the editor scrolls sideways rather than clipping), and the panel shows one pane under tabs
+ */
 .short .visualizer .controls {
   padding: 3px 12px;
+  overflow-x: auto;
+}
+
+.short .controls .seek {
+  min-width: 60px;
+}
+
+.short .controls .counter {
+  min-width: auto;
+  white-space: nowrap;
 }
 
 .short .controls :is(button, select, input) {
