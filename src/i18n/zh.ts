@@ -49,6 +49,7 @@ export const zh: Messages = {
   },
   visualizer: {
     hardware: "硬件（LFSR）",
+    zoom: { out: "缩小", in: "放大", fit: "适应（自动大小）" },
     legend: {
       xor: "⊕ = XOR（两个输入不同则为 1）",
       one: "红 = 值 1",

@@ -49,6 +49,7 @@ export const de: Messages = {
   },
   visualizer: {
     hardware: "Hardware (LFSR)",
+    zoom: { out: "Verkleinern", in: "Vergrößern", fit: "Einpassen (automatische Größe)" },
     legend: {
       xor: "⊕ = XOR (1, wenn die beiden Eingänge verschieden sind)",
       one: "rot = Wert 1",

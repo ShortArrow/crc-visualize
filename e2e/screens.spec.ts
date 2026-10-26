@@ -288,7 +288,8 @@ for (const screen of ZOOM_SCREENS) {
         await v.diagram.zoom("in").click();
         if (phone) await v.workbench.sidebarToggle().click();
         await v.settings.preset().selectOption("CRC-32/ISO-HDLC");
-        if (phone && (await v.workbench.drawerShade().isVisible())) await v.workbench.drawerShade().click();
+        if (phone && (await v.workbench.drawerShade().isVisible()))
+          await v.workbench.drawerShade().click({ position: { x: screen.width - 10, y: 200 } });
       });
       await then(
         "pressing Fit leaves the diagram as it is, since the change already brought back the automatic size",
@@ -299,6 +300,19 @@ for (const screen of ZOOM_SCREENS) {
         },
       );
     });
+
+    if (phone) {
+      test(`${on}, pinching the diagram with two fingers zooms in and out`, async ({ page }) => {
+        const v = await given("the visualizer is open with a 16-bit CRC", () => Visualizer.open(page, QUERY));
+        const auto = await v.diagram.drawnWidth();
+        await when("spreading two fingers apart over the diagram", () => v.diagram.pinch(40, 120));
+        await then("the diagram is drawn larger", async () => expect(await v.diagram.drawnWidth()).toBeGreaterThan(auto + 1));
+        await when("bringing two fingers together over the diagram", () => v.diagram.pinch(150, 30));
+        await then("the diagram is drawn smaller than at first", async () =>
+          expect(await v.diagram.drawnWidth()).toBeLessThan(auto - 1),
+        );
+      });
+    }
 
     if (!phone) {
       test(`${on}, Ctrl with the wheel over the diagram zooms in and out`, async ({ page }) => {

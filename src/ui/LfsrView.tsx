@@ -158,6 +158,8 @@ type Props = Readonly<{
   /** Bit breakpoints by bit number of the input stream: true if enabled, false if disabled. */
   bitBreaks: ReadonlyMap<number, boolean>;
   onToggleBit: (bit: number) => void;
+  /** The zoomed scale in CSS px per unit of the view box; undefined draws it at the automatic size its area gives it. */
+  scale: number | undefined;
 }>;
 
 /** Where in the diagram the focused parameter, or the input, takes effect. */
@@ -178,7 +180,7 @@ const PARAM_TARGET: Record<ParamName | "input", "registers" | "taps" | "stream">
  * line under each byte does the same for the byte, and the mark is drawn on that line.
  */
 export function LfsrView(props: Props) {
-  const { params, step, next, stepIndex, animMs, focused, byteBreaks, onToggleByte, bitBreaks, onToggleBit } = props;
+  const { params, step, next, stepIndex, animMs, focused, byteBreaks, onToggleByte, bitBreaks, onToggleBit, scale } = props;
   const m = useMessages();
   const layout = lfsrLayout(params);
   const { box, regY, streamY, gateR, inputGate: ig, feedbackBox: fb, taps, entry } = layout;
@@ -222,7 +224,14 @@ export function LfsrView(props: Props) {
       className="lfsr"
       data-step={step.kind}
       viewBox={`0 0 ${layout.viewWidth} ${layout.viewHeight}`}
-      style={{ "--view-width": layout.viewWidth } as CSSProperties}
+      style={
+        {
+          "--view-width": layout.viewWidth,
+          ...(scale === undefined
+            ? {}
+            : { width: layout.viewWidth * scale, height: layout.viewHeight * scale, minWidth: 0, minHeight: 0 }),
+        } as CSSProperties
+      }
       role="img"
       aria-label="LFSR"
     >

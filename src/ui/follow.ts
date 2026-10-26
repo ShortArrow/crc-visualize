@@ -16,14 +16,34 @@ export function followScroll(view: View, span: Span): number {
 }
 
 /**
- * Scrolls scroller sideways to bring the union of the elements matching selector inside it into view (see followScroll). Does nothing
- * when none match.
+ * Scrolls scroller to bring the element matching msb and the leftmost element matching flowing into view (see followTarget and
+ * followScroll), sideways and, when the diagram is taller than the scroller, up or down. Does nothing when none match.
  */
-export function followElements(scroller: HTMLElement, selector: string): void {
-  const boxes = [...scroller.querySelectorAll(selector)].map((e) => e.getBoundingClientRect());
-  if (boxes.length === 0) return;
-  const origin = scroller.getBoundingClientRect().left - scroller.scrollLeft;
-  const span = { from: Math.min(...boxes.map((b) => b.left)) - origin, to: Math.max(...boxes.map((b) => b.right)) - origin };
-  const left = followScroll({ left: scroller.scrollLeft, width: scroller.clientWidth }, span);
-  if (left !== scroller.scrollLeft) scroller.scrollTo({ left, behavior: "smooth" });
+export function followElements(scroller: HTMLElement, msb: string, flowing: string): void {
+  const msbBox = scroller.querySelector(msb)?.getBoundingClientRect();
+  const flowBoxes = [...scroller.querySelectorAll(flowing)].map((e) => e.getBoundingClientRect());
+  const area = scroller.getBoundingClientRect();
+  const [x0, y0] = [area.left - scroller.scrollLeft, area.top - scroller.scrollTop];
+  const target = followTarget(
+    msbBox && { from: msbBox.left - x0, to: msbBox.right - x0 },
+    flowBoxes.map((b) => ({ from: b.left - x0, to: b.right - x0 })),
+  );
+  if (!target) return;
+  const boxes = [msbBox, ...flowBoxes].filter(
+    (b): b is DOMRect => b !== undefined && b.right - x0 >= target.from && b.left - x0 <= target.to,
+  );
+  const vertical = { from: Math.min(...boxes.map((b) => b.top)) - y0, to: Math.max(...boxes.map((b) => b.bottom)) - y0 };
+  const left = followScroll({ left: scroller.scrollLeft, width: scroller.clientWidth }, target);
+  const top = followScroll({ left: scroller.scrollTop, width: scroller.clientHeight }, vertical);
+  if (left !== scroller.scrollLeft || top !== scroller.scrollTop) scroller.scrollTo({ left, top, behavior: "smooth" });
+}
+
+/**
+ * What the diagram follows at a step: from the most significant register to the head of the flow (the leftmost part values flow
+ * through), so both are kept in view together when they fit. Either may be missing; undefined when both are.
+ */
+export function followTarget(msb: Span | undefined, flowing: readonly Span[]): Span | undefined {
+  const head = flowing.reduce<Span | undefined>((left, span) => (left && left.from <= span.from ? left : span), undefined);
+  if (!msb || !head) return msb ?? head;
+  return { from: Math.min(msb.from, head.from), to: Math.max(msb.to, head.to) };
 }

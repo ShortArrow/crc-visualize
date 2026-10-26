@@ -15,6 +15,7 @@ import { ConfigPanel, formFromParams, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { Docked } from "./ui/Dock";
 import { followElements } from "./ui/follow";
+import { DiagramZoomButtons, useDiagramZoom } from "./ui/DiagramZoom";
 import { LfsrView } from "./ui/LfsrView";
 import { logEntries } from "./ui/log";
 import { NamesPage, NamesToc } from "./ui/NamesPage";
@@ -285,15 +286,15 @@ const KEY_MSG: Record<string, PlayerMsg> = {
   End: { type: "last" },
 };
 
-/** Parts of the diagram that take part in the step shown. */
-const ACTIVE_PARTS = ".reg.msb, .reg.hit, .gate.active, .fb-box.arriving";
+/** Parts of the diagram values flow through at the step shown. */
+const FLOWING_PARTS = ".reg.hit, .gate.active, .fb-box.arriving";
 
 /**
  * Step sequence and playback state for one configuration; when the configuration changes, playback goes back to the first step and
  * stops. While the settings are invalid, the sidebar has only the settings and the editor area says so.
  * On a phone it has no splitters: the controls are docked, the diagram stays on top at a readable size, and the code and the log
- * scroll below it. On any screen, a diagram wider than its area scrolls sideways, and at each step it is scrolled to bring the parts
- * being computed (ACTIVE_PARTS) into view.
+ * scroll below it. On any screen, a diagram larger than its area scrolls, and at each step it is scrolled to bring the most
+ * significant register and the head of the flow (FLOWING_PARTS) into view.
  */
 function Visualizer(props: VisualizerProps) {
   const {
@@ -325,6 +326,7 @@ function Visualizer(props: VisualizerProps) {
     return f(new DOMRect(r.x / z, r.y / z, r.width / z, r.height / z));
   };
   const run = JSON.stringify([params, bits]);
+  const zoom = useDiagramZoom(run, hardware);
   const steps = useMemo(() => trace(params, bits), [run]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const [playerState, setPlayer] = useState(initialPlayer);
@@ -363,8 +365,8 @@ function Visualizer(props: VisualizerProps) {
   });
 
   useEffect(() => {
-    if (hardware.current) followElements(hardware.current, ACTIVE_PARTS);
-  }, [phone, player.index]);
+    if (hardware.current) followElements(hardware.current, `.reg[data-bit="${params.width - 1}"]`, FLOWING_PARTS);
+  }, [phone, player.index, zoom.scale]);
 
   const [latest] = logEntries(steps, player.index, 1, m);
   const variables = <VariablesView steps={steps} index={player.index} />;
@@ -420,18 +422,21 @@ function Visualizer(props: VisualizerProps) {
           phone ? undefined : { gridTemplateRows: `minmax(0, ${1 - layout.panelRatio}fr) auto minmax(0, ${layout.panelRatio}fr)` }
         }
       >
-        <section className="hardware" ref={hardware}>
-          <h2>
-            {m.visualizer.hardware}
-            <span className="legend">
-              {m.visualizer.legend.xor}
-              <span className="swatch hot">{m.visualizer.legend.one}</span>
-              <span className="swatch zero">{m.visualizer.legend.zero}</span>
-              <span className="swatch warn">{m.visualizer.legend.busy}</span>
-              <span className="swatch ok">{m.visualizer.legend.crc}</span>
-              <span className="swatch param">{m.visualizer.legend.param}</span>
-            </span>
-          </h2>
+        <section className={`hardware ${zoom.scale === undefined ? "" : "zoomed"}`} ref={hardware}>
+          <div className="hardware-head">
+            <h2>
+              {m.visualizer.hardware}
+              <span className="legend">
+                {m.visualizer.legend.xor}
+                <span className="swatch hot">{m.visualizer.legend.one}</span>
+                <span className="swatch zero">{m.visualizer.legend.zero}</span>
+                <span className="swatch warn">{m.visualizer.legend.busy}</span>
+                <span className="swatch ok">{m.visualizer.legend.crc}</span>
+                <span className="swatch param">{m.visualizer.legend.param}</span>
+              </span>
+            </h2>
+            <DiagramZoomButtons zoom={zoom} />
+          </div>
           <LfsrView
             params={params}
             step={step}
@@ -443,6 +448,7 @@ function Visualizer(props: VisualizerProps) {
             onToggleByte={(k) => onBreakpoints(toggleByte(breakpoints, k))}
             bitBreaks={bitBreaks}
             onToggleBit={(n) => onBreakpoints(toggleBit(breakpoints, n))}
+            scale={zoom.scale}
           />
         </section>
         {phone ? null : (

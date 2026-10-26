@@ -49,6 +49,7 @@ export const en: Messages = {
   },
   visualizer: {
     hardware: "Hardware (LFSR)",
+    zoom: { out: "Zoom out", in: "Zoom in", fit: "Fit (automatic size)" },
     legend: {
       xor: "⊕ = XOR (1 if the two inputs differ)",
       one: "red = value 1",
