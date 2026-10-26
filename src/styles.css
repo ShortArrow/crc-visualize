@@ -1749,8 +1749,7 @@ button.bp-gutter.bp-off::before {
   font-weight: 600;
 }
 
-.narrow-fixed,
-.narrow-candidates {
+.narrow-fixed {
   margin: 0;
   padding: 0 0 0 4px;
   font-family: var(--mono);
@@ -2212,20 +2211,21 @@ button.bit-cell:hover {
   align-self: stretch;
 }
 
-/* 置き換えのページ */
+/* 置き換えのページ: its text is sized in em, so the page grows with the editor's height */
 .equivalence-page {
   height: 100%;
+  font-size: clamp(16px, 2.1cqh, 22px);
   padding: 12px;
   overflow: auto;
 }
 
 .equivalence-page > .note {
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .equivalence-page h3 {
   margin: 20px 0 8px;
-  font-size: 1rem;
+  font-size: 1em;
 }
 
 .equivalence-item {
@@ -2245,7 +2245,7 @@ button.bit-cell:hover {
   grid-template-columns: max-content 1fr;
   gap: 4px 12px;
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .equivalence-item dt {
@@ -2258,7 +2258,7 @@ button.bit-cell:hover {
 
 .equivalence-item .example {
   margin: 6px 0 0;
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 /* Badges stay whole: a narrow card moves them to the next line instead of splitting them */
@@ -2278,12 +2278,12 @@ button.bit-cell:hover {
 .equivalence-item .not-applicable {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .inference {
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .inference th,
@@ -2303,7 +2303,7 @@ button.bit-cell:hover {
   padding: 8px 12px;
   border: 1px solid var(--accent);
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 .current-inference p {
@@ -2335,7 +2335,7 @@ button.bit-cell:hover {
 /* 検査のページ: its text and bit cells are sized in em, so the page grows with the editor's height */
 .check-page {
   height: 100%;
-  font-size: clamp(16px, 2cqh, 20px);
+  font-size: clamp(16px, 2.15cqh, 22px);
   padding: 12px;
   overflow: auto;
 }
@@ -2655,6 +2655,15 @@ button.bit-cell:hover {
   overflow-x: auto;
 }
 
+/* The clocks that make a table value keep their columns on one line and scroll sideways inside the card */
+.entry-clocks-scroll {
+  overflow-x: auto;
+}
+
+.entry-clocks th {
+  white-space: nowrap;
+}
+
 .crc-table th,
 .crc-table td {
   padding: 1px 3px;
@@ -2709,9 +2718,16 @@ button.bit-cell:hover {
   font-family: var(--mono);
 }
 
-/* The form, the results and the catalogue each take a whole row, so a short card never stands beside the long catalogue */
+/*
+ * The form, the results and the catalogue each take a whole row, so a short card never stands beside the long catalogue. The
+ * form stops at a readable line, so a wide screen does not stretch the data fields across it.
+ */
 .estimate-page .page-columns > * {
   flex-basis: 100%;
+}
+
+.estimate-page .page-columns > .estimate-input {
+  flex: 0 1 90ch;
 }
 
 .estimate-input .estimate-options {
@@ -3057,6 +3073,43 @@ button.bit-cell:hover {
   overflow-x: auto;
 }
 
+/* The parameter table stacks each row (name and Japanese name, then meaning and aliases) so a row never runs off the card */
+.phone .names-page .param-table table {
+  overflow-x: visible;
+}
+
+.phone .param-table thead {
+  display: none;
+}
+
+.phone .param-table tr {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 12px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.phone .param-table tr > * {
+  padding: 0;
+  border: 0;
+}
+
+.phone .param-table tr > :nth-child(n + 3) {
+  grid-column: 1 / -1;
+}
+
+.phone .param-table td[data-label]::before {
+  content: attr(data-label) ": ";
+  color: var(--muted);
+}
+
+/* The two cyclic rings share one row, so both stay in view above the dock while the codeword is rotated */
+.phone .cyclic-rings > figure {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .phone .name-parts :is(.part b, .sep) {
   font-size: 1.3rem;
 }
@@ -3142,16 +3195,6 @@ button.bit-cell:hover {
 /* The input keeps the lines it was entered with, such as one hex frame per line */
 .current-settings .input-text {
   white-space: pre-wrap;
-}
-
-/* The clocks that make a table value keep their columns and scroll sideways inside the card */
-.phone .entry-clocks {
-  display: block;
-  overflow-x: auto;
-}
-
-.phone .entry-clocks th {
-  white-space: nowrap;
 }
 
 /* The heading of the diagram stays on one line beside the zoom buttons, and its legend scrolls sideways, so it does not take the diagram's height */

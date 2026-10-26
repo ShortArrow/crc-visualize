@@ -98,7 +98,10 @@ function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
   );
 }
 
-/** Sidebar showing the fixed values and remaining candidates. A single remaining candidate can be opened in the visualization. */
+/**
+ * Sidebar showing the fixed values and the number of remaining candidates (their names are in the editor's table). A single
+ * remaining candidate can be opened in the visualization.
+ */
 export function NarrowSidebar({ presets, path, onOpen }: Props) {
   const m = useMessages();
   const candidates = matching(presets, path.fixed);
@@ -118,11 +121,6 @@ export function NarrowSidebar({ presets, path, onOpen }: Props) {
         <p className="note">{m.narrow.none}</p>
       )}
       <h2>{m.narrow.candidates(candidates.length)}</h2>
-      <ul className="narrow-candidates">
-        {candidates.map((p) => (
-          <li key={p.name}>{p.name}</li>
-        ))}
-      </ul>
       {candidates.length === 1 && only ? (
         <button type="button" onClick={() => onOpen(only)}>
           {m.narrow.open}
