@@ -39,7 +39,8 @@ import { StepLog } from "./ui/StepLog";
 import { VariablesView } from "./ui/VariablesView";
 import { Workbench } from "./ui/Workbench";
 import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
-import { usePhone } from "./ui/phone";
+import { useTier } from "./ui/phone";
+import { PanelTabs, tabPanel, type PanelTab } from "./ui/PanelTabs";
 import { screenZoom, viewWidth } from "./ui/zoom";
 import { initialSettings, persistSettings, type Settings } from "./settings";
 
@@ -316,7 +317,9 @@ function Visualizer(props: VisualizerProps) {
   } = props;
   const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints } = props;
   const m = useMessages();
-  const phone = usePhone();
+  const tier = useTier();
+  const [phone, short] = [tier === "phone", tier === "short"];
+  const [tab, setTab] = useState<PanelTab>("software");
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const hardware = useRef<HTMLElement>(null);
@@ -465,11 +468,16 @@ function Visualizer(props: VisualizerProps) {
         <section
           className="panel"
           ref={panel}
-          style={{ gridTemplateColumns: `minmax(0, ${layout.codeRatio}fr) auto minmax(0, ${1 - layout.codeRatio}fr)` }}
+          style={
+            short
+              ? undefined
+              : { gridTemplateColumns: `minmax(0, ${layout.codeRatio}fr) auto minmax(0, ${1 - layout.codeRatio}fr)` }
+          }
         >
-          <div className="software">
+          {short ? <PanelTabs value={tab} onChange={setTab} /> : null}
+          <div className="software" {...tabPanel(short, "software", tab)}>
             <h2>
-              {m.visualizer.software}
+              {short ? null : m.visualizer.software}
               <CodeLangSelect value={codeLang} onChange={onCodeLang} />
             </h2>
             <CodeView
@@ -487,7 +495,7 @@ function Visualizer(props: VisualizerProps) {
               {variables}
             </div>
           ) : null}
-          {phone ? null : (
+          {phone || short ? null : (
             <Splitter
               axis="x"
               name="code"
@@ -496,8 +504,8 @@ function Visualizer(props: VisualizerProps) {
               }
             />
           )}
-          <div className="log-pane">
-            <h2>{m.visualizer.log}</h2>
+          <div className="log-pane" {...tabPanel(short, "log", tab)}>
+            {short ? null : <h2>{m.visualizer.log}</h2>}
             <StepLog steps={steps} current={player.index} input={bits} check={check} />
           </div>
         </section>

@@ -6,6 +6,7 @@ import { toRegister, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { DockedResult } from "./Dock";
 import { toHex } from "./format";
+import { Explanation } from "./Explanation";
 
 const hex = (value: number, width: number) => toHex(toRegister(value, width));
 const byteHex = (value: number) => `0x${value.toString(16).toUpperCase().padStart(2, "0")}`;
@@ -18,7 +19,7 @@ export function TablePage({ config }: Readonly<{ config: ConfigResult }>) {
   return (
     <div className="table-page">
       <h2>{m.table.heading}</h2>
-      <p className="note">{m.table.note}</p>
+      <Explanation>{m.table.note}</Explanation>
       {config.ok ? (
         <TableMethod params={config.params} bits={config.bits} />
       ) : (
@@ -116,7 +117,7 @@ function TableMethod({ params, bits }: MethodProps) {
       </section>
       <section className="card">
         <h3>{t.tableTitle}</h3>
-        <p className="note">{t.tableNote}</p>
+        <Explanation>{t.tableNote}</Explanation>
         <div className="crc-table-scroll">
           <table className="crc-table">
             <thead>
@@ -153,7 +154,7 @@ function TableMethod({ params, bits }: MethodProps) {
       <section className="card entry-card">
         <div className="entry-text">
           <h3 className="entry-title">{t.entryTitle(byteHex(shown), hex(table[shown]!, w))}</h3>
-          <p className="note">{t.entryNote[direction]}</p>
+          <Explanation>{t.entryNote[direction]}</Explanation>
         </div>
         <table className="entry-clocks">
           <thead>

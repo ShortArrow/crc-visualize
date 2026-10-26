@@ -3,6 +3,7 @@ import type { ConfigResult } from "../domain/parse";
 import { reflectValue, toRegister, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { bitsToString, toHex } from "./format";
+import { Explanation } from "./Explanation";
 
 const hex = (value: number, width: number) => toHex(toRegister(value, width));
 
@@ -13,7 +14,7 @@ export function EquivalencePage({ config }: Readonly<{ config: ConfigResult }>) 
   return (
     <div className="equivalence-page">
       <h2>{e.heading}</h2>
-      <p className="note">{e.note}</p>
+      <Explanation>{e.note}</Explanation>
       {config.ok ? null : <p className="invalid-config">{m.settings.invalid}</p>}
       <h3>{e.sameSection}</h3>
       <div className="page-columns">

@@ -5,6 +5,7 @@ import { PARAM_NAMES, type ParamName } from "../domain/trace";
 import { ParamMap } from "./ParamMap";
 import { useMessages } from "../i18n/I18n";
 import type { Messages } from "../i18n/messages";
+import { Explanation } from "./Explanation";
 
 const EXAMPLE = "CRC-16/KERMIT";
 
@@ -56,7 +57,7 @@ export function NamesPage({ target }: { target: ParamName | undefined }) {
       <div className="page-columns names-params">
         <section className="pane" id="names-param-map">
           <h2>{m.names.sections.paramMap}</h2>
-          <p className="note">{m.names.paramMap.note}</p>
+          <Explanation>{m.names.paramMap.note}</Explanation>
           <ParamMap />
         </section>
         <ParamTable target={target} />
@@ -89,7 +90,7 @@ function NameParts() {
           <small>{m.names.parts.origin}</small>
         </span>
       </div>
-      <p className="note">{m.names.parts.note}</p>
+      <Explanation>{m.names.parts.note}</Explanation>
     </section>
   );
 }
@@ -99,7 +100,7 @@ function Families() {
   return (
     <section className="pane families" id="names-families">
       <h2>{withCode(m.names.sections.families, "poly")}</h2>
-      <p className="note">{m.names.families.note}</p>
+      <Explanation>{m.names.families.note}</Explanation>
       <div className="family-columns">
         {polyFamilies(CATALOGUE).map(({ width, poly, rows }) => (
           <table key={`${width}-${poly}`} className="family" data-poly={hexOf(poly, width)}>

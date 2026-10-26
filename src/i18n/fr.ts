@@ -13,7 +13,12 @@ export const fr: Messages = {
     table: "Table",
     estimate: "Estimation",
   },
-  workbench: { sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)", sidebarLabel: "Réglages", language: "Langue" },
+  workbench: {
+    sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)",
+    sidebarLabel: "Réglages",
+    language: "Langue",
+    explanation: "Explication",
+  },
   settings: {
     heading: "Paramètres",
     invalid: "Les paramètres contiennent des erreurs. Corrigez les champs en rouge.",
@@ -50,6 +55,7 @@ export const fr: Messages = {
   visualizer: {
     hardware: "Matériel (LFSR)",
     zoom: { out: "Dézoomer", in: "Zoomer", fit: "Ajuster (taille automatique)" },
+    panelTabs: "Code et journal",
     legend: {
       xor: "⊕ = XOR (1 si les deux entrées diffèrent)",
       one: "rouge = valeur 1",

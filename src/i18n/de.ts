@@ -13,7 +13,12 @@ export const de: Messages = {
     table: "Tabelle",
     estimate: "Schätzung",
   },
-  workbench: { sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)", sidebarLabel: "Optionen", language: "Sprache" },
+  workbench: {
+    sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)",
+    sidebarLabel: "Optionen",
+    language: "Sprache",
+    explanation: "Erläuterung",
+  },
   settings: {
     heading: "Einstellungen",
     invalid: "Die Einstellungen enthalten Fehler. Korrigiere die rot markierten Felder.",
@@ -50,6 +55,7 @@ export const de: Messages = {
   visualizer: {
     hardware: "Hardware (LFSR)",
     zoom: { out: "Verkleinern", in: "Vergrößern", fit: "Einpassen (automatische Größe)" },
+    panelTabs: "Code und Verlauf",
     legend: {
       xor: "⊕ = XOR (1, wenn die beiden Eingänge verschieden sind)",
       one: "rot = Wert 1",

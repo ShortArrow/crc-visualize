@@ -13,7 +13,12 @@ export const es: Messages = {
     table: "Tabla",
     estimate: "Estimación",
   },
-  workbench: { sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)", sidebarLabel: "Ajustes", language: "Idioma" },
+  workbench: {
+    sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)",
+    sidebarLabel: "Ajustes",
+    language: "Idioma",
+    explanation: "Explicación",
+  },
   settings: {
     heading: "Configuración",
     invalid: "La configuración tiene errores. Corrige los campos marcados en rojo.",
@@ -50,6 +55,7 @@ export const es: Messages = {
   visualizer: {
     hardware: "Hardware (LFSR)",
     zoom: { out: "Alejar", in: "Acercar", fit: "Ajustar (tamaño automático)" },
+    panelTabs: "Código y registro",
     legend: {
       xor: "⊕ = XOR (1 si las dos entradas difieren)",
       one: "rojo = valor 1",

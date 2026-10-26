@@ -13,6 +13,7 @@ import { findPreset, type Preset } from "../domain/presets";
 import { toRegister, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { toHex } from "./format";
+import { Explanation } from "./Explanation";
 
 /** A row of the form: data and CRC as typed. */
 type Row = Readonly<{ data: string; crc: string }>;
@@ -82,7 +83,7 @@ export function EstimatePage({ onOpen, onCount }: Props) {
   return (
     <div className="estimate-page">
       <h2>{e.heading}</h2>
-      <p className="note">{e.note}</p>
+      <Explanation>{e.note}</Explanation>
       <div className="page-columns">
         <section className="card estimate-input">
           <div className="estimate-options">

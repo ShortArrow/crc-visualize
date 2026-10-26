@@ -13,6 +13,7 @@ import type { Preset } from "../domain/presets";
 import { useMessages } from "../i18n/I18n";
 import { Docked } from "./Dock";
 import { powerText } from "./format";
+import { Explanation } from "./Explanation";
 
 const SIZE = 340;
 const CENTER = SIZE / 2;
@@ -46,7 +47,7 @@ export function CyclicPage({
         <figure className="card">
           <figcaption>{m.cyclic.wordRing}</figcaption>
           <WordRing generator={generator} turns={turns} />
-          <p className="note">{m.cyclic.wordNote}</p>
+          <Explanation>{m.cyclic.wordNote}</Explanation>
           <button type="button" className="see-in-visualizer" onClick={() => onOpen(wordRingSettings(generator, k))}>
             {m.cyclic.seeWord}
           </button>
@@ -55,7 +56,7 @@ export function CyclicPage({
         <figure className="card">
           <figcaption>{m.cyclic.stateRing}</figcaption>
           <StateRing generator={generator} k={k} />
-          <p className="note">{m.cyclic.stateNote}</p>
+          <Explanation>{m.cyclic.stateNote}</Explanation>
           <button type="button" className="see-in-visualizer" onClick={() => onOpen(stateRingSettings(generator))}>
             {m.cyclic.seeState}
           </button>
@@ -97,7 +98,7 @@ export function CyclicPage({
             </dl>
           </Docked>
           <p className="cyclic-explain">{m.cyclic.explain(n)}</p>
-          <p className="note">{m.cyclic.shortened}</p>
+          <Explanation>{m.cyclic.shortened}</Explanation>
         </section>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { branches, formatValue, matching, splittingParams, type NarrowPath } fro
 import type { Preset } from "../domain/presets";
 import { useMessages } from "../i18n/I18n";
 import { narrowHash } from "./route";
+import { Explanation } from "./Explanation";
 
 type Props = Readonly<{
   presets: readonly Preset[];
@@ -15,7 +16,7 @@ export function NarrowPage({ presets, path, onOpen }: Props) {
   return (
     <div className="narrow-page">
       <h2>{m.narrow.heading}</h2>
-      <p className="note">{m.narrow.note}</p>
+      <Explanation>{m.narrow.note}</Explanation>
       <NarrowNode presets={presets} path={path} depth={0} onOpen={onOpen} />
     </div>
   );

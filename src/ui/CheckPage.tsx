@@ -8,6 +8,7 @@ import { bitsFromBytes, toRegister, type Bit, type CrcParams } from "../domain/t
 import { useMessages } from "../i18n/I18n";
 import { Docked, DockedResult } from "./Dock";
 import { toHex } from "./format";
+import { Explanation } from "./Explanation";
 
 const CHECK_INPUT = bitsFromBytes([...new TextEncoder().encode("123456789")]);
 
@@ -21,7 +22,7 @@ export function CheckPage({ config, preset }: Props) {
   return (
     <div className="check-page">
       <h2>{m.check.heading}</h2>
-      <p className="note">{m.check.note}</p>
+      <Explanation>{m.check.note}</Explanation>
       {config.ok ? (
         <Checks params={config.params} message={config.bits} preset={preset} />
       ) : (
@@ -94,11 +95,11 @@ function Checks({ params, message, preset }: ChecksProps) {
         </li>
       </ul>
       <h3>{m.check.methodsSection}</h3>
-      <p className="note">{m.check.sameVerdict}</p>
+      <Explanation>{m.check.sameVerdict}</Explanation>
       <div className="page-columns">
         <section className="card method" data-method="recheck">
           <h4>{m.check.recheck.title}</h4>
-          <p className="note">{m.check.recheck.note}</p>
+          <Explanation>{m.check.recheck.note}</Explanation>
           <dl>
             <dt>{m.check.recheck.computed}</dt>
             <dd className="computed">{hex(re.computed, w)}</dd>
@@ -109,7 +110,7 @@ function Checks({ params, message, preset }: ChecksProps) {
         </section>
         <section className="card method" data-method="whole">
           <h4>{m.check.whole.title}</h4>
-          <p className="note">{m.check.whole.note}</p>
+          <Explanation>{m.check.whole.note}</Explanation>
           {whole ? (
             <>
               <dl>
@@ -139,7 +140,7 @@ function Checks({ params, message, preset }: ChecksProps) {
             <dd className="computed-check">{hex(crcOf(params, CHECK_INPUT), w)}</dd>
           </dl>
           {preset ? null : <p className="note">{m.check.custom}</p>}
-          <p className="note">{m.check.checkNote}</p>
+          <Explanation>{m.check.checkNote}</Explanation>
         </section>
         <Limits />
       </div>
