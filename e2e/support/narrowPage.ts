@@ -41,6 +41,16 @@ export class NarrowPage {
     return this.page.locator(".sidebar .narrow-candidates li");
   }
 
+  /** The rows of the table of remaining candidates, or the row of the preset named name. */
+  tableRow(name?: string): Locator {
+    return this.root.locator(name === undefined ? ".preset-table tbody tr" : `.preset-table tbody tr[data-preset="${name}"]`);
+  }
+
+  /** The heading of the column of param in the table of remaining candidates; it has the class splits when the values differ. */
+  tableHead(param: string): Locator {
+    return this.root.locator(`.preset-table th[data-param="${param}"]`);
+  }
+
   /** The full name shown in the editor area once a single candidate remains. */
   result(): Locator {
     return this.root.locator(".narrow-result .preset-name");

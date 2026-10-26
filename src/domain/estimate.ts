@@ -62,6 +62,12 @@ export function parseCrc(text: string, width: number): number | undefined {
 export const catalogueMatches = (samples: readonly Sample[], width: number, presets: readonly Preset[] = CATALOGUE): Preset[] =>
   presets.filter((p) => p.params.width === width && samples.every((s) => crcBytes(p.params, s.data) === s.crc));
 
+/** The catalogue with the presets of width first, then the others, each part in catalogue order. */
+export const catalogueByWidth = (width: number, presets: readonly Preset[] = CATALOGUE): Preset[] => [
+  ...presets.filter((p) => p.params.width === width),
+  ...presets.filter((p) => p.params.width !== width),
+];
+
 const xorBytes = (a: readonly number[], b: readonly number[]) => a.map((x, i) => x ^ b[i]!);
 
 /**

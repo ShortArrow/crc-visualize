@@ -1729,10 +1729,18 @@ button.bp-gutter.bp-off::before {
   color: var(--muted);
 }
 
+/* The table of candidates keeps its own height and stays at the top while the tree beside it scrolls */
+.narrow-table {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+}
+
 .narrow-result {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 4px 10px;
 }
 
 .narrow-result .preset-name {
@@ -2700,9 +2708,9 @@ button.bit-cell:hover {
   font-family: var(--mono);
 }
 
-/* The form keeps the width of its fields (its options wrap to it); the results take the rest of the row */
-.page-columns > .estimate-input {
-  flex-grow: 0;
+/* The form, the results and the catalogue each take a whole row, so a short card never stands beside the long catalogue */
+.estimate-page .page-columns > * {
+  flex-basis: 100%;
 }
 
 .estimate-input .estimate-options {
@@ -2713,8 +2721,24 @@ button.bit-cell:hover {
   flex-basis: 100%;
 }
 
+/* The data field takes what the card leaves beside the CRC field and the remove button */
 .samples {
+  width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.samples th:nth-child(2) {
+  width: 14ch;
+}
+
+.samples th:last-child {
+  width: 2em;
+}
+
+.samples input {
+  width: 100%;
+  min-width: 0;
 }
 
 .samples th {
@@ -2726,10 +2750,6 @@ button.bit-cell:hover {
 .samples td {
   padding: 2px 4px;
   vertical-align: top;
-}
-
-.samples .sample-data {
-  width: 24ch;
 }
 
 .field-error {
@@ -2775,6 +2795,41 @@ button.bit-cell:hover {
 
 .candidate-name {
   color: var(--ok);
+}
+
+/* Presets one per row (narrowing and estimation): the headings of the parameters that still split the candidates stand out */
+.preset-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.preset-table th,
+.preset-table td {
+  padding: 2px 8px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.preset-table th {
+  color: var(--muted);
+  font-weight: normal;
+}
+
+.preset-table th.splits {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.preset-table tr.other-width {
+  opacity: 0.5;
+}
+
+.preset-table tr.match td {
+  color: var(--ok);
+  font-weight: 600;
 }
 
 .estimate-hints {
@@ -3039,19 +3094,33 @@ button.bit-cell:hover {
   --dot: min(14px, calc((100cqw - 64px) / var(--columns) - 3px));
 }
 
-/* The estimation form narrows its fields to the card */
-.phone .samples {
-  width: 100%;
-  table-layout: fixed;
+/* A table of presets keeps its size and scrolls sideways inside its card */
+.phone .preset-table-scroll {
+  overflow-x: auto;
 }
 
-.phone .samples th:last-child {
-  width: 2em;
+/* On a phone or a short screen, each brute-force candidate takes two lines: its parameters, then its official name and the button to open it */
+:is(.phone, .short) .candidates :is(thead, tbody) tr {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr 1fr 1fr;
 }
 
-.phone .samples input {
-  width: 100%;
-  min-width: 0;
+:is(.phone, .short) .candidates th:nth-child(n + 6) {
+  display: none;
+}
+
+:is(.phone, .short) .candidates td.candidate-name {
+  grid-column: 1 / 4;
+  white-space: normal;
+}
+
+:is(.phone, .short) .candidates td:last-child {
+  grid-column: 4 / -1;
+  justify-self: end;
+}
+
+:is(.phone, .short) .candidates :is(th, td) {
+  padding: 2px 4px;
 }
 
 /* The byte-by-byte card starts as narrow as its table can wrap its headings between words, so it fits beside table T in any language */

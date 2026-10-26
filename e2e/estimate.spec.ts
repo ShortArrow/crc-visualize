@@ -4,6 +4,27 @@ import { given, test, then, when } from "./support/scenario";
 import { Visualizer } from "./support/visualizer";
 
 test.describe("Estimation", () => {
+  test("a catalogue table lists the presets of the width first with their check values, and a search turns the matching ones green", async ({
+    page,
+  }) => {
+    const e = await given("two CRC-16/MODBUS pairs are entered", async () => {
+      const e = await EstimatePage.open(page);
+      await e.fill(0, "hello", "34F6");
+      await e.fill(1, "world", "EF41");
+      return e;
+    });
+    await then("the table starts with the 16-bit presets, and shows CRC-16/MODBUS's check value", async () => {
+      await expect(e.catalogueRow().first()).toHaveAttribute("data-width", "16");
+      await expect(e.catalogueRow("CRC-16/MODBUS")).toContainText("0x4B37");
+      await expect(e.catalogueRow("CRC-16/MODBUS")).not.toHaveClass(/\bmatch\b/);
+    });
+    await when("searching", () => e.search().click());
+    await then("only CRC-16/MODBUS's row is green", async () => {
+      await expect(e.catalogueRow("CRC-16/MODBUS")).toHaveClass(/\bmatch\b/);
+      await expect(e.root.locator(".preset-table tbody tr.match")).toHaveCount(1);
+    });
+  });
+
   test("finds the parameters from pairs of data and CRC, and opens a candidate in the visualizer", async ({ page }) => {
     const v = await given("the visualizer page is open", () => Visualizer.open(page));
     await when("switching to the estimation page and entering three CRC-16/MODBUS pairs", async () => {

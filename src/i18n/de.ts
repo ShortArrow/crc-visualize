@@ -476,6 +476,7 @@ export const de: Messages = {
     removeRow: "Dieses Paar entfernen",
     search: "Suchen",
     catalogueTitle: "Aus dem Katalog",
+    catalogueTable: (w: number) => `Katalog (width ${w} zuerst)`,
     noCatalogue: "Keine Voreinstellung passt.",
     bruteTitle: "Brute Force",
     tooWide: (max: number) => `Brute Force läuft nur, wenn width höchstens ${max} ist.`,
@@ -496,4 +497,6 @@ export const de: Messages = {
   listSeparator: ", ",
   /** Heading of the official name of a preset in tables. */
   presetName: "Offizieller Name",
+  /** Note under a preset table on its check column. */
+  presetCheckNote: "check ist die CRC der Eingabe 123456789.",
 };

@@ -441,6 +441,7 @@ export const zh: Messages = {
     removeRow: "删除这一组",
     search: "查找",
     catalogueTitle: "从目录中",
+    catalogueTable: (w: number) => `目录（width ${w} 优先）`,
     noCatalogue: "没有符合的预设。",
     bruteTitle: "穷举",
     tooWide: (max: number) => `仅在 width 不超过 ${max} 时进行穷举。`,
@@ -461,4 +462,6 @@ export const zh: Messages = {
   listSeparator: "、",
   /** Heading of the official name of a preset in tables. */
   presetName: "正式名",
+  /** Note under a preset table on its check column. */
+  presetCheckNote: "check 是输入 123456789 的 CRC。",
 };

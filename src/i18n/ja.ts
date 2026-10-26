@@ -460,6 +460,7 @@ export const ja = {
     removeRow: "この組を消す",
     search: "探す",
     catalogueTitle: "カタログから",
+    catalogueTable: (w: number) => `カタログ（width ${w} を先に）`,
     noCatalogue: "当てはまるプリセットは無い。",
     bruteTitle: "総当たり",
     tooWide: (max: number) => `総当たりは width が ${max} 以下のときだけ行う。`,
@@ -481,6 +482,8 @@ export const ja = {
   listSeparator: "、",
   /** Heading of the official name of a preset in tables. */
   presetName: "正式名",
+  /** Note under a preset table on its check column. */
+  presetCheckNote: "check は入力 123456789 の CRC。",
 };
 
 export type Messages = typeof ja;
