@@ -10,8 +10,6 @@ export const NOT_YET_MET: ReadonlySet<string> = new Set([
   "on 1920×1080 at 100% (1920×950), the narrowing page keeps what an action changes in view",
   "on 1920×1080 at 125% (1536×734), the estimation page keeps what an action changes in view",
   "on 1920×1080 at 125% (1536×734), the narrowing page keeps what an action changes in view",
-  "on 1920×1080 at 150% (1280×590), the check page keeps what an action changes in view",
-  "on 1920×1080 at 150% (1280×590), the cyclic page keeps what an action changes in view",
   "on 1920×1080 at 150% (1280×590), the estimation page keeps what an action changes in view",
   "on 1920×1080 at 150% (1280×590), the narrowing page keeps what an action changes in view",
   "on 1920×1080 at 150% (1280×590), the table page keeps what an action changes in view",
