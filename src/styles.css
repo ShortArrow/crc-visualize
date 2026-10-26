@@ -3230,7 +3230,31 @@ button.bit-cell:hover {
 .short .software-body > .variables-pane {
   flex: 0 0 auto;
   position: sticky;
+  top: var(--code-head);
+}
+
+/*
+ * On a short screen the code-language select stays at the top of the Software tab, and a current line out of view is brought to just
+ * below it, so it is never left cut under the select
+ */
+.short .panel > .software {
+  --code-head: 40px;
+  padding-top: 0;
+  scroll-padding-top: var(--code-head);
+}
+
+.short .code-line {
+  scroll-margin-block: 0;
+}
+
+.short .panel > .software > h2 {
+  position: sticky;
   top: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  height: var(--code-head);
+  margin: 0;
+  background: var(--bg);
 }
 
 .short .software-body > .variables-pane h2 {
@@ -3240,6 +3264,7 @@ button.bit-cell:hover {
 @container (width < 600px) {
   .short .software-body {
     flex-direction: column;
+    align-items: stretch;
   }
 }
 

@@ -395,6 +395,27 @@ for (const screen of SCREENS.filter((s) => tierOf(s) === "short")) {
       });
     });
 
+    test(`${on}, the code-language select and the current line stay in view, and no code line is cut at the top of the code`, async ({
+      page,
+    }) => {
+      const v = await given("the visualizer is open with a 16-bit CRC", () => Visualizer.open(page, QUERY));
+      await when("stepping forward to the first XOR", () => v.goTo("xor"));
+      await then("the code-language select and the current line are in view", () =>
+        allInView(page, { "code-language select": v.code.langSelect(), "current line": v.code.activeLine() }),
+      );
+      await then("the topmost visible code line is whole below the top of the code", async () => {
+        const cut = await page.locator(".panel > .software").evaluate((pane) => {
+          const heading = pane.querySelector(":scope > h2")!.getBoundingClientRect();
+          const top = Math.max(pane.getBoundingClientRect().top, heading.bottom);
+          const first = [...pane.querySelectorAll(".code-line")]
+            .map((l) => l.getBoundingClientRect())
+            .find((r) => r.bottom > top + 1);
+          return first ? top - first.top : 0;
+        });
+        expect(cut, "pixels of the topmost line hidden at the top").toBeLessThanOrEqual(1);
+      });
+    });
+
     for (const hash of ["#cyclic", "#redundancy", "#check"]) {
       test(`${on}, the explanation paragraphs of ${hash} are closed at first and open from their heading`, async ({ page }) => {
         const v = await given(`${hash} is open`, async () => {

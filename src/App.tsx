@@ -494,6 +494,7 @@ function Visualizer(props: VisualizerProps) {
                 lang={codeLang}
                 lineBreaks={lineBreaks}
                 onToggleLine={(runs) => onBreakpoints(toggleLine(breakpoints, runs))}
+                lineAtTop={short}
               />
               {short ? variablesPane : null}
             </div>
