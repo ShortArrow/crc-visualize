@@ -52,6 +52,7 @@ export const ja = {
   },
   visualizer: {
     hardware: "ハードウェア（LFSR）",
+    zoom: { out: "縮小", in: "拡大", fit: "全体（自動の大きさ）" },
     legend: {
       xor: "⊕ = XOR（2 入力が異なれば 1）",
       one: "赤 = 値 1",

@@ -642,11 +642,49 @@ button.bp-gutter.bp-off::before {
   overflow-x: auto;
   overflow-y: hidden;
   contain: strict;
+  touch-action: pan-x pan-y;
 }
 
-.hardware h2 {
+/* A zoomed diagram may be taller than the pane as well as wider */
+.hardware.zoomed {
+  overflow-y: auto;
+}
+
+/* The heading and the zoom buttons stay at the top of the pane however the diagram is scrolled */
+.hardware-head {
   position: sticky;
+  top: 0;
   left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--bg);
+}
+
+.hardware-head h2 {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.zoom-buttons {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.zoom-buttons button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .panel {

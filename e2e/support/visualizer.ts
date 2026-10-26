@@ -140,6 +140,26 @@ export class Visualizer {
     },
     /** The zoom buttons at the top right of the diagram: out (−), in (＋) and fit (back to the automatic size). */
     zoom: (button: "out" | "in" | "fit") => this.page.locator(`.hardware [data-zoom="${button}"]`),
+    /**
+     * Pinches over the middle of the diagram's pane with two touch points that start from px apart and end to px apart (spreading
+     * when to is larger), sent as CDP touch events with touch emulation turned on.
+     */
+    pinch: async (from: number, to: number) => {
+      const box = (await this.page.locator(".hardware").boundingBox())!;
+      const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+      const points = (d: number) => [
+        { x: x - d / 2, y },
+        { x: x + d / 2, y },
+      ];
+      const cdp = await this.page.context().newCDPSession(this.page);
+      await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 2 });
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: points(from) });
+      for (let i = 1; i <= 5; i++) {
+        await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: points(from + ((to - from) * i) / 5) });
+      }
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+      await cdp.detach();
+    },
     /** The width (px) the diagram is drawn at. */
     drawnWidth: async () => (await this.page.locator("svg.lfsr").boundingBox())!.width,
     particles: () => this.page.locator(".lfsr .particle"),
