@@ -6,7 +6,7 @@ import type { Preset } from "../domain/presets";
 import { flip, noError, xorBits } from "../domain/redundancy";
 import { bitsFromBytes, toRegister, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
-import { Docked } from "./Dock";
+import { Docked, DockedResult } from "./Dock";
 import { toHex } from "./format";
 
 const CHECK_INPUT = bitsFromBytes([...new TextEncoder().encode("123456789")]);
@@ -64,6 +64,11 @@ function Checks({ params, message, preset }: ChecksProps) {
           ))}
         </div>
       </Docked>
+      <DockedResult className="check-page">
+        <p className="verdict dock-result" data-dock-result data-ok={String(re.ok)}>
+          {re.ok ? m.check.ok : m.check.ng}
+        </p>
+      </DockedResult>
       <ul className="frame-legend">
         <li data-key="message">
           <span className="bit-cell message">0</span>
