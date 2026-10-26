@@ -15,6 +15,7 @@ import type { Bit } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { Docked, DockedResult } from "./Dock";
 import { powerOfTwoText, powerText } from "./format";
+import { Explanation } from "./Explanation";
 
 const GRID_LIMIT = 128;
 
@@ -54,7 +55,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
               <span className="part-label crc">{m.redundancy.crc(generator.width)}</span>
             </div>
           </div>
-          <p className="note">{m.redundancy.whatNote}</p>
+          <Explanation>{m.redundancy.whatNote}</Explanation>
         </section>
         <section className="card">
           <h3>{m.redundancy.spaceSection}</h3>
@@ -68,7 +69,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
           </dl>
           {2 ** n <= GRID_LIMIT ? <WordGrid generator={generator} received={bitsValue(received)} /> : null}
           <CrcStripFigure generator={generator} received={received} />
-          <p className="note">{m.redundancy.spaceNote(generator.width)}</p>
+          <Explanation>{m.redundancy.spaceNote(generator.width)}</Explanation>
         </section>
         <section className="card">
           <h3>{m.redundancy.checkSection}</h3>
@@ -104,8 +105,8 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
               </button>
             </div>
           </Docked>
-          <p className="note">{m.redundancy.remainderNote}</p>
-          <p className="note">{m.redundancy.guarantee(generator.width)}</p>
+          <Explanation>{m.redundancy.remainderNote}</Explanation>
+          <Explanation>{m.redundancy.guarantee(generator.width)}</Explanation>
         </section>
       </div>
     </div>

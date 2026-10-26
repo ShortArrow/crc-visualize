@@ -26,8 +26,3 @@ export function useTier(): Tier {
   }, []);
   return tier;
 }
-
-/** Whether the window is laid out for a phone now; follows resizes and turning the phone. */
-export function usePhone(): boolean {
-  return useTier() === "phone";
-}

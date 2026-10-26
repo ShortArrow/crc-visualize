@@ -16,7 +16,7 @@ export const ja = {
     table: "表引き",
     estimate: "推定",
   },
-  workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", sidebarLabel: "設定", language: "表示言語" },
+  workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", sidebarLabel: "設定", language: "表示言語", explanation: "説明" },
   settings: {
     heading: "設定",
     invalid: "設定に誤りがあります。赤い項目を直してください。",
@@ -53,6 +53,7 @@ export const ja = {
   visualizer: {
     hardware: "ハードウェア（LFSR）",
     zoom: { out: "縮小", in: "拡大", fit: "全体（自動の大きさ）" },
+    panelTabs: "コードと経過",
     legend: {
       xor: "⊕ = XOR（2 入力が異なれば 1）",
       one: "赤 = 値 1",

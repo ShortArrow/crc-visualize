@@ -263,6 +263,9 @@ The layout comes in three tiers by width and height.
 | Short screen | 700 wide or more, lower than 650   | The PC layout, with the playback controls packed into one row, the Visualizer's software and log in tabs instead of side by side, and the explanation paragraphs of other pages closed at first and opened from their heading |
 | PC           | 700 wide or more, 650 high or more | The PC layout (zoomed as a whole on screens larger than 1600×1000)                                                                                                                                                            |
 
+- The explanation paragraphs that a short screen closes are those that say why at the start of a page or a section: on the Naming page, those of the name parts, the families and the parameter-name diagram; the opening explanation of the Narrow down, Equivalences, Estimation, Check and Table pages; on the Cyclic page, those of the two rings and of shortened codes; on the Redundancy page, those of what is redundant, the share of all strings, the remainder and the errors always found; on the Check page, those of the two ways to check, of their verdicts agreeing and of the check value; on the Table page, those of table T and of how a value is made. Legends, notes shown only under some condition, and results are not closed. A closed paragraph is headed Explanation.
+- On a phone and on a short screen, the diagram's heading and legend stay on one line beside the zoom buttons, and the legend scrolls sideways.
+
 ### Parameter mapping
 
 While the mouse or keyboard focus is on a settings panel field or a pseudocode chip, that parameter is "focused", and the places it is used are emphasized in cyan.

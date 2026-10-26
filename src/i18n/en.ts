@@ -13,7 +13,12 @@ export const en: Messages = {
     table: "Table",
     estimate: "Estimate",
   },
-  workbench: { sidebarToggle: "Toggle sidebar (Ctrl+B)", sidebarLabel: "Settings", language: "Language" },
+  workbench: {
+    sidebarToggle: "Toggle sidebar (Ctrl+B)",
+    sidebarLabel: "Settings",
+    language: "Language",
+    explanation: "Explanation",
+  },
   settings: {
     heading: "Settings",
     invalid: "The settings contain errors. Fix the fields marked in red.",
@@ -50,6 +55,7 @@ export const en: Messages = {
   visualizer: {
     hardware: "Hardware (LFSR)",
     zoom: { out: "Zoom out", in: "Zoom in", fit: "Fit (automatic size)" },
+    panelTabs: "Code and log",
     legend: {
       xor: "⊕ = XOR (1 if the two inputs differ)",
       one: "red = value 1",

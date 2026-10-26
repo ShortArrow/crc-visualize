@@ -19,7 +19,7 @@ import { namesHash, narrowHash, type Route } from "./route";
 import { DockSlot } from "./Dock";
 import { Splitter } from "./Splitter";
 import { fitLayout, type PaneLayout } from "./panes";
-import { usePhone } from "./phone";
+import { useTier } from "./phone";
 import { viewWidth } from "./zoom";
 
 type Props = Readonly<{
@@ -54,11 +54,13 @@ const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: L
  * filling the whole screen. The page itself does not scroll; only each area scrolls internally.
  * On a phone (class phone), the activity bar runs along the bottom instead, and the sidebar is a drawer over the editor area: closed at
  * first, and closed again on choosing a link or button in it (other than one marked data-stay) or tapping beside it. The drawer's state is not saved in layout. The
- * dock between the editor area and the page links holds the parts the page shows with Docked.
+ * dock between the editor area and the page links holds the parts the page shows with Docked. On a short screen (class short), the
+ * layout is the PC one with the parts that take height packed (docs/spec.md, Screen tiers).
  */
 export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, editor, status }: Props) {
   const m = useMessages();
-  const phone = usePhone();
+  const tier = useTier();
+  const phone = tier === "phone";
   const [drawer, setDrawer] = useState(false);
   const [dock, setDock] = useState<HTMLElement | null>(null);
   const open = phone ? drawer : layout.sidebarOpen;
@@ -68,7 +70,7 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
   };
   const style = { "--sidebar-width": `${layout.sidebarWidth}px` } as CSSProperties;
   return (
-    <div className={`workbench ${phone ? "phone" : ""} ${open ? "" : "sidebar-closed"}`} style={style}>
+    <div className={`workbench ${tier === "pc" ? "" : tier} ${open ? "" : "sidebar-closed"}`} style={style}>
       <nav className="activity">
         {PAGE_LINKS.map(({ page, href, Icon }) => (
           <a

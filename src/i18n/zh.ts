@@ -13,7 +13,7 @@ export const zh: Messages = {
     table: "查表",
     estimate: "推断",
   },
-  workbench: { sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）", sidebarLabel: "设置", language: "显示语言" },
+  workbench: { sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）", sidebarLabel: "设置", language: "显示语言", explanation: "说明" },
   settings: {
     heading: "设置",
     invalid: "设置有误。请修改标红的项目。",
@@ -50,6 +50,7 @@ export const zh: Messages = {
   visualizer: {
     hardware: "硬件（LFSR）",
     zoom: { out: "缩小", in: "放大", fit: "适应（自动大小）" },
+    panelTabs: "代码与过程",
     legend: {
       xor: "⊕ = XOR（两个输入不同则为 1）",
       one: "红 = 值 1",
