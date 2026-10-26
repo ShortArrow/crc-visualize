@@ -1771,12 +1771,19 @@ button.bp-gutter.bp-off::before {
   list-style: none;
 }
 
-/* The texts give way to the language select, which stays whole at the right end however long they are */
+/*
+ * The texts give way to the language select, which stays whole at the right end however long they are; the step stays whole too,
+ * since on a phone it stands in for the newest log entry
+ */
 .statusbar > :not(.locale-select) {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.statusbar > .status-step {
+  flex-shrink: 0;
 }
 
 .statusbar .locale-select {
