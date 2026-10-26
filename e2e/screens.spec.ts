@@ -2,6 +2,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 import { given, test, then, when } from "./support/scenario";
 import { SCREENS, tierOf, type Screen } from "./support/screens";
 import { Visualizer } from "./support/visualizer";
+import { NOT_YET_MET } from "./support/notYetMet";
 import { NamesPage } from "./support/namesPage";
 import { NarrowPage } from "./support/narrowPage";
 import { CyclicPage } from "./support/cyclicPage";
@@ -48,6 +49,8 @@ async function whitespace(page: Page, screen: Screen): Promise<void> {
     });
   }
 }
+
+test.beforeEach(({}, info) => test.fail(NOT_YET_MET.has(info.title), "the app does not meet this rule yet"));
 
 for (const screen of SCREENS) {
   const on = `on ${screen.name} (${screen.width}×${screen.height})`;

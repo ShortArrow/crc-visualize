@@ -24,6 +24,8 @@ Changes go to `main` through pull requests. Each pull request runs the type chec
 
 To look for tests that fail only on a slow machine without loading your own, run the Stress E2E workflow (`.github/workflows/stress.yml`) by hand from the Actions tab. It runs the E2E tests with each page's CPU slowed down 1, 2, 4 or 6 times by Chrome's CPU throttling, repeats each test, and does not retry, so a test that passes only sometimes shows up as a failure. The time each test and each check may take is made as many times longer, so a test fails for what goes wrong, not for being slow; a wait longer than the default that lasts as long as playback does is written with `patience(ms)` so it grows too. The number of runs, the browsers running at once and a title pattern can be chosen as well. Locally, `npx playwright test --config playwright.stress.config.ts --project x4 --workers 1` does the same for one rate.
 
+`e2e/screens.spec.ts` checks the screen rules of chapter 7 of the spec on every target screen. A test whose rule the app does not meet yet is listed in `e2e/support/notYetMet.ts` and expected to fail; when a fix makes it pass, Playwright reports an unexpected pass, so the fix also removes it from the list.
+
 Keys: Space plays / pauses, ← → move one step, Home / End jump to the first / last step, and L toggles loop playback.
 
 Like a debugger, the sidebar shows the variables at the step shown, and playback pauses at breakpoints. Press left of a line number in the code to stop at that line (optionally at its n-th hit, such as the 5th XOR), or a bit of the input stream, or the line under one of its bytes, to stop once that bit or byte has been read.
