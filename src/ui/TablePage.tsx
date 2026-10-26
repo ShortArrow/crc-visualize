@@ -174,7 +174,7 @@ function TableMethod({ params, bits }: MethodProps) {
             </thead>
             <tbody>
               {entryClocks(params, shown).map((c, k) => (
-                <tr key={k} ref={k === 0 ? firstClock : undefined} data-reveal={k === 0 || undefined}>
+                <tr key={k} ref={k === 0 ? firstClock : undefined}>
                   <td>{k + 1}</td>
                   <td>{c.bit}</td>
                   <td>{c.feedback}</td>
