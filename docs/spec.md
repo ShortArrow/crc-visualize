@@ -265,6 +265,9 @@ The layout comes in three tiers by width and height.
 
 - The explanation paragraphs that a short screen closes are those that say why at the start of a page or a section: on the Naming page, those of the name parts, the families and the parameter-name diagram; the opening explanation of the Narrow down, Equivalences, Estimation, Check and Table pages; on the Cyclic page, those of the two rings and of shortened codes; on the Redundancy page, those of what is redundant, the share of all strings, the remainder and the errors always found; on the Check page, those of the two ways to check, of their verdicts agreeing and of the check value; on the Table page, those of table T and of how a value is made. Legends, notes shown only under some condition, and results are not closed. Paragraphs that follow one another are closed together, under the heading Explanation. While the Visualizer shows tabs, the tabs stand for the headings of the software and log panes, and only the code-language select stays.
 - On a phone and on a short screen, the diagram's heading and legend stay on one line beside the zoom buttons, and the legend scrolls sideways.
+- On a short screen, the Visualizer's variables (5) sit in the Software tab instead of the sidebar, to the right of the code, and stay at its top while the code scrolls. When the tab is narrower than 600 px, they sit below the code.
+- On a short screen, the help pane stays at the bottom of the sidebar's settings section, so it remains in view while the settings panel scrolls. It is at most a third of the screen high, and a longer description scrolls inside it.
+- On a phone, the code's heading (Software and the code-language select) stays at the top of the block that scrolls the code, the variables and the log together. When the current line is scrolled into view, it appears below that heading.
 
 ### Parameter mapping
 

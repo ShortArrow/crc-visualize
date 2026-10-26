@@ -383,7 +383,7 @@ function Visualizer(props: VisualizerProps) {
     <SidebarSections
       sections={[
         { id: "settings", title: m.settings.heading, body: settings },
-        ...(phone || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
+        ...(phone || short || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
         ...(invalid
           ? []
           : [
@@ -495,6 +495,7 @@ function Visualizer(props: VisualizerProps) {
                 lineBreaks={lineBreaks}
                 onToggleLine={(runs) => onBreakpoints(toggleLine(breakpoints, runs))}
               />
+              {short ? variablesPane : null}
             </div>
           </div>
           {phone ? variablesPane : null}
