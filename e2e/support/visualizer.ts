@@ -118,6 +118,30 @@ export class Visualizer {
           .forEach((a) => a.cancel()),
       ),
     stream: () => this.page.locator(".lfsr g.stream"),
+    /** The parts of the diagram being computed at this step: the register read, the registers hit, the lit gates and the arriving feedback box. */
+    activeParts: () => this.page.locator(".lfsr :is(.reg.msb, .reg.hit, .gate.active, .fb-box.arriving)"),
+    /** The most significant register r[width-1] (the highest data-bit), which the diagram follows when it scrolls. */
+    msb: async (): Promise<Locator> => {
+      const bits = await this.page
+        .locator(".lfsr .reg")
+        .evaluateAll((els) => els.map((el) => Number(el.getAttribute("data-bit"))));
+      return this.page.locator(`.lfsr .reg[data-bit="${Math.max(...bits)}"]`);
+    },
+    /**
+     * The head of the flow at this step: of the parts values flow through (the lit gates, the registers hit and the arriving
+     * feedback box), the first along the route, which runs from the input gate on the left towards r0 on the right. Undefined
+     * when nothing flows.
+     */
+    flowHead: async (): Promise<Locator | undefined> => {
+      const flowing = this.page.locator(".lfsr :is(.gate.active, .reg.hit, .fb-box.arriving)");
+      const lefts = await flowing.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().left));
+      if (lefts.length === 0) return undefined;
+      return flowing.nth(lefts.indexOf(Math.min(...lefts)));
+    },
+    /** The zoom buttons at the top right of the diagram: out (−), in (＋) and fit (back to the automatic size). */
+    zoom: (button: "out" | "in" | "fit") => this.page.locator(`.hardware [data-zoom="${button}"]`),
+    /** The width (px) the diagram is drawn at. */
+    drawnWidth: async () => (await this.page.locator("svg.lfsr").boundingBox())!.width,
     particles: () => this.page.locator(".lfsr .particle"),
     particle: (route: string) => this.page.locator(`.lfsr .particle[data-route="${route}"]`),
     gate: (id: "input" | number) => this.page.locator(`.gate[data-gate="${id}"]`),
@@ -235,6 +259,51 @@ export class Visualizer {
   };
 
   readonly workbench = {
+    /**
+     * The share (0 to 1) of points sampled across target's box that are inside the viewport and not covered by anything else: the
+     * element hit there is target, inside it, one of its ancestors (target lets the pointer through) or part of the same drawing
+     * (svg). 1 means target is wholly in view and nothing such as a docked bar, a sticky header or a drawer lies over it.
+     */
+    uncovered: (target: Locator) =>
+      target.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return 0;
+        const svg = el.closest("svg");
+        const xs = [0.1, 0.3, 0.5, 0.7, 0.9].map((f) => r.left + f * r.width);
+        const ys = [0.15, 0.5, 0.85].map((f) => r.top + f * r.height);
+        let clear = 0;
+        for (const x of xs)
+          for (const y of ys) {
+            if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) continue;
+            const hit = document.elementFromPoint(x, y);
+            if (hit && (hit === el || el.contains(hit) || hit.contains(el) || (svg !== null && svg.contains(hit)))) clear++;
+          }
+        return clear / (xs.length * ys.length);
+      }),
+    /** The bottom dock of a phone, which holds the controls a page docks and the one-line result of what they do. */
+    dock: () => this.page.locator(".dock"),
+    /** The one-line result shown in the phone dock (the verdict, or the index and value of the chosen table row). */
+    dockResult: () => this.page.locator(".dock [data-dock-result]"),
+    /**
+     * The gap (px) between the top of the phone dock and the lowest content of the editor area above it, with content cut off at
+     * the bottom of the editor area (a page or pane that scrolls reaches it, so its gap is 0). Undefined when the dock is empty.
+     */
+    dockGap: () =>
+      this.page.evaluate(() => {
+        const dock = document.querySelector(".dock");
+        if (!dock || dock.childElementCount === 0) return undefined;
+        const editor = document.querySelector(".editor")!;
+        const bottom = editor.getBoundingClientRect().bottom;
+        const reached = [...editor.querySelectorAll("*")]
+          .map((el) => el.getBoundingClientRect())
+          .filter((r) => r.width > 0 && r.height > 0)
+          .map((r) => Math.min(r.bottom, bottom));
+        return dock.getBoundingClientRect().top - Math.max(...reached);
+      }),
+    /** The tabs that switch between the software and the log on a short screen (data-tab is software or log). */
+    panelTab: (name: "software" | "log") => this.page.locator(`.panel [role="tab"][data-tab="${name}"]`),
+    /** The explanation paragraphs of the page, which a short screen closes at first (details elements, opened from their summary). */
+    explanations: () => this.page.locator(".editor details[data-explain]"),
     /** The page switcher in the activity bar. */
     pageLink: (
       name: "visualizer" | "names" | "narrow" | "cyclic" | "redundancy" | "check" | "equivalence" | "table" | "estimate",

@@ -13,7 +13,7 @@ export class NamesPage {
   /** Captures the naming page that is already open. */
   static async shown(page: Page): Promise<NamesPage> {
     const n = new NamesPage(page);
-    await expect(n.root).toBeVisible();
+    await expect(n.root.first()).toBeVisible();
     return n;
   }
 

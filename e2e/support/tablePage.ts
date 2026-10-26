@@ -13,7 +13,7 @@ export class TablePage {
   /** Captures the table page that is already open. */
   static async shown(page: Page): Promise<TablePage> {
     const t = new TablePage(page);
-    await expect(t.root).toBeVisible();
+    await expect(t.root.first()).toBeVisible();
     return t;
   }
 

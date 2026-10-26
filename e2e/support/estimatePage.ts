@@ -13,7 +13,7 @@ export class EstimatePage {
   /** Captures the estimation page that is already open. */
   static async shown(page: Page): Promise<EstimatePage> {
     const e = new EstimatePage(page);
-    await expect(e.root).toBeVisible();
+    await expect(e.root.first()).toBeVisible();
     return e;
   }
 

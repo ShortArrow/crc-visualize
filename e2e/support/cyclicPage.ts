@@ -13,7 +13,7 @@ export class CyclicPage {
   /** Captures the cyclic page that is already open. */
   static async shown(page: Page): Promise<CyclicPage> {
     const c = new CyclicPage(page);
-    await expect(c.root).toBeVisible();
+    await expect(c.root.first()).toBeVisible();
     return c;
   }
 
@@ -38,12 +38,12 @@ export class CyclicPage {
 
   /** The rotated bit sequence (highest degree first). */
   word(): Locator {
-    return this.root.locator(".cyclic-word");
+    return this.page.locator(".cyclic-word");
   }
 
   /** The remainder of the rotated bit sequence divided by g(x). */
   remainder(): Locator {
-    return this.root.locator(".cyclic-remainder");
+    return this.page.locator(".cyclic-remainder");
   }
 
   /** The states of the state ring. */
@@ -71,12 +71,12 @@ export class CyclicPage {
 
   /** Multiplies by x once (▶). */
   forward(): Locator {
-    return this.root.locator(".rotate-forward");
+    return this.page.locator(".rotate-forward");
   }
 
   /** Divides by x once (◀). */
   back(): Locator {
-    return this.root.locator(".rotate-back");
+    return this.page.locator(".rotate-back");
   }
 
   /** The entry for width and poly (such as "0xF") in the sidebar's list of generator polynomials. */

@@ -13,7 +13,7 @@ export class NarrowPage {
   /** Captures the narrowing page that is already open. */
   static async shown(page: Page): Promise<NarrowPage> {
     const n = new NarrowPage(page);
-    await expect(n.root).toBeVisible();
+    await expect(n.root.first()).toBeVisible();
     return n;
   }
 
@@ -39,6 +39,11 @@ export class NarrowPage {
   /** The full names of the remaining candidates in the sidebar. */
   candidates(): Locator {
     return this.page.locator(".sidebar .narrow-candidates li");
+  }
+
+  /** The full name shown in the editor area once a single candidate remains. */
+  result(): Locator {
+    return this.root.locator(".narrow-result .preset-name");
   }
 
   /** The "open in visualizer" link (in the editor area) shown once a single candidate remains. */
