@@ -63,6 +63,27 @@ for (const screen of SCREENS) {
       await page.setViewportSize({ width: screen.width, height: screen.height });
     });
 
+    if (!phone)
+      test(`${on}, the sidebar starts closed below 1000 px wide and opens with its toggle, and follows the saved state otherwise`, async ({
+        page,
+      }) => {
+        const narrow = screen.width < 1000;
+        const v = await given("the visualizer is open with a 16-bit CRC", () => Visualizer.open(page, QUERY));
+        await then(narrow ? "the sidebar is closed" : "the sidebar is open, as saved by default", async () => {
+          await expect(v.workbench.sidebar()).toHaveCount(narrow ? 0 : 1);
+          await expect(v.workbench.sidebarToggle()).toHaveAttribute("aria-pressed", String(!narrow));
+        });
+        await when("pressing the toggle in the activity bar", () => v.workbench.sidebarToggle().click());
+        await then(narrow ? "the sidebar opens beside the editor area" : "the sidebar closes", async () => {
+          await expect(v.workbench.sidebar()).toHaveCount(narrow ? 1 : 0);
+          if (narrow) await expect(page.locator(".drawer-shade")).toHaveCount(0);
+        });
+        await when("reloading", () => page.reload());
+        await then(narrow ? "the sidebar starts closed again" : "the sidebar stays closed, as saved", async () => {
+          await expect(v.workbench.sidebar()).toHaveCount(0);
+        });
+      });
+
     if (phone) {
       test(`${on}, the code's heading stays uncovered while playback scrolls the code`, async ({ page }) => {
         const v = await given("the visualizer is open with a 16-bit CRC", () => Visualizer.open(page, QUERY));
@@ -382,26 +403,6 @@ for (const screen of SCREENS.filter((s) => tierOf(s) === "short")) {
       await then("the log is shown and the code is hidden", async () => {
         await expect(page.locator(".panel > .log-pane")).toBeVisible();
         await expect(page.locator(".panel > .software")).toBeHidden();
-      });
-    });
-
-    test(`${on}, the sidebar starts closed below 1000 px wide and opens with its toggle, and follows the saved state otherwise`, async ({
-      page,
-    }) => {
-      const narrow = screen.width < 1000;
-      const v = await given("the visualizer is open with a 16-bit CRC", () => Visualizer.open(page, QUERY));
-      await then(narrow ? "the sidebar is closed" : "the sidebar is open, as saved by default", async () => {
-        await expect(v.workbench.sidebar()).toHaveCount(narrow ? 0 : 1);
-        await expect(v.workbench.sidebarToggle()).toHaveAttribute("aria-pressed", String(!narrow));
-      });
-      await when("pressing the toggle in the activity bar", () => v.workbench.sidebarToggle().click());
-      await then(narrow ? "the sidebar opens beside the editor area" : "the sidebar closes", async () => {
-        await expect(v.workbench.sidebar()).toHaveCount(narrow ? 1 : 0);
-        if (narrow) await expect(page.locator(".drawer-shade")).toHaveCount(0);
-      });
-      await when("reloading", () => page.reload());
-      await then(narrow ? "the sidebar starts closed again" : "the sidebar stays closed, as saved", async () => {
-        await expect(v.workbench.sidebar()).toHaveCount(0);
       });
     });
 

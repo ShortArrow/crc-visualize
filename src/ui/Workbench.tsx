@@ -54,8 +54,8 @@ const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: L
  * filling the whole screen. The page itself does not scroll; only each area scrolls internally.
  * On a phone (class phone), the activity bar runs along the bottom instead, and the sidebar is a drawer over the editor area: closed at
  * first, and closed again on choosing a link or button in it (other than one marked data-stay) or tapping beside it. On a phone and on a
- * short screen narrower than NARROW_SHORT_WIDTH, the sidebar starts closed and its state is not saved in layout (keepsSidebarState).
- * Such a short screen also has the dock (class docking) on every page but the visualizer, whose controls stay in one row on top. The
+ * window narrower than NARROW_WIDTH, the sidebar starts closed and its state is not saved in layout (keepsSidebarState). Such a window
+ * that is also a short screen has the dock (class docking) on every page but the visualizer, whose controls stay in one row on top. The
  * dock between the editor area and the page links holds the parts the page shows with Docked. Ctrl+B (⌘+B) toggles the sidebar. On a short screen (class short), the
  * layout is the PC one with the parts that take height packed (docs/spec.md, Screen tiers).
  */
@@ -65,7 +65,7 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
   const phone = tier === "phone";
   const [unsavedOpen, setUnsavedOpen] = useState(false);
   const [dock, setDock] = useState<HTMLElement | null>(null);
-  const docking = phone || (!keepsSidebar && route.page !== "visualizer");
+  const docking = phone || (tier === "short" && !keepsSidebar && route.page !== "visualizer");
   const open = keepsSidebar ? layout.sidebarOpen : unsavedOpen;
   const toggle = () => (keepsSidebar ? onLayout({ ...layout, sidebarOpen: !open }) : setUnsavedOpen(!open));
   useEffect(() => {
