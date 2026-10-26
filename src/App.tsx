@@ -221,19 +221,10 @@ function useLastValid(config: ConfigResult): Readonly<{ params: CrcParams; bits:
   return last.current;
 }
 
-/** Screen layout; restored from localStorage and fitted to the current screen, saved on every change. Ctrl+B (⌘+B) toggles the sidebar. */
+/** Screen layout; restored from localStorage and fitted to the current screen, saved on every change. */
 function useLayout(): [PaneLayout, (layout: PaneLayout) => void] {
   const [layout, setLayout] = useState(() => fitLayout(loadLayout(), viewWidth()));
   useEffect(() => saveLayout(layout), [layout]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "b") return;
-      e.preventDefault();
-      setLayout((l) => ({ ...l, sidebarOpen: !l.sidebarOpen }));
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
   return [layout, setLayout];
 }
 

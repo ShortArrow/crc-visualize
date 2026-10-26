@@ -2,7 +2,8 @@ import { useEffect, useRef, type DependencyList, type RefObject } from "react";
 
 /**
  * Scrolls only as far as needed to bring the span from first to last (first above or before last) into view. When the span is
- * taller than the view, first stays in view.
+ * taller than the view, first stays in view. Revealed elements carry data-reveal, whose scroll margin keeps them clear of the view's
+ * edge, so rounding the scroll position to a device pixel does not cut them.
  */
 function reveal(first: Element | null, last: Element | null): void {
   last?.scrollIntoView({ block: "nearest", inline: "nearest" });

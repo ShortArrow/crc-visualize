@@ -55,6 +55,8 @@ test.beforeEach(({}, info) => test.fail(NOT_YET_MET.has(info.title), "the app do
 for (const screen of SCREENS) {
   const on = `on ${screen.name} (${screen.width}×${screen.height})`;
   const phone = tierOf(screen) === "phone";
+  /** Where the pages other than the visualizer put what is tapped and its result in the dock (docs/spec.md, Screen tiers). */
+  const docking = phone || (tierOf(screen) === "short" && screen.width < 1000);
 
   test.describe(`Screens: ${on}`, () => {
     test.beforeEach(async ({ page }) => {
@@ -104,7 +106,10 @@ for (const screen of SCREENS) {
         }),
       );
       if (!phone) {
-        await when("hovering over the poly setting", () => v.settings.param("poly").hover());
+        await when("hovering over the poly setting, after opening the sidebar where it starts closed", async () => {
+          if (screen.width < 1000) await v.workbench.sidebarToggle().click();
+          await v.settings.param("poly").hover();
+        });
         await then("the setting and the help pane are in view", () =>
           allInView(page, { setting: v.settings.param("poly"), help: v.settings.help() }),
         );
@@ -163,7 +168,7 @@ for (const screen of SCREENS) {
       );
       await whitespace(page, screen);
       await when("flipping the first received bit", () => r.receivedBit(0).click());
-      if (phone) {
+      if (docking) {
         await then("the bit, the verdict in the dock and the yellow frames in both grids are in view", async () => {
           await allInView(page, {
             bit: r.receivedBit(0),
@@ -193,7 +198,7 @@ for (const screen of SCREENS) {
       const c = await given("the check page is open", () => CheckPage.open(page, QUERY));
       await whitespace(page, screen);
       await when("flipping the last received bit", () => c.bits().last().click());
-      if (phone) {
+      if (docking) {
         await then("the bit and the verdict in the dock are in view, and the verdict says an error was found", async () => {
           const result = Visualizer.on(page).workbench.dockResult();
           await allInView(page, { bit: c.bits().last(), "verdict in the dock": result });
@@ -219,7 +224,7 @@ for (const screen of SCREENS) {
       const t = await given("the table page is open", () => TablePage.open(page, QUERY));
       await whitespace(page, screen);
       await when("choosing the second row of the byte-by-byte computation", () => t.step(1).click());
-      if (phone) {
+      if (docking) {
         await then("the row and its index and table value in the dock are in view", async () => {
           const result = Visualizer.on(page).workbench.dockResult();
           await allInView(page, { row: t.step(1), "index and value in the dock": result });
@@ -377,6 +382,26 @@ for (const screen of SCREENS.filter((s) => tierOf(s) === "short")) {
       await then("the log is shown and the code is hidden", async () => {
         await expect(page.locator(".panel > .log-pane")).toBeVisible();
         await expect(page.locator(".panel > .software")).toBeHidden();
+      });
+    });
+
+    test(`${on}, the sidebar starts closed below 1000 px wide and opens with its toggle, and follows the saved state otherwise`, async ({
+      page,
+    }) => {
+      const narrow = screen.width < 1000;
+      const v = await given("the visualizer is open with a 16-bit CRC", () => Visualizer.open(page, QUERY));
+      await then(narrow ? "the sidebar is closed" : "the sidebar is open, as saved by default", async () => {
+        await expect(v.workbench.sidebar()).toHaveCount(narrow ? 0 : 1);
+        await expect(v.workbench.sidebarToggle()).toHaveAttribute("aria-pressed", String(!narrow));
+      });
+      await when("pressing the toggle in the activity bar", () => v.workbench.sidebarToggle().click());
+      await then(narrow ? "the sidebar opens beside the editor area" : "the sidebar closes", async () => {
+        await expect(v.workbench.sidebar()).toHaveCount(narrow ? 1 : 0);
+        if (narrow) await expect(page.locator(".drawer-shade")).toHaveCount(0);
+      });
+      await when("reloading", () => page.reload());
+      await then(narrow ? "the sidebar starts closed again" : "the sidebar stays closed, as saved", async () => {
+        await expect(v.workbench.sidebar()).toHaveCount(0);
       });
     });
 

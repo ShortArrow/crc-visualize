@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPhone, tierOf } from "./phone";
+import { isPhone, keepsSidebarState, tierOf } from "./phone";
 
 describe("isPhone", () => {
   it.each([320, 390, 430, 699])("Given a %i px wide window, When asking, Then it is a phone", (width) => {
@@ -9,6 +9,24 @@ describe("isPhone", () => {
   it.each([700, 768, 1366])("Given a %i px wide window, When asking, Then it is not a phone", (width) => {
     expect(isPhone(width)).toBe(false);
   });
+});
+
+describe("keepsSidebarState", () => {
+  it.each([
+    [390, 844, false],
+    [844, 390, false],
+    [999, 600, false],
+    [1000, 600, true],
+    [1280, 590, true],
+    [1366, 638, true],
+    [844, 700, true],
+    [1920, 950, true],
+  ] as const)(
+    "Given a %i×%i window, When asking whether the saved sidebar state applies, Then it is %s",
+    (width, height, keeps) => {
+      expect(keepsSidebarState(width, height)).toBe(keeps);
+    },
+  );
 });
 
 describe("tierOf", () => {

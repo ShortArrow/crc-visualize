@@ -155,7 +155,7 @@ function TableMethod({ params, bits }: MethodProps) {
       </section>
       <section className="card entry-card">
         <div className="entry-text">
-          <h3 className="entry-title" ref={entryTitle}>
+          <h3 className="entry-title" ref={entryTitle} data-reveal>
             {t.entryTitle(byteHex(shown), hex(table[shown]!, w))}
           </h3>
           <Explanation>{t.entryNote[direction]}</Explanation>
