@@ -2931,6 +2931,61 @@ button.bit-cell:hover {
   background: rgb(0 0 0 / 0.5);
 }
 
+/* A narrow short screen keeps the PC frame and adds the dock under the editor area, beside the activity bar and the sidebar */
+.workbench.docking {
+  grid-template-rows: minmax(0, 1fr) auto 24px;
+}
+
+.workbench.docking > :is(.activity, .sidebar, .splitter) {
+  grid-row: 1 / 3;
+}
+
+.workbench.docking > .dock {
+  grid-row: 2;
+  grid-column: -2;
+  min-width: 0;
+  container-type: inline-size;
+  max-height: 50vh;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  column-gap: 12px;
+}
+
+/* The dock of a short screen is wide but low, so its parts stand side by side and wrap only when they do not fit */
+.workbench.docking > .dock > .docked {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 6px 12px;
+}
+
+.workbench.docking > .dock > .docked + .docked {
+  padding-top: 6px;
+  padding-left: 0;
+}
+
+/* There the two cyclic rings share one row and shrink to the height left above the dock */
+.docking .cyclic-rings > figure {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.docking .cyclic-rings svg {
+  max-height: calc(100cqh - 120px);
+}
+
+.docking .dock .cyclic-dock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 24px;
+}
+
+.docking .dock .cyclic-dock :is(.cyclic-controls, .cyclic-result) {
+  margin: 0;
+}
+
 .workbench.phone > .dock {
   grid-row: 2;
   container-type: inline-size;

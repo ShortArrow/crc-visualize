@@ -19,7 +19,7 @@ import { namesHash, narrowHash, type Route } from "./route";
 import { DockSlot } from "./Dock";
 import { Splitter } from "./Splitter";
 import { fitLayout, type PaneLayout } from "./panes";
-import { useTier } from "./phone";
+import { useScreen } from "./phone";
 import { viewWidth } from "./zoom";
 
 type Props = Readonly<{
@@ -53,33 +53,39 @@ const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: L
  * VS Code-style screen frame. Divides into the activity bar on the left, a collapsible sidebar, the editor area and the status bar at the bottom,
  * filling the whole screen. The page itself does not scroll; only each area scrolls internally.
  * On a phone (class phone), the activity bar runs along the bottom instead, and the sidebar is a drawer over the editor area: closed at
- * first, and closed again on choosing a link or button in it (other than one marked data-stay) or tapping beside it. The drawer's state is not saved in layout. The
+ * first, and closed again on choosing a link or button in it (other than one marked data-stay) or tapping beside it. On a phone and on a
+ * short screen narrower than NARROW_SHORT_WIDTH, the sidebar starts closed and its state is not saved in layout (keepsSidebarState).
+ * Such a short screen also has the dock (class docking) on every page but the visualizer, whose controls stay in one row on top. The
  * dock between the editor area and the page links holds the parts the page shows with Docked. Ctrl+B (⌘+B) toggles the sidebar. On a short screen (class short), the
  * layout is the PC one with the parts that take height packed (docs/spec.md, Screen tiers).
  */
 export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, editor, status }: Props) {
   const m = useMessages();
-  const tier = useTier();
+  const { tier, keepsSidebar } = useScreen();
   const phone = tier === "phone";
-  const [drawer, setDrawer] = useState(false);
+  const [unsavedOpen, setUnsavedOpen] = useState(false);
   const [dock, setDock] = useState<HTMLElement | null>(null);
-  const open = phone ? drawer : layout.sidebarOpen;
-  const toggle = () => (phone ? setDrawer(!drawer) : onLayout({ ...layout, sidebarOpen: !open }));
+  const docking = phone || (!keepsSidebar && route.page !== "visualizer");
+  const open = keepsSidebar ? layout.sidebarOpen : unsavedOpen;
+  const toggle = () => (keepsSidebar ? onLayout({ ...layout, sidebarOpen: !open }) : setUnsavedOpen(!open));
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "b") return;
       e.preventDefault();
-      onLayout({ ...layout, sidebarOpen: !layout.sidebarOpen });
+      toggle();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
   const closeOnChoice = (e: MouseEvent) => {
-    if (phone && (e.target as Element).closest("a, button:not([data-stay])")) setDrawer(false);
+    if (phone && (e.target as Element).closest("a, button:not([data-stay])")) setUnsavedOpen(false);
   };
   const style = { "--sidebar-width": `${layout.sidebarWidth}px` } as CSSProperties;
   return (
-    <div className={`workbench ${tier === "pc" ? "" : tier} ${open ? "" : "sidebar-closed"}`} style={style}>
+    <div
+      className={`workbench ${tier === "pc" ? "" : tier} ${docking && !phone ? "docking" : ""} ${open ? "" : "sidebar-closed"}`}
+      style={style}
+    >
       <nav className="activity">
         {PAGE_LINKS.map(({ page, href, Icon }) => (
           <a
@@ -100,7 +106,7 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
       </nav>
       {open ? (
         <>
-          {phone ? <div className="drawer-shade" onClick={() => setDrawer(false)} /> : null}
+          {phone ? <div className="drawer-shade" onClick={() => setUnsavedOpen(false)} /> : null}
           <aside className="sidebar" onClick={closeOnChoice}>
             {sidebar}
           </aside>
@@ -114,9 +120,9 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
         </>
       ) : null}
       <section className="editor">
-        <DockSlot.Provider value={phone ? dock : null}>{editor}</DockSlot.Provider>
+        <DockSlot.Provider value={docking ? dock : null}>{editor}</DockSlot.Provider>
       </section>
-      {phone ? <div className="dock" ref={setDock} /> : null}
+      {docking ? <div className="dock" ref={setDock} /> : null}
       <footer className="statusbar">
         {status}
         <select
