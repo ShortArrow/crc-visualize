@@ -12,6 +12,22 @@ const RED = "rgb(255, 92, 92)";
 export const TUTORIAL_STEPS = 15;
 
 /** Drives and observes the visualizer page in terms of steps, the diagram, the code and the log. */
+/** The accessibility roles of the controls a viewer operates, as workbench.cutControls collects them. */
+const CONTROL_ROLES = [
+  "button",
+  "link",
+  "checkbox",
+  "radio",
+  "combobox",
+  "listbox",
+  "slider",
+  "spinbutton",
+  "textbox",
+  "searchbox",
+  "switch",
+  "tab",
+] as const;
+
 export class Visualizer {
   private constructor(readonly page: Page) {}
 
@@ -300,6 +316,46 @@ export class Visualizer {
           }
         return clear / (xs.length * ys.length);
       }),
+    /**
+     * The controls inside the elements matched by scope, found by their accessibility role, that are cut off, each with the share
+     * of its box left in view (below 0.99). strict: every ancestor that clips, scrolling ones included, and the window count, so a
+     * control must be in view without scrolling. Otherwise a control only has to be reachable: ancestors below the nearest scrolling
+     * ancestor on each axis cut it, and that ancestor and the ones beyond do not.
+     */
+    cutControls: async (scope: string, strict: boolean) => {
+      const cut: { name: string; shown: number }[] = [];
+      for (const role of CONTROL_ROLES)
+        cut.push(
+          ...(await this.page
+            .locator(scope)
+            .getByRole(role)
+            .evaluateAll((els, strict) => {
+              const out: { name: string; shown: number }[] = [];
+              for (const el of els) {
+                const r = el.getBoundingClientRect();
+                if (r.width === 0 || r.height === 0 || getComputedStyle(el).visibility === "hidden") continue;
+                let [left, top, right, bottom] = [r.left, r.top, r.right, r.bottom];
+                let [clipX, clipY] = [true, true];
+                for (let a = el.parentElement; a; a = a.parentElement) {
+                  const s = getComputedStyle(a);
+                  const box = a.getBoundingClientRect();
+                  if (!strict && /auto|scroll/.test(s.overflowX)) clipX = false;
+                  if (!strict && /auto|scroll/.test(s.overflowY)) clipY = false;
+                  if (s.overflowX !== "visible" && clipX) [left, right] = [Math.max(left, box.left), Math.min(right, box.right)];
+                  if (s.overflowY !== "visible" && clipY) [top, bottom] = [Math.max(top, box.top), Math.min(bottom, box.bottom)];
+                }
+                if (clipX) [left, right] = [Math.max(left, 0), Math.min(right, innerWidth)];
+                if (clipY) [top, bottom] = [Math.max(top, 0), Math.min(bottom, innerHeight)];
+                const shown = (Math.max(0, right - left) * Math.max(0, bottom - top)) / (r.width * r.height);
+                const name = el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent?.trim() || el.tagName;
+                if (shown < 0.99)
+                  out.push({ name: `${el.tagName.toLowerCase()} "${name.slice(0, 30)}"`, shown: Math.round(shown * 100) / 100 });
+              }
+              return out;
+            }, strict)),
+        );
+      return cut;
+    },
     /** The bottom dock of a phone, which holds the controls a page docks and the one-line result of what they do. */
     dock: () => this.page.locator(".dock"),
     /** The one-line result shown in the phone dock (the verdict, or the index and value of the chosen table row). */
