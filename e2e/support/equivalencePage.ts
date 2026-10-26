@@ -13,7 +13,7 @@ export class EquivalencePage {
   /** Captures the substitution page that is already open. */
   static async shown(page: Page): Promise<EquivalencePage> {
     const e = new EquivalencePage(page);
-    await expect(e.root).toBeVisible();
+    await expect(e.root.first()).toBeVisible();
     return e;
   }
 

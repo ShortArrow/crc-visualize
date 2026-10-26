@@ -13,7 +13,7 @@ export class CheckPage {
   /** Captures the check page that is already open. */
   static async shown(page: Page): Promise<CheckPage> {
     const c = new CheckPage(page);
-    await expect(c.root).toBeVisible();
+    await expect(c.root.first()).toBeVisible();
     return c;
   }
 

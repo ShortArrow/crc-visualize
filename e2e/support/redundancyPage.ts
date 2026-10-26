@@ -13,7 +13,7 @@ export class RedundancyPage {
   /** Captures the redundancy page that is already open. */
   static async shown(page: Page): Promise<RedundancyPage> {
     const r = new RedundancyPage(page);
-    await expect(r.root).toBeVisible();
+    await expect(r.root.first()).toBeVisible();
     return r;
   }
 

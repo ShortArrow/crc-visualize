@@ -118,6 +118,8 @@ export class Visualizer {
           .forEach((a) => a.cancel()),
       ),
     stream: () => this.page.locator(".lfsr g.stream"),
+    /** The parts of the diagram being computed at this step: the register read, the registers hit, the lit gates and the arriving feedback box. */
+    activeParts: () => this.page.locator(".lfsr :is(.reg.msb, .reg.hit, .gate.active, .fb-box.arriving)"),
     particles: () => this.page.locator(".lfsr .particle"),
     particle: (route: string) => this.page.locator(`.lfsr .particle[data-route="${route}"]`),
     gate: (id: "input" | number) => this.page.locator(`.gate[data-gate="${id}"]`),
