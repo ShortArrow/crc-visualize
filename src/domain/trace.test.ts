@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { bits, plain3 } from "../testing/fixtures";
 import { PRESETS, TUTORIAL } from "./presets";
-import { bitsFromBytes, reflectValue, registerValue, trace, type Bit, type CrcParams } from "./trace";
+import { bitsFromBytes, reflectValue, registerValue, streamPosition, trace, type Bit, type CrcParams } from "./trace";
 
 const ascii = (s: string): Bit[] => bitsFromBytes([...new TextEncoder().encode(s)]);
 const crcOf = (params: CrcParams, input: readonly Bit[]): number => registerValue(trace(params, input).at(-1)!.reg);
@@ -95,5 +95,29 @@ describe("trace", () => {
     const params: CrcParams = { width: 32, poly: 0x04c11db7, init: 0xffffffff, refin: false, refout: false, xorout: 0 };
 
     expect(crcOf(params, [])).toBe(0xffffffff);
+  });
+});
+
+describe("streamPosition", () => {
+  const refin8: CrcParams = { width: 8, poly: 0x07, init: 0, refin: true, refout: false, xorout: 0 };
+  const steps = trace(refin8, bits("1100000010000000"));
+  const at = (kind: string, cursor: number) => steps.find((s) => s.kind === kind && s.cursor === cursor)!;
+
+  it("Given refin off, When any step is shown, Then every bit is at its own position", () => {
+    const plain = trace(plain3, bits("10101"));
+    expect([0, 4].map((k) => streamPosition(plain[0]!, false, k))).toEqual([0, 4]);
+  });
+  it("Given refin on, When no byte is reflected yet, Then each bit is at the mirrored position within its byte", () => {
+    expect([0, 7, 9].map((k) => streamPosition(steps[0]!, true, k))).toEqual([7, 0, 14]);
+  });
+  it("Given refin on, When byte 0 is reflected, Then its bits are in place and byte 1's are still mirrored", () => {
+    expect([0, 9].map((k) => streamPosition(at("reflectIn", 0), true, k))).toEqual([0, 14]);
+  });
+  it("Given refin on, When the last bit of byte 0 has been shifted in, Then byte 1 is still mirrored until its reflectIn", () => {
+    expect(streamPosition(at("shift", 8), true, 9)).toBe(14);
+    expect(streamPosition(at("reflectIn", 8), true, 9)).toBe(9);
+  });
+  it("Given refin on, When every bit is fed, Then every bit is at its own position", () => {
+    expect(streamPosition(steps.at(-1)!, true, 9)).toBe(9);
   });
 });

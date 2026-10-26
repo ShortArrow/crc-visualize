@@ -106,6 +106,34 @@ test.describe("Breakpoints", () => {
     });
   });
 
+  test("with refin, a bit's mark is above the value fed at its position, and moves with it when the byte is reflected", async ({
+    page,
+  }) => {
+    const v = await given("an 8-bit CRC with refin is open with a breakpoint on bit 0, before byte 0 is reflected", () =>
+      Visualizer.open(page, "?width=8&poly=0x07&init=0x0&refin=1&refout=0&xorout=0x0&inputMode=hex&input=01&bp=bit0"),
+    );
+    await then("the mark of bit 0 is above the last value of byte 0, which is fed first", () =>
+      expect.poll(() => v.debug.bitMarkPosition(0)).toBe(7),
+    );
+    await when("stepping forward to reflect byte 0", () => page.keyboard.press("ArrowRight"));
+    await then("the mark of bit 0 is above the first value", () => expect.poll(() => v.debug.bitMarkPosition(0)).toBe(0));
+    await when("pressing the first value of the input stream", () => v.debug.bit(0).click());
+    await then("the breakpoint on bit 0 is removed", () => expect(v.debug.bitMark(0)).toHaveCount(0));
+  });
+
+  test("with refin, pressing a value of a byte not yet reflected sets the breakpoint on the bit at which it is fed", async ({
+    page,
+  }) => {
+    const v = await given("an 8-bit CRC with refin is open, before byte 0 is reflected", () =>
+      Visualizer.open(page, "?width=8&poly=0x07&init=0x0&refin=1&refout=0&xorout=0x0&inputMode=hex&input=01"),
+    );
+    await when("pressing the first value of the input stream", () => v.debug.bitAt(0).click());
+    await then("bit 7 has the breakpoint, with its mark above that value", async () => {
+      await expect(v.debug.entry("bit7")).toBeVisible();
+      await expect.poll(() => v.debug.bitMarkPosition(7)).toBe(0);
+    });
+  });
+
   test("a byte breakpoint stops playback once the byte has been read, and playing again goes on to the end", async ({ page }) => {
     const v = await given("2 bytes are open", () => Visualizer.open(page, TWO_BYTES));
     await when("pressing byte 0 of the input stream", () => v.debug.byte(0).click());
