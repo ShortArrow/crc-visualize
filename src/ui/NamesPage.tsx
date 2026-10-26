@@ -207,7 +207,7 @@ function ParamTable({ target }: { target: ParamName | undefined }) {
                 </th>
                 <td>{info.title}</td>
                 <td>{info.summary}</td>
-                <td>{info.aliases.join(m.listSeparator)}</td>
+                <td data-label={m.names.paramTable.aliases}>{info.aliases.join(m.listSeparator)}</td>
               </tr>
             );
           })}

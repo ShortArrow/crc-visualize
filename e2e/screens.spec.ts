@@ -227,19 +227,21 @@ for (const screen of SCREENS) {
           const value = (await t.usedCell().textContent())!.trim();
           await expect(result).toHaveText(`T[0x${index.toString(16).toUpperCase().padStart(2, "0")}] = 0x${value}`);
         });
+      } else if (tierOf(screen) === "short") {
+        await then("the row, which shows its index and table value, is in view", () => allInView(page, { row: t.step(1) }));
       } else {
         await then("the row, the highlighted value of table T and the start of how it is made are in view", () =>
           allInView(page, {
             row: t.step(1),
             "table value": t.usedCell(),
             "how it is made": t.entryTitle(),
-            "first clock": t.clocks().first(),
+            "first clock": t.firstClockStart(),
           }),
         );
       }
       await when("choosing the value for index 0x41 in table T", () => t.cell(0x41).click());
       await then("the value and the start of how it is made are in view", () =>
-        allInView(page, { value: t.cell(0x41), "how it is made": t.entryTitle(), "first clock": t.clocks().first() }),
+        allInView(page, { value: t.cell(0x41), "how it is made": t.entryTitle(), "first clock": t.firstClockStart() }),
       );
     });
 

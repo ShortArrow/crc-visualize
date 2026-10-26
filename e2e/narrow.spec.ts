@@ -10,9 +10,9 @@ test.describe("Narrowing", () => {
     const n = await given("the path width = 16, poly = 0x1021 is open", () =>
       NarrowPage.open(page, "#narrow/width=16/poly=0x1021"),
     );
-    await then("the table has a row per remaining candidate, as many as the sidebar lists", async () => {
+    await then("the table has a row per remaining candidate, and the sidebar names none of them", async () => {
       await expect(n.tableRow()).toHaveCount(11);
-      await expect(n.candidates()).toHaveCount(11);
+      await expect(page.locator(".sidebar")).not.toContainText("CRC-16/KERMIT");
     });
     await then("CRC-16/KERMIT's row shows its parameters and its check value", () =>
       expect(n.tableRow("CRC-16/KERMIT")).toContainText(/0x1021.*0x0.*true.*true.*0x0.*0x2189/),

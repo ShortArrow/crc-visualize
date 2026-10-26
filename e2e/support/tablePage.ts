@@ -66,6 +66,14 @@ export class TablePage {
     return this.root.locator(".entry-clocks tbody tr");
   }
 
+  /**
+   * The leading cell (the clock number) of the first clock: where the clocks start. The clock table keeps its width and scrolls
+   * sideways on a narrow card, so its rows as a whole need not fit across the screen.
+   */
+  firstClockStart(): Locator {
+    return this.clocks().first().locator(":scope > :first-child");
+  }
+
   /** The rows of the byte-at-a-time computation, or row n (0-based). */
   step(n?: number): Locator {
     return this.root.locator(n === undefined ? ".table-steps .step-row" : `.table-steps .step-row[data-step="${n}"]`);

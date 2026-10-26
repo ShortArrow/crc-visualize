@@ -5,6 +5,7 @@ import { crcTable, entryClocks, tableDirection, tableRun, type TableDirection } 
 import { toRegister, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { DockedResult } from "./Dock";
+import { useRevealSpan } from "./reveal";
 import { toHex } from "./format";
 import { Explanation } from "./Explanation";
 
@@ -48,6 +49,7 @@ function TableMethod({ params, bits }: MethodProps) {
   const run = tableRun(params, bits);
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<number | undefined>(undefined);
+  const [entryTitle, firstClock] = useRevealSpan<HTMLHeadingElement, HTMLTableRowElement>([picked]);
   const used = run?.steps[step]?.index;
   const shown = picked ?? used ?? 0;
   return (
@@ -153,37 +155,41 @@ function TableMethod({ params, bits }: MethodProps) {
       </section>
       <section className="card entry-card">
         <div className="entry-text">
-          <h3 className="entry-title">{t.entryTitle(byteHex(shown), hex(table[shown]!, w))}</h3>
+          <h3 className="entry-title" ref={entryTitle}>
+            {t.entryTitle(byteHex(shown), hex(table[shown]!, w))}
+          </h3>
           <Explanation>{t.entryNote[direction]}</Explanation>
         </div>
-        <table className="entry-clocks">
-          <thead>
-            <tr>
-              <th>{t.clock}</th>
-              <th>{t.bit}</th>
-              <th>{t.feedback}</th>
-              <th>{t.shifted}</th>
-              <th>{t.xor}</th>
-              <th>{t.reg}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entryClocks(params, shown).map((c, k) => (
-              <tr key={k}>
-                <td>{k + 1}</td>
-                <td>{c.bit}</td>
-                <td>{c.feedback}</td>
-                <td>
-                  <code>{binary(c.shifted, w)}</code>
-                </td>
-                <td>{c.feedback ? <code>{binary(c.xor, w)}</code> : t.noXor}</td>
-                <td>
-                  <code>{binary(c.reg, w)}</code>
-                </td>
+        <div className="entry-clocks-scroll">
+          <table className="entry-clocks">
+            <thead>
+              <tr>
+                <th>{t.clock}</th>
+                <th>{t.bit}</th>
+                <th>{t.feedback}</th>
+                <th>{t.shifted}</th>
+                <th>{t.xor}</th>
+                <th>{t.reg}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {entryClocks(params, shown).map((c, k) => (
+                <tr key={k} ref={k === 0 ? firstClock : undefined}>
+                  <td>{k + 1}</td>
+                  <td>{c.bit}</td>
+                  <td>{c.feedback}</td>
+                  <td>
+                    <code>{binary(c.shifted, w)}</code>
+                  </td>
+                  <td>{c.feedback ? <code>{binary(c.xor, w)}</code> : t.noXor}</td>
+                  <td>
+                    <code>{binary(c.reg, w)}</code>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   );

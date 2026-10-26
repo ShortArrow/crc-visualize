@@ -36,9 +36,9 @@ export class NarrowPage {
     return this.node(depth).locator(`:scope > .branches > .branch[data-value="${value}"]`);
   }
 
-  /** The full names of the remaining candidates in the sidebar. */
+  /** The full names of the remaining candidates, in the first column of the table of candidates. */
   candidates(): Locator {
-    return this.page.locator(".sidebar .narrow-candidates li");
+    return this.tableRow().locator(":scope > td:first-child");
   }
 
   /** The rows of the table of remaining candidates, or the row of the preset named name. */

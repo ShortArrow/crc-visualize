@@ -16,6 +16,7 @@ import { useMessages } from "../i18n/I18n";
 import { Docked, DockedResult } from "./Dock";
 import { powerOfTwoText, powerText } from "./format";
 import { Explanation } from "./Explanation";
+import { useReveal } from "./reveal";
 
 const GRID_LIMIT = 128;
 
@@ -31,6 +32,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
   const n = sent.length;
   const k = n - generator.width;
   const [error, setError] = useState<Bit[]>(() => noError(n));
+  const grids = useReveal<HTMLDivElement>([error]);
   const received = xorBits(sent, error);
   const result = verdict(generator, error);
   const rowStyle = { "--bits": n } as CSSProperties;
@@ -67,8 +69,10 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
             <dt>{m.redundancy.ratio}</dt>
             <dd>1/{2 ** generator.width}</dd>
           </dl>
-          {2 ** n <= GRID_LIMIT ? <WordGrid generator={generator} received={bitsValue(received)} /> : null}
-          <CrcStripFigure generator={generator} received={received} />
+          <div className="space-figures" ref={grids}>
+            {2 ** n <= GRID_LIMIT ? <WordGrid generator={generator} received={bitsValue(received)} /> : null}
+            <CrcStripFigure generator={generator} received={received} />
+          </div>
           <Explanation>{m.redundancy.spaceNote(generator.width)}</Explanation>
         </section>
         <section className="card">
