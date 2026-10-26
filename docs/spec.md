@@ -227,6 +227,32 @@ The screen rules (this chapter and each page's chapter) hold on at least the fol
 | PC                | 3840×2160 at 100%                | 3840×2030       | The largest                                         |
 | PC                | MacBook Air 13-inch              | 1470×826        | The Mac default                                     |
 
+### What is in view right after an action
+
+On every target screen, right after each action below, everything in the right column is in view at once (the viewer does not need to scroll; the app may scroll it into view). When a pair of a screen and a page turns out not to fit, the way that page is shown on that screen is decided and written here.
+
+| Page        | Action                                         | In view at once                                                                                                                                             |
+| ----------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Visualizer  | Playing, or stepping forward                   | The playback controls, the part of the diagram being computed, the current pseudocode line, the newest log entry                                            |
+| Visualizer  | Pressing a bit or a byte of the input stream   | What was pressed and its mark                                                                                                                               |
+| Visualizer  | Hovering over a setting (PC)                   | The setting and the help pane                                                                                                                               |
+| Naming      | Hovering over a parameter name in the diagram  | The highlighted places where it is used, and the tag                                                                                                        |
+| Naming      | Choosing a parameter name link                 | That row of the table, highlighted                                                                                                                          |
+| Narrow down | Choosing a branch or a parameter               | The next fork that opened; once one candidate remains, its formal name and "Open in visualizer"                                                             |
+| Cyclic      | Rotating with ◀ or ▶                           | That button, both rings, the rotated bit string and its remainder                                                                                           |
+| Redundancy  | Pressing a bit of the received string          | The pressed bit, the verdict, the remainder, the yellow frame in the grid of CRCs that could follow the message (and in the grid of all strings when shown) |
+| Check       | Pressing a bit of the received string          | The pressed bit and both verdicts                                                                                                                           |
+| Table       | Choosing a row of the byte-by-byte computation | That row, the highlighted value in table T, the start of how the value is made                                                                              |
+| Table       | Choosing a value in table T                    | That value and the start of how it is made                                                                                                                  |
+| Estimation  | Pressing "Search"                              | The start of the results, or the error in a field if the input has one                                                                                      |
+
+The Equivalences page has no action, so only the whitespace rules below are checked on it.
+
+### Whitespace
+
+- In the PC layout (700 wide or more), no page leaves a large empty area on the right, and a page shorter than the screen brings its content down to at least 90% of the height of the editor area.
+- On a phone, no page sticks out sideways, and there is no large gap between the controls at the bottom and the drawing above them.
+
 ### Parameter mapping
 
 While the mouse or keyboard focus is on a settings panel field or a pseudocode chip, that parameter is "focused", and the places it is used are emphasized in cyan.
