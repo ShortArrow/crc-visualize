@@ -631,6 +631,7 @@ button.bp-gutter.bp-off::before {
   min-height: 0;
 }
 
+/* The split sets the size of the hardware pane, so containing it keeps each animation frame from laying out the whole page */
 .hardware {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -639,6 +640,7 @@ button.bp-gutter.bp-off::before {
   padding: 10px 12px;
   overflow-x: auto;
   overflow-y: hidden;
+  contain: strict;
 }
 
 .hardware h2 {
@@ -2879,8 +2881,10 @@ button.bit-cell:hover {
   grid-template-rows: auto minmax(0, 1fr);
 }
 
+/* On a phone the diagram sets the height of the hardware pane, so it cannot be contained */
 .phone .hardware {
   display: block;
+  contain: none;
 }
 
 .phone .lfsr {
