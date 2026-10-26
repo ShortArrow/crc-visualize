@@ -105,8 +105,10 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
               </button>
             </div>
           </Docked>
-          <Explanation>{m.redundancy.remainderNote}</Explanation>
-          <Explanation>{m.redundancy.guarantee(generator.width)}</Explanation>
+          <Explanation>
+            {m.redundancy.remainderNote}
+            {m.redundancy.guarantee(generator.width)}
+          </Explanation>
         </section>
       </div>
     </div>

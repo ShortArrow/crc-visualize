@@ -477,7 +477,7 @@ function Visualizer(props: VisualizerProps) {
           {short ? <PanelTabs value={tab} onChange={setTab} /> : null}
           <div className="software" {...tabPanel(short, "software", tab)}>
             <h2>
-              {m.visualizer.software}
+              {short ? null : m.visualizer.software}
               <CodeLangSelect value={codeLang} onChange={onCodeLang} />
             </h2>
             <CodeView
@@ -505,7 +505,7 @@ function Visualizer(props: VisualizerProps) {
             />
           )}
           <div className="log-pane" {...tabPanel(short, "log", tab)}>
-            <h2>{m.visualizer.log}</h2>
+            {short ? null : <h2>{m.visualizer.log}</h2>}
             <StepLog steps={steps} current={player.index} input={bits} check={check} />
           </div>
         </section>
