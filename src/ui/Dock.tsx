@@ -16,9 +16,13 @@ type Props = Readonly<{
  * with className and style (CSS custom properties are inherited along the DOM, not along React's tree). Elsewhere, they are shown in
  * place, without a wrapper.
  */
-export function Docked({ className = "", style, children }: Props) {
+export function Docked(props: Props) {
   const slot = useContext(DockSlot);
-  if (!slot) return <>{children}</>;
+  return slot ? inDock(slot, props) : <>{props.children}</>;
+}
+
+/** Puts children into the dock slot, inside a wrapper with className and style. */
+function inDock(slot: HTMLElement, { className = "", style, children }: Props) {
   return createPortal(
     <div className={`docked ${className}`} style={style}>
       {children}
