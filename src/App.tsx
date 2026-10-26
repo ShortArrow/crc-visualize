@@ -373,11 +373,17 @@ function Visualizer(props: VisualizerProps) {
 
   const [latest] = logEntries(steps, player.index, 1, m);
   const variables = <VariablesView steps={steps} index={player.index} />;
+  const variablesPane = (
+    <div className="variables-pane">
+      <h2>{m.debug.variables}</h2>
+      {variables}
+    </div>
+  );
   const sidebar = (
     <SidebarSections
       sections={[
         { id: "settings", title: m.settings.heading, body: settings },
-        ...(phone || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
+        ...(phone || short || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
         ...(invalid
           ? []
           : [
@@ -480,21 +486,20 @@ function Visualizer(props: VisualizerProps) {
               {short ? null : m.visualizer.software}
               <CodeLangSelect value={codeLang} onChange={onCodeLang} />
             </h2>
-            <CodeView
-              params={params}
-              step={step}
-              focus={focus}
-              lang={codeLang}
-              lineBreaks={lineBreaks}
-              onToggleLine={(runs) => onBreakpoints(toggleLine(breakpoints, runs))}
-            />
-          </div>
-          {phone ? (
-            <div className="variables-pane">
-              <h2>{m.debug.variables}</h2>
-              {variables}
+            <div className="software-body">
+              <CodeView
+                params={params}
+                step={step}
+                focus={focus}
+                lang={codeLang}
+                lineBreaks={lineBreaks}
+                onToggleLine={(runs) => onBreakpoints(toggleLine(breakpoints, runs))}
+                lineAtTop={short}
+              />
+              {short ? variablesPane : null}
             </div>
-          ) : null}
+          </div>
+          {phone ? variablesPane : null}
           {phone || short ? null : (
             <Splitter
               axis="x"

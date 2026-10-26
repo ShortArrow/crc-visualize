@@ -322,6 +322,11 @@ export class Visualizer {
       }),
     /** The tabs that switch between the software and the log on a short screen (data-tab is software or log). */
     panelTab: (name: "software" | "log") => this.page.locator(`.panel [role="tab"][data-tab="${name}"]`),
+    /** The code's heading in the lower panel (Software and the code-language select). */
+    codeHeading: () => this.page.locator(".panel > .software > h2"),
+    /** The variables placed in the Software pane of the lower panel, and the variables section of the sidebar. */
+    panelVariables: () => this.page.locator(".panel > .software .variables-pane"),
+    sidebarVariables: () => this.page.locator('.sidebar-section[data-section="variables"]'),
     /** The explanation paragraphs of the page, which a short screen closes at first (details elements, opened from their summary). */
     explanations: () => this.page.locator(".editor details[data-explain]"),
     /** The page switcher in the activity bar. */

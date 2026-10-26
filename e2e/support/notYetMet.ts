@@ -3,9 +3,7 @@
  * reports it as an unexpected pass, so the fix removes it from this list in the same change.
  */
 export const NOT_YET_MET: ReadonlySet<string> = new Set([
-  "on 1366×768 at 100% (1366×638), the visualizer keeps what an action changes in view",
   "on 1920×1080 at 150% (1280×590), the table page keeps what an action changes in view",
-  "on 1920×1080 at 150% (1280×590), the visualizer keeps what an action changes in view",
   "on 2560×1440 at 100% / 3840×2160 at 150% (2560×1310), the check page keeps what an action changes in view",
   "on 2560×1440 at 100% / 3840×2160 at 150% (2560×1310), the equivalences page leaves no large empty space",
   "on 3840×2160 at 100% (3840×2030), the check page keeps what an action changes in view",

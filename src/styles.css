@@ -3002,8 +3002,26 @@ button.bit-cell:hover {
   border-top: 1px solid var(--border);
 }
 
+/* The code scrolls sideways inside the Software pane, so the pane itself does not become a scroll container for its sticky heading */
 .phone .panel > .software {
+  overflow: visible;
+}
+
+.phone .software-body {
   overflow-x: auto;
+}
+
+/* On a phone the code's heading stays at the top of the block that scrolls, and the current line is brought into view below it */
+.phone .panel > .software > h2 {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  background: var(--bg);
+}
+
+.phone .code-line {
+  scroll-margin-top: 48px;
 }
 
 .phone .panel > .log-pane {
@@ -3191,6 +3209,75 @@ button.bit-cell:hover {
 
 .panel > [hidden] {
   display: none;
+}
+
+/* On a short screen the variables sit to the right of the code in the Software tab, or below it when the tab is narrower than 600 px */
+.short .panel > .software {
+  container-type: inline-size;
+}
+
+.short .software-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.short .software-body > .code {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.short .software-body > .variables-pane {
+  flex: 0 0 auto;
+  position: sticky;
+  top: var(--code-head);
+}
+
+/*
+ * On a short screen the code-language select stays at the top of the Software tab, and a current line out of view is brought to just
+ * below it, so it is never left cut under the select
+ */
+.short .panel > .software {
+  --code-head: 40px;
+  padding-top: 0;
+  scroll-padding-top: var(--code-head);
+}
+
+.short .code-line {
+  scroll-margin-block: 0;
+}
+
+.short .panel > .software > h2 {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  height: var(--code-head);
+  margin: 0;
+  background: var(--bg);
+}
+
+.short .software-body > .variables-pane h2 {
+  margin-top: 0;
+}
+
+@container (width < 600px) {
+  .short .software-body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/*
+ * On a short screen the help pane stays at the bottom of the settings section while the settings panel scrolls, at most a third of the
+ * screen high so it leaves the fields above it in view; a longer description scrolls inside it
+ */
+.short .param-help {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  max-height: 33vh;
+  overflow-y: auto;
 }
 
 .panel-tabs {

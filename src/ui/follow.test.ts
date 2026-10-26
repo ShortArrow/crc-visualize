@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { followScroll, followTarget } from "./follow";
+import { followScroll, followTarget, lineScroll } from "./follow";
 
 describe("followScroll", () => {
   it("Given the part already in view, When following, Then the scroll position stays", () => {
@@ -50,5 +50,20 @@ describe("followTarget", () => {
         { from: 300, to: 340 },
       ]),
     ).toEqual({ from: 300, to: 340 });
+  });
+});
+
+describe("lineScroll", () => {
+  it("Given the line wholly below the covered top of the view, When following, Then the scroll position stays", () => {
+    expect(lineScroll({ left: 100, width: 200 }, 40, { from: 150, to: 170 })).toBe(100);
+  });
+  it("Given the line partly under the covered top, When following, Then its top is put just below the covered part", () => {
+    expect(lineScroll({ left: 100, width: 200 }, 40, { from: 130, to: 150 })).toBe(90);
+  });
+  it("Given the line below the view, When following, Then its top is put just below the covered part", () => {
+    expect(lineScroll({ left: 100, width: 200 }, 40, { from: 290, to: 310 })).toBe(250);
+  });
+  it("Given a line near the start, When following, Then the scroll position is not below 0", () => {
+    expect(lineScroll({ left: 100, width: 200 }, 40, { from: 10, to: 30 })).toBe(0);
   });
 });

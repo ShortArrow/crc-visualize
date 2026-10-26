@@ -5,6 +5,15 @@ export type View = Readonly<{ left: number; width: number }>;
 export type Span = Readonly<{ from: number; to: number }>;
 
 /**
+ * Scroll position that brings line into view along the axis of view, when the first covered px of the view are hidden under a sticky
+ * heading. Keeps left when line is wholly in the uncovered part; otherwise puts its start just below the covered part, never below 0.
+ */
+export function lineScroll(view: View, covered: number, line: Span): number {
+  if (line.from >= view.left + covered && line.to <= view.left + view.width) return view.left;
+  return Math.max(0, line.from - covered);
+}
+
+/**
  * Scroll position that brings span into view. Keeps left when span is already wholly in view; otherwise centres span, or puts its left
  * edge at the left of the view when span is wider than the view. Never below 0.
  */
