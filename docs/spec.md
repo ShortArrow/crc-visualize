@@ -206,26 +206,29 @@ At `done` the register glows green, and the bit string "input + CRC" is shown.
 
 ### Target screens
 
-The screen rules (this chapter and each page's chapter) hold on at least the following screens. Sizes are in CSS px: for a phone, the portrait size without the browser's bars; for a PC, the resolution divided by the OS scaling, less 130 px of height for the browser's tabs and address bar and the taskbar. Browser zoom (Ctrl + +) makes CSS px smaller just as OS scaling does, so this list covers it too. The screens are the most common sizes in Japan (StatCounter) and those at the ends of width and height.
+The screen rules (this chapter and each page's chapter) hold on at least the following screens. Sizes are in CSS px: for a phone, the portrait size without the browser's bars; for a tablet, the screen less 74 px of height for the browser's tabs and address bar; for a PC, the resolution divided by the OS scaling, less 130 px of height for the browser's tabs and address bar and the taskbar. Browser zoom (Ctrl + +) makes CSS px smaller just as OS scaling does, so this list covers it too. The screens are the most common sizes in Japan (StatCounter) and those at the ends of width and height. On screens that get the PC layout (700 wide or more), the rules under Controls hold with the sidebar both open and closed, and the other rules with the sidebar as it is when the app opens.
 
-| Kind              | Model, or resolution and scaling | Screen (CSS px) | Why                                                 |
-| ----------------- | -------------------------------- | --------------- | --------------------------------------------------- |
-| Phone             | iPhone SE (3rd generation)       | 375×667         | The smallest                                        |
-| Phone             | iPhone 11 / XR                   | 414×896         | The most common in Japan                            |
-| Phone             | iPhone 12 to 14                  | 390×844         | Common                                              |
-| Phone             | iPhone 15 / 16                   | 393×852         | Growing                                             |
-| Phone             | iPhone 16 Pro Max                | 440×956         | The largest                                         |
-| Phone             | Pixel 8                          | 412×915         | Typical Android                                     |
-| Phone             | Galaxy S24                       | 360×780         | The narrowest                                       |
-| Phone (landscape) | iPhone 12 to 14                  | 844×390         | The lowest; 700 or wider, so it gets the PC layout  |
-| PC                | 1920×1080 at 100%                | 1920×950        | The most common                                     |
-| PC                | 1920×1080 at 125%                | 1536×734        | The default on laptops                              |
-| PC                | 1920×1080 at 150%                | 1280×590        | The lowest PC screen                                |
-| PC                | 1366×768 at 100%                 | 1366×638        | Older laptops                                       |
-| PC                | 2560×1440 at 100%                | 2560×1310       | Large screens                                       |
-| PC                | 3840×2160 at 150%                | 2560×1310       | The 4K default (the same size as 2560×1440 at 100%) |
-| PC                | 3840×2160 at 100%                | 3840×2030       | The largest                                         |
-| PC                | MacBook Air 13-inch              | 1470×826        | The Mac default                                     |
+| Kind               | Model, or resolution and scaling | Screen (CSS px) | Why                                                 |
+| ------------------ | -------------------------------- | --------------- | --------------------------------------------------- |
+| Phone              | iPhone SE (3rd generation)       | 375×667         | The smallest                                        |
+| Phone              | iPhone 11 / XR                   | 414×896         | The most common in Japan                            |
+| Phone              | iPhone 12 to 14                  | 390×844         | Common                                              |
+| Phone              | iPhone 15 / 16                   | 393×852         | Growing                                             |
+| Phone              | iPhone 16 Pro Max                | 440×956         | The largest                                         |
+| Phone              | Pixel 8                          | 412×915         | Typical Android                                     |
+| Phone              | Galaxy S24                       | 360×780         | The narrowest                                       |
+| Phone (landscape)  | iPhone 12 to 14                  | 844×390         | The lowest; 700 or wider, so it gets the PC layout  |
+| PC                 | 1920×1080 at 100%                | 1920×950        | The most common                                     |
+| PC                 | 1920×1080 at 125%                | 1536×734        | The default on laptops                              |
+| PC                 | 1920×1080 at 150%                | 1280×590        | The lowest PC screen                                |
+| PC                 | 1366×768 at 100%                 | 1366×638        | Older laptops                                       |
+| PC                 | 2560×1440 at 100%                | 2560×1310       | Large screens                                       |
+| PC                 | 3840×2160 at 150%                | 2560×1310       | The 4K default (the same size as 2560×1440 at 100%) |
+| PC                 | 3840×2160 at 100%                | 3840×2030       | The largest                                         |
+| PC                 | MacBook Air 13-inch              | 1470×826        | The Mac default                                     |
+| Tablet             | iPad (10th generation)           | 820×1106        | Typical tablet                                      |
+| Tablet (landscape) | iPad (10th generation)           | 1180×746        | Tablet held sideways                                |
+| Tablet             | iPad mini                        | 744×1059        | The narrowest tablet                                |
 
 ### What is in view right after an action
 
@@ -253,19 +256,26 @@ The Equivalences page has no action, so only the whitespace rules below are chec
 - In the PC layout (700 wide or more), no page leaves a large empty area on the right, and a page shorter than the screen brings its content down to at least 90% of the height of the editor area.
 - On a phone, no page sticks out sideways, and the gap between the controls at the bottom and the drawing above them is at most 48 px (one finger-sized button).
 
+### Controls
+
+- The playback controls (on a phone and on a short screen narrower than 1000 px, the controls placed below the editor) and the controls of the diagram heading (buttons, selects, sliders) are all in view without scrolling, on every target screen, whether the sidebar is open or closed.
+- The playback controls are laid out by the width of the editor area, not of the window. When the editor area is narrower than 800 px they take two rows: the buttons and the position first, then the seek bar, the speed mode and the speed rate.
+- The diagram heading fits the width of the diagram's area however wide the diagram is, and keeps the zoom buttons at its right end.
+- Every other control is cut off nowhere, and is in view once the scrolling area that holds it is scrolled.
+
 ### Screen tiers
 
 The layout comes in three tiers by width and height.
 
-| Tier         | When                               | Layout                                                                                                                                                                                                                        |
-| ------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Phone        | Narrower than 700                  | The phone layout above                                                                                                                                                                                                        |
-| Short screen | 700 wide or more, lower than 650   | The PC layout, with the playback controls packed into one row, the Visualizer's software and log in tabs instead of side by side, and the explanation paragraphs of other pages closed at first and opened from their heading |
-| PC           | 700 wide or more, 650 high or more | The PC layout (zoomed as a whole on screens larger than 1600×1000)                                                                                                                                                            |
+| Tier         | When                               | Layout                                                                                                                                                                                                                                                                                                    |
+| ------------ | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phone        | Narrower than 700                  | The phone layout above                                                                                                                                                                                                                                                                                    |
+| Short screen | 700 wide or more, lower than 650   | The PC layout, with the playback controls packed into one row (two rows, as under Controls, when the editor area is narrower than 800 px), the Visualizer's software and log in tabs instead of side by side, and the explanation paragraphs of other pages closed at first and opened from their heading |
+| PC           | 700 wide or more, 650 high or more | The PC layout (zoomed as a whole on screens larger than 1600×1000)                                                                                                                                                                                                                                        |
 
 - The explanation paragraphs that a short screen closes are those that say why at the start of a page or a section: on the Naming page, those of the name parts, the families and the parameter-name diagram; the opening explanation of the Narrow down, Equivalences, Estimation, Check and Table pages; on the Cyclic page, those of the two rings and of shortened codes; on the Redundancy page, those of what is redundant, the share of all strings, the remainder and the errors always found; on the Check page, those of the two ways to check, of their verdicts agreeing and of the check value; on the Table page, those of table T and of how a value is made. Legends, notes shown only under some condition, and results are not closed. Paragraphs that follow one another are closed together, under the heading Explanation. While the Visualizer shows tabs, the tabs stand for the headings of the software and log panes, and only the code-language select stays.
 - On a phone and on a short screen, the diagram's heading and legend stay on one line beside the zoom buttons, and the legend scrolls sideways.
-- On a short screen narrower than 1000 px, the sidebar starts closed every time the app is opened. The activity bar toggle and Ctrl+B (⌘+B on macOS) open and close it, and it sits beside the editor area as on a PC; like the phone drawer, its state there is neither saved nor taken from the saved layout. The saved state applies on wider screens.
+- On a screen narrower than 1000 px (a tablet held upright or a narrow window among them), whatever its height, the sidebar starts closed every time the app is opened. The activity bar toggle and Ctrl+B (⌘+B on macOS) open and close it, and it sits beside the editor area as on a PC; like the phone drawer, its state there is neither saved nor taken from the saved layout. The saved state applies on wider screens.
 - On a short screen narrower than 1000 px, the pages other than the Visualizer put what is tapped and what it results in below the editor area, as on a phone (the rotate buttons with the rotated bits and the remainder on the Cyclic page, the received sequence and the verdict on the Redundancy page, the sent sequence and the verdict on the Check page, the index and table value of the chosen row on the Table page), and the rest of the page scrolls above them. The two rings on the Cyclic page stand side by side and shrink to fit the height left above them. The Visualizer keeps its one-row playback controls at the top.
 - On a short screen, the Visualizer's variables (5) sit in the Software tab instead of the sidebar, to the right of the code, and stay at its top while the code scrolls. When the tab is narrower than 600 px, they sit below the code.
 - On a short screen, the code-language select stays at the top of the Software tab. A current line out of view is brought to the first row just below the select, so no line is left cut under it.

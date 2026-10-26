@@ -18,6 +18,9 @@ export const SCREENS: readonly Screen[] = [
   { name: "2560×1440 at 100% / 3840×2160 at 150%", width: 2560, height: 1310, phone: false },
   { name: "3840×2160 at 100%", width: 3840, height: 2030, phone: false },
   { name: "MacBook Air 13-inch", width: 1470, height: 826, phone: false },
+  { name: "iPad (10th generation)", width: 820, height: 1106, phone: false },
+  { name: "iPad (10th generation) in landscape", width: 1180, height: 746, phone: false },
+  { name: "iPad mini", width: 744, height: 1059, phone: false },
 ];
 
 /** The screen tiers of docs/spec.md chapter 7 ("Screen tiers"). */

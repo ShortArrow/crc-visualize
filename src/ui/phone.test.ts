@@ -19,12 +19,14 @@ describe("keepsSidebarState", () => {
     [1000, 600, true],
     [1280, 590, true],
     [1366, 638, true],
-    [844, 700, true],
+    [844, 700, false],
+    [820, 1106, false],
+    [1180, 746, true],
     [1920, 950, true],
   ] as const)(
     "Given a %i×%i window, When asking whether the saved sidebar state applies, Then it is %s",
-    (width, height, keeps) => {
-      expect(keepsSidebarState(width, height)).toBe(keeps);
+    (width, _height, keeps) => {
+      expect(keepsSidebarState(width)).toBe(keeps);
     },
   );
 });

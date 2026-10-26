@@ -106,14 +106,17 @@ body,
   background: var(--panel);
 }
 
-/* Pages size their drawings and tables against the editor's height (cqh), so that a short page grows down to the bottom of a tall screen */
+/*
+ * Pages size their drawings and tables against the editor's height (cqh), so that a short page grows down to the bottom of a tall
+ * screen; the playback controls lay themselves out by the editor's width (@container editor)
+ */
 .editor {
   grid-row: 1;
   grid-column: -2;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  container-type: size;
+  container: editor / size;
 }
 
 .statusbar {
@@ -367,11 +370,15 @@ button.bp-gutter.bp-off::before {
   background: var(--muted);
 }
 
-/* Bits of the input stream, and the lines under its bytes, that set or remove a breakpoint, and their marks */
+/*
+ * Bits of the input stream, and the lines under its bytes, that set or remove a breakpoint, and their marks; one scrolled into view
+ * to be pressed stops a little inside the pane, never cut by a fraction of a pixel at its edge
+ */
 .bit-hit,
 .byte-hit {
   fill: transparent;
   cursor: pointer;
+  scroll-margin: 4px;
 }
 
 .bit-hit:hover,
@@ -632,8 +639,12 @@ button.bp-gutter.bp-off::before {
   min-height: 0;
 }
 
-/* The split sets the size of the hardware pane, so containing it keeps each animation frame from laying out the whole page */
+/*
+ * The split sets the size of the hardware pane, so containing it keeps each animation frame from laying out the whole page; the
+ * heading measures the pane (cqi) rather than the diagram, which may be wider
+ */
 .hardware {
+  container: hardware / inline-size;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   grid-template-columns: minmax(0, 1fr);
@@ -655,6 +666,8 @@ button.bp-gutter.bp-off::before {
   position: sticky;
   top: 0;
   left: 0;
+  width: 100cqi;
+  box-sizing: border-box;
   z-index: 1;
   display: flex;
   align-items: flex-start;
@@ -1762,7 +1775,23 @@ button.bp-gutter.bp-off::before {
   list-style: none;
 }
 
+/*
+ * The texts give way to the language select, which stays whole at the right end however long they are; the step stays whole too,
+ * since on a phone it stands in for the newest log entry
+ */
+.statusbar > :not(.locale-select) {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusbar > .status-step {
+  flex-shrink: 0;
+}
+
 .statusbar .locale-select {
+  flex: 0 0 auto;
   margin-left: auto;
   padding: 0 4px;
   color: inherit;
@@ -3283,12 +3312,11 @@ button.bit-cell:hover {
 }
 
 /*
- * A short screen packs what takes height: the playback controls share one height in one row (the seek bar shrinks first, and a row
- * still wider than the editor scrolls sideways rather than clipping), and the panel shows one pane under tabs
+ * A short screen packs what takes height: the playback controls share one height in one row (the seek bar shrinks first), and the
+ * panel shows one pane under tabs
  */
 .short .visualizer .controls {
   padding: 3px 12px;
-  overflow-x: auto;
 }
 
 .short .controls .seek {
@@ -3409,4 +3437,29 @@ button.bit-cell:hover {
   color: var(--muted);
   font-size: 0.85rem;
   cursor: pointer;
+}
+
+/*
+ * An editor narrower than 800 px cannot hold the playback controls in one row, so they take two: the buttons and the position, then
+ * the seek bar and the speed, as in the dock
+ */
+@container editor (width < 800px) {
+  .visualizer > .controls {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+  }
+
+  .visualizer > .controls .counter {
+    flex: 1 0 auto;
+  }
+
+  .visualizer > .controls .seek {
+    order: 1;
+    flex: 1 1 100px;
+    min-width: 0;
+  }
+
+  .visualizer > .controls select {
+    order: 1;
+  }
 }
