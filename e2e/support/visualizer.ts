@@ -335,6 +335,8 @@ export class Visualizer {
     /** The icon of the sidebar toggle, whose lucide class names the panel opening or closing. */
     sidebarToggleIcon: () => this.page.locator(".activity .sidebar-toggle svg"),
     statusbar: () => this.page.locator(".statusbar"),
+    /** The step shown in the status bar, which stands in for the newest log entry on a phone or a short screen. */
+    statusStep: () => this.page.locator(".statusbar .status-step"),
     /** The shade behind the sidebar drawn over the editor on a phone; tapping it closes the sidebar. */
     drawerShade: () => this.page.locator(".drawer-shade"),
     /** The boxes of the activity bar, the editor area and the status bar, and the size of the window. */
