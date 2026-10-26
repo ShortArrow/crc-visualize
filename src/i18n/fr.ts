@@ -485,7 +485,6 @@ export const fr: Messages = {
     none: "Aucun paramètre ne convient.",
     initUnknown: "Sans paires de longueurs différentes, init et xorout ne sont pas uniques (valeurs pour init = 0).",
     more: (n: number) => `${n} de plus`,
-    name: "Nom officiel",
     open: "Ouvrir dans la visualisation",
     hintsTitle: "Réunir des paires",
     hints: [
@@ -497,4 +496,6 @@ export const fr: Messages = {
     errors: { notHex: "Illisible comme octets hexadécimaux", crc: "Saisissez une valeur hexadécimale qui tient sur width bits" },
   },
   listSeparator: ", ",
+  /** Heading of the official name of a preset in tables. */
+  presetName: "Nom officiel",
 };

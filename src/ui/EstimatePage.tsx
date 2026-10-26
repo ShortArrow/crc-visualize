@@ -188,7 +188,8 @@ type BruteProps = Readonly<{ brute: BruteForce; width: number; onOpen: (params: 
 
 /** The brute-force state and up to SHOWN_CANDIDATES candidates, each with its official name if it is a preset. Placed in the results card below the catalogue matches. */
 function BruteResults({ brute, width, onOpen }: BruteProps) {
-  const e = useMessages().estimate;
+  const m = useMessages();
+  const e = m.estimate;
   const shown = brute.candidates.slice(0, SHOWN_CANDIDATES);
   const message = {
     ok: brute.candidates.length ? undefined : e.none,
@@ -211,7 +212,7 @@ function BruteResults({ brute, width, onOpen }: BruteProps) {
               <th>refin</th>
               <th>refout</th>
               <th>xorout</th>
-              <th>{e.name}</th>
+              <th>{m.presetName}</th>
               <th />
             </tr>
           </thead>

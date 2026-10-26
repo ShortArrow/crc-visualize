@@ -491,7 +491,6 @@ export const es: Messages = {
     none: "No se encontraron parámetros que encajen.",
     initUnknown: "Sin pares de longitudes distintas, init y xorout no son únicos (valores para init = 0).",
     more: (n: number) => `${n} más`,
-    name: "Nombre oficial",
     open: "Abrir en el visualizador",
     hintsTitle: "Cómo reunir pares",
     hints: [
@@ -506,4 +505,6 @@ export const es: Messages = {
     },
   },
   listSeparator: ", ",
+  /** Heading of the official name of a preset in tables. */
+  presetName: "Nombre oficial",
 };

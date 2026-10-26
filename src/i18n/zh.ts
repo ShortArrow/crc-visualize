@@ -448,7 +448,6 @@ export const zh: Messages = {
     none: "没有找到符合的参数。",
     initUnknown: "没有长度不同的组，init 和 xorout 无法唯一确定（为 init = 0 时的值）。",
     more: (n: number) => `另有 ${n} 个`,
-    name: "正式名",
     open: "在可视化中打开",
     hintsTitle: "如何收集数据组",
     hints: [
@@ -460,4 +459,6 @@ export const zh: Messages = {
     errors: { notHex: "无法作为十六进制字节读取", crc: "请输入能放进 width 比特的十六进制数" },
   },
   listSeparator: "、",
+  /** Heading of the official name of a preset in tables. */
+  presetName: "正式名",
 };

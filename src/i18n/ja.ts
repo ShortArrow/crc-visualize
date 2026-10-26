@@ -467,7 +467,6 @@ export const ja = {
     none: "当てはまるパラメータは見つからなかった。",
     initUnknown: "長さの違う組が無いので init と xorout は 1 つに決まらない（init = 0 としたときの値）。",
     more: (n: number) => `ほかに ${n} 個`,
-    name: "正式名",
     open: "可視化で開く",
     hintsTitle: "組の集め方",
     hints: [
@@ -480,6 +479,8 @@ export const ja = {
   },
   /** List separator. */
   listSeparator: "、",
+  /** Heading of the official name of a preset in tables. */
+  presetName: "正式名",
 };
 
 export type Messages = typeof ja;

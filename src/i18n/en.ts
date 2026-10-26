@@ -478,7 +478,6 @@ export const en: Messages = {
     none: "No matching parameters were found.",
     initUnknown: "Without pairs of different lengths, init and xorout are not unique (values for init = 0).",
     more: (n: number) => `${n} more`,
-    name: "Official name",
     open: "Open in visualizer",
     hintsTitle: "Collecting pairs",
     hints: [
@@ -490,4 +489,6 @@ export const en: Messages = {
     errors: { notHex: "Not readable as hexadecimal bytes", crc: "Enter a hex value that fits in width bits" },
   },
   listSeparator: ", ",
+  /** Heading of the official name of a preset in tables. */
+  presetName: "Official name",
 };
