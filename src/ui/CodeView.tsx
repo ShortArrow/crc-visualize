@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import type { CrcParams, Step, StepKind } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { CODE_LANGS, codeLines, type CodeLang, type CodePart } from "./code";
@@ -31,13 +32,19 @@ type Props = Readonly<{
 /**
  * Writes the code (software representation) in lang. Highlights the line of the current step and shows parameters as chips.
  * Left of the line number of each line that runs a step, pressing sets or removes a breakpoint, shown as a dot (bp-set, or bp-off
- * when disabled).
+ * when disabled). When the current line changes and is out of view, the nearest scrolling area is scrolled to bring it into view.
  */
 export function CodeView({ params, step, focus, lang, lineBreaks, onToggleLine }: Props) {
   const m = useMessages();
+  const lines = codeLines(params, step, m, lang);
+  const ref = useRef<HTMLPreElement>(null);
+  const active = lines.findIndex((line) => line.active);
+  useLayoutEffect(() => {
+    ref.current?.querySelector(".code-line.active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [active, lang]);
   return (
-    <pre className="code" data-lang={lang}>
-      {codeLines(params, step, m, lang).map((line, i) => {
+    <pre ref={ref} className="code" data-lang={lang}>
+      {lines.map((line, i) => {
         const flags = [line.active && "active", line.skipped && "skipped", line.disabled && "disabled"];
         return (
           <div key={i} className={["code-line", ...flags].filter(Boolean).join(" ")}>

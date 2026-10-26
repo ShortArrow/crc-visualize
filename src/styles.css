@@ -1158,6 +1158,7 @@ button.bp-gutter.bp-off::before {
   display: flex;
   gap: 12px;
   padding: 0 8px;
+  scroll-margin-block: 8px;
   border-left: 3px solid transparent;
   white-space: pre;
   transition:
