@@ -69,7 +69,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
             <dt>{m.redundancy.ratio}</dt>
             <dd>1/{2 ** generator.width}</dd>
           </dl>
-          <div className="space-figures" ref={grids}>
+          <div className="space-figures" ref={grids} data-reveal>
             {2 ** n <= GRID_LIMIT ? <WordGrid generator={generator} received={bitsValue(received)} /> : null}
             <CrcStripFigure generator={generator} received={received} />
           </div>

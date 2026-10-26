@@ -155,7 +155,7 @@ function TableMethod({ params, bits }: MethodProps) {
       </section>
       <section className="card entry-card">
         <div className="entry-text">
-          <h3 className="entry-title" ref={entryTitle}>
+          <h3 className="entry-title" ref={entryTitle} data-reveal>
             {t.entryTitle(byteHex(shown), hex(table[shown]!, w))}
           </h3>
           <Explanation>{t.entryNote[direction]}</Explanation>
@@ -174,7 +174,7 @@ function TableMethod({ params, bits }: MethodProps) {
             </thead>
             <tbody>
               {entryClocks(params, shown).map((c, k) => (
-                <tr key={k} ref={k === 0 ? firstClock : undefined}>
+                <tr key={k} ref={k === 0 ? firstClock : undefined} data-reveal={k === 0 || undefined}>
                   <td>{k + 1}</td>
                   <td>{c.bit}</td>
                   <td>{c.feedback}</td>

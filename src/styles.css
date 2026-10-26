@@ -1154,6 +1154,11 @@ button.bp-gutter.bp-off::before {
   line-height: 1.6;
 }
 
+/* What is scrolled into view after an action stops a little inside the view, never cut by a fraction of a pixel at its edge */
+[data-reveal] {
+  scroll-margin-block: 2px;
+}
+
 .code-line {
   display: flex;
   gap: 12px;
