@@ -68,6 +68,17 @@ export function bitsFromBytes(bytes: readonly number[]): Bit[] {
 const xorRegister = (a: Register, b: Register): Register => a.map((x, i) => (x ^ b[i]!) as Bit);
 
 /**
+ * Position in step.stream of the value fed as bit k. With refin, a byte not yet reflected at this step shows that value at the
+ * mirrored position within the byte; otherwise it is k. The mapping is its own inverse, so it also gives the bit fed as the value
+ * shown at position k.
+ */
+export function streamPosition(step: Step, refin: boolean, k: number): number {
+  const started = step.kind === "reflectIn" || step.kind === "feedback" ? step.cursor + 1 : step.cursor;
+  const byteStart = k - (k % 8);
+  return refin && byteStart >= started ? byteStart + 7 - (k % 8) : k;
+}
+
+/**
  * Expands a CRC computation into a sequence of steps; the last step is always done, and its reg is the CRC.
  * Precondition: params satisfies the CrcParams invariant, and input.length is a multiple of 8 when refin is set.
  */
