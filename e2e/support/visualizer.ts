@@ -269,8 +269,8 @@ export class Visualizer {
         const r = el.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return 0;
         const svg = el.closest("svg");
-        const xs = [0.02, 0.25, 0.5, 0.75, 0.98].map((f) => r.left + f * r.width);
-        const ys = [0.05, 0.5, 0.95].map((f) => r.top + f * r.height);
+        const xs = [0.1, 0.3, 0.5, 0.7, 0.9].map((f) => r.left + f * r.width);
+        const ys = [0.15, 0.5, 0.85].map((f) => r.top + f * r.height);
         let clear = 0;
         for (const x of xs)
           for (const y of ys) {
