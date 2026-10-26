@@ -1,5 +1,5 @@
 import { useEffect, useRef, type CSSProperties } from "react";
-import { toRegister, type Bit, type CrcParams, type ParamName, type Step } from "../domain/trace";
+import { streamPosition, toRegister, type Bit, type CrcParams, type ParamName, type Step } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { lfsrLayout, type Point } from "./layout";
 import { routeKeyframes } from "./motion";
@@ -262,11 +262,12 @@ export function LfsrView(props: Props) {
               </text>
             );
           })}
-          {step.stream.map((_, k) => {
-            const x = streamX(k, grouped);
+          {step.stream.map((_, p) => {
+            const x = streamX(p, grouped);
+            const k = streamPosition(step, params.refin, p);
             const mark = bitBreaks.get(k);
             return (
-              <g key={`bit-${k}`}>
+              <g key={`bit-${p}`}>
                 <rect
                   className="bit-hit"
                   data-bit={k}
