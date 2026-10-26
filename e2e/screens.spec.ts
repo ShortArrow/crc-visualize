@@ -66,7 +66,7 @@ for (const screen of SCREENS) {
       await whitespace(page, screen);
       await when("stepping forward to the first XOR", () => v.goTo("xor"));
       await then(
-        "the controls, the most significant register, the head of the flow, the current line and the newest log entry are in view",
+        "the controls, the most significant register, the head of the flow, the current line and the newest step are in view",
         async () => {
           const head = await v.diagram.flowHead();
           expect(head, "something flows at the XOR").toBeDefined();
@@ -75,7 +75,9 @@ for (const screen of SCREENS) {
             "most significant register": await v.diagram.msb(),
             "head of the flow": head!,
             "current line": v.code.activeLine(),
-            "newest log entry": v.log.latest(),
+            ...(tierOf(screen) === "pc"
+              ? { "newest log entry": v.log.latest() }
+              : { "step in the status bar": v.workbench.statusStep() }),
           });
         },
       );
