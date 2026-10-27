@@ -6,7 +6,7 @@ LFSR（ハードウェア）の 1 クロックと、ビット単位 CRC 実装�
 
 公開先: https://crc.shortarrow.jp/
 
-仕様は [docs/spec.ja.md](docs/spec.ja.md)、設計判断は [docs/adr/](docs/adr/) にある。
+仕様は [docs/spec.ja.md](docs/spec.ja.md)、設計の意図は [docs/design.ja.md](docs/design.ja.md) にある。
 
 ## 使い方
 

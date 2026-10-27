@@ -6,7 +6,7 @@ An SPA that shows one clock of an LFSR (hardware) in step with one line of a bit
 
 Live at https://crc.shortarrow.jp/.
 
-The specification is in [docs/spec.md](docs/spec.md), and the design decisions are in [docs/adr/](docs/adr/).
+The specification is in [docs/spec.md](docs/spec.md), and the design intent is in [docs/design.md](docs/design.md).
 
 ## Usage
 
