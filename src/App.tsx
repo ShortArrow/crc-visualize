@@ -16,6 +16,7 @@ import { Controls } from "./ui/Controls";
 import { Docked } from "./ui/Dock";
 import { followElements } from "./ui/follow";
 import { DiagramZoomButtons, useDiagramZoom } from "./ui/DiagramZoom";
+import { useFittedPanelRatio } from "./ui/fitPanel";
 import { LfsrView } from "./ui/LfsrView";
 import { logEntries } from "./ui/log";
 import { NamesPage, NamesToc } from "./ui/NamesPage";
@@ -322,6 +323,7 @@ function Visualizer(props: VisualizerProps) {
   };
   const run = JSON.stringify([params, bits]);
   const zoom = useDiagramZoom(run, hardware);
+  const panelRatio = useFittedPanelRatio(split, hardware, layout.panelRatio, !phone && zoom.scale === undefined, [run]);
   const steps = useMemo(() => trace(params, bits), [run]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const [playerState, setPlayer] = useState(initialPlayer);
@@ -419,9 +421,7 @@ function Visualizer(props: VisualizerProps) {
       <div
         className="viz-split"
         ref={split}
-        style={
-          phone ? undefined : { gridTemplateRows: `minmax(0, ${1 - layout.panelRatio}fr) auto minmax(0, ${layout.panelRatio}fr)` }
-        }
+        style={phone ? undefined : { gridTemplateRows: `minmax(0, ${1 - panelRatio}fr) auto minmax(0, ${panelRatio}fr)` }}
       >
         <section className={`hardware ${zoom.scale === undefined ? "" : "zoomed"}`} ref={hardware}>
           <div className="hardware-head">

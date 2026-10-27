@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_PANES, fitLayout, restoreLayout, type PaneLayout } from "./panes";
+import { DEFAULT_PANES, fitLayout, fitPanelRatio, restoreLayout, type PaneLayout } from "./panes";
 
 const custom: PaneLayout = { sidebarOpen: false, sidebarWidth: 360, panelRatio: 0.5, codeRatio: 0.7 };
 
@@ -40,5 +40,26 @@ describe("fitLayout", () => {
 
   it("Given a sidebar wider than half the screen, When fitting it to a 1000px-wide screen, Then the sidebar is clamped to half the screen, 500px", () => {
     expect(fitLayout({ ...custom, sidebarWidth: 700 }, 1000).sidebarWidth).toBe(500);
+  });
+});
+
+describe("fitPanelRatio", () => {
+  const split = { height: 1000, chrome: 60, width: 800 };
+  const view = { width: 1600, height: 320 };
+
+  it("Given a diagram that shrinks to the area's width, When fitting, Then the panel takes all the height the drawn diagram leaves", () => {
+    expect(fitPanelRatio(0.4, split, view, 0)).toBeCloseTo(1 - (60 + 160) / 1000);
+  });
+
+  it("Given a diagram held at its smallest readable width, When fitting, Then the area keeps the height of the diagram at that width", () => {
+    expect(fitPanelRatio(0.4, split, view, 1200)).toBeCloseTo(1 - (60 + 240) / 1000);
+  });
+
+  it("Given a diagram that the area's height limits, When fitting, Then the chosen ratio stays", () => {
+    expect(fitPanelRatio(0.4, { ...split, width: 4000 }, view, 0)).toBe(0.4);
+  });
+
+  it("Given a tiny diagram, When fitting, Then the panel stops at the largest ratio", () => {
+    expect(fitPanelRatio(0.4, { ...split, width: 100 }, view, 0)).toBe(0.85);
   });
 });
