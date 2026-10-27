@@ -1865,6 +1865,30 @@ button.bp-gutter.bp-off::before {
   margin: 0 auto;
 }
 
+/*
+ * In an upright editor area the two rings stack on the left, and the controls, the rotated bits and the explanation stand to their
+ * right, so that both rings and the controls fit the height together
+ */
+@container (orientation: portrait) {
+  .workbench:not(.phone, .docking) .cyclic-rings {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr);
+  }
+
+  .workbench:not(.phone, .docking) .cyclic-rings > figure {
+    grid-column: 1;
+  }
+
+  .workbench:not(.phone, .docking) .cyclic-rings > .cyclic-side {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .workbench:not(.phone, .docking) .cyclic-rings svg {
+    max-height: calc(50cqh - var(--ring-chrome, 190px));
+  }
+}
+
 .cyclic-rings svg text {
   fill: var(--fg);
   font-family: var(--mono);
