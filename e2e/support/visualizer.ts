@@ -176,6 +176,26 @@ export class Visualizer {
       await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
       await cdp.detach();
     },
+    /** The width (px) of the diagram's area. */
+    areaWidth: async () => (await this.page.locator(".hardware").boundingBox())!.width,
+    /**
+     * How the diagram fits its area: the size and bottom of its box, the height-to-width ratio of the drawing (its view box), the
+     * bottom of its area and the area's bottom padding (px).
+     */
+    fit: () =>
+      this.page.evaluate(() => {
+        const svg = document.querySelector<SVGSVGElement>("svg.lfsr")!;
+        const area = document.querySelector(".hardware")!;
+        const [box, view] = [svg.getBoundingClientRect(), svg.viewBox.baseVal];
+        return {
+          boxWidth: box.width,
+          boxHeight: box.height,
+          boxBottom: box.bottom,
+          aspect: view.height / view.width,
+          areaBottom: area.getBoundingClientRect().bottom,
+          padding: parseFloat(getComputedStyle(area).paddingBottom),
+        };
+      }),
     /** The width (px) the diagram is drawn at. */
     drawnWidth: async () => (await this.page.locator("svg.lfsr").boundingBox())!.width,
     particles: () => this.page.locator(".lfsr .particle"),

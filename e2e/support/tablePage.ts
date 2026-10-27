@@ -41,6 +41,13 @@ export class TablePage {
     return this.root.locator(".crc-table .table-cell.used");
   }
 
+  /** Whether the byte-by-byte card sits beside the table T, sharing its row. */
+  async besideTable(): Promise<boolean> {
+    const steps = (await this.root.locator(".page-columns > :first-child").boundingBox())!;
+    const table = (await this.root.locator(".page-columns > :has(.crc-table)").boundingBox())!;
+    return Math.abs(steps.y - table.y) < 1;
+  }
+
   /** The note under the page heading. */
   note(): Locator {
     return this.root.locator(":scope > .note").first();
