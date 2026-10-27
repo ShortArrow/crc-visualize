@@ -528,7 +528,8 @@ export class Visualizer {
      * How far across the editor area the content reaches in the first screen: the editor is cut into horizontal strips 40 px high,
      * and for each strip that holds content the right edge of the furthest text or drawing is taken as a share of the editor width (0 to 1).
      * Headings are left out, as they are short by nature. A card counts as drawn across its whole box, since how far its own
-     * content reaches is checked card by card (cardLayout's narrow and sparse). Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
+     * content reaches is checked card by card (cardLayout's narrow and sparse). So does the visualizer's Progress pane, which its
+     * entries fill while playing. Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
      */
     contentFill: () =>
       this.page.evaluate(() => {
@@ -544,7 +545,7 @@ export class Visualizer {
         }
         const drawn = [
           ...document.querySelectorAll(
-            ".editor :is(svg, button, input, select, .bit-cell, .word-dot, :is(.page-columns, .names-page) > :not(.page-columns))",
+            ".editor :is(svg, button, input, select, .bit-cell, .word-dot, :is(.page-columns, .names-page) > :not(.page-columns), .panel > .log-pane)",
           ),
         ];
         const rects = [...inked, ...drawn.map((el) => el.getBoundingClientRect())].filter(
