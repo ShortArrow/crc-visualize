@@ -3304,11 +3304,22 @@ button.bit-cell:hover {
   white-space: pre-wrap;
 }
 
-/* The heading of the diagram stays on one line beside the zoom buttons, and its legend scrolls sideways, so it does not take the diagram's height */
+/*
+ * On a phone, a short screen or a diagram's area narrower than 800 px, the heading of the diagram stays on one line beside the zoom
+ * buttons, and its legend scrolls sideways, so it does not take the diagram's height
+ */
 :is(.phone, .short) .hardware-head h2 {
   white-space: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
+}
+
+@container hardware (width < 800px) {
+  .hardware-head h2 {
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
 }
 
 /*
