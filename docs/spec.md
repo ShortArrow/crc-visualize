@@ -56,11 +56,11 @@ r'[0]    = feedback AND poly[0]
 r'[i]    = r[i-1] XOR (feedback AND poly[i])   (1 ≤ i < width)
 ```
 
-- The diagram draws this one clock in two stages, "shift" and "XOR with `poly`", the same as the pseudocode ([ADR-0003](adr/0003-diagram-follows-steps.md)).
+- The diagram draws this one clock in two stages, "shift" and "XOR with `poly`", the same as the pseudocode (the reason is in "The LFSR diagram follows the step split" in the [design intent](design.md)).
 - All boxes are connected by horizontal lines. In a shift, every value moves straight across from the box on its right, and a 0 enters `r[0]` from the right end.
 - One XOR gate is placed directly below `r[i]` for each position `i` with `poly[i] = 1` (including `i = 0`). The left leg coming down from `r[i]` and the feedback line coming from below meet at the gate, and the result goes up the right leg back into `r[i]`.
 - The XOR gate for the input bit and the most significant bit is placed at the exit on the left end of the register, and the feedback line runs from there to each gate.
-- There is no zero padding of the input (augmentation). The reason is in [ADR-0001](adr/0001-direct-lfsr.md).
+- There is no zero padding of the input (augmentation). The reason is in "The hardware model is a direct LFSR" in the [design intent](design.md).
 
 ## 4. Software view (pseudocode)
 
