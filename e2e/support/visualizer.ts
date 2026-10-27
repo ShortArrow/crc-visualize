@@ -531,7 +531,7 @@ export class Visualizer {
      * and for each strip that holds content the right edge of the furthest text or drawing is taken as a share of the editor width (0 to 1).
      * Headings are left out, as they are short by nature. A card counts as drawn across its whole box, since how far its own
      * content reaches is checked card by card (cardLayout's narrow and sparse). So do the visualizer's panes below the diagram,
-     * whose size the splitters set rather than their content. Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
+     * whose size the splitters set rather than their content, even where one spans the whole editor (a tab on a short screen). Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
      */
     contentFill: () =>
       this.page.evaluate(() => {
@@ -547,15 +547,20 @@ export class Visualizer {
         }
         const drawn = [
           ...document.querySelectorAll(
-            ".editor :is(svg, button, input, select, .bit-cell, .word-dot, :is(.page-columns, .names-page) > :not(.page-columns), .panel > :is(.software, .log-pane))",
+            ".editor :is(svg, button, input, select, .bit-cell, .word-dot, :is(.page-columns, .names-page) > :not(.page-columns))",
           ),
         ];
         const rects = [...inked, ...drawn.map((el) => el.getBoundingClientRect())].filter(
           (r) => r.width > 0 && r.height > 0 && r.bottom > editor.top && r.top < editor.bottom,
         );
+        const panes = [...document.querySelectorAll(".editor .panel > :is(.software, .log-pane)")]
+          .map((el) => el.getBoundingClientRect())
+          .filter((r) => r.width > 0 && r.height > 0);
         const shares: number[] = [];
         for (let y = editor.top; y < editor.bottom; y += 40) {
-          const inStrip = rects.filter((r) => r.top < y + 40 && r.bottom > y && r.width < editor.width - 1);
+          const inStrip = [...rects.filter((r) => r.width < editor.width - 1), ...panes].filter(
+            (r) => r.top < y + 40 && r.bottom > y,
+          );
           if (inStrip.length) shares.push((Math.max(...inStrip.map((r) => r.right)) - editor.left) / editor.width);
         }
         return shares.filter((share) => share > 0.55).length / shares.length;
