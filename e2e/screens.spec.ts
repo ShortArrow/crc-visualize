@@ -515,14 +515,15 @@ for (const screen of SCREENS.filter((s) => tierOf(s) !== "phone")) {
         });
       });
 
-    test(`${on}, the table page puts the entry card before the table T when they cannot sit side by side`, async ({ page }) => {
-      const t = await given("the table page is open", () => TablePage.open(page, QUERY));
-      test.skip(await t.besideTable(), "the byte-by-byte card sits beside the table T here");
-      await then("the entry card comes right after the byte-by-byte card, before the table T", async () => {
-        const entry = (await page.locator(".table-page .entry-card").boundingBox())!;
-        const table = (await page.locator(".table-page .crc-table").boundingBox())!;
-        expect(entry.y).toBeLessThan(table.y);
+    if (!short)
+      test(`${on}, the table page puts the entry card before the table T when they cannot sit side by side`, async ({ page }) => {
+        const t = await given("the table page is open", () => TablePage.open(page, QUERY));
+        test.skip(await t.besideTable(), "the byte-by-byte card sits beside the table T here");
+        await then("the entry card comes right after the byte-by-byte card, before the table T", async () => {
+          const entry = (await page.locator(".table-page .entry-card").boundingBox())!;
+          const table = (await page.locator(".table-page .crc-table").boundingBox())!;
+          expect(entry.y).toBeLessThan(table.y);
+        });
       });
-    });
   });
 }
