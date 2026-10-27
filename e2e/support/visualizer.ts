@@ -180,7 +180,7 @@ export class Visualizer {
     areaWidth: async () => (await this.page.locator(".hardware").boundingBox())!.width,
     /**
      * How the diagram fits its area: the size and bottom of its box, the height-to-width ratio of the drawing (its view box), the
-     * bottom of its area and the area's bottom padding (px).
+     * bottom of its area and the area's bottom padding (px on the screen, so enlarged with the whole app on a large screen).
      */
     fit: () =>
       this.page.evaluate(() => {
@@ -193,7 +193,9 @@ export class Visualizer {
           boxBottom: box.bottom,
           aspect: view.height / view.width,
           areaBottom: area.getBoundingClientRect().bottom,
-          padding: parseFloat(getComputedStyle(area).paddingBottom),
+          padding:
+            (parseFloat(getComputedStyle(area).paddingBottom) * area.getBoundingClientRect().height) /
+            (area as HTMLElement).offsetHeight,
         };
       }),
     /** The width (px) the diagram is drawn at. */
@@ -528,8 +530,8 @@ export class Visualizer {
      * How far across the editor area the content reaches in the first screen: the editor is cut into horizontal strips 40 px high,
      * and for each strip that holds content the right edge of the furthest text or drawing is taken as a share of the editor width (0 to 1).
      * Headings are left out, as they are short by nature. A card counts as drawn across its whole box, since how far its own
-     * content reaches is checked card by card (cardLayout's narrow and sparse). So does the visualizer's Progress pane, which its
-     * entries fill while playing. Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
+     * content reaches is checked card by card (cardLayout's narrow and sparse). So do the visualizer's panes below the diagram,
+     * whose size the splitters set rather than their content. Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
      */
     contentFill: () =>
       this.page.evaluate(() => {
@@ -545,7 +547,7 @@ export class Visualizer {
         }
         const drawn = [
           ...document.querySelectorAll(
-            ".editor :is(svg, button, input, select, .bit-cell, .word-dot, :is(.page-columns, .names-page) > :not(.page-columns), .panel > .log-pane)",
+            ".editor :is(svg, button, input, select, .bit-cell, .word-dot, :is(.page-columns, .names-page) > :not(.page-columns), .panel > :is(.software, .log-pane))",
           ),
         ];
         const rects = [...inked, ...drawn.map((el) => el.getBoundingClientRect())].filter(
