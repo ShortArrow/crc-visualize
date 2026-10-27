@@ -255,6 +255,10 @@ for (const screen of SCREENS) {
         });
       } else if (tierOf(screen) === "short") {
         await then("the row, which shows its index and table value, is in view", () => allInView(page, { row: t.step(1) }));
+      } else if (!(await t.besideTable())) {
+        await then("the row and the start of how its value is made, whose heading shows the value, are in view", () =>
+          allInView(page, { row: t.step(1), "how it is made": t.entryTitle(), "first clock": t.firstClockStart() }),
+        );
       } else {
         await then("the row, the highlighted value of table T and the start of how it is made are in view", () =>
           allInView(page, {
@@ -406,23 +410,6 @@ for (const screen of SCREENS.filter((s) => tierOf(s) === "short")) {
       });
     });
 
-    test(`${on}, the variables sit in the software tab, beside the code when it is 600 px wide or more and below it otherwise`, async ({
-      page,
-    }) => {
-      const v = await given("the visualizer is open with a 16-bit CRC", () => Visualizer.open(page, QUERY));
-      await then("the variables are in the software tab and not in the sidebar", async () => {
-        await expect(v.workbench.panelVariables()).toBeVisible();
-        await expect(v.workbench.sidebarVariables()).toHaveCount(0);
-      });
-      await then("they are beside the code when the tab is wide enough, and below it otherwise", async () => {
-        const tab = (await page.locator(".panel > .software").boundingBox())!;
-        const code = (await page.locator(".panel > .software .code").boundingBox())!;
-        const vars = (await v.workbench.panelVariables().boundingBox())!;
-        if (tab.width >= 600) expect(vars.x, "right of the code").toBeGreaterThanOrEqual(code.x + code.width - 1);
-        else expect(vars.y, "below the code").toBeGreaterThanOrEqual(code.y + code.height - 1);
-      });
-    });
-
     test(`${on}, the code-language select and the current line stay in view, and no code line is cut at the top of the code`, async ({
       page,
     }) => {
@@ -462,5 +449,81 @@ for (const screen of SCREENS.filter((s) => tierOf(s) === "short")) {
         await then("it opens", () => expect(v.workbench.explanations().first()).toHaveAttribute("open"));
       });
     }
+  });
+}
+
+for (const screen of SCREENS.filter((s) => tierOf(s) !== "phone")) {
+  const on = `on ${screen.name} (${screen.width}×${screen.height})`;
+  const short = tierOf(screen) === "short";
+  const docking = short && screen.width < 1000;
+
+  test.describe(`Screens: PC layout ${on}`, () => {
+    test.beforeEach(async ({ page }) => {
+      await page.setViewportSize({ width: screen.width, height: screen.height });
+    });
+
+    test(`${on}, the diagram's area is no taller than the diagram drawn to its width, and its legend stays on one line when the area is narrower than 800 px`, async ({
+      page,
+    }) => {
+      const v = await given("the visualizer is open with a 16-bit CRC", () => Visualizer.open(page, QUERY));
+      await then("the diagram's box is no taller than the diagram at its width, and the area ends right below it", async () => {
+        const fit = await v.diagram.fit();
+        expect(fit.boxHeight, "no band above or below the drawing").toBeLessThanOrEqual(fit.boxWidth * fit.aspect + 2);
+        expect(fit.areaBottom - fit.boxBottom, "no band below the diagram").toBeLessThanOrEqual(fit.padding + 2);
+      });
+      if ((await v.diagram.areaWidth()) < 800)
+        await then("the heading and the legend share one line with the zoom buttons", async () => {
+          const heading = (await page.locator(".hardware-head h2").boundingBox())!;
+          const zoom = (await v.diagram.zoom("fit").boundingBox())!;
+          expect(heading.height).toBeLessThanOrEqual(zoom.height + 2);
+        });
+    });
+
+    if (short || screen.width < 1000)
+      test(`${on}, the variables sit in the software tab or pane, beside the code when it is 600 px wide or more and below it otherwise`, async ({
+        page,
+      }) => {
+        const v = await given("the visualizer is open with a 16-bit CRC", () => Visualizer.open(page, QUERY));
+        await then("the variables are in the software tab or pane and not in the sidebar", async () => {
+          await expect(v.workbench.panelVariables()).toBeVisible();
+          await expect(v.workbench.sidebarVariables()).toHaveCount(0);
+        });
+        await then("they are beside the code when the tab or pane is wide enough, and below it otherwise", async () => {
+          const tab = (await page.locator(".panel > .software").boundingBox())!;
+          const code = (await page.locator(".panel > .software .code").boundingBox())!;
+          const vars = (await v.workbench.panelVariables().boundingBox())!;
+          if (tab.width >= 600) expect(vars.x, "right of the code").toBeGreaterThanOrEqual(code.x + code.width - 1);
+          else expect(vars.y, "below the code").toBeGreaterThanOrEqual(code.y + code.height - 1);
+        });
+      });
+
+    if (!docking)
+      test(`${on}, the cyclic page stacks the rings on the left with the controls to their right when the editor area is upright`, async ({
+        page,
+      }) => {
+        const c = await given("the cyclic page is open", () => CyclicPage.open(page, "#cyclic"));
+        const editor = await Visualizer.on(page).workbench.size(".editor");
+        test.skip(editor.height <= editor.width, "the editor area is not upright here");
+        await then("the state ring is below the word ring, and the rotate button is to the right of both", async () => {
+          const word = (await page.locator(".word-ring").boundingBox())!;
+          const state = (await page.locator(".state-ring").boundingBox())!;
+          const button = (await c.forward().boundingBox())!;
+          expect(state.y, "state ring below").toBeGreaterThanOrEqual(word.y + word.height - 1);
+          expect(button.x, "button to the right").toBeGreaterThanOrEqual(
+            Math.max(word.x + word.width, state.x + state.width) - 1,
+          );
+        });
+      });
+
+    if (!short)
+      test(`${on}, the table page puts the entry card before the table T when they cannot sit side by side`, async ({ page }) => {
+        const t = await given("the table page is open", () => TablePage.open(page, QUERY));
+        test.skip(await t.besideTable(), "the byte-by-byte card sits beside the table T here");
+        await then("the entry card comes right after the byte-by-byte card, before the table T", async () => {
+          const entry = (await page.locator(".table-page .entry-card").boundingBox())!;
+          const table = (await page.locator(".table-page .crc-table").boundingBox())!;
+          expect(entry.y).toBeLessThan(table.y);
+        });
+      });
   });
 }

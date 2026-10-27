@@ -1865,6 +1865,30 @@ button.bp-gutter.bp-off::before {
   margin: 0 auto;
 }
 
+/*
+ * In an upright editor area the two rings stack on the left, and the controls, the rotated bits and the explanation stand to their
+ * right, so that both rings and the controls fit the height together
+ */
+@container (orientation: portrait) {
+  .workbench:not(.phone, .docking) .cyclic-rings {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr);
+  }
+
+  .workbench:not(.phone, .docking) .cyclic-rings > figure {
+    grid-column: 1;
+  }
+
+  .workbench:not(.phone, .docking) .cyclic-rings > .cyclic-side {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .workbench:not(.phone, .docking) .cyclic-rings svg {
+    max-height: calc(50cqh - var(--ring-chrome, 190px));
+  }
+}
+
 .cyclic-rings svg text {
   fill: var(--fg);
   font-family: var(--mono);
@@ -3145,15 +3169,7 @@ button.bit-cell:hover {
   margin-right: -4px;
 }
 
-/* The table page puts the entry card right after the byte-by-byte card, and keeps the row headings of the table T while it scrolls */
-.phone .table-page .entry-card {
-  order: -1;
-}
-
-.phone .table-page .page-columns > :first-child {
-  order: -2;
-}
-
+/* The table page keeps the row headings of the table T while it scrolls */
 .phone .crc-table tbody th {
   position: sticky;
   left: 0;
@@ -3289,6 +3305,20 @@ button.bit-cell:hover {
   flex-basis: min-content;
 }
 
+/*
+ * Outside a short screen, an editor area too narrow for the byte-by-byte card beside table T puts the entry card right after it, before
+ * table T
+ */
+@container editor (width < 1060px) {
+  .workbench:not(.short) .table-page .page-columns > :first-child {
+    order: -2;
+  }
+
+  .workbench:not(.short) .table-page .entry-card {
+    order: -1;
+  }
+}
+
 .table-steps th {
   word-break: keep-all;
 }
@@ -3304,11 +3334,22 @@ button.bit-cell:hover {
   white-space: pre-wrap;
 }
 
-/* The heading of the diagram stays on one line beside the zoom buttons, and its legend scrolls sideways, so it does not take the diagram's height */
+/*
+ * On a phone, a short screen or a diagram's area narrower than 800 px, the heading of the diagram stays on one line beside the zoom
+ * buttons, and its legend scrolls sideways, so it does not take the diagram's height
+ */
 :is(.phone, .short) .hardware-head h2 {
   white-space: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
+}
+
+@container hardware (width < 800px) {
+  .hardware-head h2 {
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
 }
 
 /*
@@ -3342,26 +3383,29 @@ button.bit-cell:hover {
   display: none;
 }
 
-/* On a short screen the variables sit to the right of the code in the Software tab, or below it when the tab is narrower than 600 px */
-.short .panel > .software {
+/*
+ * Where the variables sit in the Software tab or pane, they are to the right of the code, or below it when the tab or pane is narrower
+ * than 600 px
+ */
+.panel > .software:has(.variables-pane) {
   container-type: inline-size;
 }
 
-.short .software-body {
+.software-body:has(> .variables-pane) {
   display: flex;
   gap: 16px;
   align-items: flex-start;
 }
 
-.short .software-body > .code {
+.software-body > .code {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.short .software-body > .variables-pane {
+.software-body > .variables-pane {
   flex: 0 0 auto;
   position: sticky;
-  top: var(--code-head);
+  top: var(--code-head, 0);
 }
 
 /*
@@ -3388,12 +3432,12 @@ button.bit-cell:hover {
   background: var(--bg);
 }
 
-.short .software-body > .variables-pane h2 {
+.software-body > .variables-pane h2 {
   margin-top: 0;
 }
 
 @container (width < 600px) {
-  .short .software-body {
+  .software-body:has(> .variables-pane) {
     flex-direction: column;
     align-items: stretch;
   }

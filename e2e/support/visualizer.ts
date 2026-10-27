@@ -176,6 +176,28 @@ export class Visualizer {
       await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
       await cdp.detach();
     },
+    /** The width (px) of the diagram's area. */
+    areaWidth: async () => (await this.page.locator(".hardware").boundingBox())!.width,
+    /**
+     * How the diagram fits its area: the size and bottom of its box, the height-to-width ratio of the drawing (its view box), the
+     * bottom of its area and the area's bottom padding (px on the screen, so enlarged with the whole app on a large screen).
+     */
+    fit: () =>
+      this.page.evaluate(() => {
+        const svg = document.querySelector<SVGSVGElement>("svg.lfsr")!;
+        const area = document.querySelector(".hardware")!;
+        const [box, view] = [svg.getBoundingClientRect(), svg.viewBox.baseVal];
+        return {
+          boxWidth: box.width,
+          boxHeight: box.height,
+          boxBottom: box.bottom,
+          aspect: view.height / view.width,
+          areaBottom: area.getBoundingClientRect().bottom,
+          padding:
+            (parseFloat(getComputedStyle(area).paddingBottom) * area.getBoundingClientRect().height) /
+            (area as HTMLElement).offsetHeight,
+        };
+      }),
     /** The width (px) the diagram is drawn at. */
     drawnWidth: async () => (await this.page.locator("svg.lfsr").boundingBox())!.width,
     particles: () => this.page.locator(".lfsr .particle"),
@@ -508,7 +530,8 @@ export class Visualizer {
      * How far across the editor area the content reaches in the first screen: the editor is cut into horizontal strips 40 px high,
      * and for each strip that holds content the right edge of the furthest text or drawing is taken as a share of the editor width (0 to 1).
      * Headings are left out, as they are short by nature. A card counts as drawn across its whole box, since how far its own
-     * content reaches is checked card by card (cardLayout's narrow and sparse). Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
+     * content reaches is checked card by card (cardLayout's narrow and sparse). So do the visualizer's panes below the diagram,
+     * whose size the splitters set rather than their content, even where one spans the whole editor (a tab on a short screen). Returns the share of those strips whose content reaches past the middle of the editor (0 to 1).
      */
     contentFill: () =>
       this.page.evaluate(() => {
@@ -530,9 +553,14 @@ export class Visualizer {
         const rects = [...inked, ...drawn.map((el) => el.getBoundingClientRect())].filter(
           (r) => r.width > 0 && r.height > 0 && r.bottom > editor.top && r.top < editor.bottom,
         );
+        const panes = [...document.querySelectorAll(".editor .panel > :is(.software, .log-pane)")]
+          .map((el) => el.getBoundingClientRect())
+          .filter((r) => r.width > 0 && r.height > 0);
         const shares: number[] = [];
         for (let y = editor.top; y < editor.bottom; y += 40) {
-          const inStrip = rects.filter((r) => r.top < y + 40 && r.bottom > y && r.width < editor.width - 1);
+          const inStrip = [...rects.filter((r) => r.width < editor.width - 1), ...panes].filter(
+            (r) => r.top < y + 40 && r.bottom > y,
+          );
           if (inStrip.length) shares.push((Math.max(...inStrip.map((r) => r.right)) - editor.left) / editor.width);
         }
         return shares.filter((share) => share > 0.55).length / shares.length;

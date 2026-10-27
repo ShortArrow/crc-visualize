@@ -16,6 +16,7 @@ import { Controls } from "./ui/Controls";
 import { Docked } from "./ui/Dock";
 import { followElements } from "./ui/follow";
 import { DiagramZoomButtons, useDiagramZoom } from "./ui/DiagramZoom";
+import { useFittedPanelRatio } from "./ui/fitPanel";
 import { LfsrView } from "./ui/LfsrView";
 import { logEntries } from "./ui/log";
 import { NamesPage, NamesToc } from "./ui/NamesPage";
@@ -39,7 +40,7 @@ import { StepLog } from "./ui/StepLog";
 import { VariablesView } from "./ui/VariablesView";
 import { Workbench } from "./ui/Workbench";
 import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
-import { useTier } from "./ui/phone";
+import { useScreen } from "./ui/phone";
 import { PanelTabs, tabPanel, type PanelTab } from "./ui/PanelTabs";
 import { screenZoom, viewWidth } from "./ui/zoom";
 import { initialSettings, persistSettings, type Settings } from "./settings";
@@ -308,8 +309,9 @@ function Visualizer(props: VisualizerProps) {
   } = props;
   const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints } = props;
   const m = useMessages();
-  const tier = useTier();
+  const { tier, keepsSidebar } = useScreen();
   const [phone, short] = [tier === "phone", tier === "short"];
+  const variablesBesideCode = short || (!phone && !keepsSidebar);
   const [tab, setTab] = useState<PanelTab>("software");
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
@@ -321,6 +323,7 @@ function Visualizer(props: VisualizerProps) {
   };
   const run = JSON.stringify([params, bits]);
   const zoom = useDiagramZoom(run, hardware);
+  const panelRatio = useFittedPanelRatio(split, hardware, layout.panelRatio, !phone && zoom.scale === undefined, [run]);
   const steps = useMemo(() => trace(params, bits), [run]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const [playerState, setPlayer] = useState(initialPlayer);
@@ -374,7 +377,7 @@ function Visualizer(props: VisualizerProps) {
     <SidebarSections
       sections={[
         { id: "settings", title: m.settings.heading, body: settings },
-        ...(phone || short || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
+        ...(phone || variablesBesideCode || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
         ...(invalid
           ? []
           : [
@@ -418,9 +421,7 @@ function Visualizer(props: VisualizerProps) {
       <div
         className="viz-split"
         ref={split}
-        style={
-          phone ? undefined : { gridTemplateRows: `minmax(0, ${1 - layout.panelRatio}fr) auto minmax(0, ${layout.panelRatio}fr)` }
-        }
+        style={phone ? undefined : { gridTemplateRows: `minmax(0, ${1 - panelRatio}fr) auto minmax(0, ${panelRatio}fr)` }}
       >
         <section className={`hardware ${zoom.scale === undefined ? "" : "zoomed"}`} ref={hardware}>
           <div className="hardware-head">
@@ -487,7 +488,7 @@ function Visualizer(props: VisualizerProps) {
                 onToggleLine={(runs) => onBreakpoints(toggleLine(breakpoints, runs))}
                 lineAtTop={short}
               />
-              {short ? variablesPane : null}
+              {variablesBesideCode ? variablesPane : null}
             </div>
           </div>
           {phone ? variablesPane : null}

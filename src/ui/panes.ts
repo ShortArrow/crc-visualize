@@ -44,6 +44,22 @@ export function fitLayout(layout: PaneLayout, viewWidth: number): PaneLayout {
   };
 }
 
+/**
+ * The bottom panel's share of the split's height, raised from ratio so that the diagram's area is no taller than the diagram drawn to
+ * the area's width. split gives the height (px) the split shares out, the area's chrome (its heading and padding, px) and its inner
+ * width (px); view is the diagram's view box; minWidth (px) is the narrowest the diagram is drawn, wider than the area when it scrolls.
+ * A diagram the area's height limits leaves ratio as it is. The result stays within 0.15–0.85.
+ */
+export function fitPanelRatio(
+  ratio: number,
+  split: Readonly<{ height: number; chrome: number; width: number }>,
+  view: Readonly<{ width: number; height: number }>,
+  minWidth: number,
+): number {
+  const drawn = (Math.max(split.width, minWidth) * view.height) / view.width;
+  return clamp(Math.max(ratio, 1 - (split.chrome + drawn) / split.height), MIN_RATIO, MAX_RATIO);
+}
+
 /** Reads the pane layout from localStorage. Returns the defaults where storage is unavailable. */
 export function loadLayout(): PaneLayout {
   try {
