@@ -39,7 +39,7 @@ import { StepLog } from "./ui/StepLog";
 import { VariablesView } from "./ui/VariablesView";
 import { Workbench } from "./ui/Workbench";
 import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
-import { useTier } from "./ui/phone";
+import { useScreen } from "./ui/phone";
 import { PanelTabs, tabPanel, type PanelTab } from "./ui/PanelTabs";
 import { screenZoom, viewWidth } from "./ui/zoom";
 import { initialSettings, persistSettings, type Settings } from "./settings";
@@ -308,8 +308,9 @@ function Visualizer(props: VisualizerProps) {
   } = props;
   const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints } = props;
   const m = useMessages();
-  const tier = useTier();
+  const { tier, keepsSidebar } = useScreen();
   const [phone, short] = [tier === "phone", tier === "short"];
+  const variablesBesideCode = short || (!phone && !keepsSidebar);
   const [tab, setTab] = useState<PanelTab>("software");
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
@@ -374,7 +375,7 @@ function Visualizer(props: VisualizerProps) {
     <SidebarSections
       sections={[
         { id: "settings", title: m.settings.heading, body: settings },
-        ...(phone || short || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
+        ...(phone || variablesBesideCode || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
         ...(invalid
           ? []
           : [
@@ -487,7 +488,7 @@ function Visualizer(props: VisualizerProps) {
                 onToggleLine={(runs) => onBreakpoints(toggleLine(breakpoints, runs))}
                 lineAtTop={short}
               />
-              {short ? variablesPane : null}
+              {variablesBesideCode ? variablesPane : null}
             </div>
           </div>
           {phone ? variablesPane : null}

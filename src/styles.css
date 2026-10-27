@@ -3342,26 +3342,29 @@ button.bit-cell:hover {
   display: none;
 }
 
-/* On a short screen the variables sit to the right of the code in the Software tab, or below it when the tab is narrower than 600 px */
-.short .panel > .software {
+/*
+ * Where the variables sit in the Software tab or pane, they are to the right of the code, or below it when the tab or pane is narrower
+ * than 600 px
+ */
+.panel > .software:has(.variables-pane) {
   container-type: inline-size;
 }
 
-.short .software-body {
+.software-body:has(> .variables-pane) {
   display: flex;
   gap: 16px;
   align-items: flex-start;
 }
 
-.short .software-body > .code {
+.software-body > .code {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.short .software-body > .variables-pane {
+.software-body > .variables-pane {
   flex: 0 0 auto;
   position: sticky;
-  top: var(--code-head);
+  top: var(--code-head, 0);
 }
 
 /*
@@ -3388,12 +3391,12 @@ button.bit-cell:hover {
   background: var(--bg);
 }
 
-.short .software-body > .variables-pane h2 {
+.software-body > .variables-pane h2 {
   margin-top: 0;
 }
 
 @container (width < 600px) {
-  .short .software-body {
+  .software-body:has(> .variables-pane) {
     flex-direction: column;
     align-items: stretch;
   }
