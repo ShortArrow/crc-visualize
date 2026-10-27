@@ -3,6 +3,5 @@
  * reports it as an unexpected pass, so the fix removes it from this list in the same change.
  */
 export const NOT_YET_MET: ReadonlySet<string> = new Set([
-  "on iPad (10th generation) (820×1106), the redundancy page keeps what an action changes in view",
   "on iPad (10th generation) (820×1106), the visualizer keeps what an action changes in view",
 ]);

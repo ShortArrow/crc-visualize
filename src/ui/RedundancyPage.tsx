@@ -16,7 +16,7 @@ import { useMessages } from "../i18n/I18n";
 import { Docked, DockedResult } from "./Dock";
 import { powerOfTwoText, powerText } from "./format";
 import { Explanation } from "./Explanation";
-import { useReveal } from "./reveal";
+import { useRevealSpan } from "./reveal";
 
 const GRID_LIMIT = 128;
 
@@ -32,7 +32,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
   const n = sent.length;
   const k = n - generator.width;
   const [error, setError] = useState<Bit[]>(() => noError(n));
-  const grids = useReveal<HTMLDivElement>([error]);
+  const [grids, verdictLine] = useRevealSpan<HTMLDivElement, HTMLParagraphElement>([error]);
   const received = xorBits(sent, error);
   const result = verdict(generator, error);
   const rowStyle = { "--bits": n } as CSSProperties;
@@ -96,7 +96,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
             <dt>{m.redundancy.remainder}</dt>
             <dd className="received-remainder">{binary(remainder(generator, received), generator.width)}</dd>
           </dl>
-          <p className="verdict" data-verdict={result}>
+          <p className="verdict" data-verdict={result} ref={verdictLine} data-reveal>
             {m.redundancy.verdict[result]}
           </p>
           <Docked className="redundancy-page" style={pageStyle}>
