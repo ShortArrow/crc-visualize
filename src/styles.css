@@ -3169,15 +3169,7 @@ button.bit-cell:hover {
   margin-right: -4px;
 }
 
-/* The table page puts the entry card right after the byte-by-byte card, and keeps the row headings of the table T while it scrolls */
-.phone .table-page .entry-card {
-  order: -1;
-}
-
-.phone .table-page .page-columns > :first-child {
-  order: -2;
-}
-
+/* The table page keeps the row headings of the table T while it scrolls */
 .phone .crc-table tbody th {
   position: sticky;
   left: 0;
@@ -3311,6 +3303,20 @@ button.bit-cell:hover {
 /* The byte-by-byte card starts as narrow as its table can wrap its headings between words, so it fits beside table T in any language */
 .table-page .page-columns > :first-child {
   flex-basis: min-content;
+}
+
+/*
+ * Outside a short screen, an editor area too narrow for the byte-by-byte card beside table T puts the entry card right after it, before
+ * table T
+ */
+@container editor (width < 1060px) {
+  .workbench:not(.short) .table-page .page-columns > :first-child {
+    order: -2;
+  }
+
+  .workbench:not(.short) .table-page .entry-card {
+    order: -1;
+  }
 }
 
 .table-steps th {
