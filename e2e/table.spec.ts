@@ -161,3 +161,26 @@ test.describe("Table playback", () => {
     await then("playback starts again from the making of the table", () => expect(t.counter).not.toHaveText(/^27\d \//));
   });
 });
+
+test.describe("Table playback on a phone", () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+
+  test("the dock holds only the step buttons, on one row with the result, and the other controls stay above the cards", async ({
+    page,
+  }) => {
+    const t = await given("the table page is open on an iPhone SE", () =>
+      TablePage.open(page, "?width=16&poly=0x1021&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=text&input=12"),
+    );
+    await then("the dock has step back, play and step forward beside the result", async () => {
+      const dock = page.locator(".dock");
+      await expect(dock.locator("button")).toHaveCount(3);
+      const [buttons, result] = [dock.locator(".controls"), dock.locator("[data-dock-result]")];
+      const [b, r] = [(await buttons.boundingBox())!, (await result.boundingBox())!];
+      expect(Math.abs(b.y + b.height / 2 - (r.y + r.height / 2))).toBeLessThan(4);
+    });
+    await then("the seek bar and the counter are at the top of the page", async () => {
+      await expect(t.root.locator(".controls .seek")).toBeVisible();
+      await expect(t.counter).toHaveText("278 / 278");
+    });
+  });
+});

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { crcOf } from "../domain/equivalence";
 import type { ConfigResult } from "../domain/parse";
 import {
@@ -18,7 +18,7 @@ import type { SpeedMode } from "../playback/playback";
 import { tableStepDurations } from "../playback/tablePlayback";
 import { usePlayer } from "../playback/usePlayer";
 import { Controls } from "./Controls";
-import { Docked, DockedResult } from "./Dock";
+import { DockedResult, DockSlot } from "./Dock";
 import { useRevealSpan } from "./reveal";
 import { toHex } from "./format";
 import { Explanation } from "./Explanation";
@@ -104,6 +104,7 @@ function TableMethod({ params, bits, playback }: MethodProps) {
   const { speedMode, rate, loop, onSpeedMode, onRate, onLoop } = playback;
   const durations = useMemo(() => tableStepDurations(steps, speedMode), [steps, speedMode]);
   const { player, send } = usePlayer({ run: "table", durations, rate, loop, onLoop, start: steps.length - 1 });
+  const docking = useContext(DockSlot) !== null;
   const step = steps[player.index]!;
   const [row, setRow] = useState(0);
   const [picked, setPicked] = useState<Readonly<{ at: number; entry: number }> | undefined>(undefined);
@@ -121,27 +122,32 @@ function TableMethod({ params, bits, playback }: MethodProps) {
     setRow(i);
     send({ type: "seek", index: steps.findIndex((s) => s.kind === "lookup" && s.byte === i) });
   };
+  const controls = (parts: "all" | "steps" | "rest") => (
+    <Controls
+      player={player}
+      length={steps.length}
+      speedMode={speedMode}
+      rate={rate}
+      loop={loop}
+      send={send}
+      onSpeedMode={onSpeedMode}
+      onRate={onRate}
+      onLoop={onLoop}
+      parts={parts}
+    />
+  );
   return (
     <>
-      <Docked className="table-page">
-        <Controls
-          player={player}
-          length={steps.length}
-          speedMode={speedMode}
-          rate={rate}
-          loop={loop}
-          send={send}
-          onSpeedMode={onSpeedMode}
-          onRate={onRate}
-          onLoop={onLoop}
-        />
-      </Docked>
-      <div className="page-columns">
-        <DockedResult>
+      {docking ? controls("rest") : controls("all")}
+      <DockedResult className="table-page">
+        <div className="dock-row">
+          {controls("steps")}
           <p className="dock-result" data-dock-result>
             T[{byteHex(shown)}] = {hex(table[shown]!, w)}
           </p>
-        </DockedResult>
+        </div>
+      </DockedResult>
+      <div className="page-columns">
         <section className="card">
           <h3>{t.stepsTitle}</h3>
           <p className="table-direction" data-direction={direction}>
