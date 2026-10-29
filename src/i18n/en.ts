@@ -447,6 +447,8 @@ export const en: Messages = {
     xor: "XORed in",
     noXor: "none",
     reg: "Register",
+    modes: { value: "Make a value", table: "Make the table", use: "Use the table" },
+    modesLabel: "What to play",
     stepsTitle: "Byte-at-a-time computation",
     formula: "Update",
     start: "Initial value",

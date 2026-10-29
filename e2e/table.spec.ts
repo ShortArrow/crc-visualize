@@ -78,63 +78,36 @@ test.describe("Table", () => {
 });
 
 test.describe("Table playback", () => {
-  /** CRC-16/XMODEM fed 2 bytes, "12": 270 steps make the table, 6 use it, then xorOut and done. */
+  /** CRC-16/XMODEM fed 2 bytes, "12": using the table takes 6 steps for the bytes, then xorOut and done. */
   const TWO_BYTES = "?width=16&poly=0x1021&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=text&input=12&speed=steady&rate=8";
 
-  test("the page opens at the last step, and going to the first leaves only T[0] in the table", async ({ page }) => {
+  test("the page opens using the table at its last step, with every value and both bytes shown", async ({ page }) => {
     const t = await given("2 bytes are open on the table page", () => TablePage.open(page, TWO_BYTES));
-    await then("it is at the last of 278 steps, with every value and both bytes shown", async () => {
-      await expect(t.counter).toHaveText("278 / 278");
+    await then("Use the table is chosen, at the last of its 8 steps", async () => {
+      await expect(t.mode("use")).toHaveAttribute("aria-pressed", "true");
+      await expect(t.counter).toHaveText("8 / 8");
       await expect(t.filledCells()).toHaveCount(256);
       await expect(t.step()).toHaveCount(2);
       await expect(t.result()).toHaveText("0x20B5");
     });
     await when("going to the first step", () => page.keyboard.press("Home"));
-    await then("only T[0] holds a value, and no byte is computed yet", async () => {
-      await expect(t.filledCells()).toHaveCount(1);
-      await expect(t.cell(0)).toHaveText("0000");
-      await expect(t.step()).toHaveCount(0);
-    });
-  });
-
-  test("T[1] is made clock by clock, and enters its cell at the 8th clock", async ({ page }) => {
-    const t = await given("2 bytes are open at the first step", async () => {
-      const t = await TablePage.open(page, TWO_BYTES);
-      await page.keyboard.press("Home");
-      return t;
-    });
-    await when("stepping forward 3 times", async () => {
-      for (let k = 0; k < 3; k++) await page.keyboard.press("ArrowRight");
-    });
-    await then("3 clocks of T[0x01] are shown, and its cell is still empty", async () => {
-      await expect(t.entryTitle()).toContainText("T[0x01]");
-      await expect(t.clocks()).toHaveCount(3);
-      await expect(t.cell(1)).toHaveText("");
-    });
-    await when("stepping forward 5 more times", async () => {
-      for (let k = 0; k < 5; k++) await page.keyboard.press("ArrowRight");
-    });
-    await then("all 8 clocks are shown, and T[0x01] = 0x1021 is in its cell", async () => {
-      await expect(t.clocks()).toHaveCount(8);
-      await expect(t.cell(1)).toHaveText("1021");
+    await then("the table is still full, and byte 0 shows only its index", async () => {
+      await expect(t.filledCells()).toHaveCount(256);
+      await expect(t.step()).toHaveCount(1);
+      await expect(t.step(0).locator("td").nth(3)).toHaveText("");
     });
   });
 
   test("each byte is its index, then the look-up, then the update", async ({ page }) => {
     const t = await given("2 bytes are open at the first step of using the table", async () => {
       const t = await TablePage.open(page, TWO_BYTES);
-      await page.locator(".controls .seek").fill("270");
+      await page.keyboard.press("Home");
       return t;
     });
-    await then(
-      "byte 0's row shows its index, with its row and column headings emphasized, and nothing looked up yet",
-      async () => {
-        await expect(t.step()).toHaveCount(1);
-        await expect(t.step(0).locator("td").nth(2)).toHaveText("0x31");
-        await expect(t.step(0).locator("td").nth(3)).toHaveText("");
-        await expect(t.emphasizedHeadings()).toHaveText(["1", "3"]);
-      },
-    );
+    await then("byte 0's row shows its index, with its row and column headings emphasized", async () => {
+      await expect(t.step(0).locator("td").nth(2)).toHaveText("0x31");
+      await expect(t.emphasizedHeadings()).toHaveText(["1", "3"]);
+    });
     await when("stepping forward", () => page.keyboard.press("ArrowRight"));
     await then("the cell at the index is highlighted and its value fills the row", async () => {
       await expect(t.usedCell()).toHaveAttribute("data-index", "49");
@@ -145,20 +118,81 @@ test.describe("Table playback", () => {
     await then("crc after is filled in", () => expect(t.step(0).locator("td").nth(4)).toHaveText("0x2672"));
   });
 
-  test("while paused, choosing a row moves to the look-up of that byte, and playing from the end starts again", async ({
-    page,
-  }) => {
+  test("making the table fills one cell per step, while the byte-at-a-time card stays finished", async ({ page }) => {
     const t = await given("2 bytes are open on the table page", () => TablePage.open(page, TWO_BYTES));
+    await when("choosing Make the table", () => t.mode("table").click());
+    await then("it is at the last of 256 steps, with every value", async () => {
+      await expect(t.counter).toHaveText("256 / 256");
+      await expect(t.filledCells()).toHaveCount(256);
+    });
+    await when("going to the first step", () => page.keyboard.press("Home"));
+    await then("only T[0] holds a value, and both bytes are still computed", async () => {
+      await expect(t.filledCells()).toHaveCount(1);
+      await expect(t.cell(0)).toHaveText("0000");
+      await expect(t.step()).toHaveCount(2);
+      await expect(t.result()).toHaveText("0x20B5");
+    });
+    await when("stepping forward", () => page.keyboard.press("ArrowRight"));
+    await then("T[0x01] = 0x1021 fills its cell, and how it is made is shown in full", async () => {
+      await expect(t.cell(1)).toHaveText("1021");
+      await expect(t.entryTitle()).toContainText("T[0x01]");
+      await expect(t.clocks()).toHaveCount(8);
+    });
+  });
+
+  test("making a value runs its 8 clocks, and choosing another cell makes that one", async ({ page }) => {
+    const t = await given("2 bytes are open, with T[0x01] chosen", async () => {
+      const t = await TablePage.open(page, TWO_BYTES);
+      await t.cell(1).click();
+      return t;
+    });
+    await when("choosing Make a value", () => t.mode("value").click());
+    await then("it is at the last of 9 steps, with T[0x01]'s 8 clocks and its value in its cell", async () => {
+      await expect(t.counter).toHaveText("9 / 9");
+      await expect(t.entryTitle()).toContainText("T[0x01]");
+      await expect(t.clocks()).toHaveCount(8);
+      await expect(t.cell(1)).toHaveText("1021");
+    });
+    await when("going to the first step and stepping forward 3 times", async () => {
+      await page.keyboard.press("Home");
+      for (let k = 0; k < 3; k++) await page.keyboard.press("ArrowRight");
+    });
+    await then("3 clocks are shown, T[0x01]'s cell is empty and the others are full", async () => {
+      await expect(t.clocks()).toHaveCount(3);
+      await expect(t.cell(1)).toHaveText("");
+      await expect(t.filledCells()).toHaveCount(255);
+    });
+    await when("choosing the cell of T[0x02]", () => t.cell(2).click());
+    await then("T[0x02] is made, from its last step", async () => {
+      await expect(t.counter).toHaveText("9 / 9");
+      await expect(t.entryTitle()).toContainText("T[0x02]");
+      await expect(t.clocks()).toHaveCount(8);
+    });
+  });
+
+  test("while paused, choosing a row switches to using the table at the look-up of that byte", async ({ page }) => {
+    const t = await given("2 bytes are open, making the table", async () => {
+      const t = await TablePage.open(page, TWO_BYTES);
+      await t.mode("table").click();
+      return t;
+    });
     await when("choosing the second row", () => t.step(1).click());
-    await then("it is at the look-up of byte 1", async () => {
-      await expect(t.counter).toHaveText("275 / 278");
+    await then("Use the table is chosen, at the look-up of byte 1", async () => {
+      await expect(t.mode("use")).toHaveAttribute("aria-pressed", "true");
+      await expect(t.counter).toHaveText("5 / 8");
       await expect(t.step(1)).toHaveClass(/selected/);
     });
-    await when("going to the end and playing", async () => {
-      await page.keyboard.press("End");
-      await page.keyboard.press(" ");
+  });
+
+  test("an input that is not whole bytes cannot use the table, and opens making it", async ({ page }) => {
+    const t = await given("5 bits are open on the table page", () =>
+      TablePage.open(page, "?width=3&poly=0x3&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=bits&input=10101"),
+    );
+    await then("Use the table is disabled, and Make the table is chosen at its last step", async () => {
+      await expect(t.mode("use")).toBeDisabled();
+      await expect(t.mode("table")).toHaveAttribute("aria-pressed", "true");
+      await expect(t.counter).toHaveText("256 / 256");
     });
-    await then("playback starts again from the making of the table", () => expect(t.counter).not.toHaveText(/^27\d \//));
   });
 });
 
@@ -180,7 +214,7 @@ test.describe("Table playback on a phone", () => {
     });
     await then("the seek bar and the counter are at the top of the page", async () => {
       await expect(t.root.locator(".controls .seek")).toBeVisible();
-      await expect(t.counter).toHaveText("278 / 278");
+      await expect(t.counter).toHaveText("8 / 8");
     });
   });
 });

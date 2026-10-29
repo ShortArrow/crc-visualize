@@ -4,18 +4,20 @@ import type { ConfigResult } from "../domain/parse";
 import {
   crcTable,
   entryClocks,
-  filledEntries,
+  fillSteps,
   tableDirection,
-  tablePlay,
   tableRun,
+  useSteps,
+  valueSteps,
+  type PlayMode,
+  type PlayStep,
   type TableDirection,
-  type TablePlayStep,
   type TableRun,
 } from "../domain/table";
 import { reflectValue, toRegister, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import type { SpeedMode } from "../playback/playback";
-import { tableStepDurations } from "../playback/tablePlayback";
+import { playDurations } from "../playback/tablePlayback";
 import { usePlayer } from "../playback/usePlayer";
 import { Controls } from "./Controls";
 import { DockedResult, DockSlot } from "./Dock";
@@ -65,33 +67,40 @@ function updateFormula(direction: TableDirection, width: number): string {
 type RowFill = "index" | "lookup" | "update";
 
 /** What step shows of the byte-at-a-time computation: the rows filled in, and the byte being computed, if any. */
-function bytesShown(step: TablePlayStep, run: TableRun | undefined): Readonly<{ rows: RowFill[]; byte: number | undefined }> {
-  const count = run?.steps.length ?? 0;
+function bytesShown(step: PlayStep, run: TableRun | undefined): Readonly<{ rows: RowFill[]; byte: number | undefined }> {
   if (step.kind === "index" || step.kind === "lookup" || step.kind === "update") {
     return { rows: [...Array<RowFill>(step.byte).fill("update"), step.kind], byte: step.byte };
   }
-  const making = step.kind === "start" || step.kind === "clock" || step.kind === "fill";
-  return { rows: making ? [] : Array<RowFill>(count).fill("update"), byte: undefined };
+  return { rows: Array<RowFill>(run?.steps.length ?? 0).fill("update"), byte: undefined };
 }
 
 /** The value of crc shown as the result at step: after the output reflection, after xorout, or none before them. */
-function resultAt(step: TablePlayStep, params: CrcParams, run: TableRun): number | undefined {
+function resultAt(step: PlayStep, params: CrcParams, run: TableRun): number | undefined {
+  if (step.kind === "index" || step.kind === "lookup" || step.kind === "update") return undefined;
   if (step.kind === "reflectOut") return reflectValue(run.steps.at(-1)?.after ?? run.start, params.width);
-  return step.kind === "xorOut" || step.kind === "done" ? run.result : undefined;
+  return run.result;
 }
 
-/** The value whose making step shows when none is picked: the one being made or filled, or the one the byte uses. */
-function entryAt(step: TablePlayStep, run: TableRun | undefined, row: number): number {
-  if (step.kind === "clock" || step.kind === "fill") return step.entry;
-  if (step.kind === "start") return 0;
-  return run?.steps["byte" in step ? step.byte : row]?.index ?? 0;
+/** Whether the cell of table T at index i holds its value at step, for making entry when step is a clock of a value. */
+function isFilled(step: PlayStep, i: number, entry: number): boolean {
+  if (step.kind === "filled") return i < step.count;
+  return step.kind !== "clocks" || i !== entry || step.done === 8;
 }
+
+/** The steps of mode for params and input. */
+function stepsOf(mode: PlayMode, params: CrcParams, input: readonly Bit[]): PlayStep[] {
+  if (mode === "value") return valueSteps();
+  return mode === "use" ? (useSteps(params, input) ?? fillSteps()) : fillSteps();
+}
+
+const MODES: readonly PlayMode[] = ["value", "table", "use"];
 
 type MethodProps = Readonly<{ params: CrcParams; bits: readonly Bit[]; playback: PlaybackSettings }>;
 
 /**
- * Table T, how a value is made, and the byte-at-a-time steps, drawn at the step of playing the making and the use of the table.
- * While paused, a step row moves to the look-up of its byte, and a filled table cell shows how its value is made.
+ * Table T, how a value is made, and the byte-at-a-time steps, drawn at the step of the playback chosen: making a value, making
+ * the table, or using it. While paused, a step row switches to using the table at the look-up of its byte, and a filled cell
+ * shows how its value is made, or, while making a value, makes that one.
  */
 function TableMethod({ params, bits, playback }: MethodProps) {
   const m = useMessages();
@@ -100,27 +109,56 @@ function TableMethod({ params, bits, playback }: MethodProps) {
   const direction = tableDirection(params);
   const table = useMemo(() => crcTable(params), [params]);
   const run = useMemo(() => tableRun(params, bits), [params, bits]);
-  const steps = useMemo(() => tablePlay(params, bits), [params, bits]);
+  const [mode, setMode] = useState<PlayMode>(run ? "use" : "table");
+  const [made, setMade] = useState(0);
+  const [startAt, setStartAt] = useState<number | undefined>(undefined);
+  const steps = useMemo(() => stepsOf(mode, params, bits), [mode, params, bits]);
   const { speedMode, rate, loop, onSpeedMode, onRate, onLoop } = playback;
-  const durations = useMemo(() => tableStepDurations(steps, speedMode), [steps, speedMode]);
-  const { player, send } = usePlayer({ run: "table", durations, rate, loop, onLoop, start: steps.length - 1 });
+  const durations = useMemo(() => playDurations(steps, speedMode), [steps, speedMode]);
+  const { player, send } = usePlayer({
+    run: `${mode}:${made}`,
+    durations,
+    rate,
+    loop,
+    onLoop,
+    start: startAt ?? steps.length - 1,
+  });
   const docking = useContext(DockSlot) !== null;
   const step = steps[player.index]!;
   const [row, setRow] = useState(0);
-  const [picked, setPicked] = useState<Readonly<{ at: number; entry: number }> | undefined>(undefined);
+  const [picked, setPicked] = useState<Readonly<{ at: string; entry: number }> | undefined>(undefined);
   const [entryTitle, firstClock] = useRevealSpan<HTMLHeadingElement, HTMLTableRowElement>([picked]);
-  const filled = filledEntries(step);
-  const { rows, byte } = bytesShown(step, run);
+  const { rows, byte } = mode === "use" ? bytesShown(step, run) : bytesShown({ kind: "done" }, run);
   const current = byte ?? row;
-  const looked = rows[current] === "lookup" || rows[current] === "update";
+  const looked = mode === "use" && (rows[current] === "lookup" || rows[current] === "update");
   const used = looked ? run?.steps[current]?.index : undefined;
   const indexing = byte !== undefined && rows[byte] === "index" ? run?.steps[byte]?.index : undefined;
-  const shown = picked?.at === player.index ? picked.entry : entryAt(step, run, row);
-  const clocks = entryClocks(params, shown).slice(0, step.kind === "clock" && step.entry === shown ? step.clock + 1 : 8);
+  const at = `${mode}:${made}:${player.index}`;
+  const fallback = step.kind === "filled" ? step.count - 1 : mode === "value" ? made : (run?.steps[current]?.index ?? 0);
+  const shown = picked?.at === at ? picked.entry : fallback;
+  const clocks = entryClocks(params, shown).slice(0, step.kind === "clocks" ? step.done : 8);
   const result = run ? resultAt(step, params, run) : undefined;
+  const switchTo = (next: PlayMode, start?: number) => {
+    if (next === "value") setMade(shown);
+    setMode(next);
+    setStartAt(start);
+    if (next === mode && start !== undefined) send({ type: "seek", index: start });
+    else if (next === mode) send({ type: "last" });
+  };
   const choose = (i: number) => {
     setRow(i);
-    send({ type: "seek", index: steps.findIndex((s) => s.kind === "lookup" && s.byte === i) });
+    const use = useSteps(params, bits) ?? [];
+    switchTo(
+      "use",
+      use.findIndex((s) => s.kind === "lookup" && s.byte === i),
+    );
+  };
+  const pick = (i: number) => {
+    if (!isFilled(step, i, made)) return;
+    if (mode !== "value") return setPicked({ at, entry: i });
+    if (i === made) return send({ type: "last" });
+    setMade(i);
+    setStartAt(undefined);
   };
   const controls = (parts: "all" | "steps" | "rest") => (
     <Controls
@@ -138,7 +176,23 @@ function TableMethod({ params, bits, playback }: MethodProps) {
   );
   return (
     <>
-      {docking ? controls("rest") : controls("all")}
+      <div className="table-playback">
+        <div className="play-mode" role="group" aria-label={t.modesLabel}>
+          {MODES.map((each) => (
+            <button
+              key={each}
+              type="button"
+              data-mode={each}
+              aria-pressed={each === mode}
+              disabled={each === "use" && !run}
+              onClick={() => switchTo(each)}
+            >
+              {t.modes[each]}
+            </button>
+          ))}
+        </div>
+        {docking ? controls("rest") : controls("all")}
+      </div>
       <DockedResult className="table-page">
         <div className="dock-row">
           {controls("steps")}
@@ -197,7 +251,7 @@ function TableMethod({ params, bits, playback }: MethodProps) {
                 <dd className="table-result">{result === undefined ? "" : hex(result, w)}</dd>
                 <dt>{t.bitwise}</dt>
                 <dd>
-                  {step.kind === "done" ? (
+                  {mode !== "use" || step.kind === "done" ? (
                     <>
                       <span className="bitwise-result">{hex(crcOf(params, bits), w)}</span>
                       {run.result === crcOf(params, bits) ? <span className="match">{t.match}</span> : null}
@@ -238,9 +292,9 @@ function TableMethod({ params, bits, playback }: MethodProps) {
                           key={lo}
                           className={`table-cell ${i === used ? "used" : ""} ${i === shown ? "shown" : ""}`}
                           data-index={i}
-                          onClick={() => (i < filled ? setPicked({ at: player.index, entry: i }) : undefined)}
+                          onClick={() => pick(i)}
                         >
-                          {i < filled ? hex(table[i]!, w).slice(2) : ""}
+                          {isFilled(step, i, made) ? hex(table[i]!, w).slice(2) : ""}
                         </td>
                       );
                     })}

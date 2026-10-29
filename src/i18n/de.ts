@@ -452,6 +452,8 @@ export const de: Messages = {
     xor: "XOR mit",
     noXor: "keins",
     reg: "Register",
+    modes: { value: "Wert bilden", table: "Tabelle bilden", use: "Tabelle nutzen" },
+    modesLabel: "Was abgespielt wird",
     stepsTitle: "Byteweise Berechnung",
     formula: "Aktualisierung",
     start: "Startwert",

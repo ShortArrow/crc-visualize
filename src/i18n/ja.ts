@@ -436,6 +436,8 @@ export const ja = {
     xor: "XOR する値",
     noXor: "なし",
     reg: "レジスタ",
+    modes: { value: "値を作る", table: "表を作る", use: "表を使う" },
+    modesLabel: "再生するもの",
     stepsTitle: "1 バイトずつの計算",
     formula: "更新の式",
     start: "初期値",

@@ -21,7 +21,12 @@ export class TablePage {
     return this.page.locator(".table-page");
   }
 
-  /** The step counter of the playback controls, such as "278 / 278". */
+  /** The button of the playback switch that chooses mode: making a value, making the table, or using it. */
+  mode(mode: "value" | "table" | "use"): Locator {
+    return this.root.locator(`.play-mode button[data-mode="${mode}"]`);
+  }
+
+  /** The step counter of the playback controls, such as "8 / 8". */
   get counter(): Locator {
     return this.page.locator(".controls .counter");
   }

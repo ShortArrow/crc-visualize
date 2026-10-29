@@ -78,57 +78,39 @@ export function tableRun(params: CrcParams, input: readonly Bit[]): TableRun | u
   return { start, steps, result: (out ^ params.xorout) >>> 0 };
 }
 
+/** What the Table page plays: making one value, making the table, or using it a byte at a time. */
+export type PlayMode = "value" | "table" | "use";
+
 /**
- * One step of playing the Table page. start: only T[0] is filled. clock: the clock-th (0 to 7) clock of making T[entry], which
- * fills it at clock 7. fill: T[entry] is filled in one step. index, lookup and update: the three steps of the byte-th input byte.
- * reflectOut, xorOut and done: the output reflection, xorout, and the result.
+ * One step of a Table page playback. clocks: done of the 8 clocks of making a value have run. filled: T[0] to T[count - 1] are
+ * filled. index, lookup and update: the three steps of the byte-th input byte. reflectOut, xorOut and done: the output
+ * reflection, xorout, and the result.
  */
-export type TablePlayStep = Readonly<
-  | { kind: "start" }
-  | { kind: "clock"; entry: number; clock: number }
-  | { kind: "fill"; entry: number }
+export type PlayStep = Readonly<
+  | { kind: "clocks"; done: number }
+  | { kind: "filled"; count: number }
   | { kind: "index" | "lookup" | "update"; byte: number }
   | { kind: "reflectOut" | "xorOut" | "done" }
 >;
 
-/** The values made clock by clock; the others are filled one step each, in index order. */
-export const CLOCKED_ENTRIES: readonly number[] = [1, 2];
+/** The steps of making one value: none of its 8 clocks run, then one more each step. */
+export const valueSteps = (): PlayStep[] => Array.from({ length: 9 }, (_, done) => ({ kind: "clocks", done }));
+
+/** The steps of making table T: only T[0] filled, then one more cell each step, in index order. */
+export const fillSteps = (): PlayStep[] => Array.from({ length: 256 }, (_, k) => ({ kind: "filled", count: k + 1 }));
 
 /**
- * The steps of making table T and then computing input a byte at a time with it. When input is not a multiple of 8 bits, the
- * steps end with filling T[255].
+ * The steps of computing input a byte at a time with table T, ending with the output reflection (left shift with refout), xorout
+ * and the result; undefined when input is not a multiple of 8 bits.
  */
-export function tablePlay(params: CrcParams, input: readonly Bit[]): TablePlayStep[] {
-  const making: TablePlayStep[] = [
-    { kind: "start" },
-    ...CLOCKED_ENTRIES.flatMap((entry) => Array.from({ length: 8 }, (_, clock) => ({ kind: "clock" as const, entry, clock }))),
-    ...Array.from({ length: 256 - 1 - CLOCKED_ENTRIES.length }, (_, k) => ({
-      kind: "fill" as const,
-      entry: k + 1 + CLOCKED_ENTRIES.length,
-    })),
-  ];
+export function useSteps(params: CrcParams, input: readonly Bit[]): PlayStep[] | undefined {
   const run = tableRun(params, input);
-  if (!run) return making;
+  if (!run) return undefined;
   const reflects = tableDirection(params) === "left" && params.refout;
   return [
-    ...making,
     ...run.steps.flatMap((_, byte) => (["index", "lookup", "update"] as const).map((kind) => ({ kind, byte }))),
     ...(reflects ? [{ kind: "reflectOut" as const }] : []),
     { kind: "xorOut" },
     { kind: "done" },
   ];
-}
-
-/** Number of values of table T filled at step: T[0] to T[filledEntries - 1]. */
-export function filledEntries(step: TablePlayStep): number {
-  switch (step.kind) {
-    case "start":
-      return 1;
-    case "clock":
-      return step.clock === 7 ? step.entry + 1 : step.entry;
-    case "fill":
-      return step.entry + 1;
-    default:
-      return 256;
-  }
 }
