@@ -2751,6 +2751,43 @@ button.bit-cell:hover {
   outline: 2px solid var(--accent);
 }
 
+.crc-table th.index-heading {
+  color: var(--bg);
+  background: var(--warn);
+}
+
+.table-page .controls {
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+/* The Table page's step buttons share one row with the result in the dock, as low as the result alone */
+.workbench.docking > .dock > .docked:has(> .dock-row),
+.dock > .docked:has(> .dock-row) {
+  padding-block: 3px;
+}
+
+.dock .dock-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dock .dock-row .controls {
+  flex: none;
+  flex-wrap: nowrap;
+  margin: 0;
+}
+
+.dock .dock-row .controls button {
+  height: 28px;
+}
+
+.dock .dock-row .dock-result {
+  flex: 1;
+  min-width: 0;
+}
+
 /* Estimation page */
 .estimate-page {
   height: 100%;
