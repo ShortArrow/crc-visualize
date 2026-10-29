@@ -4,6 +4,22 @@
 
 Each section states what the design protects, the forces in tension, the alternatives refused while those forces hold, how the next decision of the same kind is made, and the observable fact that would overturn it. When a premise changes, the section is rewritten.
 
+## Decisions are kept as living sections of this document
+
+Protects: from one place, a reader can tell why the app is the way it is now, what was refused, and what would overturn each decision. The specification and the README never depend on a record that cannot follow later changes.
+
+- Features and pages keep being added, so decisions accumulate, and later ones override earlier ones.
+- Each decision that still holds is one section here, in the present tense. When its premise changes, the section is rewritten, or removed when nothing of it holds. The file's history keeps every earlier version with its date, so the forces as they stood at any decision can still be read.
+- Evidence against a decision has a fixed place. An alternative examined and turned down while the reasons hold goes under "Refused", with the reason. The fact that would overturn the decision goes under "Revisit when". When that fact is observed, the section is rewritten in the commit that changes the app, and that commit's message names the fact.
+- A reason that only explains one change, true only at that moment, goes in that commit's message in one or two sentences.
+- The specification and the README point only at sections of this document, by their heading text.
+
+Refused: architecture decision records, one frozen file per decision. A later decision supersedes an earlier record without changing it, so which records still hold has to be worked out by following the supersession links. A specification that points at a record has to be edited whenever that record is superseded.
+
+Next decision: a new decision gets a section here. When this document has more than eight sections, or one new page brings two or more decisions, the sections move to one file per topic under `docs/design/`, and this document becomes their index.
+
+Revisit when: decisions come to be reviewed by several people before they are implemented, so that what the reviewers approve is a proposal that has to stay as it was approved.
+
 ## The hardware model is a direct LFSR
 
 Protects: the initial register value on screen is the same value as the preset's `init`.
