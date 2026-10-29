@@ -2,7 +2,23 @@
 
 # Design intent
 
-Each section states what the design protects, the forces in tension, the alternatives refused while those forces hold, and how the next decision of the same kind is made. When a premise changes, the section is rewritten.
+Each section states what the design protects, the forces in tension, the alternatives refused while those forces hold, how the next decision of the same kind is made, and the observable fact that would overturn it. When a premise changes, the section is rewritten.
+
+## Decisions are kept as living sections of this document
+
+Protects: from one place, a reader can tell why the app is the way it is now, what was refused, and what would overturn each decision. The specification and the README never depend on a record that cannot follow later changes.
+
+- Features and pages keep being added, so decisions accumulate, and later ones override earlier ones.
+- Each decision that still holds is one section here, in the present tense. When its premise changes, the section is rewritten, or removed when nothing of it holds. The file's history keeps every earlier version with its date, so the forces as they stood at any decision can still be read.
+- Evidence against a decision has a fixed place. An alternative examined and turned down while the reasons hold goes under "Refused", with the reason. The fact that would overturn the decision goes under "Revisit when". When that fact is observed, the section is rewritten in the commit that changes the app, and that commit's message names the fact.
+- A reason that only explains one change, true only at that moment, goes in that commit's message in one or two sentences.
+- The specification and the README point only at sections of this document, by their heading text.
+
+Refused: freezing each decision in a file of its own when it is made, and recording a later change as a new file that supersedes it. Which files still hold then has to be worked out by following the supersession links, and a specification that points at a file has to be edited whenever that file is superseded. A section here carries what the context of such a record carries, the forces and the refused alternatives, but is edited instead of superseded.
+
+Next decision: a new decision gets a section here. When this document has more than eight sections, or one new page brings two or more decisions, the sections move to one file per topic under `docs/design/`, and this document becomes their index.
+
+Revisit when: decisions come to be reviewed by several people before they are implemented, so that what the reviewers approve is a proposal that has to stay as it was approved.
 
 ## The hardware model is a direct LFSR
 
@@ -16,6 +32,8 @@ Refused: appending width zeros to the end of the input (augmentation) and pushin
 
 Next decision: a new value shown in the diagram or the pseudocode takes the form in which the preset's parameters appear on screen as they are.
 
+Revisit when: the app takes its presets from a catalogue whose `init` is not the initial register value of a direct LFSR.
+
 Checked by: "the first step loads init into the register" in `src/domain/trace.test.ts`, and the comparison with the catalogue's `check` values in `src/domain/equivalence.test.ts`.
 
 ## Drawing is a pure function of the step number
@@ -28,6 +46,8 @@ Protects: pause, frame stepping, reverse playback and seeking work through the s
 Refused: making it a video in Motion Canvas and passing the configuration to the Player through variables. Recalculating the duration and coordinating with the surrounding UI would have to be done within the Player's constraints.
 
 Next decision: anything new that playback shows is made as a value determined by the step number and the configuration, and holds no state that advances with time.
+
+Revisit when: something done during playback has to change the steps that follow it, such as flipping an input bit while the animation runs.
 
 ## The LFSR diagram follows the step split
 
@@ -43,6 +63,8 @@ Refused:
 - Keeping a Y shape between the boxes and only making `shift` slide sideways. Two paths, a horizontal line and the Y shape, run side by side, and it is unclear which one a value travels along.
 
 Next decision: before adding motion to the diagram, decide which pseudocode line it belongs to; motion that does not map one to one onto a line is not drawn.
+
+Revisit when: the pseudocode stops splitting one clock into a `shift` line and an `xor` line.
 
 Checked by: `e2e/diagram.spec.ts`.
 
@@ -60,5 +82,7 @@ Refused:
 - Deploying from GitHub Actions after CI. It needs a Cloudflare API token as a repository secret, and Cloudflare does not accept GitHub's OIDC tokens, so the token cannot be replaced with short-lived credentials.
 - Pushing directly to `main`, and after CI moving the commit to a `production` branch that Workers Builds deploys. It needs no secret, but adds a branch and a job, and lets untested commits into `main`.
 - Pushing directly to `main` and letting Workers Builds deploy `main`. Commits that fail the tests are published before CI finishes.
+
+Revisit when: Cloudflare accepts GitHub's OIDC tokens, so that deploying from GitHub Actions needs no long-lived secret; or Workers Builds can hold a deployment until a GitHub check passes.
 
 Checked by: the check `test` (`.github/workflows/ci.yml`) that the ruleset on `main` requires.

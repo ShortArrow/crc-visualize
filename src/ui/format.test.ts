@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { polynomialText, powerOfTwoText, powerText } from "./format";
+import { bitGroups, groupsHex, polynomialText, powerOfTwoText, powerText } from "./format";
 
 describe("polynomialText", () => {
   it.each([
@@ -28,5 +28,46 @@ describe("powerOfTwoText", () => {
     [31, "2³¹ = 2147483648"],
   ])("Given exponent %i, When writing a power of 2, Then %s", (d, text) => {
     expect(powerOfTwoText(d)).toBe(text);
+  });
+});
+
+describe("bitGroups", () => {
+  it("Given 8 input bits and an 8-bit CRC, When grouping, Then each group of 8 holds one part", () => {
+    expect(bitGroups([0, 0, 1, 1, 0, 0, 0, 1], [1, 0, 1, 1, 0, 1, 1, 1])).toEqual([
+      { input: "00110001", crc: "" },
+      { input: "", crc: "11101101" },
+    ]);
+  });
+
+  it("Given 5 input bits and a 3-bit CRC, When grouping, Then the one group holds both parts", () => {
+    expect(bitGroups([1, 0, 1, 0, 1], [1, 1, 0])).toEqual([{ input: "10101", crc: "011" }]);
+  });
+
+  it("Given 5 input bits and a 4-bit CRC, When grouping, Then the last group is shorter than 8", () => {
+    expect(bitGroups([1, 0, 1, 0, 1], [0, 0, 0, 1])).toEqual([
+      { input: "10101", crc: "100" },
+      { input: "", crc: "0" },
+    ]);
+  });
+});
+
+describe("groupsHex", () => {
+  it("Given whole groups, When writing them in hexadecimal, Then each is two uppercase digits", () => {
+    expect(
+      groupsHex([
+        { input: "00110001", crc: "" },
+        { input: "", crc: "10111011" },
+        { input: "1010", crc: "0101" },
+      ]),
+    ).toEqual(["31", "BB", "A5"]);
+  });
+
+  it("Given a last group shorter than 8, When writing them in hexadecimal, Then there is no hexadecimal", () => {
+    expect(
+      groupsHex([
+        { input: "10101", crc: "100" },
+        { input: "", crc: "0" },
+      ]),
+    ).toBeUndefined();
   });
 });

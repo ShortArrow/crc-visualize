@@ -84,6 +84,7 @@ export const es: Messages = {
     noXor: "feedback = 0, así que no hay XOR",
     inputBit: (n: number) => `bit de entrada ${n}`,
     inputPlusCrc: "entrada + CRC",
+    inHex: "hex",
     check: (hex: string, match: boolean) => `valor de comprobación ${hex}: ${match ? "coincide" : "no coincide"}`,
   },
   code: {

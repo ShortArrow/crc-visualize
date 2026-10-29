@@ -79,6 +79,7 @@ export const zh: Messages = {
     noXor: "feedback = 0，所以不 XOR",
     inputBit: (n: number) => `输入位 ${n}`,
     inputPlusCrc: "输入 + CRC",
+    inHex: "十六进制",
     check: (hex: string, match: boolean) => `校验值 ${hex} ${match ? "一致" : "不一致"}`,
   },
   code: {
