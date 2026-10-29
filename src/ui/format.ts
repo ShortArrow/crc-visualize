@@ -12,6 +12,26 @@ export const toHex = (reg: Register): string =>
 
 export const bitsToString = (bits: readonly Bit[]): string => bits.join("");
 
+/** Up to 8 bits of the input followed by the CRC: the part that is input and the part that is CRC, as binary strings. */
+export type BitGroup = Readonly<{ input: string; crc: string }>;
+
+/** Splits input followed by crc (MSB first) into groups of 8 bits from the start; the last group may be shorter. */
+export function bitGroups(input: readonly Bit[], crc: Register): BitGroup[] {
+  const all = bitsToString(input) + toBinary(crc);
+  return Array.from({ length: Math.ceil(all.length / 8) }, (_, g) => {
+    const [start, end] = [g * 8, Math.min(g * 8 + 8, all.length)];
+    const cut = Math.min(Math.max(input.length, start), end);
+    return { input: all.slice(start, cut), crc: all.slice(cut, end) };
+  });
+}
+
+/** Each group as two uppercase hexadecimal digits, or undefined when the last group is shorter than 8 bits. */
+export function groupsHex(groups: readonly BitGroup[]): string[] | undefined {
+  const bits = groups.map((g) => g.input + g.crc);
+  if (bits.some((b) => b.length !== 8)) return undefined;
+  return bits.map((b) => parseInt(b, 2).toString(16).toUpperCase().padStart(2, "0"));
+}
+
 const SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 const superscript = (d: number): string => [...String(d)].map((c) => SUPERSCRIPTS[Number(c)]).join("");
 
