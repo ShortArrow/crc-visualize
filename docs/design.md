@@ -2,7 +2,7 @@
 
 # Design intent
 
-Each section states what the design protects, the forces in tension, the alternatives refused while those forces hold, and how the next decision of the same kind is made. When a premise changes, the section is rewritten.
+Each section states what the design protects, the forces in tension, the alternatives refused while those forces hold, how the next decision of the same kind is made, and the observable fact that would overturn it. When a premise changes, the section is rewritten.
 
 ## The hardware model is a direct LFSR
 
@@ -16,6 +16,8 @@ Refused: appending width zeros to the end of the input (augmentation) and pushin
 
 Next decision: a new value shown in the diagram or the pseudocode takes the form in which the preset's parameters appear on screen as they are.
 
+Revisit when: the app takes its presets from a catalogue whose `init` is not the initial register value of a direct LFSR.
+
 Checked by: "the first step loads init into the register" in `src/domain/trace.test.ts`, and the comparison with the catalogue's `check` values in `src/domain/equivalence.test.ts`.
 
 ## Drawing is a pure function of the step number
@@ -28,6 +30,8 @@ Protects: pause, frame stepping, reverse playback and seeking work through the s
 Refused: making it a video in Motion Canvas and passing the configuration to the Player through variables. Recalculating the duration and coordinating with the surrounding UI would have to be done within the Player's constraints.
 
 Next decision: anything new that playback shows is made as a value determined by the step number and the configuration, and holds no state that advances with time.
+
+Revisit when: something done during playback has to change the steps that follow it, such as flipping an input bit while the animation runs.
 
 ## The LFSR diagram follows the step split
 
@@ -43,6 +47,8 @@ Refused:
 - Keeping a Y shape between the boxes and only making `shift` slide sideways. Two paths, a horizontal line and the Y shape, run side by side, and it is unclear which one a value travels along.
 
 Next decision: before adding motion to the diagram, decide which pseudocode line it belongs to; motion that does not map one to one onto a line is not drawn.
+
+Revisit when: the pseudocode stops splitting one clock into a `shift` line and an `xor` line.
 
 Checked by: `e2e/diagram.spec.ts`.
 
@@ -60,5 +66,7 @@ Refused:
 - Deploying from GitHub Actions after CI. It needs a Cloudflare API token as a repository secret, and Cloudflare does not accept GitHub's OIDC tokens, so the token cannot be replaced with short-lived credentials.
 - Pushing directly to `main`, and after CI moving the commit to a `production` branch that Workers Builds deploys. It needs no secret, but adds a branch and a job, and lets untested commits into `main`.
 - Pushing directly to `main` and letting Workers Builds deploy `main`. Commits that fail the tests are published before CI finishes.
+
+Revisit when: Cloudflare accepts GitHub's OIDC tokens, so that deploying from GitHub Actions needs no long-lived secret; or Workers Builds can hold a deployment until a GitHub check passes.
 
 Checked by: the check `test` (`.github/workflows/ci.yml`) that the ruleset on `main` requires.
