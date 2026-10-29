@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { crcOf } from "./equivalence";
 import { CATALOGUE } from "./presets";
-import { crcTable, entryClocks, tableDirection, tableRun } from "./table";
+import { crcTable, entryClocks, filledEntries, tableDirection, tablePlay, tableRun, type TablePlayStep } from "./table";
 import { bitsFromBytes, type Bit, type CrcParams } from "./trace";
 
 const text = (s: string): Bit[] => bitsFromBytes([...new TextEncoder().encode(s)]);
@@ -84,5 +84,62 @@ describe("table", () => {
 
   it("Given an input that is not a multiple of 8 bits, When computed a byte at a time, Then it does not apply", () => {
     expect(tableRun(params("CRC-3/GSM"), [1, 0, 1])).toBeUndefined();
+  });
+});
+
+describe("tablePlay", () => {
+  const kinds = (steps: readonly TablePlayStep[]) => steps.map((s) => s.kind);
+
+  it("Given CRC-16/XMODEM and 2 bytes, When the steps are made, Then the table is built clock by clock for T[1] and T[2], filled one value at a time, and then used byte by byte", () => {
+    const steps = tablePlay(params("CRC-16/XMODEM"), text("12"));
+    expect(steps[0]).toEqual({ kind: "start" });
+    expect(steps.slice(1, 17)).toEqual(
+      [1, 2].flatMap((entry) => Array.from({ length: 8 }, (_, clock) => ({ kind: "clock", entry, clock }))),
+    );
+    expect(steps.slice(17, 270)).toEqual(Array.from({ length: 253 }, (_, k) => ({ kind: "fill", entry: k + 3 })));
+    expect(steps.slice(270)).toEqual([
+      { kind: "index", byte: 0 },
+      { kind: "lookup", byte: 0 },
+      { kind: "update", byte: 0 },
+      { kind: "index", byte: 1 },
+      { kind: "lookup", byte: 1 },
+      { kind: "update", byte: 1 },
+      { kind: "xorOut" },
+      { kind: "done" },
+    ]);
+  });
+
+  it("Given a left-shift table with refout, When the steps are made, Then the output reflection comes before xorOut", () => {
+    expect(kinds(tablePlay({ ...params("CRC-16/XMODEM"), refout: true }, text("1")).slice(-3))).toEqual([
+      "reflectOut",
+      "xorOut",
+      "done",
+    ]);
+  });
+
+  it("Given a right-shift table, When the steps are made, Then there is no output reflection", () => {
+    expect(kinds(tablePlay(params("CRC-16/ARC"), text("1")).slice(-3))).toEqual(["update", "xorOut", "done"]);
+  });
+
+  it("Given an input that is not whole bytes, When the steps are made, Then they end with filling T[255]", () => {
+    const steps = tablePlay(params("CRC-3/GSM"), [1, 0, 1]);
+    expect(steps).toHaveLength(270);
+    expect(steps.at(-1)).toEqual({ kind: "fill", entry: 255 });
+  });
+});
+
+describe("filledEntries", () => {
+  it.each<[TablePlayStep, number]>([
+    [{ kind: "start" }, 1],
+    [{ kind: "clock", entry: 1, clock: 6 }, 1],
+    [{ kind: "clock", entry: 1, clock: 7 }, 2],
+    [{ kind: "clock", entry: 2, clock: 0 }, 2],
+    [{ kind: "clock", entry: 2, clock: 7 }, 3],
+    [{ kind: "fill", entry: 3 }, 4],
+    [{ kind: "fill", entry: 255 }, 256],
+    [{ kind: "index", byte: 0 }, 256],
+    [{ kind: "done" }, 256],
+  ])("Given the step %o, When counting the filled cells, Then T[0] to T[%i - 1] are filled", (step, count) => {
+    expect(filledEntries(step)).toBe(count);
   });
 });
