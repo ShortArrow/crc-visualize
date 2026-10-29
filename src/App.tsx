@@ -7,7 +7,8 @@ import { pickLocale, type Locale } from "./i18n/locale";
 import { MESSAGES } from "./i18n/messages";
 import { bitsFromBytes, trace, type Bit, type CrcParams, type ParamName } from "./domain/trace";
 import { breakIndices, toggleBit, toggleByte, toggleLine, type Breakpoint } from "./playback/breakpoints";
-import { animationMs, initialPlayer, stepDurations, updatePlayer, type PlayerMsg, type SpeedMode } from "./playback/playback";
+import { animationMs, stepDurations, type SpeedMode } from "./playback/playback";
+import { usePlayer } from "./playback/usePlayer";
 import { BreakpointList } from "./ui/BreakpointList";
 import type { CodeLang } from "./ui/code";
 import { CodeLangSelect, CodeView } from "./ui/CodeView";
@@ -268,17 +269,6 @@ type VisualizerProps = Readonly<{
   onLayout: (layout: PaneLayout) => void;
 }>;
 
-const isEditable = (target: EventTarget | null) =>
-  target instanceof HTMLElement && ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName);
-
-const KEY_MSG: Record<string, PlayerMsg> = {
-  " ": { type: "toggle" },
-  ArrowLeft: { type: "prev" },
-  ArrowRight: { type: "next" },
-  Home: { type: "first" },
-  End: { type: "last" },
-};
-
 /** Parts of the diagram values flow through at the step shown. */
 const FLOWING_PARTS = ".reg.hit, .gate.active, .fb-box.arriving";
 
@@ -326,40 +316,13 @@ function Visualizer(props: VisualizerProps) {
   const panelRatio = useFittedPanelRatio(split, hardware, layout.panelRatio, !phone && zoom.scale === undefined, [run]);
   const steps = useMemo(() => trace(params, bits), [run]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
-  const [playerState, setPlayer] = useState(initialPlayer);
-  const [playerRun, setPlayerRun] = useState(run);
-  if (playerRun !== run) {
-    setPlayerRun(run);
-    setPlayer(initialPlayer);
-  }
-  const player = playerRun === run ? playerState : initialPlayer;
-  const send = (msg: PlayerMsg) => setPlayer((p) => updatePlayer(p, msg, steps.length));
   const breaks = useMemo(() => breakIndices(steps, breakpoints), [steps, breakpoints]);
+  const { player, send, stepMs } = usePlayer({ run, durations, rate, loop, onLoop, breaks });
   const lineBreaks = new Map(breakpoints.flatMap((b) => (b.kind === "line" ? [[b.runs, b.enabled] as const] : [])));
   const byteBreaks = new Map(breakpoints.flatMap((b) => (b.kind === "byte" ? [[b.byte, b.enabled] as const] : [])));
   const bitBreaks = new Map(breakpoints.flatMap((b) => (b.kind === "bit" ? [[b.bit, b.enabled] as const] : [])));
   const step = steps[player.index]!;
-  const stepMs = durations[player.index]! / rate;
   const animMs = animationMs(stepMs);
-
-  useEffect(() => {
-    if (!player.playing) return;
-    const timer = setTimeout(() => send({ type: "tick", loop, breaks }), stepMs);
-    return () => clearTimeout(timer);
-  });
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (isEditable(e.target)) return;
-      const msg = KEY_MSG[e.key];
-      if (msg) send(msg);
-      else if (e.key.toLowerCase() === "l") onLoop(!loop);
-      else return;
-      e.preventDefault();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  });
 
   useEffect(() => {
     if (hardware.current) followElements(hardware.current, `.reg[data-bit="${params.width - 1}"]`, FLOWING_PARTS);
