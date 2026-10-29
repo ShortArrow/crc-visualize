@@ -1320,6 +1320,11 @@ button.bp-gutter.bp-off::before {
   word-break: break-all;
 }
 
+.result-bits,
+.result-hex {
+  word-break: normal;
+}
+
 .crc-tail {
   color: var(--ok);
   font-weight: bold;

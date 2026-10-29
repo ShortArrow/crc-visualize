@@ -69,4 +69,29 @@ test.describe("Playback", () => {
       await expect(page.locator(".check")).toHaveText("検査値 0xCBF43926 と一致");
     });
   });
+
+  test("at the end, the input and the CRC are split into bytes and also shown in hexadecimal", async ({ page }) => {
+    const v = await given("CRC-16/ARC is selected", async () => {
+      const v = await Visualizer.open(page);
+      await v.settings.preset().selectOption("CRC-16/ARC");
+      return v;
+    });
+    await when("advancing to the end", () => v.goToEnd());
+    await then("the bits are in groups of 8, followed by the same bytes in hexadecimal with the CRC's in green", async () => {
+      await expect(page.locator(".result-bits")).toHaveText(/^00110001 00110010 (\d{8} ){7}10111011 00111101$/);
+      await expect(page.locator(".result-hex")).toHaveText("31 32 33 34 35 36 37 38 39 BB 3D");
+      await expect(page.locator(".result-hex .crc-tail")).toHaveText(["BB", "3D"]);
+    });
+  });
+
+  test("at the end, input and CRC that do not fill whole bytes have no hexadecimal", async ({ page }) => {
+    const v = await given("a 4-bit CRC of 5 bits is open", () =>
+      Visualizer.open(page, "?width=4&poly=0x3&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=bits&input=10101"),
+    );
+    await when("advancing to the end", () => v.goToEnd());
+    await then("the 9 bits are split after the 8th, and no hexadecimal is shown", async () => {
+      await expect(page.locator(".result-bits")).toHaveText(/^\d{8} \d$/);
+      await expect(page.locator(".result-hex")).toHaveCount(0);
+    });
+  });
 });

@@ -82,6 +82,7 @@ export const ja = {
     noXor: "feedback = 0 なので XOR しない",
     inputBit: (n: number) => `入力ビット ${n}`,
     inputPlusCrc: "入力 + CRC",
+    inHex: "16 進",
     check: (hex: string, match: boolean) => `検査値 ${hex} ${match ? "と一致" : "と不一致"}`,
   },
   code: {
