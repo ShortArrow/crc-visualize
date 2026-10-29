@@ -1,6 +1,6 @@
-import { useLayoutEffect, useRef, type CSSProperties } from "react";
+import { Fragment, useLayoutEffect, useRef, type CSSProperties } from "react";
 import { registerValue, toRegister, type Bit, type Step } from "../domain/trace";
-import { bitsToString, toBinary, toHex } from "./format";
+import { bitGroups, groupsHex, toHex } from "./format";
 import { useMessages } from "../i18n/I18n";
 import { logEntries, type LogEntry } from "./log";
 
@@ -28,19 +28,42 @@ function Entry({ entry, age }: { entry: LogEntry; age: number }) {
   );
 }
 
-/** Result on completion: the bit string of the input followed by the CRC, and the comparison with the check value. */
+/**
+ * Result on completion: the bits of the input followed by the CRC in groups of 8, the same groups in hexadecimal when they are
+ * whole bytes, and the comparison with the check value.
+ */
 function Result({ step, input, check }: { step: Step; input: readonly Bit[]; check: number | undefined }) {
   const m = useMessages();
   const crc = registerValue(step.reg);
+  const groups = bitGroups(input, step.reg);
+  const hex = groupsHex(groups);
   return (
     <div className="log-result">
       <div className="state-row">
         <span className="key">{m.log.inputPlusCrc}</span>
-        <code className="framed">
-          {bitsToString(input)}
-          <span className="crc-tail">{toBinary(step.reg)}</span>
+        <code className="framed result-bits">
+          {groups.map((g, i) => (
+            <Fragment key={i}>
+              {i === 0 ? "" : " "}
+              {g.input}
+              {g.crc ? <span className="crc-tail">{g.crc}</span> : null}
+            </Fragment>
+          ))}
         </code>
       </div>
+      {hex ? (
+        <div className="state-row">
+          <span className="key">{m.log.inHex}</span>
+          <code className="framed result-hex">
+            {hex.map((h, i) => (
+              <Fragment key={i}>
+                {i === 0 ? "" : " "}
+                {groups[i]!.input ? h : <span className="crc-tail">{h}</span>}
+              </Fragment>
+            ))}
+          </code>
+        </div>
+      ) : null}
       {check === undefined ? null : (
         <div className={`check ${check === crc ? "ok" : "ng"}`}>
           {m.log.check(toHex(toRegister(check, step.reg.length)), check === crc)}

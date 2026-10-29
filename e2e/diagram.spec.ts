@@ -185,8 +185,8 @@ test.describe("Register boxes", () => {
       for (const bit of [0, 1, 2]) await expect(v.diagram.register(bit)).toHaveClass(/\bdone\b/);
     });
     await then("CRC 101 follows the input 10101", async () => {
-      await expect(page.locator(".framed")).toHaveText("10101101");
-      await expect(page.locator(".crc-tail")).toHaveText("101");
+      await expect(page.locator(".result-bits")).toHaveText("10101101");
+      await expect(page.locator(".result-bits .crc-tail")).toHaveText("101");
     });
   });
 });
