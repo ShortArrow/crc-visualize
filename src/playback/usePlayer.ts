@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { initialPlayer, updatePlayer, type Player, type PlayerMsg } from "./playback";
+import { updatePlayer, type Player, type PlayerMsg } from "./playback";
 
 const isEditable = (target: EventTarget | null) =>
   target instanceof HTMLElement && ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName);
@@ -13,7 +13,7 @@ const KEY_MSG: Record<string, PlayerMsg> = {
 };
 
 type Options = Readonly<{
-  /** Identity of the step sequence; when it changes, playback goes back to the first step and stops. */
+  /** Identity of the step sequence; when it changes, playback goes back to the starting step and stops. */
   run: string;
   /** Display time of each step (ms, before the speed multiplier). */
   durations: readonly number[];
@@ -22,6 +22,8 @@ type Options = Readonly<{
   onLoop: (loop: boolean) => void;
   /** Indices at which playback pauses. */
   breaks?: ReadonlySet<number>;
+  /** The step shown first, and again when run changes; the first step when omitted. */
+  start?: number;
 }>;
 
 /**
@@ -29,18 +31,19 @@ type Options = Readonly<{
  * (Space, the left and right arrows, Home, End, and L for looping) outside text fields. stepMs is the time of the step shown,
  * after the speed multiplier.
  */
-export function usePlayer({ run, durations, rate, loop, onLoop, breaks }: Options): Readonly<{
+export function usePlayer({ run, durations, rate, loop, onLoop, breaks, start = 0 }: Options): Readonly<{
   player: Player;
   send: (msg: PlayerMsg) => void;
   stepMs: number;
 }> {
-  const [playerState, setPlayer] = useState(initialPlayer);
+  const initial: Player = { index: start, playing: false };
+  const [playerState, setPlayer] = useState(initial);
   const [playerRun, setPlayerRun] = useState(run);
   if (playerRun !== run) {
     setPlayerRun(run);
-    setPlayer(initialPlayer);
+    setPlayer(initial);
   }
-  const player = playerRun === run ? playerState : initialPlayer;
+  const player = playerRun === run ? playerState : initial;
   const send = (msg: PlayerMsg) => setPlayer((p) => updatePlayer(p, msg, durations.length));
   const stepMs = durations[player.index]! / rate;
 
