@@ -14,7 +14,7 @@ Protects: from one place, a reader can tell why the app is the way it is now, wh
 - A reason that only explains one change, true only at that moment, goes in that commit's message in one or two sentences.
 - The specification and the README point only at sections of this document, by their heading text.
 
-Refused: architecture decision records, one frozen file per decision. A later decision supersedes an earlier record without changing it, so which records still hold has to be worked out by following the supersession links. A specification that points at a record has to be edited whenever that record is superseded.
+Refused: freezing each decision in a file of its own when it is made, and recording a later change as a new file that supersedes it. Which files still hold then has to be worked out by following the supersession links, and a specification that points at a file has to be edited whenever that file is superseded. A section here carries what the context of such a record carries, the forces and the refused alternatives, but is edited instead of superseded.
 
 Next decision: a new decision gets a section here. When this document has more than eight sections, or one new page brings two or more decisions, the sections move to one file per topic under `docs/design/`, and this document becomes their index.
 
