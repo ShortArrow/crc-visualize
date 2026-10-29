@@ -417,6 +417,8 @@ export const zh: Messages = {
     xor: "异或的值",
     noXor: "无",
     reg: "寄存器",
+    modes: { value: "计算一个值", table: "构建表", use: "使用表" },
+    modesLabel: "播放内容",
     stepsTitle: "逐字节计算",
     formula: "更新式",
     start: "初始值",

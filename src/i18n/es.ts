@@ -460,6 +460,8 @@ export const es: Messages = {
     xor: "XOR con",
     noXor: "nada",
     reg: "Registro",
+    modes: { value: "Crear un valor", table: "Crear la tabla", use: "Usar la tabla" },
+    modesLabel: "Qué reproducir",
     stepsTitle: "Cálculo byte a byte",
     formula: "Actualización",
     start: "Valor inicial",

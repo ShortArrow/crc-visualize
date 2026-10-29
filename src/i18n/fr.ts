@@ -454,6 +454,8 @@ export const fr: Messages = {
     xor: "XOR avec",
     noXor: "rien",
     reg: "Registre",
+    modes: { value: "Calculer une valeur", table: "Construire la table", use: "Utiliser la table" },
+    modesLabel: "Ce qui est joué",
     stepsTitle: "Calcul octet par octet",
     formula: "Mise à jour",
     start: "Valeur initiale",
