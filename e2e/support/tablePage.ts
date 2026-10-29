@@ -21,6 +21,21 @@ export class TablePage {
     return this.page.locator(".table-page");
   }
 
+  /** The step counter of the playback controls, such as "278 / 278". */
+  get counter(): Locator {
+    return this.page.locator(".controls .counter");
+  }
+
+  /** The cells of table T that hold a value. */
+  filledCells(): Locator {
+    return this.cell().filter({ hasText: /\S/ });
+  }
+
+  /** The column and row headings of table T emphasized as the index being computed, column first. */
+  emphasizedHeadings(): Locator {
+    return this.root.locator(".crc-table th.index-heading");
+  }
+
   /** The direction of the table, with right or left in data-direction. */
   direction(): Locator {
     return this.root.locator(".table-direction");

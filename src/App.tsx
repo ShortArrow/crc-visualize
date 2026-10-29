@@ -180,7 +180,13 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     return frame(<CurrentSettingsSidebar config={config} form={form} />)(
       {
         check: <CheckPage key={JSON.stringify(config)} config={config} preset={preset} />,
-        table: <TablePage key={JSON.stringify(config)} config={config} />,
+        table: (
+          <TablePage
+            key={JSON.stringify(config)}
+            config={config}
+            playback={{ speedMode, rate, loop, onSpeedMode: setSpeedMode, onRate: setRate, onLoop: setLoop }}
+          />
+        ),
         equivalence: <EquivalencePage config={config} />,
       }[route.page],
       <span>{config.ok ? (preset?.name ?? "custom") : m.settings.invalidStatus}</span>,

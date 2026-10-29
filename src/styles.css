@@ -2751,6 +2751,15 @@ button.bit-cell:hover {
   outline: 2px solid var(--accent);
 }
 
+.crc-table th.index-heading {
+  color: var(--bg);
+  background: var(--warn);
+}
+
+.table-page .controls {
+  margin-bottom: 12px;
+}
+
 /* Estimation page */
 .estimate-page {
   height: 100%;
