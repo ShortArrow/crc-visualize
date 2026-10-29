@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { crcOf } from "./equivalence";
 import { CATALOGUE } from "./presets";
-import { crcTable, entryClocks, filledEntries, tableDirection, tablePlay, tableRun, type TablePlayStep } from "./table";
+import {
+  crcTable,
+  entryClocks,
+  fillSteps,
+  filledEntries,
+  tableDirection,
+  tablePlay,
+  tableRun,
+  useSteps,
+  valueSteps,
+  type TablePlayStep,
+} from "./table";
 import { bitsFromBytes, type Bit, type CrcParams } from "./trace";
 
 const text = (s: string): Bit[] => bitsFromBytes([...new TextEncoder().encode(s)]);
@@ -141,5 +152,46 @@ describe("filledEntries", () => {
     [{ kind: "done" }, 256],
   ])("Given the step %o, When counting the filled cells, Then T[0] to T[%i - 1] are filled", (step, count) => {
     expect(filledEntries(step)).toBe(count);
+  });
+});
+
+describe("play steps", () => {
+  it("Given a value to make, When its steps are made, Then a step with no clock is followed by one step per clock", () => {
+    expect(valueSteps()).toEqual(Array.from({ length: 9 }, (_, done) => ({ kind: "clocks", done })));
+  });
+
+  it("Given the table to make, When its steps are made, Then the first holds only T[0] and each next one fills one more cell", () => {
+    const steps = fillSteps();
+    expect(steps).toHaveLength(256);
+    expect([steps[0], steps[1], steps.at(-1)]).toEqual([
+      { kind: "filled", count: 1 },
+      { kind: "filled", count: 2 },
+      { kind: "filled", count: 256 },
+    ]);
+  });
+
+  it("Given CRC-16/XMODEM and 2 bytes, When the steps of using the table are made, Then each byte is index, look-up and update, then xorOut and done", () => {
+    expect(useSteps(params("CRC-16/XMODEM"), text("12"))).toEqual([
+      { kind: "index", byte: 0 },
+      { kind: "lookup", byte: 0 },
+      { kind: "update", byte: 0 },
+      { kind: "index", byte: 1 },
+      { kind: "lookup", byte: 1 },
+      { kind: "update", byte: 1 },
+      { kind: "xorOut" },
+      { kind: "done" },
+    ]);
+  });
+
+  it("Given a left-shift table with refout, When the steps of using it are made, Then the output reflection comes before xorOut", () => {
+    expect(useSteps({ ...params("CRC-16/XMODEM"), refout: true }, text("1"))!.slice(-3)).toEqual([
+      { kind: "reflectOut" },
+      { kind: "xorOut" },
+      { kind: "done" },
+    ]);
+  });
+
+  it("Given an input that is not whole bytes, When the steps of using the table are made, Then there are none", () => {
+    expect(useSteps(params("CRC-3/GSM"), [1, 0, 1])).toBeUndefined();
   });
 });
