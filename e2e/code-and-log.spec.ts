@@ -106,6 +106,18 @@ test.describe("Log", () => {
     );
   });
 
+  test("the log reaches the bottom of its pane, whatever the number of entries", async ({ page }) => {
+    const v = await given("the page is open with the default settings on a tall PC screen", async () => {
+      await page.setViewportSize({ width: 1366, height: 1200 });
+      return Visualizer.open(page);
+    });
+    await then("the log reaches the bottom of its pane", async () => expect(Math.abs(await v.log.gapBelow())).toBeLessThan(1));
+    await when("advancing to the end", () => v.goToEnd());
+    await then("the log still reaches the bottom of its pane", async () =>
+      expect(Math.abs(await v.log.gapBelow())).toBeLessThan(1),
+    );
+  });
+
   test("the software pane keeps a constant height regardless of the number of log entries", async ({ page }) => {
     const v = await given("the page is open with the default settings", () => Visualizer.open(page));
     const height = () => page.locator(".software").evaluate((el) => el.getBoundingClientRect().height);
