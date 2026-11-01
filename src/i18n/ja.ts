@@ -83,6 +83,8 @@ export const ja = {
     inputBit: (n: number) => `入力ビット ${n}`,
     inputPlusCrc: "入力 + CRC",
     inHex: "16 進",
+    newest: "最新へ",
+    oldest: "最古へ",
     check: (hex: string, match: boolean) => `検査値 ${hex} ${match ? "と一致" : "と不一致"}`,
   },
   code: {

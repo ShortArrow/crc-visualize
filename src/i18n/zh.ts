@@ -80,6 +80,8 @@ export const zh: Messages = {
     inputBit: (n: number) => `输入位 ${n}`,
     inputPlusCrc: "输入 + CRC",
     inHex: "十六进制",
+    newest: "最新",
+    oldest: "最早",
     check: (hex: string, match: boolean) => `校验值 ${hex} ${match ? "一致" : "不一致"}`,
   },
   code: {
