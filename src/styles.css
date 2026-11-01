@@ -1829,6 +1829,35 @@ button.bp-gutter.bp-off::before {
   gap: 10px;
 }
 
+.log-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.log-jump {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.log-jump button {
+  padding: 1px 6px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.log-jump button:hover {
+  border-color: var(--accent);
+}
+
 .code-lang {
   padding: 1px 6px;
   color: var(--fg);

@@ -85,6 +85,8 @@ export const es: Messages = {
     inputBit: (n: number) => `bit de entrada ${n}`,
     inputPlusCrc: "entrada + CRC",
     inHex: "hex",
+    newest: "Más reciente",
+    oldest: "Más antigua",
     check: (hex: string, match: boolean) => `valor de comprobación ${hex}: ${match ? "coincide" : "no coincide"}`,
   },
   code: {

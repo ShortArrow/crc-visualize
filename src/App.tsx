@@ -471,8 +471,13 @@ function Visualizer(props: VisualizerProps) {
             />
           )}
           <div className="log-pane" {...tabPanel(short, "log", tab)}>
-            {short ? null : <h2>{m.visualizer.log}</h2>}
-            <StepLog steps={steps} current={player.index} input={bits} check={check} />
+            <StepLog
+              steps={steps}
+              current={player.index}
+              input={bits}
+              check={check}
+              {...(short ? {} : { title: m.visualizer.log })}
+            />
           </div>
         </section>
       </div>

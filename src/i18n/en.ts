@@ -85,6 +85,8 @@ export const en: Messages = {
     inputBit: (n: number) => `input bit ${n}`,
     inputPlusCrc: "input + CRC",
     inHex: "hex",
+    newest: "Newest",
+    oldest: "Oldest",
     check: (hex: string, match: boolean) => `check value ${hex} ${match ? "matches" : "does not match"}`,
   },
   code: {

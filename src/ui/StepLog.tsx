@@ -74,22 +74,39 @@ function Result({ step, input, check }: { step: Step; input: readonly Bit[]; che
 }
 
 /**
- * Step log. Shows the latest step large at the top, and earlier ones below at a uniform size.
+ * Step log under a heading of title (no title text when omitted) with buttons that scroll it to its newest and oldest lines.
+ * Shows the latest step large at the top, and earlier ones below at a uniform size.
  * When the step advances, the previous latest row shrinks its text while moving down; stepping back reverses this.
  */
-export function StepLog({ steps, current, input, check }: Props) {
+export function StepLog({ steps, current, input, check, title }: Props & Readonly<{ title?: string }>) {
   const m = useMessages();
   const step = steps[current]!;
   const list = useSlidingRows(current);
+  const log = useRef<HTMLDivElement>(null);
+  const scrollTo = (end: "newest" | "oldest") =>
+    log.current?.scrollTo({ top: end === "newest" ? 0 : log.current.scrollHeight, behavior: "smooth" });
   return (
-    <div className="log">
-      {step.kind === "done" ? <Result step={step} input={input} check={check} /> : null}
-      <ol ref={list} className="log-list" style={{ "--log-ms": `${MOTION_MS}ms` } as CSSProperties}>
-        {logEntries(steps, current, LOG_LIMIT, m).map((entry, age) => (
-          <Entry key={entry.index} entry={entry} age={age} />
-        ))}
-      </ol>
-    </div>
+    <>
+      <h2 className="log-heading">
+        {title}
+        <span className="log-jump">
+          <button type="button" data-jump="newest" onClick={() => scrollTo("newest")}>
+            ↑ {m.log.newest}
+          </button>
+          <button type="button" data-jump="oldest" onClick={() => scrollTo("oldest")}>
+            ↓ {m.log.oldest}
+          </button>
+        </span>
+      </h2>
+      <div ref={log} className="log">
+        {step.kind === "done" ? <Result step={step} input={input} check={check} /> : null}
+        <ol ref={list} className="log-list" style={{ "--log-ms": `${MOTION_MS}ms` } as CSSProperties}>
+          {logEntries(steps, current, LOG_LIMIT, m).map((entry, age) => (
+            <Entry key={entry.index} entry={entry} age={age} />
+          ))}
+        </ol>
+      </div>
+    </>
   );
 }
 

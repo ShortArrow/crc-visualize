@@ -404,8 +404,10 @@ for (const screen of SCREENS.filter((s) => tierOf(s) === "short")) {
         await expect(page.locator(".panel > .log-pane")).toBeHidden();
       });
       await when("choosing the log tab", () => v.workbench.panelTab("log").click());
-      await then("the log is shown and the code is hidden", async () => {
+      await then("the log is shown with its newest and oldest buttons, and the code is hidden", async () => {
         await expect(page.locator(".panel > .log-pane")).toBeVisible();
+        await expect(v.log.jump("newest")).toBeInViewport();
+        await expect(v.log.jump("oldest")).toBeInViewport();
         await expect(page.locator(".panel > .software")).toBeHidden();
       });
     });

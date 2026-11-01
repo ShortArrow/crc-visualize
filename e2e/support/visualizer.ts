@@ -263,6 +263,15 @@ export class Visualizer {
   };
 
   readonly log = {
+    /** The button that scrolls the log to its newest or its oldest line (data-jump is newest or oldest). */
+    jump: (to: "newest" | "oldest") => this.page.locator(`.log-pane button[data-jump="${to}"]`),
+    /** Where the log is scrolled: top, bottom, or between. */
+    scrolled: () =>
+      this.page
+        .locator(".log")
+        .evaluate((el) =>
+          el.scrollTop < 1 ? "top" : el.scrollTop + el.clientHeight > el.scrollHeight - 1 ? "bottom" : "between",
+        ),
     /** The space between the bottom of the log and the bottom of the content of its pane (px). */
     gapBelow: () =>
       this.page.locator(".log-pane").evaluate((pane) => {

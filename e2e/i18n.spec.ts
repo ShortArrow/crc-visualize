@@ -24,7 +24,8 @@ test.describe("Display language", () => {
     await then("the page text is in German and the URL query carries lang=de", async () => {
       await expect(v.workbench.sidebar().locator("h2").first()).toHaveText("Einstellungen");
       await expect(v.workbench.statusbar()).toContainText("Initialisierung");
-      await expect(page.locator(".log-pane h2")).toHaveText("Verlauf");
+      await expect(page.locator(".log-pane h2")).toContainText("Verlauf");
+      await expect(v.log.jump("oldest")).toHaveText("↓ Älteste");
       await expect(page.locator("html")).toHaveAttribute("lang", "de");
       expect(new URL(page.url()).searchParams.get("lang")).toBe("de");
     });

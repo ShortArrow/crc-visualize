@@ -106,6 +106,25 @@ test.describe("Log", () => {
     );
   });
 
+  test("the oldest and newest buttons scroll the log to its ends without changing the step", async ({ page }) => {
+    const v = await given("the visualizer has advanced to the end, with more lines than the log shows at once", async () => {
+      const v = await Visualizer.open(page);
+      await v.goToEnd();
+      return v;
+    });
+    const at = await v.counter.textContent();
+    await when("pressing the oldest button", () => v.log.jump("oldest").click());
+    await then("the log is scrolled to its bottom and the step is unchanged", async () => {
+      await expect.poll(() => v.log.scrolled()).toBe("bottom");
+      await expect(v.counter).toHaveText(at!);
+    });
+    await when("pressing the newest button", () => v.log.jump("newest").click());
+    await then("the log is scrolled to its top and the step is unchanged", async () => {
+      await expect.poll(() => v.log.scrolled()).toBe("top");
+      await expect(v.counter).toHaveText(at!);
+    });
+  });
+
   test("the log reaches the bottom of its pane, whatever the number of entries", async ({ page }) => {
     const v = await given("the page is open with the default settings on a tall PC screen", async () => {
       await page.setViewportSize({ width: 1366, height: 1200 });
