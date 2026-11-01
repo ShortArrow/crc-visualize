@@ -272,6 +272,12 @@ export class Visualizer {
         .evaluate((el) =>
           el.scrollTop < 1 ? "top" : el.scrollTop + el.clientHeight > el.scrollHeight - 1 ? "bottom" : "between",
         ),
+    /** The space between the bottom of the log and the bottom of the content of its pane (px). */
+    gapBelow: () =>
+      this.page.locator(".log-pane").evaluate((pane) => {
+        const log = pane.querySelector(".log")!.getBoundingClientRect();
+        return pane.getBoundingClientRect().bottom - parseFloat(getComputedStyle(pane).paddingBottom) - log.bottom;
+      }),
     entries: () => this.page.locator(".log-entry"),
     latest: () => this.page.locator(".log-entry.latest"),
     titleSize: (i: number) =>
