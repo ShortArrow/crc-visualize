@@ -713,6 +713,17 @@ button.bp-gutter.bp-off::before {
   overflow: auto;
 }
 
+.panel > .log-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel > .log-pane > .log {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
 .invalid-config {
   padding: 16px;
 }
@@ -3236,6 +3247,11 @@ button.bit-cell:hover {
 .phone .panel > .log-pane {
   overflow: visible;
   border-top: 1px solid var(--border);
+}
+
+.phone .panel > .log-pane > .log {
+  flex: none;
+  height: 420px;
 }
 
 .phone .panel > .variables-pane {
