@@ -25,6 +25,11 @@ test.describe("On a phone", () => {
     await page.setViewportSize(PHONE);
   });
 
+  test("the log keeps its own height of 420 px", async ({ page }) => {
+    await given("the page is open on a 390×844 screen", () => Visualizer.open(page, QUERY));
+    await then("the log is 420 px tall", async () => expect((await boxOf(page, ".log")).height).toBeCloseTo(420, 0));
+  });
+
   test("the page links run along the bottom above the status bar, and the editor area takes the whole width", async ({
     page,
   }) => {
