@@ -128,12 +128,12 @@ test.describe("On a phone", () => {
     await then("the registers are drawn large enough to read their values", async () => {
       expect((await page.locator(".reg rect").first().boundingBox())!.width).toBeGreaterThanOrEqual(32);
     });
-    await when("scrolling down to the end of the log", () => page.locator(".log-entry").last().scrollIntoViewIfNeeded());
+    await when("scrolling down to the end of the log", () => page.locator(".log-block").last().scrollIntoViewIfNeeded());
     await then("the diagram and the step button are still in view, and the log comes below the diagram", async () => {
       await expect(page.locator("svg.lfsr")).toBeInViewport();
       await expect(page.locator(`.controls button[title="${"1 ステップ進む（→）"}"]`)).toBeInViewport({ ratio: 1 });
       const diagram = await boxOf(page, "svg.lfsr");
-      const last = (await page.locator(".log-entry").last().boundingBox())!;
+      const last = (await page.locator(".log-block").last().boundingBox())!;
       expect(last.y).toBeGreaterThanOrEqual(diagram.y + diagram.height - 1);
     });
     await then("there are no splitters", () => expect(page.locator(".splitter")).toHaveCount(0));

@@ -278,17 +278,36 @@ export class Visualizer {
         const log = pane.querySelector(".log")!.getBoundingClientRect();
         return pane.getBoundingClientRect().bottom - parseFloat(getComputedStyle(pane).paddingBottom) - log.bottom;
       }),
-    entries: () => this.page.locator(".log-entry"),
-    latest: () => this.page.locator(".log-entry.latest"),
-    titleSize: (i: number) =>
+    /** The blocks of the log, newest first. */
+    blocks: () => this.page.locator(".log-block"),
+    /** The block holding the current step. */
+    current: () => this.page.locator(".log-block.current"),
+    /** The labels (data-row) of the value rows of the i-th block, top to bottom. */
+    rowLabels: (i: number) =>
       this.page
-        .locator(".log-entry")
+        .locator(".log-block")
         .nth(i)
-        .locator(".log-title")
+        .locator(".log-row")
+        .evaluateAll((rows) => rows.map((row) => (row as HTMLElement).dataset.row)),
+    /** The font size (px) of the binary values of the i-th block. */
+    bitsSize: (i: number) =>
+      this.page
+        .locator(".log-block")
+        .nth(i)
+        .locator(".log-bits")
+        .first()
         .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+    /** The right edge (px) of the binary value of each row of the i-th block. */
+    bitsRightEdges: (i: number) =>
+      this.page
+        .locator(".log-block")
+        .nth(i)
+        .locator(".log-bits")
+        .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right)),
     /**
-     * Once the log's previous motion has finished, moves the step with key (such as ArrowRight) and returns whether each entry is moving in the very next frame.
-     * moving is the entry's change of position (WAAPI); resizing is the change of its title's font size (a CSS transition).
+     * Once the log's previous motion has finished, moves the step with key (such as ArrowRight) and returns, in the very next
+     * frame, whether each block is moving (a WAAPI change of position), whether its binary values are resizing (a CSS transition of
+     * font-size), and the labels of the rows that are fading in.
      */
     motionAfter: (key: string) =>
       this.page.evaluate(async (k) => {
@@ -296,18 +315,22 @@ export class Visualizer {
         await Promise.all(log.getAnimations({ subtree: true }).map((a) => a.finished));
         window.dispatchEvent(new KeyboardEvent("keydown", { key: k }));
         await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-        return [...document.querySelectorAll(".log-entry")].map((el) => ({
-          moving: el.getAnimations().some((a) => !(a instanceof CSSAnimation) && !(a instanceof CSSTransition)),
-          resizing: el
-            .querySelector(".log-title")!
-            .getAnimations()
-            .some((a) => a instanceof CSSTransition && a.transitionProperty === "font-size"),
+        const scripted = (el: Element) =>
+          el.getAnimations().filter((a) => !(a instanceof CSSAnimation) && !(a instanceof CSSTransition));
+        return [...document.querySelectorAll(".log-block")].map((el) => ({
+          moving: scripted(el).length > 0,
+          resizing: [...el.querySelectorAll(".log-bits")].some((bits) =>
+            bits.getAnimations().some((a) => a instanceof CSSTransition && a.transitionProperty === "font-size"),
+          ),
+          fading: [...el.querySelectorAll<HTMLElement>(".log-row")]
+            .filter((row) => scripted(row).length > 0)
+            .map((row) => row.dataset.row),
         }));
       }, key),
     /**
      * Once the log's previous motion has finished, moves the step with key and samples every frame until the motion ends: the
-     * space between the bottom of the first entry and the top of the second (px, negative when they overlap), the first entry's
-     * opacity, and whether the part of the first entry above the top of the list is hidden.
+     * space between the bottom of the first block and the top of the second (px, negative when they overlap), the first block's
+     * opacity, and whether the part of the first block above the top of the list is hidden.
      */
     framesAfter: (key: string) =>
       this.page.evaluate(async (k) => {
@@ -317,7 +340,7 @@ export class Visualizer {
         const frames: { space: number; opacity: number; clipped: boolean }[] = [];
         do {
           await new Promise((r) => requestAnimationFrame(r));
-          const [first, second] = [...document.querySelectorAll<HTMLElement>(".log-entry")];
+          const [first, second] = [...document.querySelectorAll<HTMLElement>(".log-block")];
           const list = document.querySelector(".log-list")!;
           frames.push({
             space: second!.getBoundingClientRect().top - first!.getBoundingClientRect().bottom,

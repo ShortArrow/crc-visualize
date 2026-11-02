@@ -82,6 +82,10 @@ export const zh: Messages = {
     inHex: "十六进制",
     newest: "最新",
     oldest: "最早",
+    xorNext: "接着 XOR",
+    noXorNext: "不 XOR",
+    byteFed: (n: number, entered: string, fed: string) => `第 ${n} 字节 ${entered} → 反转后输入 ${fed}`,
+    rows: { before: "之前", reflected: "反转后", result: "结果" },
     check: (hex: string, match: boolean) => `校验值 ${hex} ${match ? "一致" : "不一致"}`,
   },
   code: {

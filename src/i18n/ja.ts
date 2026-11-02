@@ -85,6 +85,10 @@ export const ja = {
     inHex: "16 進",
     newest: "最新へ",
     oldest: "最古へ",
+    xorNext: "XOR あり",
+    noXorNext: "XOR なし",
+    byteFed: (n: number, entered: string, fed: string) => `${n} バイト目 ${entered} → 反転して ${fed} を入れる`,
+    rows: { before: "前", reflected: "反転後", result: "結果" },
     check: (hex: string, match: boolean) => `検査値 ${hex} ${match ? "と一致" : "と不一致"}`,
   },
   code: {
