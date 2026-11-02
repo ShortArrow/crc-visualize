@@ -87,6 +87,10 @@ export const en: Messages = {
     inHex: "hex",
     newest: "Newest",
     oldest: "Oldest",
+    xorNext: "XOR next",
+    noXorNext: "no XOR",
+    byteFed: (n: number, entered: string, fed: string) => `byte ${n}: ${entered} → reflected, ${fed} is fed`,
+    rows: { before: "before", reflected: "reflected", result: "result" },
     check: (hex: string, match: boolean) => `check value ${hex} ${match ? "matches" : "does not match"}`,
   },
   code: {

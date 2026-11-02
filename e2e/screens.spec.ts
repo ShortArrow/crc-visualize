@@ -109,7 +109,7 @@ for (const screen of SCREENS) {
             "head of the flow": head!,
             "current line": v.code.activeLine(),
             ...(tierOf(screen) === "pc"
-              ? { "newest log entry": v.log.latest() }
+              ? { "current log block": v.log.current() }
               : { "step in the status bar": v.workbench.statusStep() }),
           });
         },

@@ -31,38 +31,70 @@ test.describe("Pseudocode", () => {
 });
 
 test.describe("Log", () => {
-  test("the log lists newest first, only the latest entry is large, and stepping back rewinds it", async ({ page }) => {
+  test("the log groups the steps of each input bit into a block, newest block first, with its rows in the order they happened", async ({
+    page,
+  }) => {
     const v = await given("the page is open with the default settings", () => Visualizer.open(page));
     await when("advancing to the xor step", () => v.goTo("xor"));
-    await then("the 4 entries from the start up to xor are listed newest first", async () => {
-      const entries = v.log.entries();
-      await expect(entries).toHaveCount(4);
-      await expect(entries.nth(0)).toHaveClass(/\blatest\b/);
-      await expect(entries.nth(0)).toContainText("多項式と XOR");
-      await expect(entries.nth(0)).toContainText("0b011");
-      await expect(entries.nth(1)).toContainText("シフト");
-      await expect(entries.nth(3)).toContainText("初期化");
+    await then("the block of input bit 1 is current and above init, with before, shift, poly and xor in that order", async () => {
+      await expect(v.log.blocks()).toHaveCount(2);
+      await expect(v.log.blocks().nth(0)).toHaveClass(/\bcurrent\b/);
+      await expect(v.log.blocks().nth(0)).toContainText("入力ビット 1");
+      await expect(v.log.blocks().nth(0)).toContainText(/msb\s*0\s*⊕\s*bit\s*1\s*=\s*feedback\s*1/);
+      expect(await v.log.rowLabels(0)).toEqual(["before", "shift", "poly", "xor"]);
+      await expect(v.log.blocks().nth(1)).toContainText("初期化");
     });
-    await then("only the latest entry is large, and older entries are not faded", async () => {
-      await expect.poll(async () => (await v.log.titleSize(1)) - (await v.log.titleSize(3))).toBe(0);
-      expect(await v.log.titleSize(0)).toBeGreaterThan(await v.log.titleSize(1));
+    await then("the xor row is the current row, and its bits that the XOR changed are marked", async () => {
+      await expect(v.log.current().locator('.log-row.now[data-row="xor"]')).toHaveCount(1);
+      await expect(v.log.current().locator('.log-row[data-row="xor"] .flip')).toHaveCount(2);
+      await expect(v.log.current().locator('.log-row[data-row="shift"] :is(.drop, .enter)')).toHaveCount(2);
+    });
+    await then("the binary values of the block line up on their right edges", async () => {
+      const edges = await v.log.bitsRightEdges(0);
+      expect(Math.max(...edges) - Math.min(...edges)).toBeLessThan(0.5);
+    });
+    await when("stepping back once", () => v.stepBack());
+    await then("the current block holds only before and shift", async () => {
+      expect(await v.log.rowLabels(0)).toEqual(["before", "shift"]);
+    });
+  });
+
+  test("only the current block is large, and older blocks share one size and are not faded", async ({ page }) => {
+    const v = await given("the visualizer has advanced to the second xor, with five blocks", async () => {
+      const v = await Visualizer.open(page);
+      await v.goTo("xor", 2);
+      return v;
+    });
+    await then("the current block is larger than the others, which are all the same size", async () => {
+      await expect.poll(async () => (await v.log.bitsSize(1)) - (await v.log.bitsSize(3))).toBe(0);
+      expect(await v.log.bitsSize(0)).toBeGreaterThan(await v.log.bitsSize(1));
+    });
+    await then("older blocks are not faded", async () => {
       const opacity = (i: number) =>
         v.log
-          .entries()
+          .blocks()
           .nth(i)
           .evaluate((el) => getComputedStyle(el).opacity);
       expect(await opacity(1)).toBe("1");
       expect(await opacity(3)).toBe("1");
       expect(await page.locator(".log").evaluate((el) => getComputedStyle(el).maskImage)).toBe("none");
     });
-    await when("stepping back once", () => v.stepBack());
-    await then("the latest entry is shift", async () => {
-      await expect(v.log.entries()).toHaveCount(3);
-      await expect(v.log.entries().nth(0)).toContainText("シフト");
+  });
+
+  test("a step that adds a row to the current block fades the row in while the blocks below slide down", async ({ page }) => {
+    const v = await given("the visualizer is at the first feedback step", async () => {
+      const v = await Visualizer.open(page);
+      await v.goTo("feedback");
+      return v;
+    });
+    const motion = await when("right after stepping forward once", () => v.log.motionAfter("ArrowRight"));
+    await then("the shift row fades in and the init block slides down", async () => {
+      expect(motion[0]!.fading).toEqual(["shift"]);
+      expect(motion[1]!.moving).toBe(true);
     });
   });
 
-  test("on a step forward the previously latest entry shrinks as it moves down, and stepping back reverses it", async ({
+  test("on a step that starts a new block the previously current block shrinks as it moves down, and stepping back reverses it", async ({
     page,
   }) => {
     const v = await given("the visualizer has advanced to the xor step", async () => {
@@ -71,18 +103,18 @@ test.describe("Log", () => {
       return v;
     });
     const forward = await when("right after stepping forward once", () => v.log.motionAfter("ArrowRight"));
-    await then("the 2nd entry, previously the latest, shrinks, and the 2nd and later entries slide down", async () => {
-      expect(forward[1]).toEqual({ moving: true, resizing: true });
-      expect(forward.slice(2).every((e) => e.moving)).toBe(true);
+    await then("the 2nd block, previously current, shrinks, and the 2nd and later blocks slide down", async () => {
+      expect(forward[1]).toMatchObject({ moving: true, resizing: true });
+      expect(forward.slice(2).every((b) => b.moving)).toBe(true);
     });
     const back = await when("right after stepping back once", () => v.log.motionAfter("ArrowLeft"));
-    await then("the first entry, now the latest, grows, and the rest slide up", async () => {
-      expect(back[0]).toEqual({ moving: true, resizing: true });
-      expect(back.slice(1).every((e) => e.moving)).toBe(true);
+    await then("the first block, current again, grows, and the rest slide up", async () => {
+      expect(back[0]).toMatchObject({ moving: true, resizing: true });
+      expect(back.slice(1).every((b) => b.moving)).toBe(true);
     });
   });
 
-  test("on a step forward the new entry slides in from above together with the entry below it, so the two never overlap", async ({
+  test("on a step that starts a new block, the block slides in from above together with the block below it, so the two never overlap", async ({
     page,
   }) => {
     const v = await given("the visualizer has advanced to the xor step", async () => {
@@ -94,7 +126,7 @@ test.describe("Log", () => {
       v.log.framesAfter("ArrowRight"),
     );
     await then(
-      "in every frame the new entry stays above the one below, is fully opaque, and nothing above the list is shown",
+      "in every frame the new block stays above the one below, is fully opaque, and nothing above the list is shown",
       async () => {
         expect(frames.length).toBeGreaterThan(3);
         for (const f of frames) {

@@ -87,6 +87,10 @@ export const fr: Messages = {
     inHex: "hex",
     newest: "Plus récente",
     oldest: "Plus ancienne",
+    xorNext: "XOR ensuite",
+    noXorNext: "pas de XOR",
+    byteFed: (n: number, entered: string, fed: string) => `octet ${n} : ${entered} → réfléchi, ${fed} est introduit`,
+    rows: { before: "avant", reflected: "réfléchi", result: "résultat" },
     check: (hex: string, match: boolean) => `valeur de contrôle ${hex} : ${match ? "concordante" : "non concordante"}`,
   },
   code: {
