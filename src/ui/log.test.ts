@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { trace } from "../domain/trace";
 import { bits, plain3 } from "../testing/fixtures";
 import { ja } from "../i18n/ja";
-import { logEntries } from "./log";
+import { logBlocks, logEntries } from "./log";
 
 /** The 15 steps of feeding 10101 into CRC-3/TUTORIAL. */
 const tutorial = trace(plain3, bits("10101"));
@@ -41,5 +41,76 @@ describe("logEntries", () => {
 
   it("Given 10101 fed into CRC-3/TUTORIAL, When advancing to the end with a limit of 5 lines, Then old lines beyond the limit are dropped", () => {
     expect(logEntries(tutorial, 14, 5, ja).map((e) => e.index)).toEqual([14, 13, 12, 11, 10]);
+  });
+});
+
+/** CRC-3/TUTORIAL with refin, refout and xorout 101, fed 10101011, so it has reflectIn, reflectOut and xorOut steps. */
+const reflected = trace({ ...plain3, refin: true, refout: true, xorout: 0b101 }, bits("10101011"));
+
+describe("logBlocks", () => {
+  it("Given 10101 fed into CRC-3/TUTORIAL, When advancing to the first xor, Then the input bit's block comes first with its rows in the order they happened, then init", () => {
+    expect(logBlocks(tutorial, 3, 40)).toEqual([
+      {
+        kind: "bit",
+        key: 1,
+        bitNo: 1,
+        msb: 0,
+        inBit: 1,
+        fb: 1,
+        rows: [
+          { index: 1, label: "before", bits: "000", hex: "0x0" },
+          { index: 2, label: "shift", bits: "000", hex: "0x0", dropped: 0 },
+          { index: 3, label: "poly", bits: "011", hex: "0x3" },
+          { index: 3, label: "xor", bits: "011", hex: "0x3", changed: [false, true, true] },
+        ],
+      },
+      { kind: "init", key: 0, rows: [{ index: 0, label: "init", bits: "000", hex: "0x0" }] },
+    ]);
+  });
+
+  it("Given a clock with feedback 0, When its shift is the current step, Then its block has only before and shift", () => {
+    expect(logBlocks(tutorial, 5, 40)[0]).toMatchObject({
+      key: 4,
+      fb: 0,
+      rows: [
+        { index: 4, label: "before", bits: "011" },
+        { index: 5, label: "shift", bits: "110", dropped: 0 },
+      ],
+    });
+  });
+
+  it("Given refin, When a byte is reflected, Then it is one line with the byte number, its value as entered and the value fed", () => {
+    expect(logBlocks(reflected, 1, 40)[0]).toEqual({
+      kind: "reflectIn",
+      key: 1,
+      byteNo: 1,
+      entered: 0b10101011,
+      fed: 0b11010101,
+    });
+  });
+
+  it("Given refout and xorout, When advancing to xorOut, Then reflectOut and xorOut are blocks of their own with the value before and the result", () => {
+    const [xorOut, reflectOut] = logBlocks(reflected, 25, 40);
+    expect(xorOut).toEqual({
+      kind: "xorOut",
+      key: 25,
+      rows: [
+        { index: 25, label: "before", bits: "010", hex: "0x2" },
+        { index: 25, label: "xorout", bits: "101", hex: "0x5" },
+        { index: 25, label: "result", bits: "111", hex: "0x7", changed: [true, false, true] },
+      ],
+    });
+    expect(reflectOut).toEqual({
+      kind: "reflectOut",
+      key: 24,
+      rows: [
+        { index: 24, label: "before", bits: "010", hex: "0x2" },
+        { index: 24, label: "reflected", bits: "010", hex: "0x2", changed: [false, false, false] },
+      ],
+    });
+  });
+
+  it("Given 10101 fed into CRC-3/TUTORIAL, When advancing to the end with a limit of 5 steps, Then only whole blocks within the newest 5 steps are kept and done adds no block", () => {
+    expect(logBlocks(tutorial, 14, 5).map((b) => b.key)).toEqual([11]);
   });
 });
