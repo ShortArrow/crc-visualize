@@ -1,6 +1,6 @@
 import { Fragment, useLayoutEffect, useRef, type CSSProperties } from "react";
-import { registerValue, toRegister, type Bit, type Step } from "../domain/trace";
-import { bitGroups, groupsHex, toHex } from "./format";
+import { registerValue, type Bit, type Step } from "../domain/trace";
+import { bitGroups, groupsHex, valueHex } from "./format";
 import { useMessages } from "../i18n/I18n";
 import type { Messages } from "../i18n/messages";
 import { logBlocks, type LogBlock, type LogRow } from "./log";
@@ -11,7 +11,7 @@ const LOG_LIMIT = 40;
 /** Duration (ms) of blocks sliding up or down, rows fading in and the values resizing. */
 const MOTION_MS = 240;
 
-type Props = Readonly<{ steps: readonly Step[]; current: number; input: readonly Bit[]; check: number | undefined }>;
+type Props = Readonly<{ steps: readonly Step[]; current: number; input: readonly Bit[]; check: bigint | undefined }>;
 
 const ROW_LABELS: Readonly<Record<Exclude<LogRow["label"], "before" | "reflected" | "result">, string>> = {
   init: "init",
@@ -103,7 +103,7 @@ function Block({ block, current }: { block: LogBlock; current: number | undefine
  * Result on completion: the bits of the input followed by the CRC in groups of 8, the same groups in hexadecimal when they are
  * whole bytes, and the comparison with the check value.
  */
-function Result({ step, input, check }: { step: Step; input: readonly Bit[]; check: number | undefined }) {
+function Result({ step, input, check }: { step: Step; input: readonly Bit[]; check: bigint | undefined }) {
   const m = useMessages();
   const crc = registerValue(step.reg);
   const groups = bitGroups(input, step.reg);
@@ -137,7 +137,7 @@ function Result({ step, input, check }: { step: Step; input: readonly Bit[]; che
       ) : null}
       {check === undefined ? null : (
         <div className={`check ${check === crc ? "ok" : "ng"}`}>
-          {m.log.check(toHex(toRegister(check, step.reg.length)), check === crc)}
+          {m.log.check(valueHex(check, step.reg.length), check === crc)}
         </div>
       )}
     </div>

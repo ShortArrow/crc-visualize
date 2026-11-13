@@ -57,12 +57,12 @@ function parseWidth(text: string): Parsed<number> {
   return n >= 1 && n <= 32 ? ok(n) : fail({ code: "widthRange" });
 }
 
-function parseHexBelow(text: string, width: number, allowZero: boolean): Parsed<number> {
+function parseHexBelow(text: string, width: number, allowZero: boolean): Parsed<bigint> {
   const t = text.trim().replace(/^0x/i, "");
   if (!/^[0-9a-f]+$/i.test(t)) return fail({ code: "notHex" });
-  const n = Number.parseInt(t, 16);
-  if (n >= 2 ** width) return fail({ code: "tooWide", width });
-  if (!allowZero && n === 0) return fail({ code: "zero" });
+  const n = BigInt(`0x${t}`);
+  if (n >= 1n << BigInt(width)) return fail({ code: "tooWide", width });
+  if (!allowZero && n === 0n) return fail({ code: "zero" });
   return ok(n);
 }
 

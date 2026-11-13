@@ -5,7 +5,7 @@ const dist = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 const pathLength = (route: readonly Point[]) => route.slice(1).reduce((sum, p, k) => sum + dist(route[k]!, p), 0);
 
 /** Layout for width 3, poly 0x3 (taps at r0 and r1). */
-const layout = lfsrLayout({ width: 3, poly: 0b011 });
+const layout = lfsrLayout({ width: 3, poly: 0b011n });
 const [r0, r1, r2] = [layout.boxes[0]!, layout.boxes[1]!, layout.boxes[2]!];
 const bottom = (box: Point) => ({ x: box.x + layout.box / 2, y: box.y + layout.box });
 const { feedbackBox: fb, inputGate } = layout;
@@ -98,6 +98,6 @@ describe("lfsrLayout", () => {
   });
 
   it("Given width 3 and poly 0x6, When finding the taps, Then they are r1 and r2", () => {
-    expect(lfsrLayout({ width: 3, poly: 0b110 }).taps).toEqual([1, 2]);
+    expect(lfsrLayout({ width: 3, poly: 0b110n }).taps).toEqual([1, 2]);
   });
 });

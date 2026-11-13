@@ -1,11 +1,9 @@
 import { codeConstants, equivalences, initPrefix, shiftDirection, type Equivalence } from "../domain/equivalence";
 import type { ConfigResult } from "../domain/parse";
-import { reflectValue, toRegister, type CrcParams } from "../domain/trace";
+import { reflectValue, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
-import { bitsToString, toHex } from "./format";
+import { bitsToString, valueHex } from "./format";
 import { Explanation } from "./Explanation";
-
-const hex = (value: number, width: number) => toHex(toRegister(value, width));
 
 /** Lists the substitutions that give the same CRC and what can be inferred from what is known. Examples are computed from config (the current settings and input). */
 export function EquivalencePage({ config }: Readonly<{ config: ConfigResult }>) {
@@ -73,13 +71,13 @@ function EquivalenceItem({ item, params }: ItemProps) {
         item.applicable ? (
           <>
             <p className="example">
-              {e.example}: <code className="left-value">{hex(item.left, params.width)}</code> ={" "}
-              <code className="right-value">{hex(item.right, params.width)}</code>
+              {e.example}: <code className="left-value">{valueHex(item.left, params.width)}</code> ={" "}
+              <code className="right-value">{valueHex(item.right, params.width)}</code>
               {item.left === item.right ? <span className="match">{e.match}</span> : null}
             </p>
             {prefix ? (
               <p className="example">
-                {e.prefix} = <code className="prefix-value">{hex(parseInt(bitsToString(prefix), 2), params.width)}</code>
+                {e.prefix} = <code className="prefix-value">{valueHex(BigInt(`0b${bitsToString(prefix)}`), params.width)}</code>
               </p>
             ) : null}
           </>
@@ -103,9 +101,11 @@ function CurrentInference({ params }: Readonly<{ params: CrcParams }>) {
         {e.direction[direction]}
       </p>
       {direction === "mixed" ? null : (
-        <p className="code-constants">{e.codeConstants(hex(constants.poly, params.width), hex(constants.init, params.width))}</p>
+        <p className="code-constants">
+          {e.codeConstants(valueHex(constants.poly, params.width), valueHex(constants.init, params.width))}
+        </p>
       )}
-      {reflectValue(params.poly, params.width) & 1 ? <p className="note">{e.ambiguous}</p> : null}
+      {reflectValue(params.poly, params.width) & 1n ? <p className="note">{e.ambiguous}</p> : null}
     </div>
   );
 }

@@ -45,7 +45,7 @@ describe("logEntries", () => {
 });
 
 /** CRC-3/TUTORIAL with refin, refout and xorout 101, fed 10101011, so it has reflectIn, reflectOut and xorOut steps. */
-const reflected = trace({ ...plain3, refin: true, refout: true, xorout: 0b101 }, bits("10101011"));
+const reflected = trace({ ...plain3, refin: true, refout: true, xorout: 0b101n }, bits("10101011"));
 
 describe("logBlocks", () => {
   it("Given 10101 fed into CRC-3/TUTORIAL, When advancing to the first xor, Then the input bit's block comes first with its rows in the order they happened, then init", () => {

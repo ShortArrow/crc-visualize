@@ -13,7 +13,7 @@ export type Template = Readonly<{
 }>;
 
 /** How a chip's value is written. hex is a hexadecimal integer; bool is a boolean literal. */
-export type Literals = Readonly<{ hex: (n: number) => string; bool: (b: boolean) => string }>;
+export type Literals = Readonly<{ hex: (n: bigint) => string; bool: (b: boolean) => string }>;
 
 /** A parameter chip placed in the code. mask is a value derived from width and is treated as a width chip. */
 export type Chips = Readonly<Record<"width" | "mask" | "poly" | "init" | "refin" | "refout" | "xorout", ParamChip>>;
@@ -26,7 +26,7 @@ export type LangDef = Readonly<{
   template: (c: Chips, p: CrcParams) => Template[];
 }>;
 
-const upperHex = (n: number) => n.toString(16).toUpperCase();
+const upperHex = (n: bigint) => n.toString(16).toUpperCase();
 
 /** Literals shared by many languages (0x1021, true/false). */
 export const C_LIKE: Literals = { hex: (n) => `0x${upperHex(n)}`, bool: String };
@@ -37,7 +37,7 @@ export const CAPITAL_BOOL: Literals = { ...C_LIKE, bool: (b) => (b ? "True" : "F
 /** Uppercase hexadecimal with a prefix and a suffix attached. */
 export const hexWith =
   (prefix: string, suffix = "") =>
-  (n: number) =>
+  (n: bigint) =>
     `${prefix}${upperHex(n)}${suffix}`;
 
 /** Turns each parameter of params into a chip holding its value written as lit. */
@@ -45,7 +45,7 @@ export function chips(p: CrcParams, lit: Literals): Chips {
   const chip = (param: ParamName, value: string, label: string = param): ParamChip => ({ param, label, value });
   return {
     width: chip("width", String(p.width)),
-    mask: chip("width", lit.hex(2 ** p.width - 1), "mask"),
+    mask: chip("width", lit.hex((1n << BigInt(p.width)) - 1n), "mask"),
     poly: chip("poly", lit.hex(p.poly)),
     init: chip("init", lit.hex(p.init)),
     refin: chip("refin", lit.bool(p.refin)),

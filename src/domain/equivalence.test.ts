@@ -30,7 +30,7 @@ describe("equivalence", () => {
   });
 
   it("Given a poly whose LSB is 0, When the prefix is computed, Then there is none", () => {
-    expect(initPrefix({ ...params("CRC-16/IBM-3740"), poly: 0x1020 })).toBeUndefined();
+    expect(initPrefix({ ...params("CRC-16/IBM-3740"), poly: 0x1020n })).toBeUndefined();
   });
 
   it.each(CATALOGUE)(
@@ -43,7 +43,7 @@ describe("equivalence", () => {
   );
 
   it("Given parameters with refin and refout false and a 3-bit input, When all substitutions are computed, Then the inapplicable items carry a reason", () => {
-    const p = { ...params("CRC-16/IBM-3740"), poly: 0x1020 };
+    const p = { ...params("CRC-16/IBM-3740"), poly: 0x1020n };
     const result = Object.fromEntries(equivalences(p, [1, 0, 1]).map((i) => [i.id, i.applicable ? "ok" : i.reason]));
     expect(result).toEqual({
       refin: "notBytes",
@@ -66,10 +66,10 @@ describe("equivalence", () => {
   });
 
   it("Given CRC-16/ARC (right-shift), When the constants written in code are computed, Then poly is the bit-reversed 0xA001", () => {
-    expect(codeConstants(params("CRC-16/ARC"))).toEqual({ poly: 0xa001, init: 0 });
+    expect(codeConstants(params("CRC-16/ARC"))).toEqual({ poly: 0xa001n, init: 0n });
   });
 
   it("Given CRC-16/IBM-3740 (left-shift), When the constants written in code are computed, Then they are the values as is", () => {
-    expect(codeConstants(params("CRC-16/IBM-3740"))).toEqual({ poly: 0x1021, init: 0xffff });
+    expect(codeConstants(params("CRC-16/IBM-3740"))).toEqual({ poly: 0x1021n, init: 0xffffn });
   });
 });

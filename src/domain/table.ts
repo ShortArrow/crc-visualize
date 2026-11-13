@@ -7,15 +7,15 @@ export type TableDirection = "left" | "right";
  * One clock while making a table value: the bit fed in, the feedback bit (the bit shifted out XOR bit), the register after
  * the shift by one, the value XORed in (poly, reversed for right shift, when feedback is 1, else 0) and the register afterwards.
  */
-export type EntryClock = Readonly<{ bit: Bit; feedback: Bit; shifted: number; xor: number; reg: number }>;
+export type EntryClock = Readonly<{ bit: Bit; feedback: Bit; shifted: bigint; xor: bigint; reg: bigint }>;
 
 /** One byte of the byte-at-a-time computation: crc before, table index, table value at that index, and crc after. */
-export type TableStep = Readonly<{ byte: number; before: number; index: number; entry: number; after: number }>;
+export type TableStep = Readonly<{ byte: number; before: bigint; index: number; entry: bigint; after: bigint }>;
 
 /** The byte-at-a-time computation: the starting register, one step per byte, and the CRC after the output reflection and xorout. */
-export type TableRun = Readonly<{ start: number; steps: readonly TableStep[]; result: number }>;
+export type TableRun = Readonly<{ start: bigint; steps: readonly TableStep[]; result: bigint }>;
 
-const mask = (width: number) => 2 ** width - 1;
+const mask = (width: number) => (1n << BigInt(width)) - 1n;
 
 /** Direction of the table used for params. */
 export const tableDirection = ({ refin, refout }: CrcParams): TableDirection => (refin && refout ? "right" : "left");
@@ -29,27 +29,28 @@ export function entryClocks(params: CrcParams, i: number): EntryClock[] {
   const right = tableDirection(params) === "right";
   const poly = right ? reflectValue(params.poly, width) : params.poly;
   const clocks: EntryClock[] = [];
-  let reg = 0;
+  let reg = 0n;
   for (let k = 0; k < 8; k++) {
     const bit: Bit = (right ? (i >> k) & 1 : (i >> (7 - k)) & 1) ? 1 : 0;
-    const feedback: Bit = ((right ? reg : reg >>> (width - 1)) & 1) ^ bit ? 1 : 0;
-    const shifted = right ? reg >>> 1 : (reg * 2) & mask(width);
-    const xor = feedback ? poly : 0;
-    reg = (shifted ^ xor) >>> 0;
+    const feedback: Bit = Number((right ? reg : reg >> BigInt(width - 1)) & 1n) ^ bit ? 1 : 0;
+    const shifted = right ? reg >> 1n : (reg << 1n) & mask(width);
+    const xor = feedback ? poly : 0n;
+    reg = shifted ^ xor;
     clocks.push({ bit, feedback, shifted, xor, reg });
   }
   return clocks;
 }
 
 /** Table T of the 256 values used by the byte-at-a-time computation. */
-export const crcTable = (params: CrcParams): number[] => Array.from({ length: 256 }, (_, i) => entryClocks(params, i)[7]!.reg);
+export const crcTable = (params: CrcParams): bigint[] => Array.from({ length: 256 }, (_, i) => entryClocks(params, i)[7]!.reg);
 
 /** Index into the table and the part of crc kept by the shift, for one byte. */
-function update(params: CrcParams, crc: number, byte: number): Readonly<{ index: number; kept: number }> {
+function update(params: CrcParams, crc: bigint, byte: number): Readonly<{ index: number; kept: bigint }> {
   const { width } = params;
-  if (tableDirection(params) === "right") return { index: (crc ^ byte) & 0xff, kept: crc >>> 8 };
-  if (width < 8) return { index: ((crc << (8 - width)) ^ byte) & 0xff, kept: 0 };
-  return { index: ((crc >>> (width - 8)) ^ byte) & 0xff, kept: width === 8 ? 0 : ((crc * 256) % 2 ** width) >>> 0 };
+  const low8 = (v: bigint) => Number(v & 0xffn) ^ byte;
+  if (tableDirection(params) === "right") return { index: low8(crc), kept: crc >> 8n };
+  if (width < 8) return { index: low8(crc << BigInt(8 - width)), kept: 0n };
+  return { index: low8(crc >> BigInt(width - 8)), kept: (crc << 8n) & mask(width) };
 }
 
 /**
@@ -70,12 +71,12 @@ export function tableRun(params: CrcParams, input: readonly Bit[]): TableRun | u
     const byte = fed.reduce<number>((v, b) => v * 2 + b, 0);
     const { index, kept } = update(params, crc, byte);
     const entry = table[index]!;
-    const after = (kept ^ entry) >>> 0;
+    const after = kept ^ entry;
     steps.push({ byte, before: crc, index, entry, after });
     crc = after;
   }
   const out = !right && params.refout ? reflectValue(crc, width) : crc;
-  return { start, steps, result: (out ^ params.xorout) >>> 0 };
+  return { start, steps, result: out ^ params.xorout };
 }
 
 /** What the Table page plays: making one value, making the table, or using it a byte at a time. */

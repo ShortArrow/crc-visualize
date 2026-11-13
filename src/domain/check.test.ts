@@ -12,15 +12,15 @@ const MESSAGES = [text(""), text("A"), text("123456789"), text("The quick brown 
 
 describe("check", () => {
   it("Given CRC 0x29B1 of non-reflected CRC-16/IBM-3740, When turned into appended bits, Then 16 bits from the MSB", () => {
-    expect(crcBits(params("CRC-16/IBM-3740"), 0x29b1)).toEqual(bytes(0x29, 0xb1));
+    expect(crcBits(params("CRC-16/IBM-3740"), 0x29b1n)).toEqual(bytes(0x29, 0xb1));
   });
 
   it("Given CRC 0x2189 of reflected CRC-16/KERMIT, When turned into appended bits, Then the low byte comes first", () => {
-    expect(crcBits(params("CRC-16/KERMIT"), 0x2189)).toEqual(bytes(0x89, 0x21));
+    expect(crcBits(params("CRC-16/KERMIT"), 0x2189n)).toEqual(bytes(0x89, 0x21));
   });
 
   it("Given reflected 5-bit CRC-5/USB, When turned into appended bits, Then one byte with the upper bits zero-filled", () => {
-    expect(crcBits(params("CRC-5/USB"), 0x19)).toEqual(bytes(0x19));
+    expect(crcBits(params("CRC-5/USB"), 0x19n)).toEqual(bytes(0x19));
   });
 
   it("Given a message, When the transmitted sequence is built, Then the CRC bits follow the message", () => {
@@ -38,11 +38,11 @@ describe("check", () => {
   );
 
   it("Given non-reflected CRC-16/XMODEM with xorout 0, When the residue is computed, Then 0", () => {
-    expect(residue(params("CRC-16/XMODEM"))).toBe(0);
+    expect(residue(params("CRC-16/XMODEM"))).toBe(0n);
   });
 
   it("Given CRC-32/ISO-HDLC, When the residue is computed, Then 0x2144DF1C", () => {
-    expect(residue(params("CRC-32/ISO-HDLC"))).toBe(0x2144df1c);
+    expect(residue(params("CRC-32/ISO-HDLC"))).toBe(0x2144df1cn);
   });
 
   it("Given parameters where refin and refout differ, When the residue is computed, Then it does not apply", () => {
@@ -77,7 +77,7 @@ describe("check", () => {
   it("Given a received sequence, When it is recomputed, Then the message CRC and the received CRC are returned", () => {
     const p = params("CRC-16/KERMIT");
     const received = frame(p, text("123456789"));
-    expect(recheck(p, received, 72)).toEqual({ computed: 0x2189, received: 0x2189, ok: true });
+    expect(recheck(p, received, 72)).toEqual({ computed: 0x2189n, received: 0x2189n, ok: true });
   });
 
   it("Given parameters where refin and refout differ, When the whole codeword is run through, Then it does not apply", () => {

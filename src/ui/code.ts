@@ -30,7 +30,7 @@ const branchTaken = (step: Step): boolean | undefined => (step.kind === "shift" 
 function disabledNote(kind: StepKind | undefined, p: CrcParams, m: Messages): string | undefined {
   if (kind === "reflectIn" && !p.refin) return m.code.refinOff;
   if (kind === "reflectOut" && !p.refout) return m.code.refoutOff;
-  if (kind === "xorOut" && p.xorout === 0) return m.code.xoroutZero;
+  if (kind === "xorOut" && p.xorout === 0n) return m.code.xoroutZero;
   return undefined;
 }
 
