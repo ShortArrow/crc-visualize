@@ -18,13 +18,24 @@ export type Literals = Readonly<{ hex: (n: bigint) => string; bool: (b: boolean)
 /** A parameter chip placed in the code. mask is a value derived from width and is treated as a width chip. */
 export type Chips = Readonly<Record<"width" | "mask" | "poly" | "init" | "refin" | "refout" | "xorout", ParamChip>>;
 
-/** One language the code is written in. label is the name shown in the selector, comment is the line-comment marker, and lit is how chip values are written. */
+/**
+ * One language the code is written in. label is the name shown in the selector, comment is the line-comment marker, and lit is how
+ * chip values are written. wide, when present, is how the language is written for a width above 32 bits, where the register needs a
+ * 64-bit type.
+ */
 export type LangDef = Readonly<{
   label: string;
   comment: string;
   lit: Literals;
   template: (c: Chips, p: CrcParams) => Template[];
+  wide?: LangDef;
 }>;
+
+/** Widest width whose register fits the 32-bit types of the code. */
+export const NARROW_WIDTH = 32;
+
+/** How def is written for params: its wide form when the width needs more than 32 bits and the language has one. */
+export const langFor = (def: LangDef, params: CrcParams): LangDef => (params.width > NARROW_WIDTH && def.wide) || def;
 
 const upperHex = (n: bigint) => n.toString(16).toUpperCase();
 

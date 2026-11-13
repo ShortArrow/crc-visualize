@@ -25,7 +25,7 @@ export const fr: Messages = {
     invalidStatus: "Paramètres invalides",
   },
   errors: {
-    widthRange: "Saisissez un entier de 1 à 32",
+    widthRange: "Saisissez un entier de 1 à 64",
     notHex: "Saisissez un nombre hexadécimal",
     tooWide: (width: number) => `Saisissez une valeur qui tient sur ${width} bits`,
     zero: "0 n’est pas autorisé",

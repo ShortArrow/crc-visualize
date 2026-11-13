@@ -5,7 +5,7 @@ export type Register = readonly Bit[];
 
 /**
  * CRC parameters of the Rocksoft model.
- * Invariant: 1 ≤ width ≤ 32, 0 < poly < 2^width, 0 ≤ init, xorout < 2^width.
+ * Invariant: 1 ≤ width ≤ 64, 0 < poly < 2^width, 0 ≤ init, xorout < 2^width.
  */
 export type CrcParams = Readonly<{
   width: number;

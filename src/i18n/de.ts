@@ -25,7 +25,7 @@ export const de: Messages = {
     invalidStatus: "Ungültige Einstellungen",
   },
   errors: {
-    widthRange: "Gib eine ganze Zahl von 1 bis 32 ein",
+    widthRange: "Gib eine ganze Zahl von 1 bis 64 ein",
     notHex: "Gib eine Hexadezimalzahl ein",
     tooWide: (width: number) => `Gib einen Wert ein, der in ${width} Bit passt`,
     zero: "0 ist nicht erlaubt",

@@ -70,6 +70,25 @@ test.describe("Playback", () => {
     });
   });
 
+  test("with the 64-bit CRC-64/XZ the CRC of 123456789 matches the check value, and reloading keeps all 64 bits", async ({
+    page,
+  }) => {
+    const v = await given("CRC-64/XZ is selected", async () => {
+      const v = await Visualizer.open(page);
+      await v.settings.preset().selectOption("CRC-64/XZ");
+      return v;
+    });
+    await when("advancing to the end", () => v.goToEnd());
+    await then("it shows that the check value matches", async () => {
+      await expect(page.locator(".check")).toHaveText("検査値 0x995DC9BBDF1939FA と一致");
+    });
+    await when("reloading the page", () => page.reload());
+    await then("the preset and its 64-bit poly are restored", async () => {
+      await expect(v.settings.preset()).toHaveValue("CRC-64/XZ");
+      await expect(v.settings.param("poly").locator("input")).toHaveValue("0x42F0E1EBA9EA3693");
+    });
+  });
+
   test("at the end, the input and the CRC are split into bytes and also shown in hexadecimal", async ({ page }) => {
     const v = await given("CRC-16/ARC is selected", async () => {
       const v = await Visualizer.open(page);

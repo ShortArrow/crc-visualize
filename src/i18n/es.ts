@@ -25,7 +25,7 @@ export const es: Messages = {
     invalidStatus: "Configuración no válida",
   },
   errors: {
-    widthRange: "Introduce un entero de 1 a 32",
+    widthRange: "Introduce un entero de 1 a 64",
     notHex: "Introduce un número hexadecimal",
     tooWide: (width: number) => `Introduce un valor que quepa en ${width} bits`,
     zero: "No se permite 0",
