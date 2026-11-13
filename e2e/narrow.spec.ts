@@ -26,11 +26,11 @@ test.describe("Narrowing", () => {
   test("fixes values one at a time down to a single algorithm and opens it in the visualizer", async ({ page }) => {
     const v = await given("the visualizer page is open", () => Visualizer.open(page));
     await when("switching to the narrowing page in the activity bar", () => v.workbench.pageLink("narrow").click());
-    const n = await then("it starts from all 104 candidates", async () => {
+    const n = await then("it starts from all 112 candidates", async () => {
       const n = await NarrowPage.shown(page);
       expect(n.hash()).toBe("#narrow");
-      await expect(n.candidates()).toHaveCount(104);
-      await expect(v.workbench.statusbar()).toContainText("候補 104");
+      await expect(n.candidates()).toHaveCount(112);
+      await expect(v.workbench.statusbar()).toContainText("候補 112");
       return n;
     });
     await when("selecting width at the root", () => n.splitBy(0, "width").click());
@@ -76,7 +76,7 @@ test.describe("Narrowing", () => {
     await when("changing the splitting parameter at the root to refin", () => n.splitBy(0, "refin").click());
     await then("the path from the root is discarded and re-split by refin", async () => {
       expect(n.hash()).toBe("#narrow/refin");
-      await expect(n.candidates()).toHaveCount(104);
+      await expect(n.candidates()).toHaveCount(112);
       await expect(n.branch(0, "false")).toBeVisible();
     });
   });
