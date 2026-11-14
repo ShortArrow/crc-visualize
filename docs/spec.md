@@ -8,7 +8,7 @@ A browser app that shows the behaviour of an LFSR (hardware) and each line of a 
 
 | Name     | Type    | Constraint                                                       |
 | -------- | ------- | ---------------------------------------------------------------- |
-| `width`  | integer | 1 to 32                                                          |
+| `width`  | integer | 1 to 64                                                          |
 | `poly`   | integer | 0 < poly < 2^width (the top x^width term is not included)        |
 | `init`   | integer | 0 ≤ init < 2^width                                               |
 | `refin`  | boolean | If true, each input byte is bit-reflected before it is fed in    |
@@ -18,7 +18,7 @@ A browser app that shows the behaviour of an LFSR (hardware) and each line of a 
 Each preset carries the reveng catalogue's check value (check, the CRC of the input `"123456789"`), which serves as the reference for correct computation.
 
 - The teaching preset `CRC-3/TUTORIAL` (width=3, poly=0x3, init=0, refin=false, refout=false, xorout=0, input bits `10101`, CRC=`101`)
-- Every algorithm with `width` 32 or less in reveng's "Catalogue of parametrised CRC algorithms" (104 of them), in catalogue order. Each preset has all of its catalogue aliases, with the ones most used in the literature first.
+- Every algorithm with `width` 64 or less in reveng's "Catalogue of parametrised CRC algorithms" (112 of them), in catalogue order. Each preset has all of its catalogue aliases, with the ones most used in the literature first.
 - Each option shows the official name followed by up to the first 3 aliases in full-width parentheses (e.g. CRC-16/KERMIT（CCITT、CCITT-TRUE、CRC-CCITT）). An alias that starts with the same "CRC-width/" omits that prefix.
 
 ## 2. Input
@@ -95,6 +95,7 @@ To the right of the software view's heading, the language the code is written in
 - If `refin` is true, the input is reflected byte by byte and then processed from the most significant bit; if false, the input bits are processed as they are. This shape is the same as in the pseudocode.
 - Helper functions such as `reflect` and splitting bytes into bits are only called, with their definitions omitted. Function type and parameter declarations are written only in languages where the shape is unclear without them (Haskell, Erlang, F#).
 - Chip values are written as literals of that language. Hexadecimal is `0x1021` (`$1021` in Pascal, `16#1021` in Erlang, `0x1021u` in F#), and booleans are `true`/`false` (`True`/`False` in Python, Haskell and Pascal, `1`/`0` in Perl, `$true`/`$false` in PowerShell).
+- The register's type follows `width`. Languages that declare it use a 32-bit unsigned integer when `width` is 32 or less and a 64-bit one otherwise (`uint64_t` in C, `ulong` in C#, `u64` in Rust and Zig, `uint64` in F#, whose hexadecimal is then `0x1021UL`). TypeScript uses `number` when `width` is 32 or less and `bigint` otherwise, whose hexadecimal is then `0x1021n`.
 - Notes are written as line comments of that language (`//`, `#`, `--`, `%`).
 
 ## 5. Step sequence (state transitions)
@@ -562,5 +563,5 @@ A CRC with `refin` and `refout` both true can be computed by a right-shift (LSB-
 
 ## 18. Unspecified
 
-- `width` above 32 bits (such as CRC-64) is not handled.
+- `width` above 64 bits (such as CRC-82) is not handled.
 - A window 700 CSS px wide or wider, such as a tablet's, gets the PC layout with the adjustments in "Screen tiers" (chapter 7); no layout is set out for tablets alone.

@@ -22,8 +22,8 @@ describe("estimate", () => {
   });
 
   it("Given a CRC text, When parsed for width 16, Then hex with or without 0x is read, and values not fitting 16 bits are rejected", () => {
-    expect(parseCrc("0x4B37", 16)).toBe(0x4b37);
-    expect(parseCrc("4b37", 16)).toBe(0x4b37);
+    expect(parseCrc("0x4B37", 16)).toBe(0x4b37n);
+    expect(parseCrc("4b37", 16)).toBe(0x4b37n);
     expect(parseCrc("1FFFF", 16)).toBeUndefined();
     expect(parseCrc("", 16)).toBeUndefined();
   });
@@ -46,7 +46,7 @@ describe("estimate", () => {
     const result = bruteForce([sample(p, "hello"), sample(p, "world")], 16);
     const found = result.candidates.find((c) => c.params.poly === p.poly && c.params.refin && c.params.refout);
     expect(found?.initKnown).toBe(false);
-    expect(found?.params.init).toBe(0);
+    expect(found?.params.init).toBe(0n);
     expect(crcBytes(found!.params, bytesOf("hello"))).toBe(crcBytes(p, bytesOf("hello")));
   });
 

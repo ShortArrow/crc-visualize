@@ -11,9 +11,9 @@ import {
   type Sample,
 } from "../domain/estimate";
 import { findPreset, type Preset } from "../domain/presets";
-import { toRegister, type CrcParams } from "../domain/trace";
+import type { CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
-import { toHex } from "./format";
+import { keyOf, valueHex } from "./format";
 import { Explanation } from "./Explanation";
 import { PresetTable } from "./PresetTable";
 
@@ -31,14 +31,12 @@ const SHOWN_CANDIDATES = 20;
 
 const EMPTY_ROW: Row = { data: "", crc: "" };
 
-const hex = (value: number, width: number) => toHex(toRegister(value, width));
-
-/** width typed in the field if valid (1 to 32), otherwise the number of digits of the longest CRC × 4 (at most 32). */
+/** width typed in the field if valid (1 to 64), otherwise the number of digits of the longest CRC × 4 (at most 64). */
 function effectiveWidth(typed: string, rows: readonly Row[]): number {
   const n = Number(typed);
-  if (/^\d+$/.test(typed.trim()) && n >= 1 && n <= 32) return n;
+  if (/^\d+$/.test(typed.trim()) && n >= 1 && n <= 64) return n;
   const digits = Math.max(1, ...rows.map((r) => r.crc.trim().replace(/^0x/i, "").length));
-  return Math.min(32, digits * 4);
+  return Math.min(64, digits * 4);
 }
 
 type Props = Readonly<{
@@ -83,9 +81,7 @@ export function EstimatePage({ onOpen, onCount }: Props) {
     const samples: Sample[] = parsed.map((p) => ({ data: p.data!, crc: p.crc! }));
     const next = { catalogue: catalogueMatches(samples, w), brute: bruteForce(samples, w) };
     setResults(next);
-    const keys = new Set(
-      [...next.catalogue.map((p) => p.params), ...next.brute.candidates.map((c) => c.params)].map((p) => JSON.stringify(p)),
-    );
+    const keys = new Set([...next.catalogue.map((p) => p.params), ...next.brute.candidates.map((c) => c.params)].map(keyOf));
     onCount(keys.size);
   };
 
@@ -239,15 +235,15 @@ function BruteResults({ brute, width, onOpen }: BruteProps) {
           </thead>
           <tbody>
             {shown.map((c) => (
-              <tr key={JSON.stringify(c.params)}>
-                <td>{hex(c.params.poly, width)}</td>
+              <tr key={keyOf(c.params)}>
+                <td>{valueHex(c.params.poly, width)}</td>
                 <td>
-                  {hex(c.params.init, width)}
+                  {valueHex(c.params.init, width)}
                   {c.initKnown ? "" : " ?"}
                 </td>
                 <td>{String(c.params.refin)}</td>
                 <td>{String(c.params.refout)}</td>
-                <td>{hex(c.params.xorout, width)}</td>
+                <td>{valueHex(c.params.xorout, width)}</td>
                 <td className="candidate-name">{findPreset(c.params)?.name ?? ""}</td>
                 <td>
                   <button type="button" onClick={() => onOpen(c.params)}>

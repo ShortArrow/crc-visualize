@@ -28,7 +28,7 @@ describe("parseRoute", () => {
       path: {
         fixed: [
           { param: "width", value: 16 },
-          { param: "poly", value: 0x1021 },
+          { param: "poly", value: 0x1021n },
         ],
         open: "init",
       },

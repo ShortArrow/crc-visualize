@@ -75,7 +75,7 @@ describe("cyclic", () => {
       expect(input.mode).toBe("bits");
       const steps = trace(params, bits(input.text));
       const starts = steps.filter((s) => s.kind === "feedback").map((s) => registerValue(s.reg));
-      expect(starts).toEqual(powerCycle(g));
+      expect(starts).toEqual(powerCycle(g).map(BigInt));
     },
   );
 
@@ -86,7 +86,7 @@ describe("cyclic", () => {
         const { params, input } = wordRingSettings(g, k);
         expect(input).toEqual({ mode: "bits", text: rotate(codeword(g), k).join("") });
         const steps = trace(params, bits(input.text));
-        expect(registerValue(steps.at(-1)!.reg)).toBe(0);
+        expect(registerValue(steps.at(-1)!.reg)).toBe(0n);
       }
     },
   );

@@ -5,15 +5,15 @@ export type Register = readonly Bit[];
 
 /**
  * CRC parameters of the Rocksoft model.
- * Invariant: 1 ≤ width ≤ 32, 0 < poly < 2^width, 0 ≤ init, xorout < 2^width.
+ * Invariant: 1 ≤ width ≤ 64, 0 < poly < 2^width, 0 ≤ init, xorout < 2^width.
  */
 export type CrcParams = Readonly<{
   width: number;
-  poly: number;
-  init: number;
+  poly: bigint;
+  init: bigint;
   refin: boolean;
   refout: boolean;
-  xorout: number;
+  xorout: bigint;
 }>;
 
 /** Parameter names of the Rocksoft model. */
@@ -46,23 +46,25 @@ export type Step = StepBase &
 export type StepKind = Step["kind"];
 
 /** Turns the low width bits of an integer into a register. */
-export function toRegister(value: number, width: number): Register {
-  return Array.from({ length: width }, (_, i) => (Math.floor(value / 2 ** i) % 2) as Bit);
+export function toRegister(value: bigint, width: number): Register {
+  return Array.from({ length: width }, (_, i) => Number((value >> BigInt(i)) & 1n) as Bit);
 }
 
 /** Turns a register into an unsigned integer. */
-export function registerValue(reg: Register): number {
-  return reg.reduceRight<number>((acc, b) => acc * 2 + b, 0);
+export function registerValue(reg: Register): bigint {
+  return reg.reduceRight<bigint>((acc, b) => (acc << 1n) | BigInt(b), 0n);
 }
 
 /** Reverses the order of the low width bits of an integer (e.g. 0x8005 reflected over 16 bits is 0xA001). */
-export function reflectValue(value: number, width: number): number {
-  return registerValue(toRegister(value, width).toReversed());
+export function reflectValue(value: bigint, width: number): bigint {
+  let out = 0n;
+  for (let i = 0n; i < BigInt(width); i++) out = (out << 1n) | ((value >> i) & 1n);
+  return out;
 }
 
 /** Turns bytes into bits, MSB first. */
 export function bitsFromBytes(bytes: readonly number[]): Bit[] {
-  return bytes.flatMap((byte) => toRegister(byte, 8).toReversed());
+  return bytes.flatMap((byte) => toRegister(BigInt(byte), 8).toReversed());
 }
 
 const xorRegister = (a: Register, b: Register): Register => a.map((x, i) => (x ^ b[i]!) as Bit);
@@ -113,7 +115,7 @@ export function trace(params: CrcParams, input: readonly Bit[]): Step[] {
     reg = reg.toReversed();
     push({ kind: "reflectOut", reg, stream, cursor: end });
   }
-  if (params.xorout !== 0) {
+  if (params.xorout !== 0n) {
     reg = xorRegister(reg, toRegister(params.xorout, width));
     push({ kind: "xorOut", reg, stream, cursor: end });
   }

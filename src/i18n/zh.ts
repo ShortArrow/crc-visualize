@@ -20,7 +20,7 @@ export const zh: Messages = {
     invalidStatus: "设置有误",
   },
   errors: {
-    widthRange: "请输入 1～32 的整数",
+    widthRange: "请输入 1～64 的整数",
     notHex: "请输入十六进制数",
     tooWide: (width: number) => `请输入 ${width} 位以内的值`,
     zero: "不能为 0",

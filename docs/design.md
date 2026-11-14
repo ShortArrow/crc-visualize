@@ -68,6 +68,21 @@ Revisit when: the pseudocode stops splitting one clock into a `shift` line and a
 
 Checked by: `e2e/diagram.spec.ts`.
 
+## Parameter and register values are `bigint`
+
+Protects: `poly`, `init`, `xorout`, check values and every register value are exact for every `width` up to 64.
+
+- A JavaScript `number` holds integers exactly only up to 2^53, and its bitwise operators work on 32 bits.
+- One type for every `width` keeps one form of each computation, so a preset of 8 bits and one of 64 bits go through the same code.
+
+Refused: keeping `number` up to 32 bits and switching to another type above it, and splitting a value into two 32-bit halves. Both give every computation two forms.
+
+Next decision: a new value derived from `poly`, `init`, `xorout` or the register is a `bigint`; widths, counts, positions and indices stay `number`.
+
+Revisit when: `bigint` arithmetic makes stepping or building a page noticeably slow.
+
+Checked by: the comparison with the catalogue's `check` values in `src/domain/equivalence.test.ts`, which covers the presets of 64 bits.
+
 ## `main` changes only through pull requests that pass CI
 
 Protects: only commits that have passed the type check, the unit tests and the E2E tests are published at crc.shortarrow.jp, and no Cloudflare credentials are kept in GitHub.

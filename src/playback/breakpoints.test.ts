@@ -51,7 +51,7 @@ describe("breakIndices", () => {
   });
 
   it("Given a byte breakpoint on the last byte, When 1 byte is fed, Then it hits at the end of its last clock, before post-processing", () => {
-    const steps = trace({ ...plain3, xorout: 1 }, bits("10101011"));
+    const steps = trace({ ...plain3, xorout: 1n }, bits("10101011"));
     const xorOut = indicesOf(steps, "xorOut")[0]!;
 
     expect([...breakIndices(steps, [{ kind: "byte", byte: 0, enabled: true }])]).toEqual([xorOut - 1]);

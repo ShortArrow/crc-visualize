@@ -4,16 +4,16 @@ import { PRESETS, TUTORIAL } from "./presets";
 import { bitsFromBytes, reflectValue, registerValue, streamPosition, trace, type Bit, type CrcParams } from "./trace";
 
 const ascii = (s: string): Bit[] => bitsFromBytes([...new TextEncoder().encode(s)]);
-const crcOf = (params: CrcParams, input: readonly Bit[]): number => registerValue(trace(params, input).at(-1)!.reg);
+const crcOf = (params: CrcParams, input: readonly Bit[]): bigint => registerValue(trace(params, input).at(-1)!.reg);
 
 /** CRC-3 with init 100 (r[2] = 1). */
-const msbSet: CrcParams = { ...plain3, init: 0b100 };
+const msbSet: CrcParams = { ...plain3, init: 0b100n };
 
 describe("reflectValue", () => {
   it.each([
-    [0x8005, 16, 0xa001],
-    [0x04c11db7, 32, 0xedb88320],
-    [0b011, 3, 0b110],
+    [0x8005n, 16, 0xa001n],
+    [0x04c11db7n, 32, 0xedb88320n],
+    [0b011n, 3, 0b110n],
   ])("Given a value and width, When 0x%s is reflected over %i bits, Then it becomes %s", (value, width, expected) => {
     expect(reflectValue(value, width)).toBe(expected);
   });
@@ -21,7 +21,7 @@ describe("reflectValue", () => {
 
 describe("trace", () => {
   it("Given the tutorial preset CRC-3/TUTORIAL, When 10101 is fed, Then the CRC is 101", () => {
-    expect(crcOf(TUTORIAL.params, bits("10101"))).toBe(0b101);
+    expect(crcOf(TUTORIAL.params, bits("10101"))).toBe(0b101n);
   });
 
   it.each(PRESETS)("Given preset $name, When 123456789 is fed, Then the CRC matches the check value", ({ params, check }) => {
@@ -29,17 +29,17 @@ describe("trace", () => {
   });
 
   it("Given CRC-3 with init 110, When 1 is fed, Then the first step loads init into the register", () => {
-    const [first] = trace({ ...plain3, init: 0b110 }, bits("1"));
+    const [first] = trace({ ...plain3, init: 0b110n }, bits("1"));
 
     expect(first).toMatchObject({ kind: "init", cursor: 0 });
-    expect(registerValue(first!.reg)).toBe(0b110);
+    expect(registerValue(first!.reg)).toBe(0b110n);
   });
 
   it("Given CRC-3 with init 100 (r[2] = 1), When 1 is fed, Then feedback is msb 1 XOR input bit 1 = 0 and the register is unchanged", () => {
     const feedback = trace(msbSet, bits("1")).find((s) => s.kind === "feedback");
 
     expect(feedback).toMatchObject({ inBit: 1, msb: 1, fb: 0, cursor: 0 });
-    expect(registerValue(feedback!.reg)).toBe(0b100);
+    expect(registerValue(feedback!.reg)).toBe(0b100n);
   });
 
   it("Given CRC-3 with init 100 (r[2] = 1), When 00 is fed, Then each shift carries the original r[2] that overflowed out", () => {
@@ -59,27 +59,27 @@ describe("trace", () => {
 
     expect(steps.map((s) => s.kind)).toEqual(["init", "feedback", "shift", "xor", "done"]);
     const [, , shift, xor] = steps;
-    expect(registerValue(shift!.reg)).toBe(0b000);
+    expect(registerValue(shift!.reg)).toBe(0b000n);
     expect(shift!.cursor).toBe(1);
-    expect(registerValue(xor!.reg)).toBe(0b011);
+    expect(registerValue(xor!.reg)).toBe(0b011n);
   });
 
   it("Given CRC-3 with init 001, When 0 is fed giving feedback 0, Then there is no xor step and it ends with shift", () => {
-    const steps = trace({ ...plain3, init: 0b001 }, bits("0"));
+    const steps = trace({ ...plain3, init: 0b001n }, bits("0"));
 
     expect(steps.map((s) => s.kind)).toEqual(["init", "feedback", "shift", "done"]);
-    expect(registerValue(steps[2]!.reg)).toBe(0b010);
+    expect(registerValue(steps[2]!.reg)).toBe(0b010n);
   });
 
   it("Given CRC-3 with refout on and xorout 111, When 1 is fed, Then reflectOut and xorOut, which change the value, become steps", () => {
-    const steps = trace({ ...plain3, refout: true, xorout: 0b111 }, bits("1"));
+    const steps = trace({ ...plain3, refout: true, xorout: 0b111n }, bits("1"));
 
     expect(steps.slice(-3).map((s) => s.kind)).toEqual(["reflectOut", "xorOut", "done"]);
-    expect(steps.slice(-3).map((s) => registerValue(s.reg))).toEqual([0b110, 0b001, 0b001]);
+    expect(steps.slice(-3).map((s) => registerValue(s.reg))).toEqual([0b110n, 0b001n, 0b001n]);
   });
 
   it("Given an 8-bit CRC with refin on, When 2 bytes are fed, Then each byte gets a reflectIn and that byte is reflected in the displayed stream", () => {
-    const params: CrcParams = { width: 8, poly: 0x07, init: 0, refin: true, refout: false, xorout: 0 };
+    const params: CrcParams = { width: 8, poly: 0x07n, init: 0n, refin: true, refout: false, xorout: 0n };
     const input = bits("1100000010000000");
 
     const steps = trace(params, input);
@@ -92,14 +92,14 @@ describe("trace", () => {
   });
 
   it("Given width 32 with init 0xFFFFFFFF, When nothing is fed, Then the value keeps its sign intact", () => {
-    const params: CrcParams = { width: 32, poly: 0x04c11db7, init: 0xffffffff, refin: false, refout: false, xorout: 0 };
+    const params: CrcParams = { width: 32, poly: 0x04c11db7n, init: 0xffffffffn, refin: false, refout: false, xorout: 0n };
 
-    expect(crcOf(params, [])).toBe(0xffffffff);
+    expect(crcOf(params, [])).toBe(0xffffffffn);
   });
 });
 
 describe("streamPosition", () => {
-  const refin8: CrcParams = { width: 8, poly: 0x07, init: 0, refin: true, refout: false, xorout: 0 };
+  const refin8: CrcParams = { width: 8, poly: 0x07n, init: 0n, refin: true, refout: false, xorout: 0n };
   const steps = trace(refin8, bits("1100000010000000"));
   const at = (kind: string, cursor: number) => steps.find((s) => s.kind === kind && s.cursor === cursor)!;
 

@@ -25,7 +25,7 @@ export const en: Messages = {
     invalidStatus: "Invalid settings",
   },
   errors: {
-    widthRange: "Enter an integer from 1 to 32",
+    widthRange: "Enter an integer from 1 to 64",
     notHex: "Enter a hexadecimal number",
     tooWide: (width: number) => `Enter a value that fits in ${width} bits`,
     zero: "0 is not allowed",

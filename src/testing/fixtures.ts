@@ -5,7 +5,7 @@ import { trace, type Bit, type CrcParams, type Step } from "../domain/trace";
 export const bits = (s: string): Bit[] => [...s].map((c) => (c === "1" ? 1 : 0));
 
 /** CRC-3 with no reflection and no final XOR (poly 0x3, init 0); the same parameters as the tutorial preset CRC-3/TUTORIAL. */
-export const plain3: CrcParams = { width: 3, poly: 0b011, init: 0, refin: false, refout: false, xorout: 0 };
+export const plain3: CrcParams = { width: 3, poly: 0b011n, init: 0n, refin: false, refout: false, xorout: 0n };
 
 /** The first step of kind `kind` in steps. */
 export const stepOf = (steps: readonly Step[], kind: Step["kind"]): Step => steps.find((s) => s.kind === kind)!;

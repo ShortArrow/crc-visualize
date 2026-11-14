@@ -13,18 +13,18 @@ describe("table", () => {
     expect(tableDirection(p)).toBe("left");
     const t = crcTable(p);
     expect(t).toHaveLength(256);
-    expect([t[0], t[1], t[255]]).toEqual([0, 0x1021, 0x1ef0]);
+    expect([t[0], t[1], t[255]]).toEqual([0n, 0x1021n, 0x1ef0n]);
   });
 
   it("Given CRC-32/ISO-HDLC, When its table is built, Then it is the well-known right-shift table with T[1] = 0x77073096", () => {
     const p = params("CRC-32/ISO-HDLC");
     expect(tableDirection(p)).toBe("right");
-    expect(crcTable(p)[1]).toBe(0x77073096);
-    expect(crcTable(p)[255]).toBe(0x2d02ef8d);
+    expect(crcTable(p)[1]).toBe(0x77073096n);
+    expect(crcTable(p)[255]).toBe(0x2d02ef8dn);
   });
 
   it("Given CRC-16/ARC, When its table is built, Then T[1] = 0xC0C1", () => {
-    expect(crcTable(params("CRC-16/ARC"))[1]).toBe(0xc0c1);
+    expect(crcTable(params("CRC-16/ARC"))[1]).toBe(0xc0c1n);
   });
 
   it("Given refin and refout that differ, When the direction is chosen, Then the left-shift table is used", () => {
@@ -34,26 +34,35 @@ describe("table", () => {
   it("Given CRC-16/XMODEM and index 1, When the 8 clocks that make T[1] are listed, Then the bits of 1 go in MSB first and the last register is T[1]", () => {
     const clocks = entryClocks(params("CRC-16/XMODEM"), 1);
     expect(clocks.map((c) => c.bit)).toEqual([0, 0, 0, 0, 0, 0, 0, 1]);
-    expect(clocks[7]!.reg).toBe(0x1021);
+    expect(clocks[7]!.reg).toBe(0x1021n);
   });
 
   it("Given CRC-32/ISO-HDLC and index 1, When the 8 clocks are listed, Then the bits go in LSB first and the last register is T[1]", () => {
     const clocks = entryClocks(params("CRC-32/ISO-HDLC"), 1);
     expect(clocks.map((c) => c.bit)).toEqual([1, 0, 0, 0, 0, 0, 0, 0]);
-    expect(clocks[7]!.reg).toBe(0x77073096);
+    expect(clocks[7]!.reg).toBe(0x77073096n);
   });
 
   it("Given width 7 and poly 0x9 and index 0x41, When the 8 clocks are listed, Then each shows its feedback, the shifted register and poly XORed in only when the feedback is 1", () => {
-    const clocks = entryClocks({ ...params("CRC-16/XMODEM"), width: 7, poly: 0x9 }, 0x41);
+    const clocks = entryClocks({ ...params("CRC-16/XMODEM"), width: 7, poly: 0x9n }, 0x41);
     expect(clocks.map((c) => c.feedback)).toEqual([0, 1, 0, 0, 0, 1, 0, 1]);
-    expect(clocks.map((c) => c.shifted)).toEqual([0, 0, 0b0010010, 0b0100100, 0b1001000, 0b0010000, 0b0110010, 0b1100100]);
-    expect(clocks.map((c) => c.xor)).toEqual([0, 0x9, 0, 0, 0, 0x9, 0, 0x9]);
-    expect(clocks.map((c) => c.reg)).toEqual([0, 0b0001001, 0b0010010, 0b0100100, 0b1001000, 0b0011001, 0b0110010, 0x6d]);
+    expect(clocks.map((c) => c.shifted)).toEqual([
+      0n,
+      0n,
+      0b0010010n,
+      0b0100100n,
+      0b1001000n,
+      0b0010000n,
+      0b0110010n,
+      0b1100100n,
+    ]);
+    expect(clocks.map((c) => c.xor)).toEqual([0n, 0x9n, 0n, 0n, 0n, 0x9n, 0n, 0x9n]);
+    expect(clocks.map((c) => c.reg)).toEqual([0n, 0b0001001n, 0b0010010n, 0b0100100n, 0b1001000n, 0b0011001n, 0b0110010n, 0x6dn]);
   });
 
   it("Given CRC-32/ISO-HDLC and index 1, When the first clock is listed, Then the bit shifted out on the right sets the feedback and the reversed poly is XORed in", () => {
     const [first] = entryClocks(params("CRC-32/ISO-HDLC"), 1);
-    expect(first).toEqual({ bit: 1, feedback: 1, shifted: 0, xor: 0xedb88320, reg: 0xedb88320 });
+    expect(first).toEqual({ bit: 1, feedback: 1, shifted: 0n, xor: 0xedb88320n, reg: 0xedb88320n });
   });
 
   it.each(CATALOGUE)("Given $name, When every table value is remade from its 8 clocks, Then it matches the table", (preset) => {
@@ -75,9 +84,9 @@ describe("table", () => {
 
   it("Given CRC-16/XMODEM and the input 12, When computed a byte at a time, Then each step chains the crc and indexes the table", () => {
     const run = tableRun(params("CRC-16/XMODEM"), text("12"))!;
-    expect(run.start).toBe(0);
+    expect(run.start).toBe(0n);
     expect(run.steps).toHaveLength(2);
-    expect(run.steps[0]).toMatchObject({ byte: 0x31, before: 0, index: 0x31 });
+    expect(run.steps[0]).toMatchObject({ byte: 0x31, before: 0n, index: 0x31 });
     expect(run.steps[1]!.before).toBe(run.steps[0]!.after);
     expect(run.steps[0]!.entry).toBe(crcTable(params("CRC-16/XMODEM"))[0x31]);
   });

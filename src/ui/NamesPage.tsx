@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { AMBIGUOUS_NAMES, aliasIndex, polyFamilies, splitPresetName } from "../domain/naming";
 import { CATALOGUE } from "../domain/presets";
 import { PARAM_NAMES, type ParamName } from "../domain/trace";
+import { valueHex } from "./format";
 import { ParamMap } from "./ParamMap";
 import { useMessages } from "../i18n/I18n";
 import type { Messages } from "../i18n/messages";
@@ -39,12 +40,6 @@ export function NamesToc() {
 /** Wraps the identifier word in text with code, so heading capitalization does not affect the identifier. */
 const withCode = (text: string, word: string) =>
   text.split(word).flatMap((part, i) => (i === 0 ? [part] : [<code key={i}>{word}</code>, part]));
-
-const hexOf = (value: number, width: number) =>
-  `0x${value
-    .toString(16)
-    .toUpperCase()
-    .padStart(Math.ceil(width / 4), "0")}`;
 
 /** Page showing how presets are named and how parameter names differ. target is the parameter row to highlight. */
 export function NamesPage({ target }: { target: ParamName | undefined }) {
@@ -103,8 +98,8 @@ function Families() {
       <Explanation>{m.names.families.note}</Explanation>
       <div className="family-columns">
         {polyFamilies(CATALOGUE).map(({ width, poly, rows }) => (
-          <table key={`${width}-${poly}`} className="family" data-poly={hexOf(poly, width)}>
-            <caption>{m.names.families.caption(width, hexOf(poly, width))}</caption>
+          <table key={`${width}-${poly}`} className="family" data-poly={valueHex(poly, width)}>
+            <caption>{m.names.families.caption(width, valueHex(poly, width))}</caption>
             <thead>
               <tr>
                 <th>{m.names.families.name}</th>
@@ -118,13 +113,13 @@ function Families() {
                 <tr key={preset.name} data-preset={preset.name}>
                   <th>{preset.name}</th>
                   <td className={differs.init ? "differs" : ""} data-col="init">
-                    {hexOf(preset.params.init, width)}
+                    {valueHex(preset.params.init, width)}
                   </td>
                   <td className={differs.reflect ? "differs" : ""} data-col="reflect">
                     {String(preset.params.refin)} / {String(preset.params.refout)}
                   </td>
                   <td className={differs.xorout ? "differs" : ""} data-col="xorout">
-                    {hexOf(preset.params.xorout, width)}
+                    {valueHex(preset.params.xorout, width)}
                   </td>
                 </tr>
               ))}

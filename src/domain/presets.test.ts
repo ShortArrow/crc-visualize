@@ -9,7 +9,7 @@ describe("findPreset", () => {
   });
 
   it("Given parameters unlike any preset, When a preset is looked up, Then undefined is returned", () => {
-    expect(findPreset({ width: 3, poly: 3, init: 1, refin: false, refout: false, xorout: 0 })).toBeUndefined();
+    expect(findPreset({ width: 3, poly: 3n, init: 1n, refin: false, refout: false, xorout: 0n })).toBeUndefined();
   });
 
   it("Given every preset, When each is looked up by its parameters, Then it finds itself and no parameters are duplicated", () => {
@@ -38,9 +38,22 @@ describe("PRESETS", () => {
     expect(PRESETS.map((p) => p.name)).toContain(name);
   });
 
-  it("Given the preset list, When the reveng catalogue entries are counted, Then all 104 entries of width 32 or less are there", () => {
-    expect(CATALOGUE).toHaveLength(104);
-    expect(CATALOGUE.every((p) => p.params.width <= 32)).toBe(true);
+  it("Given the preset list, When the reveng catalogue entries are counted, Then all 112 entries of width 64 or less are there", () => {
+    expect(CATALOGUE).toHaveLength(112);
+    expect(CATALOGUE.every((p) => p.params.width <= 64)).toBe(true);
+  });
+
+  it.each([
+    "CRC-40/GSM",
+    "CRC-64/ECMA-182",
+    "CRC-64/GO-ISO",
+    "CRC-64/MS",
+    "CRC-64/NVME",
+    "CRC-64/REDIS",
+    "CRC-64/WE",
+    "CRC-64/XZ",
+  ])("Given the preset list, When %s is looked up, Then it is there", (name) => {
+    expect(CATALOGUE.map((p) => p.name)).toContain(name);
   });
 
   it("Given CRC-12/UMTS, When its parameters are read, Then refin and refout differ as in the catalogue", () => {

@@ -147,7 +147,7 @@ test.describe("Settings validation and notation", () => {
     const v = await given("the page is open with the default settings", () => Visualizer.open(page));
     await when("entering 0 for width", () => page.getByLabel("width").fill("0"));
     await then("width shows an error and the diagram disappears", async () => {
-      await expect(page.locator(".error")).toHaveText("1〜32 の整数を入れてください");
+      await expect(page.locator(".error")).toHaveText("1〜64 の整数を入れてください");
       await expect(page.locator(".invalid-config")).toBeVisible();
       await expect(v.diagram.root()).toHaveCount(0);
     });

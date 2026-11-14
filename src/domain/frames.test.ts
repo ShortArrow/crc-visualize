@@ -3,7 +3,7 @@ import { checkFrame, frameSpan, type FrameLayout } from "./frames";
 import type { CrcParams } from "./trace";
 
 /** CRC-16/IBM-SDLC (X-25): the CRC-16-CCITT polynomial sent right-shifted, with init and xorout 0xFFFF; check 0x906E. */
-const x25: CrcParams = { width: 16, poly: 0x1021, init: 0xffff, refin: true, refout: true, xorout: 0xffff };
+const x25: CrcParams = { width: 16, poly: 0x1021n, init: 0xffffn, refin: true, refout: true, xorout: 0xffffn };
 const ASCII_123456789 = [0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39];
 
 const layout = (over: Partial<FrameLayout> = {}): FrameLayout => ({ from: 0, crcField: "none", ...over });
@@ -44,18 +44,18 @@ describe("checkFrame", () => {
   it("Given a frame with its CRC appended low byte first, When checked with an LE field, Then the computed CRC and the field match", () => {
     const check = checkFrame(x25, [...ASCII_123456789, 0x6e, 0x90], layout({ crcField: "le" }));
 
-    expect(check).toEqual({ span: { from: 0, to: 8, field: { from: 9, to: 10 } }, crc: 0x906e, field: 0x906e });
+    expect(check).toEqual({ span: { from: 0, to: 8, field: { from: 9, to: 10 } }, crc: 0x906en, field: 0x906en });
   });
 
   it("Given the same frame, When checked with a BE field, Then the field is read high byte first and does not match", () => {
     expect(checkFrame(x25, [...ASCII_123456789, 0x6e, 0x90], layout({ crcField: "be" }))).toMatchObject({
-      crc: 0x906e,
-      field: 0x6e90,
+      crc: 0x906en,
+      field: 0x6e90n,
     });
   });
 
   it("Given a header byte before the range, When checked from byte 1, Then only the range is computed", () => {
-    expect(checkFrame(x25, [0xfe, ...ASCII_123456789], layout({ from: 1 }))).toEqual({ span: { from: 1, to: 9 }, crc: 0x906e });
+    expect(checkFrame(x25, [0xfe, ...ASCII_123456789], layout({ from: 1 }))).toEqual({ span: { from: 1, to: 9 }, crc: 0x906en });
   });
 
   it("Given a layout that does not fit, When checked, Then there is no result", () => {

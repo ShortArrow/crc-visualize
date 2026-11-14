@@ -16,7 +16,7 @@ export const FIELD_LABELS: Record<FieldName, string> = {
   crcField: "crc in input",
 };
 
-const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;
+const hex = (n: bigint) => `0x${n.toString(16).toUpperCase()}`;
 
 function shiftDirection({ refin, refout }: CrcParams, m: Messages): string {
   if (refin && refout) return m.help.shiftRight;

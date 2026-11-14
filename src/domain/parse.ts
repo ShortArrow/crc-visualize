@@ -27,7 +27,7 @@ export type ConfigForm = Readonly<{
 export type ConfigField = "width" | "poly" | "init" | "xorout" | "input" | "range";
 
 /**
- * Field errors. widthRange: width is not an integer from 1 to 32. notHex: not a hex number. tooWide: does not fit in width bits.
+ * Field errors. widthRange: width is not an integer from 1 to 64. notHex: not a hex number. tooWide: does not fit in width bits.
  * zero: 0 is not allowed. notBits: contains characters other than 0 and 1. oddHex: odd number of hex digits (not whole bytes).
  * tooLong: input exceeds max bits. refinBytes: refin is used but the input is not a multiple of 8 bits. notIndex: a byte number
  * is not an integer of 0 or more. outsideFrame: the range or the CRC field does not fit the selected frame. tooManyFrames: hex
@@ -54,15 +54,15 @@ function parseWidth(text: string): Parsed<number> {
   const t = text.trim();
   if (!/^\d+$/.test(t)) return fail({ code: "widthRange" });
   const n = Number(t);
-  return n >= 1 && n <= 32 ? ok(n) : fail({ code: "widthRange" });
+  return n >= 1 && n <= 64 ? ok(n) : fail({ code: "widthRange" });
 }
 
-function parseHexBelow(text: string, width: number, allowZero: boolean): Parsed<number> {
+function parseHexBelow(text: string, width: number, allowZero: boolean): Parsed<bigint> {
   const t = text.trim().replace(/^0x/i, "");
   if (!/^[0-9a-f]+$/i.test(t)) return fail({ code: "notHex" });
-  const n = Number.parseInt(t, 16);
-  if (n >= 2 ** width) return fail({ code: "tooWide", width });
-  if (!allowZero && n === 0) return fail({ code: "zero" });
+  const n = BigInt(`0x${t}`);
+  if (n >= 1n << BigInt(width)) return fail({ code: "tooWide", width });
+  if (!allowZero && n === 0n) return fail({ code: "zero" });
   return ok(n);
 }
 

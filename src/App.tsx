@@ -12,6 +12,7 @@ import { usePlayer } from "./playback/usePlayer";
 import { BreakpointList } from "./ui/BreakpointList";
 import type { CodeLang } from "./ui/code";
 import { CodeLangSelect, CodeView } from "./ui/CodeView";
+import { keyOf } from "./ui/format";
 import { ConfigPanel, formFromParams, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { Docked } from "./ui/Dock";
@@ -179,10 +180,10 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   if (route.page === "equivalence" || route.page === "check" || route.page === "table") {
     return frame(<CurrentSettingsSidebar config={config} form={form} />)(
       {
-        check: <CheckPage key={JSON.stringify(config)} config={config} preset={preset} />,
+        check: <CheckPage key={keyOf(config)} config={config} preset={preset} />,
         table: (
           <TablePage
-            key={JSON.stringify(config)}
+            key={keyOf(config)}
             config={config}
             playback={{ speedMode, rate, loop, onSpeedMode: setSpeedMode, onRate: setRate, onLoop: setLoop }}
           />
@@ -253,7 +254,7 @@ type VisualizerProps = Readonly<{
   /** The settings are invalid: params and bits are the last valid ones, and only the settings are shown. */
   invalid: boolean;
   presetName: string;
-  check: number | undefined;
+  check: bigint | undefined;
   speedMode: SpeedMode;
   rate: number;
   loop: boolean;
@@ -317,7 +318,7 @@ function Visualizer(props: VisualizerProps) {
     const [r, z] = [el.getBoundingClientRect(), screenZoom()];
     return f(new DOMRect(r.x / z, r.y / z, r.width / z, r.height / z));
   };
-  const run = JSON.stringify([params, bits]);
+  const run = keyOf([params, bits]);
   const zoom = useDiagramZoom(run, hardware);
   const panelRatio = useFittedPanelRatio(split, hardware, layout.panelRatio, !phone && zoom.scale === undefined, [run]);
   const steps = useMemo(() => trace(params, bits), [run]);

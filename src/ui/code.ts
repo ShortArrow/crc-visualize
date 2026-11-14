@@ -1,7 +1,7 @@
 import type { CrcParams, Step, StepKind } from "../domain/trace";
 import type { Messages } from "../i18n/messages";
 import { CODE_LANGS, type CodeLang } from "./codeLangs";
-import { chips, type CodePart } from "./codeTemplate";
+import { chips, langFor, type CodePart } from "./codeTemplate";
 
 export { CODE_LANGS, type CodeLang };
 export type { CodePart, ParamChip } from "./codeTemplate";
@@ -30,14 +30,14 @@ const branchTaken = (step: Step): boolean | undefined => (step.kind === "shift" 
 function disabledNote(kind: StepKind | undefined, p: CrcParams, m: Messages): string | undefined {
   if (kind === "reflectIn" && !p.refin) return m.code.refinOff;
   if (kind === "reflectOut" && !p.refout) return m.code.refoutOff;
-  if (kind === "xorOut" && p.xorout === 0) return m.code.xoroutZero;
+  if (kind === "xorOut" && p.xorout === 0n) return m.code.xoroutZero;
   return undefined;
 }
 
 /** Writes the code for params in lang and returns it with the execution position and evaluation results of step. Notes are written in the language of m. */
 export function codeLines(params: CrcParams, step: Step, m: Messages, lang: CodeLang): CodeLine[] {
   const taken = branchTaken(step);
-  const def = CODE_LANGS[lang];
+  const def = langFor(CODE_LANGS[lang], params);
   return def.template(chips(params, def.lit), params).map(({ parts, runs, role }) => {
     const disabled = disabledNote(runs, params, m);
     const active = runs === step.kind;

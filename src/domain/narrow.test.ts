@@ -8,7 +8,7 @@ describe("matching", () => {
   it("Given path width=16, poly=0x1021, When candidates are narrowed, Then the 6 with width 16 and poly 0x1021 remain", () => {
     const fixed = [
       { param: "width", value: 16 },
-      { param: "poly", value: 0x1021 },
+      { param: "poly", value: 0x1021n },
     ] as const;
 
     expect(matching(SAMPLE_PRESETS, fixed)).toHaveLength(6);
@@ -27,7 +27,7 @@ describe("splittingParams", () => {
   it("Given candidates with width 16 and poly 0x8005, When the splittable parameters are listed, Then width and poly, shared by all candidates, are absent", () => {
     const family = matching(SAMPLE_PRESETS, [
       { param: "width", value: 16 },
-      { param: "poly", value: 0x8005 },
+      { param: "poly", value: 0x8005n },
     ]);
 
     expect(splittingParams(family)).not.toContain("width");
@@ -62,12 +62,12 @@ describe("branches", () => {
   it("Given candidates with width 16 and poly 0x8005, When split by init, Then each branch keeps preset list order", () => {
     const family = matching(SAMPLE_PRESETS, [
       { param: "width", value: 16 },
-      { param: "poly", value: 0x8005 },
+      { param: "poly", value: 0x8005n },
     ]);
 
     expect(branches(family, "init").map((b) => [b.value, names(b.presets)])).toEqual([
-      [0x0, ["CRC-16/ARC"]],
-      [0xffff, ["CRC-16/MODBUS", "CRC-16/USB"]],
+      [0x0n, ["CRC-16/ARC"]],
+      [0xffffn, ["CRC-16/MODBUS", "CRC-16/USB"]],
     ]);
   });
 });
@@ -77,7 +77,7 @@ describe("fitPath", () => {
     const path = {
       fixed: [
         { param: "width", value: 16 },
-        { param: "poly", value: 0x1021 },
+        { param: "poly", value: 0x1021n },
       ],
       open: "init",
     } as const;
@@ -89,7 +89,7 @@ describe("fitPath", () => {
     const path = {
       fixed: [
         { param: "width", value: 16 },
-        { param: "poly", value: 0x07 },
+        { param: "poly", value: 0x07n },
         { param: "init", value: 0 },
       ],
       open: "xorout",
@@ -102,7 +102,7 @@ describe("fitPath", () => {
     const path = {
       fixed: [
         { param: "width", value: 16 },
-        { param: "poly", value: 0x8005 },
+        { param: "poly", value: 0x8005n },
         { param: "width", value: 16 },
       ],
     } as const;
@@ -120,11 +120,11 @@ describe("fitPath", () => {
 describe("formatValue", () => {
   it.each([
     ["width", 16, "16"],
-    ["poly", 0x1021, "0x1021"],
-    ["xorout", 0xffffffff, "0xFFFFFFFF"],
+    ["poly", 0x1021n, "0x1021"],
+    ["xorout", 0xffffffffn, "0xFFFFFFFF"],
     ["refin", true, "true"],
     ["refout", false, "false"],
-  ] as const)("Given %s value %j, When formatted, Then %s", (param, value, text) => {
+  ] as const)("Given %s value %s, When formatted, Then %s", (param, value, text) => {
     expect(formatValue(param, value)).toBe(text);
   });
 });
@@ -132,10 +132,10 @@ describe("formatValue", () => {
 describe("parseValue", () => {
   it.each([
     ["width", "16", 16],
-    ["poly", "0x1021", 0x1021],
+    ["poly", "0x1021", 0x1021n],
     ["refin", "true", true],
     ["refout", "false", false],
-  ] as const)("Given %s text %s, When parsed, Then %j", (param, text, value) => {
+  ] as const)("Given %s text %s, When parsed, Then %s", (param, text, value) => {
     expect(parseValue(param, text)).toBe(value);
   });
 

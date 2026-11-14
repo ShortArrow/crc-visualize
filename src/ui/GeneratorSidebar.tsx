@@ -20,7 +20,7 @@ export function GeneratorSidebar({ page, generator }: Props) {
               data-generator={`${g.width}/${formatValue("poly", g.poly)}`}
               aria-current={g === generator ? "true" : undefined}
             >
-              {polynomialText(g.width, g.poly)}
+              {polynomialText(g.width, BigInt(g.poly))}
               <span className="count">n = {period(g)}</span>
             </a>
           </li>
@@ -31,4 +31,4 @@ export function GeneratorSidebar({ page, generator }: Props) {
 }
 
 /** The generator polynomial and period shown in the status bar. */
-export const generatorStatus = (g: Generator): string => `g(x) = ${polynomialText(g.width, g.poly)}, n = ${period(g)}`;
+export const generatorStatus = (g: Generator): string => `g(x) = ${polynomialText(g.width, BigInt(g.poly))}, n = ${period(g)}`;

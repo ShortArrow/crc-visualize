@@ -27,7 +27,7 @@ describe("parseConfig", () => {
   it("Given a valid form, When parsed, Then it yields parameters and input bits", () => {
     expect(parseConfig(form())).toEqual({
       ok: true,
-      params: { width: 3, poly: 3, init: 0, refin: false, refout: false, xorout: 0 },
+      params: { width: 3, poly: 3n, init: 0n, refin: false, refout: false, xorout: 0n },
       bits: [1, 0, 1, 0, 1],
     });
   });
@@ -35,11 +35,22 @@ describe("parseConfig", () => {
   it("Given a valid form, When hex is written with and without 0x and in mixed case, Then all are read as numbers", () => {
     const r = parseConfig(form({ width: "16", poly: "1021", init: "FfFf", xorout: "0X0" }));
 
-    expect(r).toMatchObject({ ok: true, params: { poly: 0x1021, init: 0xffff, xorout: 0 } });
+    expect(r).toMatchObject({ ok: true, params: { poly: 0x1021n, init: 0xffffn, xorout: 0n } });
   });
 
-  it.each(["0", "33", "3.5", "abc", ""])("Given width 3, When width is set to %j, Then width is invalid", (width) => {
+  it.each(["0", "65", "3.5", "abc", ""])("Given width 3, When width is set to %j, Then width is invalid", (width) => {
     expect(errorsOf(form({ width }))).toHaveProperty("width");
+  });
+
+  it("Given width 64, When the parameters of CRC-64/XZ are set, Then all 64 bits of each value are kept", () => {
+    const r = parseConfig(
+      form({ width: "64", poly: "0x42F0E1EBA9EA3693", init: "0xFFFFFFFFFFFFFFFF", xorout: "0xFFFFFFFFFFFFFFFF" }),
+    );
+    expect(r.ok && r.params).toMatchObject({ width: 64, poly: 0x42f0e1eba9ea3693n, init: 0xffffffffffffffffn });
+  });
+
+  it("Given width 64, When poly is 2^64, Then poly is invalid", () => {
+    expect(errorsOf(form({ width: "64", poly: "0x10000000000000000" })).poly).toEqual({ code: "tooWide", width: 64 });
   });
 
   it("Given width 3, When poly is set to 0, 0x8 (2^3) and 0x7, Then only 0 and values of 2^width or more are invalid", () => {

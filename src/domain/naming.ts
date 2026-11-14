@@ -12,7 +12,7 @@ export function splitPresetName(name: string): NameParts {
 export type FamilyRow = Readonly<{ preset: Preset; differs: Readonly<{ init: boolean; reflect: boolean; xorout: boolean }> }>;
 
 /** A group of presets sharing width and poly. */
-export type PolyFamily = Readonly<{ width: number; poly: number; rows: readonly FamilyRow[] }>;
+export type PolyFamily = Readonly<{ width: number; poly: bigint; rows: readonly FamilyRow[] }>;
 
 /**
  * Lists the groups of two or more presets sharing width and poly, in ascending order of width then poly.
@@ -39,7 +39,7 @@ export function polyFamilies(presets: readonly Preset[]): PolyFamily[] {
       });
       return { width: head.width, poly: head.poly, rows };
     })
-    .sort((a, b) => a.width - b.width || a.poly - b.poly);
+    .sort((a, b) => a.width - b.width || (a.poly < b.poly ? -1 : a.poly > b.poly ? 1 : 0));
 }
 
 /** One row of the table mapping an alias to its canonical name. */

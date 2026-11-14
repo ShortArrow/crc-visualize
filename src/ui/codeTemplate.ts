@@ -13,20 +13,31 @@ export type Template = Readonly<{
 }>;
 
 /** How a chip's value is written. hex is a hexadecimal integer; bool is a boolean literal. */
-export type Literals = Readonly<{ hex: (n: number) => string; bool: (b: boolean) => string }>;
+export type Literals = Readonly<{ hex: (n: bigint) => string; bool: (b: boolean) => string }>;
 
 /** A parameter chip placed in the code. mask is a value derived from width and is treated as a width chip. */
 export type Chips = Readonly<Record<"width" | "mask" | "poly" | "init" | "refin" | "refout" | "xorout", ParamChip>>;
 
-/** One language the code is written in. label is the name shown in the selector, comment is the line-comment marker, and lit is how chip values are written. */
+/**
+ * One language the code is written in. label is the name shown in the selector, comment is the line-comment marker, and lit is how
+ * chip values are written. wide, when present, is how the language is written for a width above 32 bits, where the register needs a
+ * 64-bit type.
+ */
 export type LangDef = Readonly<{
   label: string;
   comment: string;
   lit: Literals;
   template: (c: Chips, p: CrcParams) => Template[];
+  wide?: LangDef;
 }>;
 
-const upperHex = (n: number) => n.toString(16).toUpperCase();
+/** Widest width whose register fits the 32-bit types of the code. */
+export const NARROW_WIDTH = 32;
+
+/** How def is written for params: its wide form when the width needs more than 32 bits and the language has one. */
+export const langFor = (def: LangDef, params: CrcParams): LangDef => (params.width > NARROW_WIDTH && def.wide) || def;
+
+const upperHex = (n: bigint) => n.toString(16).toUpperCase();
 
 /** Literals shared by many languages (0x1021, true/false). */
 export const C_LIKE: Literals = { hex: (n) => `0x${upperHex(n)}`, bool: String };
@@ -37,7 +48,7 @@ export const CAPITAL_BOOL: Literals = { ...C_LIKE, bool: (b) => (b ? "True" : "F
 /** Uppercase hexadecimal with a prefix and a suffix attached. */
 export const hexWith =
   (prefix: string, suffix = "") =>
-  (n: number) =>
+  (n: bigint) =>
     `${prefix}${upperHex(n)}${suffix}`;
 
 /** Turns each parameter of params into a chip holding its value written as lit. */
@@ -45,7 +56,7 @@ export function chips(p: CrcParams, lit: Literals): Chips {
   const chip = (param: ParamName, value: string, label: string = param): ParamChip => ({ param, label, value });
   return {
     width: chip("width", String(p.width)),
-    mask: chip("width", lit.hex(2 ** p.width - 1), "mask"),
+    mask: chip("width", lit.hex((1n << BigInt(p.width)) - 1n), "mask"),
     poly: chip("poly", lit.hex(p.poly)),
     init: chip("init", lit.hex(p.init)),
     refin: chip("refin", lit.bool(p.refin)),

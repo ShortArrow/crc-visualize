@@ -26,7 +26,7 @@ describe("stepDurations", () => {
   });
 
   it("Given auto mode, When fed long enough to speed up, Then init and post-processing are always slow", () => {
-    const steps = trace({ ...plain3, refout: true, xorout: 1 }, bits("10101010"));
+    const steps = trace({ ...plain3, refout: true, xorout: 1n }, bits("10101010"));
 
     const durations = stepDurations(steps, "auto");
 

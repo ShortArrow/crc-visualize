@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bitGroups, groupsHex, polynomialText, powerOfTwoText, powerText } from "./format";
+import { bitGroups, groupsHex, keyOf, polynomialText, powerOfTwoText, powerText, valueHex } from "./format";
 
 describe("polynomialText", () => {
   it.each([
@@ -8,7 +8,7 @@ describe("polynomialText", () => {
     [5, 0x5, "x⁵ + x² + 1"],
     [16, 0x1021, "x¹⁶ + x¹² + x⁵ + 1"],
   ])("Given width %i and poly %i, When writing the generator polynomial, Then %s", (width, poly, text) => {
-    expect(polynomialText(width, poly)).toBe(text);
+    expect(polynomialText(width, BigInt(poly))).toBe(text);
   });
 });
 
@@ -69,5 +69,22 @@ describe("groupsHex", () => {
         { input: "", crc: "0" },
       ]),
     ).toBeUndefined();
+  });
+});
+
+describe("valueHex", () => {
+  it.each([
+    [0x1021n, 16, "0x1021"],
+    [0x5n, 12, "0x005"],
+    [0xffffffffffffffffn, 64, "0xFFFFFFFFFFFFFFFF"],
+  ])("Given %s and width %i, When written in hexadecimal, Then %s", (value, width, text) => {
+    expect(valueHex(value, width)).toBe(text);
+  });
+});
+
+describe("keyOf", () => {
+  it("Given values holding bigints, When keyed, Then equal values give equal keys and different values different keys", () => {
+    expect(keyOf({ poly: 0x1021n, width: 16 })).toBe(keyOf({ poly: 0x1021n, width: 16 }));
+    expect(keyOf({ poly: 0x1021n, width: 16 })).not.toBe(keyOf({ poly: 0x8005n, width: 16 }));
   });
 });

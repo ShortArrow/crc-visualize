@@ -1,4 +1,4 @@
-import { registerValue, type Bit, type Register } from "../domain/trace";
+import { registerValue, toRegister, type Bit, type Register } from "../domain/trace";
 
 /** Writes the register as a binary string, MSB first. */
 export const toBinary = (reg: Register): string => reg.toReversed().join("");
@@ -9,6 +9,13 @@ export const toHex = (reg: Register): string =>
     .toString(16)
     .toUpperCase()
     .padStart(Math.ceil(reg.length / 4), "0")}`;
+
+/** Writes the low width bits of value as a hexadecimal string (with 0x, uppercase) with as many digits as width needs. */
+export const valueHex = (value: bigint, width: number): string => toHex(toRegister(value, width));
+
+/** A string that tells values apart, for React keys and memo dependencies; bigints are written in decimal, which JSON cannot. */
+export const keyOf = (value: unknown): string =>
+  JSON.stringify(value, (_, v: unknown) => (typeof v === "bigint" ? v.toString() : v));
 
 export const bitsToString = (bits: readonly Bit[]): string => bits.join("");
 
@@ -44,5 +51,7 @@ export const powerOfTwoText = (d: number): string => `2${superscript(d)} = ${2 *
 const term = (d: number): string => (d === 0 ? "1" : d === 1 ? "x" : powerText(d));
 
 /** Writes the generator polynomial x^width + poly(x) with superscript exponents, highest degree first ("x³ + x + 1"). */
-export const polynomialText = (width: number, poly: number): string =>
-  [width, ...Array.from({ length: width }, (_, i) => width - 1 - i).filter((d) => (poly >> d) & 1)].map(term).join(" + ");
+export const polynomialText = (width: number, poly: bigint): string =>
+  [width, ...Array.from({ length: width }, (_, i) => width - 1 - i).filter((d) => (poly >> BigInt(d)) & 1n)]
+    .map(term)
+    .join(" + ");

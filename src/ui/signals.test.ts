@@ -4,9 +4,9 @@ import { bits, firstStep, plain3, stepOf } from "../testing/fixtures";
 import { heldFeedback, particleWire, particles, upcomingValues, wireLevels } from "./signals";
 
 /** Clock of CRC-3 with init 100 fed a 0: msb 1 ⊕ bit 0 = feedback 1. */
-const msbOne = { ...plain3, init: 0b100 };
+const msbOne = { ...plain3, init: 0b100n };
 /** Clock of CRC-3 with init 001 fed a 1: feedback 1, 010 after shift, 001 after xor. */
-const lowOne = { ...plain3, init: 0b001 };
+const lowOne = { ...plain3, init: 0b001n };
 /** Values kept for the next step at each step of lowOne. */
 const upcomingAfter = (kind: Step["kind"]) => {
   const steps = trace(lowOne, bits("1"));
@@ -33,7 +33,7 @@ describe("wireLevels", () => {
   });
 
   it.each(["init", "xorOut", "done"] as const)("Given xorout present, When the %s step, Then no wire carries a value", (kind) => {
-    const steps = trace({ ...plain3, xorout: 1 }, bits("1"));
+    const steps = trace({ ...plain3, xorout: 1n }, bits("1"));
 
     expect(wireLevels(plain3, stepOf(steps, kind))).toEqual({ tapIn: {}, tapOut: {} });
   });
@@ -84,7 +84,7 @@ describe("particleWire", () => {
 
 describe("heldFeedback", () => {
   it("Given 2 clocks with feedback 1 and 0 and xorOut, When finding the box value at each step, Then feedback is held during a clock and empty otherwise", () => {
-    const steps = trace({ ...lowOne, xorout: 1 }, bits("10"));
+    const steps = trace({ ...lowOne, xorout: 1n }, bits("10"));
 
     expect(steps.map((s) => [s.kind, heldFeedback(s)])).toEqual([
       ["init", undefined],

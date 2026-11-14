@@ -4,15 +4,13 @@ import { crcOf } from "../domain/equivalence";
 import type { ConfigResult } from "../domain/parse";
 import type { Preset } from "../domain/presets";
 import { flip, noError, xorBits } from "../domain/redundancy";
-import { bitsFromBytes, toRegister, type Bit, type CrcParams } from "../domain/trace";
+import { bitsFromBytes, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { Docked, DockedResult } from "./Dock";
-import { toHex } from "./format";
+import { valueHex } from "./format";
 import { Explanation } from "./Explanation";
 
 const CHECK_INPUT = bitsFromBytes([...new TextEncoder().encode("123456789")]);
-
-const hex = (value: number, width: number) => toHex(toRegister(value, width));
 
 type Props = Readonly<{ config: ConfigResult; preset: Preset | undefined }>;
 
@@ -102,9 +100,9 @@ function Checks({ params, message, preset }: ChecksProps) {
           <Explanation>{m.check.recheck.note}</Explanation>
           <dl>
             <dt>{m.check.recheck.computed}</dt>
-            <dd className="computed">{hex(re.computed, w)}</dd>
+            <dd className="computed">{valueHex(re.computed, w)}</dd>
             <dt>{m.check.recheck.received}</dt>
-            <dd className="received-crc">{hex(re.received, w)}</dd>
+            <dd className="received-crc">{valueHex(re.received, w)}</dd>
           </dl>
           <Verdict ok={re.ok} />
         </section>
@@ -115,9 +113,9 @@ function Checks({ params, message, preset }: ChecksProps) {
             <>
               <dl>
                 <dt>{m.check.whole.value}</dt>
-                <dd className="whole-value">{hex(whole.value, w)}</dd>
+                <dd className="whole-value">{valueHex(whole.value, w)}</dd>
                 <dt>{m.check.whole.residue}</dt>
-                <dd className="residue">{hex(whole.residue, w)}</dd>
+                <dd className="residue">{valueHex(whole.residue, w)}</dd>
               </dl>
               <Verdict ok={whole.ok} />
             </>
@@ -133,11 +131,11 @@ function Checks({ params, message, preset }: ChecksProps) {
             {preset ? (
               <>
                 <dt>{m.check.catalogue}</dt>
-                <dd className="catalogue-check">{hex(preset.check, w)}</dd>
+                <dd className="catalogue-check">{valueHex(preset.check, w)}</dd>
               </>
             ) : null}
             <dt>{m.check.computedCheck}</dt>
-            <dd className="computed-check">{hex(crcOf(params, CHECK_INPUT), w)}</dd>
+            <dd className="computed-check">{valueHex(crcOf(params, CHECK_INPUT), w)}</dd>
           </dl>
           {preset ? null : <p className="note">{m.check.custom}</p>}
           <Explanation>{m.check.checkNote}</Explanation>

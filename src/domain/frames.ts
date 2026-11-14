@@ -16,7 +16,7 @@ export type FrameLayout = Readonly<{ from: number; to?: number; crcField: CrcFie
 export type FrameSpan = Readonly<{ from: number; to: number; field?: Readonly<{ from: number; to: number }> }>;
 
 /** A frame's CRC computed over its range, and the value in its CRC field if any; they agree when the frame is intact. */
-export type FrameCheck = Readonly<{ span: FrameSpan; crc: number; field?: number }>;
+export type FrameCheck = Readonly<{ span: FrameSpan; crc: bigint; field?: bigint }>;
 
 /** Number of bytes of the CRC field: the CRC rounded up to whole bytes. */
 const fieldBytes = (width: number) => Math.ceil(width / 8);
@@ -31,7 +31,7 @@ export function frameSpan(length: number, layout: FrameLayout, width: number): F
 
 /** Value of bytes read in byte order crcField. */
 const readField = (bytes: readonly number[], crcField: CrcField) =>
-  (crcField === "le" ? bytes.toReversed() : bytes).reduce((v, b) => v * 256 + b, 0);
+  (crcField === "le" ? bytes.toReversed() : bytes).reduce((v, b) => (v << 8n) | BigInt(b), 0n);
 
 /** Computes the CRC of frame's range and reads its CRC field; undefined when layout does not fit frame. */
 export function checkFrame(params: CrcParams, frame: readonly number[], layout: FrameLayout): FrameCheck | undefined {
