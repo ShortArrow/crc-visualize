@@ -23,7 +23,7 @@ export const ja = {
     invalidStatus: "設定に誤りがあります",
   },
   errors: {
-    widthRange: "1〜32 の整数を入れてください",
+    widthRange: "1〜64 の整数を入れてください",
     notHex: "16 進数で入れてください",
     tooWide: (width: number) => `${width} ビットに収まる値にしてください`,
     zero: "0 は指定できません",

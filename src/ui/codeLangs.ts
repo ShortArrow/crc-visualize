@@ -27,42 +27,68 @@ const pseudo = imperative({
   ret: "return crc;",
 });
 
-const c = imperative({
+/** C with the register held in type. */
+const cWith = (type: string) =>
+  imperative({
+    ...C_LOOPS,
+    label: "C",
+    comment: "//",
+    lit: C_LIKE,
+    init: (c) => [`${type} crc = `, c.init, ";"],
+    reflectIn: (c) => ["if (", c.refin, ") byte = reflect(byte, 8);"],
+    forBytes: { open: ["for (size_t i = 0; i < len; i++) {"], bind: [`${type} byte = input[i];`] },
+    forBits: { open: ["for (size_t i = 0; i < nbits; i++) {"], bind: ["int bit = bits[i];"] },
+    feedback: (c) => ["int feedback = ((crc >> (", c.width, " - 1)) & 1) ^ bit;"],
+    shift: (c) => ["crc = (crc << 1) & ", c.mask, ";"],
+    xor: (c) => ["crc ^= ", c.poly, ";"],
+    reflectOut: (c) => ["if (", c.refout, ") crc = reflect(crc, ", c.width, ");"],
+    xorOut: (c) => ["crc ^= ", c.xorout, ";"],
+    ret: "return crc;",
+  });
+
+const c: LangDef = { ...cWith("uint32_t"), wide: cWith("uint64_t") };
+
+/** C# with the register, the bytes and the bits held in type. */
+const csharpWith = (type: string) =>
+  imperative({
+    ...C_LOOPS,
+    label: "C#",
+    comment: "//",
+    lit: C_LIKE,
+    init: (c) => [`${type} crc = `, c.init, ";"],
+    reflectIn: (c) => ["if (", c.refin, ") b = Reflect(b, 8);"],
+    forBytes: { open: [`foreach (${type} b in input) {`] },
+    forBitsOfByte: { open: ["for (int k = 7; k >= 0; k--) {"], bind: [`${type} bit = (b >> k) & 1;`] },
+    forBits: { open: [`foreach (${type} bit in inputBits) {`] },
+    feedback: (c) => [`${type} feedback = ((crc >> (`, c.width, " - 1)) & 1) ^ bit;"],
+    shift: (c) => ["crc = (crc << 1) & ", c.mask, ";"],
+    xor: (c) => ["crc ^= ", c.poly, ";"],
+    reflectOut: (c) => ["if (", c.refout, ") crc = Reflect(crc, ", c.width, ");"],
+    xorOut: (c) => ["crc ^= ", c.xorout, ";"],
+    ret: "return crc;",
+  });
+
+const csharp: LangDef = { ...csharpWith("uint"), wide: csharpWith("ulong") };
+
+const typescriptBigint = imperative({
   ...C_LOOPS,
-  label: "C",
+  label: "TypeScript",
   comment: "//",
-  lit: C_LIKE,
-  init: (c) => ["uint32_t crc = ", c.init, ";"],
+  lit: { ...C_LIKE, hex: hexWith("0x", "n") },
+  init: (c) => ["let crc = ", c.init, ";"],
   reflectIn: (c) => ["if (", c.refin, ") byte = reflect(byte, 8);"],
-  forBytes: { open: ["for (size_t i = 0; i < len; i++) {"], bind: ["uint32_t byte = input[i];"] },
-  forBits: { open: ["for (size_t i = 0; i < nbits; i++) {"], bind: ["int bit = bits[i];"] },
-  feedback: (c) => ["int feedback = ((crc >> (", c.width, " - 1)) & 1) ^ bit;"],
-  shift: (c) => ["crc = (crc << 1) & ", c.mask, ";"],
+  forBytes: { open: ["for (let byte of input) {"] },
+  forBitsOfByte: { open: ["for (let k = 7; k >= 0; k--) {"], bind: ["const bit = (byte >> k) & 1;"] },
+  forBits: { open: ["for (const bit of inputBits) {"] },
+  feedback: (c) => ["const feedback = Number((crc >> BigInt(", c.width, " - 1)) & 1n) ^ bit;"],
+  shift: (c) => ["crc = (crc << 1n) & ", c.mask, ";"],
   xor: (c) => ["crc ^= ", c.poly, ";"],
   reflectOut: (c) => ["if (", c.refout, ") crc = reflect(crc, ", c.width, ");"],
   xorOut: (c) => ["crc ^= ", c.xorout, ";"],
   ret: "return crc;",
 });
 
-const csharp = imperative({
-  ...C_LOOPS,
-  label: "C#",
-  comment: "//",
-  lit: C_LIKE,
-  init: (c) => ["uint crc = ", c.init, ";"],
-  reflectIn: (c) => ["if (", c.refin, ") b = Reflect(b, 8);"],
-  forBytes: { open: ["foreach (uint b in input) {"] },
-  forBitsOfByte: { open: ["for (int k = 7; k >= 0; k--) {"], bind: ["uint bit = (b >> k) & 1;"] },
-  forBits: { open: ["foreach (uint bit in inputBits) {"] },
-  feedback: (c) => ["uint feedback = ((crc >> (", c.width, " - 1)) & 1) ^ bit;"],
-  shift: (c) => ["crc = (crc << 1) & ", c.mask, ";"],
-  xor: (c) => ["crc ^= ", c.poly, ";"],
-  reflectOut: (c) => ["if (", c.refout, ") crc = Reflect(crc, ", c.width, ");"],
-  xorOut: (c) => ["crc ^= ", c.xorout, ";"],
-  ret: "return crc;",
-});
-
-const typescript = imperative({
+const typescriptNumber = imperative({
   ...C_LOOPS,
   label: "TypeScript",
   comment: "//",
@@ -80,45 +106,55 @@ const typescript = imperative({
   ret: "return crc;",
 });
 
-const rust = imperative({
-  label: "Rust",
-  comment: "//",
-  lit: C_LIKE,
-  init: (c) => ["let mut crc: u32 = ", c.init, ";"],
-  reflectIn: (c) => ["let byte = if ", c.refin, " { reflect(byte, 8) } else { byte };"],
-  forBytes: { open: ["for &byte in input {"] },
-  forBitsOfByte: { open: ["for k in (0..8).rev() {"], bind: ["let bit = (byte as u32 >> k) & 1;"] },
-  forBits: { open: ["for &bit in input_bits {"] },
-  feedback: (c) => ["let feedback = ((crc >> (", c.width, " - 1)) & 1) ^ bit;"],
-  shift: (c) => ["crc = (crc << 1) & ", c.mask, ";"],
-  ifFeedback: "if feedback == 1 {",
-  xor: (c) => ["crc ^= ", c.poly, ";"],
-  endIf: "}",
-  end: "}",
-  reflectOut: (c) => ["if ", c.refout, " { crc = reflect(crc, ", c.width, "); }"],
-  xorOut: (c) => ["crc ^= ", c.xorout, ";"],
-  ret: "crc",
-});
+const typescript: LangDef = { ...typescriptNumber, wide: typescriptBigint };
 
-const zig = imperative({
-  label: "Zig",
-  comment: "//",
-  lit: C_LIKE,
-  init: (c) => ["var crc: u32 = ", c.init, ";"],
-  reflectIn: (c) => ["if (", c.refin, ") byte = reflect(byte, 8);"],
-  forBytes: { open: ["for (input) |b| {"], bind: ["var byte: u32 = b;"] },
-  forBitsOfByte: { open: ["for (0..8) |i| {"], bind: ["const bit = (byte >> @intCast(7 - i)) & 1;"] },
-  forBits: { open: ["for (input_bits) |bit| {"] },
-  feedback: (c) => ["const feedback = ((crc >> (", c.width, " - 1)) & 1) ^ bit;"],
-  shift: (c) => ["crc = (crc << 1) & ", c.mask, ";"],
-  ifFeedback: "if (feedback == 1) {",
-  xor: (c) => ["crc ^= ", c.poly, ";"],
-  endIf: "}",
-  end: "}",
-  reflectOut: (c) => ["if (", c.refout, ") crc = reflect(crc, ", c.width, ");"],
-  xorOut: (c) => ["crc ^= ", c.xorout, ";"],
-  ret: "return crc;",
-});
+/** Rust with the register and the bits held in type. */
+const rustWith = (type: string) =>
+  imperative({
+    label: "Rust",
+    comment: "//",
+    lit: C_LIKE,
+    init: (c) => [`let mut crc: ${type} = `, c.init, ";"],
+    reflectIn: (c) => ["let byte = if ", c.refin, " { reflect(byte, 8) } else { byte };"],
+    forBytes: { open: ["for &byte in input {"] },
+    forBitsOfByte: { open: ["for k in (0..8).rev() {"], bind: [`let bit = (byte as ${type} >> k) & 1;`] },
+    forBits: { open: ["for &bit in input_bits {"] },
+    feedback: (c) => ["let feedback = ((crc >> (", c.width, " - 1)) & 1) ^ bit;"],
+    shift: (c) => ["crc = (crc << 1) & ", c.mask, ";"],
+    ifFeedback: "if feedback == 1 {",
+    xor: (c) => ["crc ^= ", c.poly, ";"],
+    endIf: "}",
+    end: "}",
+    reflectOut: (c) => ["if ", c.refout, " { crc = reflect(crc, ", c.width, "); }"],
+    xorOut: (c) => ["crc ^= ", c.xorout, ";"],
+    ret: "crc",
+  });
+
+const rust: LangDef = { ...rustWith("u32"), wide: rustWith("u64") };
+
+/** Zig with the register and the bytes held in type. */
+const zigWith = (type: string) =>
+  imperative({
+    label: "Zig",
+    comment: "//",
+    lit: C_LIKE,
+    init: (c) => [`var crc: ${type} = `, c.init, ";"],
+    reflectIn: (c) => ["if (", c.refin, ") byte = reflect(byte, 8);"],
+    forBytes: { open: ["for (input) |b| {"], bind: [`var byte: ${type} = b;`] },
+    forBitsOfByte: { open: ["for (0..8) |i| {"], bind: ["const bit = (byte >> @intCast(7 - i)) & 1;"] },
+    forBits: { open: ["for (input_bits) |bit| {"] },
+    feedback: (c) => ["const feedback = ((crc >> (", c.width, " - 1)) & 1) ^ bit;"],
+    shift: (c) => ["crc = (crc << 1) & ", c.mask, ";"],
+    ifFeedback: "if (feedback == 1) {",
+    xor: (c) => ["crc ^= ", c.poly, ";"],
+    endIf: "}",
+    end: "}",
+    reflectOut: (c) => ["if (", c.refout, ") crc = reflect(crc, ", c.width, ");"],
+    xorOut: (c) => ["crc ^= ", c.xorout, ";"],
+    ret: "return crc;",
+  });
+
+const zig: LangDef = { ...zigWith("u32"), wide: zigWith("u64") };
 
 const python = imperative({
   label: "Python",
@@ -330,23 +366,24 @@ const erlang: LangDef = {
   ],
 };
 
-const fsharp: LangDef = {
+/** F# with the register in type, whose literals end in suffix. */
+const fsharpWith = (type: string, suffix: string): LangDef => ({
   label: "F#",
   comment: "//",
-  lit: { ...C_LIKE, hex: hexWith("0x", "u") },
+  lit: { ...C_LIKE, hex: hexWith("0x", suffix) },
   template: (c, p): Template[] => [
-    { parts: [p.refin ? "let checksum (input: byte list) =" : "let checksum (inputBits: uint32 list) ="] },
+    { parts: [p.refin ? "let checksum (input: byte list) =" : `let checksum (inputBits: ${type} list) =`] },
     { parts: ["    let start = ", c.init], runs: "init" },
     { parts: ["    let clock crc bit ="] },
-    { parts: ["        let feedback = ((crc >>> (", c.width, " - 1)) &&& 1u) ^^^ bit"], runs: "feedback" },
+    { parts: ["        let feedback = ((crc >>> (", c.width, ` - 1)) &&& 1${suffix}) ^^^ bit`], runs: "feedback" },
     { parts: ["        let shifted = (crc <<< 1) &&& ", c.mask], runs: "shift" },
-    { parts: ["        if feedback = 1u then"], role: "if" },
+    { parts: [`        if feedback = 1${suffix} then`], role: "if" },
     { parts: ["            shifted ^^^ ", c.poly], runs: "xor", role: "ifBody" },
     { parts: ["        else shifted"] },
     ...(p.refin
       ? [
           { parts: ["    let step crc (b: byte) ="] },
-          { parts: ["        let b = if ", c.refin, " then reflect (uint32 b) 8 else uint32 b"], runs: "reflectIn" } as const,
+          { parts: ["        let b = if ", c.refin, ` then reflect (${type} b) 8 else ${type} b`], runs: "reflectIn" } as const,
           { parts: ["        bitsMsbFirst b |> List.fold clock crc"] },
           { parts: ["    let crc = input |> List.fold step start"] },
         ]
@@ -358,7 +395,9 @@ const fsharp: LangDef = {
     { parts: ["    let result = reflected ^^^ ", c.xorout], runs: "xorOut" },
     { parts: ["    result"], runs: "done" },
   ],
-};
+});
+
+const fsharp: LangDef = { ...fsharpWith("uint32", "u"), wide: fsharpWith("uint64", "UL") };
 
 /** Languages the code can be written in. Keys are values of the URL query code. The name of pseudo is shown in the display language. */
 export const CODE_LANGS = {

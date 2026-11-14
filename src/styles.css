@@ -1639,7 +1639,7 @@ button.bp-gutter.bp-off::before {
 
 /* Family tables of one width, packed from the top of as many columns as the card allows */
 .family-columns {
-  columns: 460px;
+  columns: 600px;
   column-gap: 16px;
 }
 

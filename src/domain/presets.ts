@@ -186,6 +186,16 @@ export const PRESETS: readonly Preset[] = [
   preset("CRC-32/MEF", 32, 0x741b8cd7n, 0xffffffffn, true, true, 0x0n, 0xd2c22f51n),
   preset("CRC-32/MPEG-2", 32, 0x4c11db7n, 0xffffffffn, false, false, 0x0n, 0x376e6e7n),
   preset("CRC-32/XFER", 32, 0xafn, 0x0n, false, false, 0x0n, 0xbd0be338n, ["XFER"]),
+  preset("CRC-40/GSM", 40, 0x4820009n, 0x0n, false, false, 0xffffffffffn, 0xd4164fc646n),
+  preset("CRC-64/ECMA-182", 64, 0x42f0e1eba9ea3693n, 0x0n, false, false, 0x0n, 0x6c40df5f0b497347n, ["CRC-64"]),
+  preset("CRC-64/GO-ISO", 64, 0x1bn, 0xffffffffffffffffn, true, true, 0xffffffffffffffffn, 0xb90956c775a41001n),
+  preset("CRC-64/MS", 64, 0x259c84cba6426349n, 0xffffffffffffffffn, true, true, 0x0n, 0x75d4b74f024eceean),
+  preset("CRC-64/NVME", 64, 0xad93d23594c93659n, 0xffffffffffffffffn, true, true, 0xffffffffffffffffn, 0xae8b14860a799888n),
+  preset("CRC-64/REDIS", 64, 0xad93d23594c935a9n, 0x0n, true, true, 0x0n, 0xe9c6d914c4b8d9can),
+  preset("CRC-64/WE", 64, 0x42f0e1eba9ea3693n, 0xffffffffffffffffn, false, false, 0xffffffffffffffffn, 0x62ec59e3f1a4f00an),
+  preset("CRC-64/XZ", 64, 0x42f0e1eba9ea3693n, 0xffffffffffffffffn, true, true, 0xffffffffffffffffn, 0x995dc9bbdf1939fan, [
+    "CRC-64/GO-ECMA",
+  ]),
 ];
 
 /** Presets in the reveng catalogue, excluding the tutorial TUTORIAL. */

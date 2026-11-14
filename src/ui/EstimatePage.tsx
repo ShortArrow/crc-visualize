@@ -31,12 +31,12 @@ const SHOWN_CANDIDATES = 20;
 
 const EMPTY_ROW: Row = { data: "", crc: "" };
 
-/** width typed in the field if valid (1 to 32), otherwise the number of digits of the longest CRC × 4 (at most 32). */
+/** width typed in the field if valid (1 to 64), otherwise the number of digits of the longest CRC × 4 (at most 64). */
 function effectiveWidth(typed: string, rows: readonly Row[]): number {
   const n = Number(typed);
-  if (/^\d+$/.test(typed.trim()) && n >= 1 && n <= 32) return n;
+  if (/^\d+$/.test(typed.trim()) && n >= 1 && n <= 64) return n;
   const digits = Math.max(1, ...rows.map((r) => r.crc.trim().replace(/^0x/i, "").length));
-  return Math.min(32, digits * 4);
+  return Math.min(64, digits * 4);
 }
 
 type Props = Readonly<{

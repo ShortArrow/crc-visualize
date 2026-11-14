@@ -51,7 +51,7 @@ test.describe("Display language", () => {
     const v = await given("the page is open in French", () => Visualizer.open(page, "?lang=fr"));
     await when("entering 0 for width", () => v.settings.param("width").locator("input").fill("0"));
     await then("the error text is in French", async () => {
-      await expect(v.settings.param("width").locator(".error")).toHaveText("Saisissez un entier de 1 à 32");
+      await expect(v.settings.param("width").locator(".error")).toHaveText("Saisissez un entier de 1 à 64");
     });
   });
 });

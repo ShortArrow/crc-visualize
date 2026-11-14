@@ -27,7 +27,7 @@ export type ConfigForm = Readonly<{
 export type ConfigField = "width" | "poly" | "init" | "xorout" | "input" | "range";
 
 /**
- * Field errors. widthRange: width is not an integer from 1 to 32. notHex: not a hex number. tooWide: does not fit in width bits.
+ * Field errors. widthRange: width is not an integer from 1 to 64. notHex: not a hex number. tooWide: does not fit in width bits.
  * zero: 0 is not allowed. notBits: contains characters other than 0 and 1. oddHex: odd number of hex digits (not whole bytes).
  * tooLong: input exceeds max bits. refinBytes: refin is used but the input is not a multiple of 8 bits. notIndex: a byte number
  * is not an integer of 0 or more. outsideFrame: the range or the CRC field does not fit the selected frame. tooManyFrames: hex
@@ -54,7 +54,7 @@ function parseWidth(text: string): Parsed<number> {
   const t = text.trim();
   if (!/^\d+$/.test(t)) return fail({ code: "widthRange" });
   const n = Number(t);
-  return n >= 1 && n <= 32 ? ok(n) : fail({ code: "widthRange" });
+  return n >= 1 && n <= 64 ? ok(n) : fail({ code: "widthRange" });
 }
 
 function parseHexBelow(text: string, width: number, allowZero: boolean): Parsed<bigint> {

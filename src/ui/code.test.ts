@@ -96,6 +96,20 @@ describe("codeLines", () => {
 const LANG_IDS = Object.keys(CODE_LANGS) as CodeLang[];
 const STEP_KINDS: readonly Step["kind"][] = ["init", "reflectIn", "feedback", "shift", "xor", "reflectOut", "xorOut", "done"];
 
+/** CRC-64/XZ: refin, refout and xorout all enabled, with values that need 64 bits. */
+const xz64: CrcParams = {
+  width: 64,
+  poly: 0x42f0e1eba9ea3693n,
+  init: 0xffffffffffffffffn,
+  refin: true,
+  refout: true,
+  xorout: 0xffffffffffffffffn,
+};
+const lineOf = (params: CrcParams, lang: CodeLang, kind: Step["kind"]) =>
+  codeLines(params, initStep(params), ja, lang)
+    .find((l) => l.runs === kind)!
+    .text.trim();
+
 describe("CODE_LANGS", () => {
   it.each(LANG_IDS.flatMap((lang) => [[lang, "all disabled", plain3] as const, [lang, "all enabled", full3] as const]))(
     "Given language %s with refin, refout and xorout %s, When showing every step, Then exactly 1 line is current at every step, and steps of the same kind point to the same line",
@@ -162,6 +176,7 @@ describe("CODE_LANGS", () => {
     ["erlang", "poly", "16#3"],
     ["fsharp", "poly", "0x3u"],
     ["rust", "poly", "0x3"],
+    ["typescript", "poly", "0x3"],
   ] as const)(
     "Given language %s, When building the code, Then the value of the %s chip is written as that language's literal %s",
     (lang, param, value) => {
@@ -172,4 +187,66 @@ describe("CODE_LANGS", () => {
       expect(chip.value).toBe(value);
     },
   );
+
+  it.each([
+    ["c", "uint32_t crc = init;", "uint64_t crc = init;"],
+    ["csharp", "uint crc = init;", "ulong crc = init;"],
+    ["rust", "let mut crc: u32 = init;", "let mut crc: u64 = init;"],
+    ["zig", "var crc: u32 = init;", "var crc: u64 = init;"],
+    ["python", "crc = init", "crc = init"],
+  ] as const)(
+    "Given language %s, When the register is initialised for width 3 and for width 64, Then it is %s and %s",
+    (lang, narrow, wide) => {
+      expect(lineOf(plain3, lang, "init")).toBe(narrow);
+      expect(lineOf(xz64, lang, "init")).toBe(wide);
+    },
+  );
+
+  it.each([
+    ["c", "0x42F0E1EBA9EA3693"],
+    ["typescript", "0x42F0E1EBA9EA3693n"],
+    ["fsharp", "0x42F0E1EBA9EA3693UL"],
+    ["python", "0x42F0E1EBA9EA3693"],
+  ] as const)("Given language %s and width 64, When building the code, Then the poly chip is written as %s", (lang, value) => {
+    const chip = codeLines(xz64, initStep(xz64), ja, lang)
+      .flatMap(chips)
+      .find((c) => c.param === "poly")!;
+
+    expect(chip.value).toBe(value);
+  });
+
+  it.each([
+    [
+      "typescript",
+      "feedback",
+      "const feedback = ((crc >>> (width - 1)) & 1) ^ bit;",
+      "const feedback = Number((crc >> BigInt(width - 1)) & 1n) ^ bit;",
+    ],
+    ["typescript", "shift", "crc = ((crc << 1) & mask) >>> 0;", "crc = (crc << 1n) & mask;"],
+    ["typescript", "xor", "crc = (crc ^ poly) >>> 0;", "crc ^= poly;"],
+    ["typescript", "xorOut", "crc = (crc ^ xorout) >>> 0;", "crc ^= xorout;"],
+    [
+      "fsharp",
+      "feedback",
+      "let feedback = ((crc >>> (width - 1)) &&& 1u) ^^^ bit",
+      "let feedback = ((crc >>> (width - 1)) &&& 1UL) ^^^ bit",
+    ],
+    ["rust", "feedback", "let feedback = ((crc >> (width - 1)) & 1) ^ bit;", "let feedback = ((crc >> (width - 1)) & 1) ^ bit;"],
+  ] as const)(
+    "Given language %s, When building the %s line for width 3 and for width 64, Then it is %s and %s",
+    (lang, kind, narrow, wide) => {
+      expect(lineOf({ ...plain3, refin: true, refout: true, xorout: 7n }, lang, kind)).toBe(narrow);
+      expect(lineOf(xz64, lang, kind)).toBe(wide);
+    },
+  );
+
+  it.each([
+    ["c", "uint64_t byte = input[i];"],
+    ["rust", "let bit = (byte as u64 >> k) & 1;"],
+    ["zig", "var byte: u64 = b;"],
+    ["csharp", "foreach (ulong b in input) {"],
+    ["fsharp", "let b = if refin then reflect (uint64 b) 8 else uint64 b"],
+  ] as const)("Given language %s and width 64, When building the code, Then the byte is read as %s", (lang, text) => {
+    expect(texts(codeLines(xz64, initStep(xz64), ja, lang))).toContain(text);
+  });
 });
