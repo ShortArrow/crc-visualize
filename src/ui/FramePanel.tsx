@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type PointerEvent } from "react";
 import { checkFrame, frameSpan, type CrcField } from "../domain/frames";
 import { readFrames, readWidth, type ConfigError, type ConfigForm } from "../domain/parse";
 import type { CrcParams } from "../domain/trace";
+import { valueHex } from "./format";
 import { useMessages } from "../i18n/I18n";
 import { errorText } from "../i18n/messages";
 import { FIELD_LABELS, type FieldName } from "./paramInfo";
@@ -15,11 +16,6 @@ type Props = Readonly<{
   onFieldHover: (field: FieldName | undefined) => void;
 }>;
 
-const hexOf = (value: number, width: number) =>
-  `0x${value
-    .toString(16)
-    .toUpperCase()
-    .padStart(Math.ceil(width / 4), "0")}`;
 const byteHex = (b: number) => b.toString(16).toUpperCase().padStart(2, "0");
 
 /** Byte orders of a CRC in input. */
@@ -160,11 +156,11 @@ export function FramePanel({ form, params, rangeError, onChange, onFieldHover }:
                 {check ? (
                   <>
                     <span className="frame-value">
-                      crc <code className="frame-crc">{hexOf(check.crc, params!.width)}</code>
+                      crc <code className="frame-crc">{valueHex(check.crc, params!.width)}</code>
                     </span>
                     {check.field === undefined ? null : (
                       <span className="frame-value">
-                        in input <code className="frame-field">{hexOf(check.field, params!.width)}</code>
+                        in input <code className="frame-field">{valueHex(check.field, params!.width)}</code>
                       </span>
                     )}
                     {ok === undefined ? null : (

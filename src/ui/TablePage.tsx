@@ -14,7 +14,7 @@ import {
   type TableDirection,
   type TableRun,
 } from "../domain/table";
-import { reflectValue, toRegister, type Bit, type CrcParams } from "../domain/trace";
+import { reflectValue, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import type { SpeedMode } from "../playback/playback";
 import { playDurations } from "../playback/tablePlayback";
@@ -22,12 +22,11 @@ import { usePlayer } from "../playback/usePlayer";
 import { Controls } from "./Controls";
 import { DockedResult, DockSlot } from "./Dock";
 import { useRevealSpan } from "./reveal";
-import { toHex } from "./format";
+import { valueHex } from "./format";
 import { Explanation } from "./Explanation";
 
-const hex = (value: number, width: number) => toHex(toRegister(value, width));
 const byteHex = (value: number) => `0x${value.toString(16).toUpperCase().padStart(2, "0")}`;
-const binary = (value: number, width: number) => value.toString(2).padStart(width, "0");
+const binary = (value: bigint, width: number) => value.toString(2).padStart(width, "0");
 const NIBBLES = Array.from({ length: 16 }, (_, i) => i);
 
 /** The playback settings shared with the Visualizer. */
@@ -60,7 +59,7 @@ export function TablePage({ config, playback }: Readonly<{ config: ConfigResult;
 function updateFormula(direction: TableDirection, width: number): string {
   if (direction === "right") return "crc = (crc >> 8) ^ T[(crc ^ byte) & 0xFF]";
   if (width < 8) return `crc = T[((crc << ${8 - width}) ^ byte) & 0xFF]`;
-  return `crc = ((crc << 8) & ${hex(2 ** width - 1, width)}) ^ T[((crc >> ${width - 8}) ^ byte) & 0xFF]`;
+  return `crc = ((crc << 8) & ${valueHex((1n << BigInt(width)) - 1n, width)}) ^ T[((crc >> ${width - 8}) ^ byte) & 0xFF]`;
 }
 
 /** Which parts of a byte's row are filled in: up to the index, up to the table value, or the whole row. */
@@ -75,7 +74,7 @@ function bytesShown(step: PlayStep, run: TableRun | undefined): Readonly<{ rows:
 }
 
 /** The value of crc shown as the result at step: after the output reflection, after xorout, or none before them. */
-function resultAt(step: PlayStep, params: CrcParams, run: TableRun): number | undefined {
+function resultAt(step: PlayStep, params: CrcParams, run: TableRun): bigint | undefined {
   if (step.kind === "index" || step.kind === "lookup" || step.kind === "update") return undefined;
   if (step.kind === "reflectOut") return reflectValue(run.steps.at(-1)?.after ?? run.start, params.width);
   return run.result;
@@ -197,7 +196,7 @@ function TableMethod({ params, bits, playback }: MethodProps) {
         <div className="dock-row">
           {controls("steps")}
           <p className="dock-result" data-dock-result>
-            T[{byteHex(shown)}] = {hex(table[shown]!, w)}
+            T[{byteHex(shown)}] = {valueHex(table[shown]!, w)}
           </p>
         </div>
       </DockedResult>
@@ -235,10 +234,10 @@ function TableMethod({ params, bits, playback }: MethodProps) {
                         onClick={() => choose(i)}
                       >
                         <td>{byteHex(s.byte)}</td>
-                        <td>{hex(s.before, w)}</td>
+                        <td>{valueHex(s.before, w)}</td>
                         <td>{byteHex(s.index)}</td>
-                        <td>{fill === "index" ? "" : hex(s.entry, w)}</td>
-                        <td>{fill === "update" ? hex(s.after, w) : ""}</td>
+                        <td>{fill === "index" ? "" : valueHex(s.entry, w)}</td>
+                        <td>{fill === "update" ? valueHex(s.after, w) : ""}</td>
                       </tr>
                     );
                   })}
@@ -246,14 +245,14 @@ function TableMethod({ params, bits, playback }: MethodProps) {
               </table>
               <dl className="table-totals">
                 <dt>{t.start}</dt>
-                <dd>{hex(run.start, w)}</dd>
+                <dd>{valueHex(run.start, w)}</dd>
                 <dt>{t.result}</dt>
-                <dd className="table-result">{result === undefined ? "" : hex(result, w)}</dd>
+                <dd className="table-result">{result === undefined ? "" : valueHex(result, w)}</dd>
                 <dt>{t.bitwise}</dt>
                 <dd>
                   {mode !== "use" || step.kind === "done" ? (
                     <>
-                      <span className="bitwise-result">{hex(crcOf(params, bits), w)}</span>
+                      <span className="bitwise-result">{valueHex(crcOf(params, bits), w)}</span>
                       {run.result === crcOf(params, bits) ? <span className="match">{t.match}</span> : null}
                     </>
                   ) : null}
@@ -294,7 +293,7 @@ function TableMethod({ params, bits, playback }: MethodProps) {
                           data-index={i}
                           onClick={() => pick(i)}
                         >
-                          {isFilled(step, i, made) ? hex(table[i]!, w).slice(2) : ""}
+                          {isFilled(step, i, made) ? valueHex(table[i]!, w).slice(2) : ""}
                         </td>
                       );
                     })}
@@ -307,7 +306,7 @@ function TableMethod({ params, bits, playback }: MethodProps) {
         <section className="card entry-card">
           <div className="entry-text">
             <h3 className="entry-title" ref={entryTitle} data-reveal>
-              {t.entryTitle(byteHex(shown), hex(table[shown]!, w))}
+              {t.entryTitle(byteHex(shown), valueHex(table[shown]!, w))}
             </h3>
             <Explanation>{t.entryNote[direction]}</Explanation>
           </div>

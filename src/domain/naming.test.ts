@@ -18,14 +18,14 @@ describe("polyFamilies", () => {
     const families = polyFamilies(SAMPLE_PRESETS);
 
     expect(families.map((f) => [f.width, f.poly])).toEqual([
-      [16, 0x1021],
-      [16, 0x8005],
-      [32, 0x04c11db7],
+      [16, 0x1021n],
+      [16, 0x8005n],
+      [32, 0x04c11db7n],
     ]);
   });
 
   it("Given the sample presets, When the poly 0x1021 family is inspected, Then it has 6 members in preset list order", () => {
-    const ccitt = polyFamilies(SAMPLE_PRESETS).find((f) => f.poly === 0x1021)!;
+    const ccitt = polyFamilies(SAMPLE_PRESETS).find((f) => f.poly === 0x1021n)!;
 
     expect(ccitt.rows.map((r) => r.preset.name)).toEqual([
       "CRC-16/IBM-3740",
@@ -38,7 +38,7 @@ describe("polyFamilies", () => {
   });
 
   it("Given the sample presets, When the poly 0x1021 family is inspected, Then each row shows only the columns that differ from the first, IBM-3740", () => {
-    const ccitt = polyFamilies(SAMPLE_PRESETS).find((f) => f.poly === 0x1021)!;
+    const ccitt = polyFamilies(SAMPLE_PRESETS).find((f) => f.poly === 0x1021n)!;
     const differs = Object.fromEntries(ccitt.rows.map((r) => [r.preset.name, r.differs]));
 
     expect(differs["CRC-16/IBM-3740"]).toEqual({ init: false, reflect: false, xorout: false });

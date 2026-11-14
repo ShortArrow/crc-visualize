@@ -5,7 +5,7 @@ import { ja } from "../i18n/ja";
 import { CODE_LANGS, codeLines, type CodeLang, type CodeLine, type ParamChip } from "./code";
 
 /** CRC-3 with refin, refout and xorout all enabled. */
-const full3: CrcParams = { ...plain3, refin: true, refout: true, xorout: 7 };
+const full3: CrcParams = { ...plain3, refin: true, refout: true, xorout: 7n };
 const initStep = (params: CrcParams) => trace(params, [])[0]!;
 const texts = (lines: CodeLine[]) => lines.map((l) => l.text.trim());
 const chips = (line: CodeLine) => line.parts.filter((p): p is ParamChip => typeof p !== "string");
@@ -15,7 +15,7 @@ const xorBody = (step: Step) => codeLines(plain3, step, ja, "pseudo").find((l) =
 
 describe("codeLines", () => {
   it("Given CRC-3 with init 5, When building the code, Then parameters are written by name and chips carry their values", () => {
-    const lines = codeLines({ ...plain3, init: 5 }, initStep(plain3), ja, "pseudo");
+    const lines = codeLines({ ...plain3, init: 5n }, initStep(plain3), ja, "pseudo");
 
     expect(texts(lines)).toEqual(
       expect.arrayContaining([
@@ -73,7 +73,7 @@ describe("codeLines", () => {
   });
 
   it("Given the feedback step of CRC-3 with init 100 fed a 0, When building the code, Then the feedback line is noted with the result of MSB ⊕ input bit", () => {
-    const step = firstStep({ ...plain3, init: 4 }, "0", "feedback");
+    const step = firstStep({ ...plain3, init: 4n }, "0", "feedback");
 
     expect(codeLines(plain3, step, ja, "pseudo").find((l) => l.active)!.note).toBe("msb 1 ⊕ bit 0 = feedback 1");
   });

@@ -67,5 +67,5 @@ function parseNarrowPath(segments: readonly string[]): NarrowPath {
 function parseGenerator([widthPart, polyPart]: readonly string[]): Generator | undefined {
   const width = widthPart?.startsWith("width=") ? parseValue("width", widthPart.slice(6)) : undefined;
   const poly = polyPart?.startsWith("poly=") ? parseValue("poly", polyPart.slice(5)) : undefined;
-  return typeof width === "number" && typeof poly === "number" ? findGenerator(width, poly) : undefined;
+  return typeof width === "number" && typeof poly === "bigint" ? findGenerator(width, Number(poly)) : undefined;
 }

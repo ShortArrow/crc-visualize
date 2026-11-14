@@ -16,7 +16,7 @@ export function formFromPreset({ params, input }: Preset): ConfigForm {
 
 /** The form values for params and input. */
 export function formFromParams(params: CrcParams, input: Preset["input"]): ConfigForm {
-  const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;
+  const hex = (n: bigint) => `0x${n.toString(16).toUpperCase()}`;
   return {
     width: String(params.width),
     poly: hex(params.poly),

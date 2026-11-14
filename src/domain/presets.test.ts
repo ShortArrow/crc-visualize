@@ -9,7 +9,7 @@ describe("findPreset", () => {
   });
 
   it("Given parameters unlike any preset, When a preset is looked up, Then undefined is returned", () => {
-    expect(findPreset({ width: 3, poly: 3, init: 1, refin: false, refout: false, xorout: 0 })).toBeUndefined();
+    expect(findPreset({ width: 3, poly: 3n, init: 1n, refin: false, refout: false, xorout: 0n })).toBeUndefined();
   });
 
   it("Given every preset, When each is looked up by its parameters, Then it finds itself and no parameters are duplicated", () => {

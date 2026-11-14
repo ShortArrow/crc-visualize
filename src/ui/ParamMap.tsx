@@ -5,7 +5,7 @@ import { XorGate } from "./LfsrView";
 import { useMessages } from "../i18n/I18n";
 import { namesHash } from "./route";
 
-const layout = lfsrLayout({ width: 3, poly: 0b011 });
+const layout = lfsrLayout({ width: 3, poly: 0b011n });
 const { box, regY, streamY, gateR, inputGate: ig, feedbackBox: fb } = layout;
 const STREAM = [1, 0, 1, 0, 1];
 const STREAM_PITCH = 24;

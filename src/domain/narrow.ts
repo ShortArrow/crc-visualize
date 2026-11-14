@@ -20,7 +20,9 @@ export const matching = (presets: readonly Preset[], fixed: readonly Choice[]): 
 export function branches(presets: readonly Preset[], param: ParamName): Branch[] {
   const groups = new Map<ParamValue, Preset[]>();
   for (const p of presets) groups.set(p.params[param], [...(groups.get(p.params[param]) ?? []), p]);
-  return [...groups].map(([value, members]) => ({ value, presets: members })).sort((a, b) => Number(a.value) - Number(b.value));
+  return [...groups]
+    .map(([value, members]) => ({ value, presets: members }))
+    .sort((a, b) => (a.value < b.value ? -1 : a.value > b.value ? 1 : 0));
 }
 
 /** Parameters that take two or more values among presets, so splitting by them reduces the candidates (in PARAM_NAMES order). */
@@ -48,12 +50,12 @@ const isFlag = (param: ParamName) => param === "refin" || param === "refout";
 /** Text form of a value: width in decimal, refin and refout as true/false, others in uppercase hex. */
 export function formatValue(param: ParamName, value: ParamValue): string {
   if (isFlag(param) || param === "width") return String(value);
-  return `0x${Number(value).toString(16).toUpperCase()}`;
+  return `0x${value.toString(16).toUpperCase()}`;
 }
 
 /** Turns formatValue text back into a value; undefined if it cannot be parsed. */
 export function parseValue(param: ParamName, text: string): ParamValue | undefined {
   if (isFlag(param)) return text === "true" ? true : text === "false" ? false : undefined;
-  const pattern = param === "width" ? /^\d+$/ : /^0x[0-9a-f]+$/i;
-  return pattern.test(text) ? Number(text) : undefined;
+  if (param === "width") return /^\d+$/.test(text) ? Number(text) : undefined;
+  return /^0x[0-9a-f]+$/i.test(text) ? BigInt(text) : undefined;
 }
