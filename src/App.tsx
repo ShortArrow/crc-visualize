@@ -36,6 +36,7 @@ import type { ParamFocus } from "./ui/paramFocus";
 import type { FieldName } from "./ui/paramInfo";
 import { parseRoute, type Route } from "./ui/route";
 import { Splitter } from "./ui/Splitter";
+import { CompareSection, EMPTY_COMPARE, type CompareForm } from "./ui/CompareSection";
 import { SidebarSections } from "./ui/SidebarSections";
 import { FramePanel } from "./ui/FramePanel";
 import { StepLog } from "./ui/StepLog";
@@ -82,6 +83,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   const [loop, setLoop] = useState(restored.loop);
   const [codeLang, setCodeLang] = useState<CodeLang>(restored.codeLang);
   const [breakpoints, setBreakpoints] = useState<readonly Breakpoint[]>(restored.breakpoints);
+  const [compare, setCompare] = useState<CompareForm>(EMPTY_COMPARE);
   const [estimateCount, setEstimateCount] = useState<number | undefined>(undefined);
   useEffect(
     () => persistSettings({ form, speedMode, rate, loop, codeLang, locale, breakpoints }),
@@ -210,6 +212,8 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       settings={settingsBody}
       breakpoints={breakpoints}
       onBreakpoints={setBreakpoints}
+      compare={compare}
+      onCompare={setCompare}
       frame={frame}
       onSpeedMode={setSpeedMode}
       onRate={setRate}
@@ -266,6 +270,9 @@ type VisualizerProps = Readonly<{
   /** The settings panel and the description pane, shown in the Settings section of the sidebar. */
   settings: ReactNode;
   breakpoints: readonly Breakpoint[];
+  /** What is pasted into the Compare section; it stays when the settings change. */
+  compare: CompareForm;
+  onCompare: (compare: CompareForm) => void;
   onBreakpoints: (breakpoints: readonly Breakpoint[]) => void;
   /** Fits the editor area and status bar into the screen frame with the given sidebar. */
   frame: (sidebar: ReactNode) => Frame;
@@ -302,9 +309,10 @@ function Visualizer(props: VisualizerProps) {
     layout,
     settings,
     breakpoints,
+    compare,
     frame,
   } = props;
-  const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints } = props;
+  const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints, onCompare } = props;
   const m = useMessages();
   const { tier, keepsSidebar } = useScreen();
   const [phone, short] = [tier === "phone", tier === "short"];
@@ -347,6 +355,23 @@ function Visualizer(props: VisualizerProps) {
     <SidebarSections
       sections={[
         { id: "settings", title: m.settings.heading, body: settings },
+        ...(invalid
+          ? []
+          : [
+              {
+                id: "compare",
+                title: m.compare.heading,
+                body: (
+                  <CompareSection
+                    params={params}
+                    steps={steps}
+                    form={compare}
+                    onChange={onCompare}
+                    onSeek={(index) => send({ type: "seek", index })}
+                  />
+                ),
+              },
+            ]),
         ...(phone || variablesBesideCode || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
         ...(invalid
           ? []
