@@ -58,6 +58,13 @@ describe("errorText", () => {
     );
   });
 
+  it("Given a log of the wrong count, When turned into text, Then it gives the count and the counts per byte and per bit", () => {
+    expect(errorText(MESSAGES.en, { code: "logCount", got: 2, bytes: 9, bits: 72 })).toBe(
+      "2 numbers: expected 9 or 10 (one per byte), or 72 or 73 (one per bit)",
+    );
+    expect(errorText(MESSAGES.en, { code: "logCount", got: 2, bits: 5 })).toBe("2 numbers: expected 5 or 6 (one per bit)");
+  });
+
   it("Given an error with no position, When turned into text, Then it is the message alone", () => {
     expect(errorText(MESSAGES.en, { code: "notHex" })).toBe("Enter a hexadecimal number");
   });
