@@ -12,7 +12,8 @@ import { usePlayer } from "./playback/usePlayer";
 import { BreakpointList } from "./ui/BreakpointList";
 import type { CodeLang } from "./ui/code";
 import { CodeLangSelect, CodeView } from "./ui/CodeView";
-import { keyOf } from "./ui/format";
+import { keyOf, valueHex } from "./ui/format";
+import { crcOf } from "./domain/equivalence";
 import { ConfigPanel, formFromParams, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { Docked } from "./ui/Dock";
@@ -113,6 +114,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
         focus={focus}
         onFieldHover={setHoveredField}
       />
+      {config.ok ? <p className="config-crc">crc = {valueHex(crcOf(config.params, config.bits), config.params.width)}</p> : null}
       <FramePanel
         form={form}
         params={config.ok ? config.params : undefined}
@@ -498,7 +500,9 @@ function Visualizer(props: VisualizerProps) {
           )}
           <div className="log-pane" {...tabPanel(short, "log", tab)}>
             <StepLog
+              params={params}
               steps={steps}
+              onSeek={(index) => send({ type: "seek", index })}
               current={player.index}
               input={bits}
               check={check}

@@ -97,6 +97,8 @@ export const ja = {
     done: "完了",
   } satisfies Record<StepKind, string>,
   log: {
+    views: { steps: "ステップ", perByte: "バイトごと" },
+    byteTable: { byte: "バイト", register: "レジスタ", right: "右送り" },
     byteNo: (n: number) => `${n} バイト目`,
     willXor: "feedback = 1 なので次に poly と XOR する",
     noXor: "feedback = 0 なので XOR しない",
