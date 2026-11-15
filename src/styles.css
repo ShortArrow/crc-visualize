@@ -1966,7 +1966,8 @@ button.bp-gutter.bp-off::before {
   margin-left: auto;
 }
 
-.log-jump button {
+.log-jump button,
+.log-views button {
   padding: 1px 6px;
   color: var(--fg);
   background: var(--bg);
@@ -1979,7 +1980,8 @@ button.bp-gutter.bp-off::before {
   cursor: pointer;
 }
 
-.log-jump button:hover {
+.log-jump button:hover,
+.log-views button:hover {
   border-color: var(--accent);
 }
 
@@ -3805,4 +3807,49 @@ button.bit-cell:hover {
 
 .compare-log tr.first-diff {
   background: rgb(255 92 92 / 0.12);
+}
+
+/* The switch between Progress step by step and per byte */
+.log-views {
+  display: flex;
+  gap: 4px;
+}
+
+.log-views button[aria-pressed="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Progress per byte: the register at the end of each input byte, then the CRC */
+.byte-log table {
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.byte-log :is(th, td) {
+  padding: 1px 8px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.byte-log tbody button {
+  min-width: 24px;
+  min-height: 24px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.byte-log tr.current {
+  background: rgb(97 175 239 / 0.12);
+}
+
+.byte-log-crc,
+.config-crc {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  color: var(--fg);
 }

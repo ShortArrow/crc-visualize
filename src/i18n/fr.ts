@@ -98,6 +98,8 @@ export const fr: Messages = {
     done: "Terminé",
   },
   log: {
+    views: { steps: "Étapes", perByte: "Par octet" },
+    byteTable: { byte: "octet", register: "registre", right: "décalage à droite" },
     byteNo: (n: number) => `octet ${n}`,
     willXor: "feedback = 1, donc XOR avec poly ensuite",
     noXor: "feedback = 0, donc pas de XOR",

@@ -98,6 +98,8 @@ export const de: Messages = {
     done: "Fertig",
   },
   log: {
+    views: { steps: "Schritte", perByte: "Pro Byte" },
+    byteTable: { byte: "Byte", register: "Register", right: "Rechtsschieben" },
     byteNo: (n: number) => `Byte ${n}`,
     willXor: "feedback = 1, daher als Nächstes XOR mit poly",
     noXor: "feedback = 0, daher kein XOR",

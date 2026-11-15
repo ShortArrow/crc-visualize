@@ -93,6 +93,8 @@ export const zh: Messages = {
     done: "完成",
   },
   log: {
+    views: { steps: "步骤", perByte: "按字节" },
+    byteTable: { byte: "字节", register: "寄存器", right: "右移" },
     byteNo: (n: number) => `第 ${n} 字节`,
     willXor: "feedback = 1，所以接下来与 poly XOR",
     noXor: "feedback = 0，所以不 XOR",

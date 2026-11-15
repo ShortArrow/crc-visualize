@@ -1,5 +1,6 @@
-import { Fragment, useLayoutEffect, useRef, type CSSProperties } from "react";
-import { registerValue, type Bit, type Step } from "../domain/trace";
+import { Fragment, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { perByte, type ByteRow } from "../domain/perByte";
+import { registerValue, type Bit, type CrcParams, type Step } from "../domain/trace";
 import { bitGroups, groupsHex, valueHex } from "./format";
 import { useMessages } from "../i18n/I18n";
 import type { Messages } from "../i18n/messages";
@@ -11,7 +12,15 @@ const LOG_LIMIT = 40;
 /** Duration (ms) of blocks sliding up or down, rows fading in and the values resizing. */
 const MOTION_MS = 240;
 
-type Props = Readonly<{ steps: readonly Step[]; current: number; input: readonly Bit[]; check: bigint | undefined }>;
+type Props = Readonly<{
+  params: CrcParams;
+  steps: readonly Step[];
+  current: number;
+  input: readonly Bit[];
+  check: bigint | undefined;
+  /** Moves playback to the step at index. */
+  onSeek: (index: number) => void;
+}>;
 
 const ROW_LABELS: Readonly<Record<Exclude<LogRow["label"], "before" | "reflected" | "result">, string>> = {
   init: "init",
@@ -150,9 +159,12 @@ function Result({ step, input, check }: { step: Step; input: readonly Bit[]; che
  * A step that starts a block slides it in while the previous current block shrinks its text moving down; a step that adds a row
  * fades the row in; stepping back reverses this.
  */
-export function StepLog({ steps, current, input, check, title }: Props & Readonly<{ title?: string }>) {
+export function StepLog({ params, steps, current, input, check, onSeek, title }: Props & Readonly<{ title?: string }>) {
   const m = useMessages();
   const step = steps[current]!;
+  const [view, setView] = useState<"steps" | "perByte">("steps");
+  const bytes = perByte(params, steps, input);
+  const shown = bytes ? view : "steps";
   const list = useSlidingRows(current);
   const log = useRef<HTMLDivElement>(null);
   const scrollTo = (end: "newest" | "oldest") =>
@@ -161,23 +173,38 @@ export function StepLog({ steps, current, input, check, title }: Props & Readonl
     <>
       <h2 className="log-heading">
         {title}
-        <span className="log-jump">
-          <button type="button" data-jump="newest" onClick={() => scrollTo("newest")}>
-            ↑ {m.log.newest}
-          </button>
-          <button type="button" data-jump="oldest" onClick={() => scrollTo("oldest")}>
-            ↓ {m.log.oldest}
-          </button>
-        </span>
+        {bytes ? (
+          <span className="log-views" role="group">
+            {(["steps", "perByte"] as const).map((v) => (
+              <button key={v} type="button" data-view={v} aria-pressed={shown === v} onClick={() => setView(v)}>
+                {m.log.views[v]}
+              </button>
+            ))}
+          </span>
+        ) : null}
+        {shown === "steps" ? (
+          <span className="log-jump">
+            <button type="button" data-jump="newest" onClick={() => scrollTo("newest")}>
+              ↑ {m.log.newest}
+            </button>
+            <button type="button" data-jump="oldest" onClick={() => scrollTo("oldest")}>
+              ↓ {m.log.oldest}
+            </button>
+          </span>
+        ) : null}
       </h2>
-      <div ref={log} className="log">
-        {step.kind === "done" ? <Result step={step} input={input} check={check} /> : null}
-        <ol ref={list} className="log-list" style={{ "--log-ms": `${MOTION_MS}ms` } as CSSProperties}>
-          {logBlocks(steps, current, LOG_LIMIT).map((block, i) => (
-            <Block key={block.key} block={block} current={i === 0 && step.kind !== "done" ? current : undefined} />
-          ))}
-        </ol>
-      </div>
+      {bytes && shown === "perByte" ? (
+        <ByteTable rows={bytes} params={params} crc={registerValue(steps.at(-1)!.reg)} current={current} onSeek={onSeek} />
+      ) : (
+        <div ref={log} className="log">
+          {step.kind === "done" ? <Result step={step} input={input} check={check} /> : null}
+          <ol ref={list} className="log-list" style={{ "--log-ms": `${MOTION_MS}ms` } as CSSProperties}>
+            {logBlocks(steps, current, LOG_LIMIT).map((block, i) => (
+              <Block key={block.key} block={block} current={i === 0 && step.kind !== "done" ? current : undefined} />
+            ))}
+          </ol>
+        </div>
+      )}
     </>
   );
 }
@@ -216,4 +243,47 @@ function useSlidingRows(current: number) {
     rowKeys.current = new Set([...(ref.current?.querySelectorAll<HTMLElement>(".log-row") ?? [])].map(rowKey));
   }, [current]);
   return ref;
+}
+
+type ByteTableProps = Readonly<{
+  rows: readonly ByteRow[];
+  params: CrcParams;
+  crc: bigint;
+  current: number;
+  onSeek: (index: number) => void;
+}>;
+
+/** Progress per byte: the register at the end of each input byte, then the CRC. Pressing a row moves playback to its end. */
+function ByteTable({ rows, params, crc, current, onSeek }: ByteTableProps) {
+  const m = useMessages();
+  const right = rows[0]?.right !== undefined;
+  return (
+    <div className="log byte-log">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{m.log.byteTable.byte}</th>
+            <th>{m.log.byteTable.register}</th>
+            {right ? <th>{m.log.byteTable.right}</th> : null}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.index} className={row.step === current ? "current" : undefined}>
+              <th>
+                <button type="button" onClick={() => onSeek(row.step)}>
+                  {row.index}
+                </button>
+              </th>
+              <td>{valueHex(BigInt(row.byte), 8)}</td>
+              <td>{valueHex(row.register, params.width)}</td>
+              {right ? <td>{valueHex(row.right!, params.width)}</td> : null}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="byte-log-crc">crc = {valueHex(crc, params.width)}</p>
+    </div>
+  );
 }
