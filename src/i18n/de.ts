@@ -27,6 +27,10 @@ export const de: Messages = {
   errors: {
     widthRange: "Gib eine ganze Zahl von 1 bis 64 ein",
     notHex: "Gib eine Hexadezimalzahl ein",
+    badChar: "Nur Zahlen und Trennzeichen können gelesen werden",
+    hexInDecimal: "0x ist nur zur Basis 16 erlaubt",
+    oneValue: "Gib nur eine Zahl ein",
+    at: (line: number, column: number) => ` (Zeile ${line}, Spalte ${column})`,
     tooWide: (width: number) => `Gib einen Wert ein, der in ${width} Bit passt`,
     zero: "0 ist nicht erlaubt",
     notBits: "Nur 0 und 1 verwenden",
