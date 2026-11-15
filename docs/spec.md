@@ -2,7 +2,7 @@
 
 # CRC Visualizer SPA Specification
 
-A browser app that shows the behaviour of an LFSR (hardware) and each line of a bit-at-a-time CRC implementation (software), synchronized one clock at a time. Terms and notation follow "16. Terms and notation".
+A browser app that shows the behaviour of an LFSR (hardware) and each line of a bit-at-a-time CRC implementation (software), synchronized one clock at a time. Terms and notation follow "17. Terms and notation".
 
 ## 1. CRC parameters (Rocksoft model)
 
@@ -25,11 +25,11 @@ Each preset carries the reveng catalogue's check value (check, the CRC of the in
 
 The input mode is one of the following 3.
 
-| Mode         | Example    | Conversion to a bit string                                      |
-| ------------ | ---------- | --------------------------------------------------------------- |
-| Binary       | `10101`    | As is. Any length                                               |
-| Hexadecimal  | `31 32 33` | Whitespace within a line is ignored. 1 byte = 8 bits, MSB first |
-| Text (UTF-8) | `123`      | Encoded as UTF-8 bytes, then converted as hexadecimal           |
+| Mode         | Example    | Conversion to a bit string                                   |
+| ------------ | ---------- | ------------------------------------------------------------ |
+| Binary       | `10101`    | As is. Any length                                            |
+| Hexadecimal  | `31 32 33` | Read as in "Reading pasted text". 1 byte = 8 bits, MSB first |
+| Text (UTF-8) | `123`      | Encoded as UTF-8 bytes, then converted as hexadecimal        |
 
 - An input whose bit length is not a multiple of 8 is invalid when `refin` is true.
 - The input (in hexadecimal, the CRC range of the selected frame) is limited to 256 bits.
@@ -43,6 +43,49 @@ In hexadecimal, each non-blank line of the input is one frame, and each line mus
 - Selected frame: the frame that is visualized, numbered from 0. A number past the last frame selects the last one.
 
 The bits visualized are the CRC range of the selected frame. A byte number that is not an integer of 0 or more is an error on the range, and so is a range or CRC in input that does not fit the selected frame (including an end before the start). The binary and text modes have no frames, and the CRC range is ignored there.
+
+### Reading pasted text
+
+The hexadecimal input, the `poly`, `init` and `xorout` fields, and the fields of chapter 16 read only numbers and separators. Whatever else the text holds is not read, so that every value read is one that was pasted.
+
+Each of these fields has a base switch: a small badge on the field whose text is the current base, `16` or `10` (16 by default). Pressing it switches between 16 and 10. It takes the keyboard focus, and Enter or Space switches it too. The part that can be pressed is at least 24×24 CSS px (the minimum target size of WCAG 2.2). The base is never told from the numbers themselves, since `49 50 51` reads as hexadecimal as well.
+
+1. With the switch at 16, a number is hex digits, with or without `0x` before them. With the switch at 10, a number is decimal digits, and a number with `0x` is an error at its position.
+2. Whitespace, `,`, `;` and brackets (`{`, `}`, `[`, `]`, `(`, `)`) separate numbers.
+3. Any other character is an error. The field shows the line and column of the first one, and nothing is read from the text.
+
+Where bytes are read (the input, `received`, a CRC given as several numbers), the field also has an element badge, as small as the base badge and used the same way. Its choices are `8`, `16 BE`, `16 LE`, `32 BE` and `32 LE` (8 by default): the size of one element in bits, and the order its bytes are laid out in, `BE` high byte first and `LE` low byte first. Neither the size nor the order is told from the numbers.
+
+- With the element at 8, a hexadecimal number without `0x` is read two digits at a time from the left, each pair one byte (`313233` and `3132 33` are both `31 32 33`), and one of an odd number of digits is an error.
+- Every other number is one element: a number with `0x`, a decimal number, and with the element at 16 or 32 a hexadecimal number without `0x` too. Its bytes are laid out in the chosen order (`0x3` is `03` with the element at 8), and a number that does not fit in the element is an error at its position.
+
+In the hexadecimal input, each non-blank line is one frame, also inside brackets that span several lines.
+
+Where values are read (`poly`, `init`, `xorout`, `your crc` as one number, `your log`, `your table`), each number is one value, and one that does not fit in `width` bits is an error at its position.
+
+The bases of the input and of the `poly`, `init` and `xorout` fields, and the element of the input, are kept with the other settings (chapter 6).
+
+| Pasted                                                      | Read as                            |
+| ----------------------------------------------------------- | ---------------------------------- |
+| `{49, 50, 51}` with the switch at 10                        | Bytes 31 32 33                     |
+| `49 50 51` with the switch at 16                            | Bytes 49 50 51                     |
+| `0x31 50 51` with the switch at 10                          | Error at `0x31`                    |
+| `256` with the switch at 10                                 | Error at `256`: above 255          |
+| `31 32 33`, `313233` or `3132 33`                           | Bytes 31 32 33                     |
+| `0x31, 0x32, 0x33` or `{0x31, 0x32, 0x33}`                  | Bytes 31 32 33                     |
+| `0x1021 0x31` with the element at 8                         | Error at `0x1021`: above `0xFF`    |
+| `{0x1021, 0x0031}` with the element at 16 LE                | Bytes 21 10 31 00                  |
+| `1021 31` with the element at 16 BE                         | Bytes 10 21 00 31                  |
+| `0x12345678` with the element at 32 BE                      | Bytes 12 34 56 78                  |
+| `0x12345` with the element at 16 BE                         | Error at `0x12345`: above `0xFFFF` |
+| `{4129, 49}` with the switch at 10 and the element at 16 LE | Bytes 21 10 31 00                  |
+| `{0x3, 0x31}`                                               | Bytes 03 31                        |
+| `313 233`                                                   | Error at `313`: odd digits         |
+| `[0x0000, 0x1021, 0x2042]`                                  | The values 0x0000 0x1021 0x2042    |
+| `0x1021u`                                                   | Error at `u` (column 7)            |
+| `crc=0x29B1`                                                | Error at `r` (column 2)            |
+| `uint8_t msg[] = {0x31, 0x32};`                             | Error at `u` (column 1)            |
+| `00000000  31 32 33  \|123\|`                               | Error at `\|` (column 21)          |
 
 ## 3. Hardware model (direct LFSR)
 
@@ -126,9 +169,9 @@ The computation is returned as a `Step[]` by the pure function `trace(params, in
   - Each breakpoint can be enabled or disabled; a disabled one never hits.
 - Speed ramp: in auto mode, playback is slow (900 ms per step) until at least one clock with feedback bit 0 and one with feedback bit 1 have each been shown, and later clocks are fast (120 ms). Even for an input where only one of the values occurs, slow playback lasts at most the first 6 clocks. `init`, `reflectOut`, `xorOut` and `done` are always slow. In steady mode every step is 600 ms. In both modes the time is divided by the speed multiplier.
 - When the settings or the input change, the step sequence is rebuilt, playback returns to the start and stops.
-- Keeping settings: the CRC parameters, input mode, input value, speed mode, speed multiplier, loop on/off, code language (chapter 4), display language (chapter 17), breakpoints, and the CRC range, CRC in input and selected frame (chapter 2) are saved to localStorage each time they change, and restored the next time the app is opened. The playback position is not saved; playback starts at the start, stopped. Among the saved values, any item whose shape or value range is wrong is reset to its own default only (`CRC-3/TUTORIAL`, auto, ×1, no loop, pseudocode, the language determined from the browser's preferred languages, no breakpoints, no CRC in input).
+- Keeping settings: the CRC parameters, input mode, input value, speed mode, speed multiplier, loop on/off, code language (chapter 4), display language (chapter 18), breakpoints, and the CRC range, CRC in input and selected frame (chapter 2), and the bases of the input, `poly`, `init` and `xorout` and the element of the input (chapter 2) are saved to localStorage each time they change, and restored the next time the app is opened. The playback position is not saved; playback starts at the start, stopped. Among the saved values, any item whose shape or value range is wrong is reset to its own default only (`CRC-3/TUTORIAL`, auto, ×1, no loop, pseudocode, the language determined from the browser's preferred languages, no breakpoints, no CRC in input, base 16, element 8).
 - Keeping the layout: the sidebar's open/closed state (except on a phone and on a short screen narrower than 1000 px; see Screen tiers) and width, the boundary between the diagram and the panel below, and the boundary between the pseudocode and the Progress panel are saved to localStorage each time they change, and restored the next time the app is opened. These settings adapt to the viewer's screen, so they are not put in the URL query. Saved values that are invalid, or that do not fit the current screen, are corrected to the default or into the range that fits.
-- Sharing by URL: the same items as the kept settings are also put in the URL query (`width`, `poly`, `init`, `refin`, `refout`, `xorout`, `inputMode`, `input`, `speed`, `rate`, `loop`, `code`, `lang`, `bp`, `from`, `to`, `crcField`, `frame`; booleans are `1`/`0`, and `crcField` is `none`, `be` or `le`), and rewritten each time they change without adding history entries. When the app is opened, items in the URL take precedence over the values saved in localStorage. Items missing from the URL or invalid ones take the saved value (or the default if none).
+- Sharing by URL: the same items as the kept settings are also put in the URL query (`width`, `poly`, `init`, `refin`, `refout`, `xorout`, `inputMode`, `input`, `speed`, `rate`, `loop`, `code`, `lang`, `bp`, `from`, `to`, `crcField`, `frame`, `base`, `element`; booleans are `1`/`0`, `crcField` is `none`, `be` or `le`, and `base` lists, separated by commas, those of `input`, `poly`, `init` and `xorout` whose base is 10, and is left out when there are none, and `element` is `16be`, `16le`, `32be` or `32le`, left out when it is 8), and rewritten each time they change without adding history entries. When the app is opened, items in the URL take precedence over the values saved in localStorage. Items missing from the URL or invalid ones take the saved value (or the default if none).
   - `bp` lists the breakpoints separated by commas. A line breakpoint is written as the step kind (such as `xor`), followed by `@` and the hit count if it has one (`xor@5`). A byte breakpoint is written as `byte` followed by its number (`byte3`), and a bit breakpoint as `bit` followed by its number (`bit13`). A disabled one is prefixed with `!`. Entries that cannot be read are dropped.
 - When the settings are invalid, an error is shown for each field, and the rendering is cleared rather than keeping the last valid state. The sidebar then has only the Settings section. The field being typed in keeps its focus while the value is invalid on the way.
 
@@ -140,7 +183,7 @@ On pages other than the Visualizer, the content blocks (cards) are laid out in r
 
 - Layout: the whole screen is divided into the following areas, and the page itself does not scroll. Content that does not fit in an area scrolls within that area only.
   - Activity bar (the narrow column at the left edge): icons for switching pages (Visualizer, Naming, Narrow down).
-  - Sidebar: on the Visualizer page, three sections stacked vertically, each opened and closed by pressing its heading (an accordion): Settings (the settings panel and the description pane, 1 below), Variables (5) and Breakpoints (6). Which sections are open adapts to the viewer's screen, so it is saved to localStorage and not put in the URL. On the Naming page, a table of contents for its sections. On the Narrow down page, the fixed values and the remaining candidates.
+  - Sidebar: on the Visualizer page, four sections stacked vertically, each opened and closed by pressing its heading (an accordion): Settings (the settings panel and the description pane, 1 below), Compare (chapter 16), Variables (5) and Breakpoints (6). Which sections are open adapts to the viewer's screen, so it is saved to localStorage and not put in the URL. On the Naming page, a table of contents for its sections. On the Narrow down page, the fixed values and the remaining candidates.
   - Editor area: the playback control toolbar (3) at the top, the LFSR diagram (2) below it, and further down a panel with the pseudocode and the Progress panel (4) side by side.
   - Status bar (one line at the bottom edge): the preset name (`custom` if none matches), the kind of the step being shown, and the `crc` after processing (binary and hexadecimal).
 - The boundaries between the sidebar and each area can be dragged. The sidebar can be opened and closed with Ctrl+B (⌘+B on macOS) and the toggle in the activity bar.
@@ -242,6 +285,7 @@ On every target screen, right after each action below, everything in the right c
 | ----------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Visualizer  | Playing, or stepping forward                   | The playback controls, the most significant register and the head of the flow in the diagram, the current pseudocode line, the newest log entry (on a phone or a short screen, the step shown in the status bar instead)                                                                                                                                                               |
 | Visualizer  | Pressing a bit or a byte of the input stream   | What was pressed and its mark                                                                                                                                                                                                                                                                                                                                                          |
+| Visualizer  | Pasting into `your crc` or `your log`          | The field, ✓ or ✗ and the first hint; for `your log`, also the first row that differs in Per byte                                                                                                                                                                                                                                                                                      |
 | Visualizer  | Hovering over a setting (PC)                   | The setting and the help pane                                                                                                                                                                                                                                                                                                                                                          |
 | Naming      | Hovering over a parameter name in the diagram  | The highlighted places where it is used, and the tag                                                                                                                                                                                                                                                                                                                                   |
 | Naming      | Choosing a parameter name link                 | That row of the table, highlighted                                                                                                                                                                                                                                                                                                                                                     |
@@ -251,6 +295,7 @@ On every target screen, right after each action below, everything in the right c
 | Check       | Pressing a bit of the received string          | The pressed bit and both verdicts                                                                                                                                                                                                                                                                                                                                                      |
 | Table       | Choosing a row of the byte-by-byte computation | That row, the highlighted value in table T, the start of how the value is made (its heading and the number of the first clock); on a phone or a short screen, only that row, which shows the index and the table value; where the table T does not sit beside the byte-by-byte card, the heading of how the value is made, which shows the same value, stands for the value in table T |
 | Table       | Choosing a value in table T                    | That value and the start of how it is made (its heading and the number of the first clock)                                                                                                                                                                                                                                                                                             |
+| Table       | Pasting into `your table`                      | The value chosen in table T and the start of how it is made                                                                                                                                                                                                                                                                                                                            |
 | Estimation  | Pressing "Search"                              | The start of the results, or the error in a field if the input has one                                                                                                                                                                                                                                                                                                                 |
 
 The Equivalences page has no action, so only the whitespace rules below are checked on it.
@@ -330,7 +375,7 @@ Shows how presets are named and how parameter names differ, with diagrams and ta
 4. Diagram of parameter-name aliases: on a fixed LFSR diagram (width 3, poly 0x3) drawn with the same parts as the visualizer's diagram, a leader line is drawn from the place where each parameter acts, and at its end only the parameter name (`poly` and so on) is written. The places are: `width` the row of registers, `poly` the tap gates, `init` the register boxes, `refin` the input stream, and `refout` and `xorout` the CRC output taken from the register.
    - Hovering over a parameter name emphasizes the place where it acts in the focused-parameter colour, and adds its full name and aliases on a small tag.
    - Parameter names are links; selecting one moves to that parameter's row in the table of 5 and highlights the row. The URL fragment is `#names/<parameter name>`.
-5. Parameter name table: for each parameter, the parameter name, full name, meaning and aliases are listed. The aliases are the same as in the description pane ("Aliases" in chapter 16).
+5. Parameter name table: for each parameter, the parameter name, full name, meaning and aliases are listed. The aliases are the same as in the description pane ("Aliases" in chapter 17).
 
 ## 9. Narrow down page
 
@@ -505,9 +550,61 @@ Given several pairs of data and their CRC, searches for the parameters that sati
 - Rows with invalid input (not readable as hexadecimal, or a CRC that does not fit in `width` bits) show the error in that field, and no search is run.
 - The URL fragment is `#estimate`.
 
-## 16. Terms and notation
+## 16. Checking your own values
 
-The rules under "Character types" are for the Japanese UI text (see chapter 17). The term table and the alias table give the Japanese UI wording, with the English UI wording (from `src/i18n/en.ts`) alongside.
+Values copied from the viewer's own CRC code (the register partway through, the final CRC, the parameters, the elements of table T, the input bytes) can be pasted into the pages, which compare them with what they compute and say where they differ. The pasted text is read as in "Reading pasted text" (chapter 2).
+
+### Where the fields are
+
+- On the Visualizer page, the Compare section of the sidebar holds the fields. It comes right after Settings and is open at first.
+- On the Naming, Narrow down, Check, Equivalences and Table pages, a Compare card comes first in the editor area. On a short screen it stays open while the explanation paragraphs close.
+- The Estimation page takes its pairs in this form already, so it has no Compare card.
+- The Cyclic and Redundancy pages take no pasted values. Their generator polynomial is one of a few small ones, chosen on the page and not linked to the settings (chapter 10).
+- Field labels are in English only, like the settings panel: `your crc`, `your log`, `your poly`, `your check`, `your table`, `received`.
+- What is pasted is kept neither in the URL nor in storage. It stays when the settings change and is compared again with the new settings.
+
+### What each page compares
+
+| Page         | Pasted (label)                                                                                                  | Compared with                                                                                                                                                      | When it differs                                                                                  |
+| ------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Visualizer   | The CRC your code gave (`your crc`): one number, or ⌈`width`/8⌉ bytes read in the order chosen beside the field | The CRC of the CRC range of the selected frame (of the whole input in binary and text)                                                                             | The two values in binary, and the hints below                                                    |
+| Visualizer   | The register your code logged after each byte or each bit (`your log`): numbers in order                        | The register at the end of each byte (or bit), as a left shift holds it and, when `refin` = `refout` = true, as a right shift holds it (reflected in `width` bits) | The first row that differs is marked, playback moves to its end, and the hints for it            |
+| Naming       | A `poly` constant (`your poly`) with a `width` (empty: every catalogue width it fits in)                        | The `poly` of the presets, in normal notation                                                                                                                      | The presets it would match if it is the reversed, the Koopman or the x^width-included notation   |
+| Narrow down  | The CRC of `123456789` your code gave (`your check`) with a `width` (empty: every catalogue width it fits in)   | The `check` of the presets                                                                                                                                         | The presets it would match under hints 1 to 5                                                    |
+| Check        | A received frame (`received`): bytes                                                                            | It replaces the received string, and both ways to check give their verdicts                                                                                        | The verdicts                                                                                     |
+| Check        | The CRC of `123456789` your code gave (`your check`)                                                            | The CRC of `123456789` with the current settings                                                                                                                   | The two values in binary, and the hints below                                                    |
+| Equivalences | The `poly` and `init` constants written in your code                                                            | The current `poly` and `init`, as they are and reversed in `width` bits                                                                                            | That it is neither, with both forms written out                                                  |
+| Table        | Your table (`your table`): 256 numbers in index order                                                           | Table T, for a left and for a right shift                                                                                                                          | The first index that differs is chosen and how its value is made is shown, with the hints for it |
+| Table        | The register your code logged after each byte (`your log`)                                                      | The `crc` after each byte in the byte-at-a-time computation                                                                                                        | As on the Visualizer page                                                                        |
+
+- `your log` is matched by its count. For n input bytes, n numbers are the register after each byte, and n + 1 start with `init`; 8n and 8n + 1 numbers are the register after each bit. Any other count is an error that gives both counts. The shift direction is the one whose first number matches; when neither matches, the left shift is shown.
+- `your table` with a count other than 256 is an error that gives the count.
+- Matching values are marked ✓ and differing ones ✗, as in the frame list (chapter 7).
+
+### The answer without playback
+
+- The settings panel of the Visualizer shows the CRC of the CRC range (`crc = 0x…`) in every input mode, whatever the playback position.
+- A switch at the top of Progress (Steps | Per byte) shows instead one row per input byte: the byte number, the byte, and the register at the end of the byte in hexadecimal (with `refin` = `refout` = true, also as a right shift holds it). The last row is followed by the CRC. Pressing a row moves playback to the end of that byte. Per byte is not offered when the input is not whole bytes.
+
+### Hints
+
+A pasted value that differs from the computed one is shown with it in binary, one above the other, with the differing bits in red. Below them, of the following hints, those that would make the two match are listed in this order, each as "would match if …".
+
+1. The bytes were read in the other order (when ⌈`width`/8⌉ is 2 or more).
+2. The bits were reflected in `width` bits.
+3. It were XORed with `xorout` (when `xorout` is not 0).
+4. It were XORed with all ones (when that is not `xorout`).
+5. 1 or 2 together with 3 or 4.
+6. For a CRC: the CRC range ended 1 to ⌈`width`/8⌉ bytes earlier or later, within the frame. For a row of `your log`: it were the row before or after.
+7. For a CRC of the input or of `123456789`: another catalogue preset of the same `width` gives it; the preset is named.
+
+Hints are shown only when `width` is 8 or more. With a smaller `width` a transformed value matches by chance too often (1 in 8 for a `width` of 3), so only the differing bits are shown.
+
+A `poly` entered with its x^width term (a value with bit `width` set and below 2^(`width`+1)) is an error that gives the value without that term.
+
+## 17. Terms and notation
+
+The rules under "Character types" are for the Japanese UI text (see chapter 18). The term table and the alias table give the Japanese UI wording, with the English UI wording (from `src/i18n/en.ts`) alongside.
 
 ### Character types
 
@@ -552,16 +649,17 @@ The aliases listed in the description pane are as follows. Only names whose corr
 
 A CRC with `refin` and `refout` both true can be computed by a right-shift (LSB-first) implementation, and a CRC with both false by a left-shift (MSB-first) implementation.
 
-## 17. Display language
+## 18. Display language
 
 - On-screen text can be shown in Japanese, English, Chinese (Simplified), Spanish, German and French. The on-screen text quoted in this specification is the English UI wording (the Japanese edition, [spec.ja.md](spec.ja.md), quotes the Japanese UI wording); other languages show translations with the same meaning.
 - Not translated: parameter names, the official names and aliases of presets, field labels and options of the settings panel, identifiers in the pseudocode and the diagram's formulas, the notation of numbers, and key names.
 - The full names of the parameters (the Japanese name when the UI is in Japanese) and aliases shown in the description pane and the parameter name table are the names used in that language. The aliases also include English names common in the literature.
-- The character-type rules of chapter 16 are for the Japanese UI. In every language, one concept is rendered with one term throughout.
+- The character-type rules of chapter 17 are for the Japanese UI. In every language, one concept is rendered with one term throughout.
 - Default language: the first entry in the browser's preferred-language list (`navigator.languages`), read from the start, whose language code (such as `zh` of `zh-CN`) matches one of the 6 above. If none matches, English.
 - Switching: at the right end of the status bar, a selector lists each language by its own name (日本語, English, 中文, Español, Deutsch, Français). The chosen language is kept, like the other settings, in localStorage and the URL query (`lang`, with values `ja`, `en`, `zh`, `es`, `de`, `fr`); if nothing is saved, the default language is used. Every page is shown in the same language, and the document language (`<html lang>`) follows it.
 
-## 18. Unspecified
+## 19. Unspecified
 
 - `width` above 64 bits (such as CRC-82) is not handled.
+- Output of debuggers and dump tools (gdb, hexdump, xxd, od and the like) is not read as it is. Addresses, the character column of a dump, comments, names such as `crc=`, integer-literal suffixes such as `u` and `UL`, and string literals are errors; the viewer deletes them before pasting.
 - A window 700 CSS px wide or wider, such as a tablet's, gets the PC layout with the adjustments in "Screen tiers" (chapter 7); no layout is set out for tablets alone.
