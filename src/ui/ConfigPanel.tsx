@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import type { ConfigError, ConfigField, ConfigForm } from "../domain/parse";
+import type { BaseField, ConfigError, ConfigField, ConfigForm } from "../domain/parse";
+import { ELEMENT_IDS, type ElementId } from "../domain/paste";
 import { PRESETS, type InputMode, type Preset } from "../domain/presets";
 import { polynomialText } from "./format";
 import { presetLabel } from "./presetLabel";
@@ -30,6 +31,8 @@ export function formFromParams(params: CrcParams, input: Preset["input"]): Confi
     to: "",
     crcField: "none",
     frame: "0",
+    bases: { input: 16, poly: 16, init: 16, xorout: 16 },
+    element: "8",
   };
 }
 
@@ -46,6 +49,20 @@ type Props = Readonly<{
 }>;
 
 const CUSTOM = "";
+
+const nextElement = (id: ElementId): ElementId => ELEMENT_IDS[(ELEMENT_IDS.indexOf(id) + 1) % ELEMENT_IDS.length]!;
+const elementText = (id: ElementId): string => (id === "8" ? id : `${id.slice(0, 2)} ${id.slice(2).toUpperCase()}`);
+
+type BadgeProps = Readonly<{ kind: "base" | "element"; name: string; text: string; onPress: () => void }>;
+
+/** A small button on a field that shows a reading choice and steps to the next one when pressed. */
+function Badge({ kind, name, text, onPress }: BadgeProps) {
+  return (
+    <button type="button" className="badge" data-badge={kind} aria-label={`${name} ${text}`} title={name} onClick={onPress}>
+      {text}
+    </button>
+  );
+}
 
 /** Settings panel for the CRC parameters and input. */
 export function ConfigPanel({ form, params, presetName, errors, onChange, focus, onFieldHover }: Props) {
@@ -68,11 +85,26 @@ export function ConfigPanel({ form, params, presetName, errors, onChange, focus,
     onFocus: () => onFieldHover(field),
     onBlur: () => onFieldHover(undefined),
   });
+  const baseBadge = (key: BaseField) => (
+    <Badge
+      kind="base"
+      name={m.badges.base}
+      text={String(form.bases[key])}
+      onPress={() => set("bases", { ...form.bases, [key]: form.bases[key] === 16 ? 10 : 16 })}
+    />
+  );
   const text = (key: "width" | "poly" | "init" | "xorout") =>
     paramField(
       key,
       <>
-        <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />
+        {key === "width" ? (
+          <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />
+        ) : (
+          <span className="field-row">
+            <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />
+            {baseBadge(key)}
+          </span>
+        )}
         {key === "poly" && params ? (
           <small className="generator">g(x) = {polynomialText(params.width, params.poly)}</small>
         ) : null}
@@ -119,13 +151,24 @@ export function ConfigPanel({ form, params, presetName, errors, onChange, focus,
       <label className={`input-field ${errors.input ? "invalid" : ""}`} data-field="input" {...hover("input")}>
         <span>{FIELD_LABELS.input}</span>
         {form.inputMode === "hex" ? (
-          <textarea
-            wrap="off"
-            rows={Math.min(Math.max(form.input.split("\n").length, 2), 8)}
-            value={form.input}
-            spellCheck={false}
-            onChange={(e) => set("input", e.target.value)}
-          />
+          <span className="field-row">
+            <textarea
+              wrap="off"
+              rows={Math.min(Math.max(form.input.split("\n").length, 2), 8)}
+              value={form.input}
+              spellCheck={false}
+              onChange={(e) => set("input", e.target.value)}
+            />
+            <span className="badges">
+              {baseBadge("input")}
+              <Badge
+                kind="element"
+                name={m.badges.element}
+                text={elementText(form.element)}
+                onPress={() => set("element", nextElement(form.element))}
+              />
+            </span>
+          </span>
         ) : (
           <input value={form.input} spellCheck={false} onChange={(e) => set("input", e.target.value)} />
         )}

@@ -24,6 +24,7 @@ export const fr: Messages = {
     invalid: "Les paramètres contiennent des erreurs. Corrigez les champs en rouge.",
     invalidStatus: "Paramètres invalides",
   },
+  badges: { base: "Base", element: "Élément" },
   errors: {
     widthRange: "Saisissez un entier de 1 à 64",
     notHex: "Saisissez un nombre hexadécimal",

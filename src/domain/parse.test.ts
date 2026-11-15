@@ -15,6 +15,8 @@ const form = (over: Partial<ConfigForm> = {}): ConfigForm => ({
   to: "",
   crcField: "none",
   frame: "0",
+  bases: { input: 16, poly: 16, init: 16, xorout: 16 },
+  element: "8",
   ...over,
 });
 
@@ -24,6 +26,26 @@ const errorsOf = (f: ConfigForm) => {
 };
 
 describe("parseConfig", () => {
+  it("Given poly at base 10, When 4129 is entered in width 16, Then poly is 0x1021", () => {
+    const r = parseConfig(form({ width: "16", poly: "4129", bases: { input: 16, poly: 10, init: 16, xorout: 16 } }));
+
+    expect(r).toMatchObject({ ok: true, params: { poly: 0x1021n } });
+  });
+
+  it("Given poly at base 10, When 0x1021 is entered, Then poly is an error at 0x1021", () => {
+    const r = parseConfig(form({ width: "16", poly: "0x1021", bases: { input: 16, poly: 10, init: 16, xorout: 16 } }));
+
+    expect(r.ok ? {} : r.errors).toEqual({ poly: { code: "hexInDecimal", at: { line: 1, column: 1 } } });
+  });
+
+  it("Given hex input at base 10 and the element at 16 LE, When {4129} is entered, Then the bits are bytes 21 10", () => {
+    const r = parseConfig(
+      form({ inputMode: "hex", input: "{4129}", element: "16le", bases: { input: 10, poly: 16, init: 16, xorout: 16 } }),
+    );
+
+    expect(r).toMatchObject({ ok: true, bits: [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0] });
+  });
+
   it("Given a valid form, When parsed, Then it yields parameters and input bits", () => {
     expect(parseConfig(form())).toEqual({
       ok: true,

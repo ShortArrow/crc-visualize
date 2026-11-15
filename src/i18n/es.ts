@@ -24,6 +24,7 @@ export const es: Messages = {
     invalid: "La configuración tiene errores. Corrige los campos marcados en rojo.",
     invalidStatus: "Configuración no válida",
   },
+  badges: { base: "Base", element: "Elemento" },
   errors: {
     widthRange: "Introduce un entero de 1 a 64",
     notHex: "Introduce un número hexadecimal",
