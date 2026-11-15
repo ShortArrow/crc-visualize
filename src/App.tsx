@@ -38,6 +38,7 @@ import type { FieldName } from "./ui/paramInfo";
 import { parseRoute, type Route } from "./ui/route";
 import { Splitter } from "./ui/Splitter";
 import { CompareSection, EMPTY_COMPARE, type CompareForm } from "./ui/CompareSection";
+import { EMPTY_PAGE_COMPARE, type PageCompare } from "./ui/pageCompare";
 import { SidebarSections } from "./ui/SidebarSections";
 import { FramePanel } from "./ui/FramePanel";
 import { StepLog } from "./ui/StepLog";
@@ -85,6 +86,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   const [codeLang, setCodeLang] = useState<CodeLang>(restored.codeLang);
   const [breakpoints, setBreakpoints] = useState<readonly Breakpoint[]>(restored.breakpoints);
   const [compare, setCompare] = useState<CompareForm>(EMPTY_COMPARE);
+  const [pageCompare, setPageCompare] = useState<PageCompare>(EMPTY_PAGE_COMPARE);
   const [estimateCount, setEstimateCount] = useState<number | undefined>(undefined);
   useEffect(
     () => persistSettings({ form, speedMode, rate, loop, codeLang, locale, breakpoints }),
@@ -184,7 +186,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   if (route.page === "equivalence" || route.page === "check" || route.page === "table") {
     return frame(<CurrentSettingsSidebar config={config} form={form} />)(
       {
-        check: <CheckPage key={keyOf(config)} config={config} preset={preset} />,
+        check: <CheckPage key={keyOf(config)} config={config} preset={preset} compare={pageCompare} onCompare={setPageCompare} />,
         table: (
           <TablePage
             key={keyOf(config)}

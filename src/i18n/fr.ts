@@ -26,6 +26,7 @@ export const fr: Messages = {
   },
   badges: { base: "Base", element: "Élément", order: "Ordre des octets" },
   compare: {
+    cardTitle: "Comparer avec les valeurs de votre code",
     heading: "Comparer",
     yours: "le vôtre",
     computed: "calculé",
@@ -44,6 +45,7 @@ export const fr: Messages = {
     crcBytes: (expected: number) => `Saisissez un nombre ou ${expected} octets`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} nombres : il en faut ${bytes} ou ${bytes + 1} (un par octet), ou ${bits} ou ${bits + 1} (un par bit)`,
+    receivedShort: (bytes: number) => `Saisissez au moins ${bytes} octets, CRC compris`,
     logCountBits: (got: number, bits: number) => `${got} nombres : il en faut ${bits} ou ${bits + 1} (un par bit)`,
     at: (line: number, column: number) => ` (ligne ${line}, colonne ${column})`,
     tooWide: (width: number) => `Saisissez une valeur qui tient sur ${width} bits`,

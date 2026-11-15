@@ -12,6 +12,12 @@ export type LogMatch = Readonly<{ unit: "byte" | "bit"; shift: Shift; rows: read
 /** A log whose count fits neither the bytes nor the bits of the input; bytes is left out when the input is not whole bytes. */
 export type LogError = Readonly<{ code: "logCount"; got: number; bytes?: number; bits: number }>;
 
+/** A received frame pasted on the Check page that is shorter than the CRC; bytes is the least it can be. */
+export type ReceivedError = Readonly<{ code: "receivedShort"; bytes: number }>;
+
+/** The errors of comparing pasted values beyond reading them. */
+export type CompareError = LogError | ReceivedError;
+
 type Point = Readonly<{ at: "init" | number; step: number }>;
 
 /** The points a log of count numbers stands for, or undefined when count fits none of n, n + 1, 8n and 8n + 1. */

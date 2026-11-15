@@ -37,6 +37,12 @@ function readCrc(params: CrcParams, bits: readonly Bit[]): bigint {
 /** Length of the CRC in bits. */
 export const crcLength = (params: CrcParams): number => (reflected(params) ? 8 * byteCount(params.width) : params.width);
 
+/** The length of the message in a received sequence of length bits, the rest being its CRC; undefined when it is shorter than the CRC. */
+export function receivedMessageLength(params: CrcParams, length: number): number | undefined {
+  const message = length - crcLength(params);
+  return message >= 0 ? message : undefined;
+}
+
 /** The transmitted sequence: message followed by its CRC in crcBits order. */
 export const frame = (params: CrcParams, message: readonly Bit[]): Bit[] => [
   ...message,

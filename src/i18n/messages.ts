@@ -1,4 +1,4 @@
-import type { LogError } from "../domain/compare";
+import type { CompareError } from "../domain/compare";
 import type { ConfigError } from "../domain/parse";
 import { de } from "./de";
 import { en } from "./en";
@@ -14,12 +14,12 @@ export type { Messages };
 export const MESSAGES: Record<Locale, Messages> = { ja, en, zh, es, de, fr };
 
 /** Turns an item error into text, followed by the line and column of the error in pasted text when it has one. */
-export function errorText(m: Messages, error: ConfigError | LogError): string {
+export function errorText(m: Messages, error: ConfigError | CompareError): string {
   const text = message(m, error);
   return "at" in error ? text + m.errors.at(error.at.line, error.at.column) : text;
 }
 
-function message(m: Messages, error: ConfigError | LogError): string {
+function message(m: Messages, error: ConfigError | CompareError): string {
   switch (error.code) {
     case "tooWide":
       return m.errors.tooWide(error.width);
@@ -29,6 +29,8 @@ function message(m: Messages, error: ConfigError | LogError): string {
       return m.errors[error.code](error.max);
     case "crcBytes":
       return m.errors.crcBytes(error.expected);
+    case "receivedShort":
+      return m.errors.receivedShort(error.bytes);
     case "logCount":
       return error.bytes === undefined
         ? m.errors.logCountBits(error.got, error.bits)

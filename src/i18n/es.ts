@@ -26,6 +26,7 @@ export const es: Messages = {
   },
   badges: { base: "Base", element: "Elemento", order: "Orden de bytes" },
   compare: {
+    cardTitle: "Comparar con los valores de tu código",
     heading: "Comparar",
     yours: "tuyo",
     computed: "calculado",
@@ -44,6 +45,7 @@ export const es: Messages = {
     crcBytes: (expected: number) => `Introduce un número o ${expected} bytes`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} números: se esperan ${bytes} o ${bytes + 1} (uno por byte), o ${bits} o ${bits + 1} (uno por bit)`,
+    receivedShort: (bytes: number) => `Introduce al menos ${bytes} bytes, con el CRC`,
     logCountBits: (got: number, bits: number) => `${got} números: se esperan ${bits} o ${bits + 1} (uno por bit)`,
     at: (line: number, column: number) => ` (línea ${line}, columna ${column})`,
     tooWide: (width: number) => `Introduce un valor que quepa en ${width} bits`,

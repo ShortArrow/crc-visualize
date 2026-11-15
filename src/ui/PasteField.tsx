@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { LogError } from "../domain/compare";
+import type { CompareError } from "../domain/compare";
 import type { ConfigError } from "../domain/parse";
 import { useMessages } from "../i18n/I18n";
 import { errorText } from "../i18n/messages";
@@ -16,7 +16,7 @@ type Props = Readonly<{
   multiline?: boolean;
   /** The badges that choose how the pasted numbers are read. */
   badges: ReactNode;
-  error: ConfigError | LogError | undefined;
+  error: ConfigError | CompareError | undefined;
 }>;
 
 /** A field values are pasted into, with its badges beside it and the error of what was pasted under it. */
