@@ -12,8 +12,13 @@ export type { Messages };
 /** UI text per language. */
 export const MESSAGES: Record<Locale, Messages> = { ja, en, zh, es, de, fr };
 
-/** Turns an item error into text. */
+/** Turns an item error into text, followed by the line and column of the error in pasted text when it has one. */
 export function errorText(m: Messages, error: ConfigError): string {
+  const text = message(m, error);
+  return "at" in error ? text + m.errors.at(error.at.line, error.at.column) : text;
+}
+
+function message(m: Messages, error: ConfigError): string {
   switch (error.code) {
     case "tooWide":
       return m.errors.tooWide(error.width);

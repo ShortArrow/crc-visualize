@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ja } from "./ja";
 import { LOCALES } from "./locale";
-import { MESSAGES } from "./messages";
+import { errorText, MESSAGES } from "./messages";
 
 /** Turns the leaves of a dictionary into a list of "path: type". Functions also carry their argument count. */
 function shape(value: unknown, path = ""): string[] {
@@ -46,4 +46,19 @@ describe("MESSAGES", () => {
       expect(texts(MESSAGES[locale]).filter((t) => KANA.test(t))).toEqual([]);
     },
   );
+});
+
+describe("errorText", () => {
+  it("Given an error in pasted text, When turned into text, Then it ends with the line and column of the error", () => {
+    expect(errorText(MESSAGES.en, { code: "badChar", at: { line: 2, column: 7 } })).toBe(
+      "Only numbers and separators can be read (line 2, column 7)",
+    );
+    expect(errorText(MESSAGES.ja, { code: "tooWide", width: 8, at: { line: 1, column: 3 } })).toBe(
+      "8 ビットに収まる値にしてください（1 行 3 列）",
+    );
+  });
+
+  it("Given an error with no position, When turned into text, Then it is the message alone", () => {
+    expect(errorText(MESSAGES.en, { code: "notHex" })).toBe("Enter a hexadecimal number");
+  });
 });

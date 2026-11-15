@@ -25,6 +25,10 @@ export const ja = {
   errors: {
     widthRange: "1〜64 の整数を入れてください",
     notHex: "16 進数で入れてください",
+    badChar: "数と区切りのほかは読めません",
+    hexInDecimal: "0x を付けられるのは基数が 16 のときだけです",
+    oneValue: "数は 1 つだけ入れてください",
+    at: (line: number, column: number) => `（${line} 行 ${column} 列）`,
     tooWide: (width: number) => `${width} ビットに収まる値にしてください`,
     zero: "0 は指定できません",
     notBits: "0 と 1 だけで入れてください",

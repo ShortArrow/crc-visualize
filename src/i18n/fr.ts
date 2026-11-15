@@ -27,6 +27,10 @@ export const fr: Messages = {
   errors: {
     widthRange: "Saisissez un entier de 1 à 64",
     notHex: "Saisissez un nombre hexadécimal",
+    badChar: "Seuls les nombres et les séparateurs peuvent être lus",
+    hexInDecimal: "0x n’est permis qu’en base 16",
+    oneValue: "Saisissez un seul nombre",
+    at: (line: number, column: number) => ` (ligne ${line}, colonne ${column})`,
     tooWide: (width: number) => `Saisissez une valeur qui tient sur ${width} bits`,
     zero: "0 n’est pas autorisé",
     notBits: "Utilisez uniquement 0 et 1",

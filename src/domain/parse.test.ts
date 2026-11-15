@@ -50,32 +50,55 @@ describe("parseConfig", () => {
   });
 
   it("Given width 64, When poly is 2^64, Then poly is invalid", () => {
-    expect(errorsOf(form({ width: "64", poly: "0x10000000000000000" })).poly).toEqual({ code: "tooWide", width: 64 });
+    expect(errorsOf(form({ width: "64", poly: "0x10000000000000000" })).poly).toEqual({
+      code: "tooWide",
+      width: 64,
+      at: { line: 1, column: 1 },
+    });
   });
 
   it("Given width 3, When poly is set to 0, 0x8 (2^3) and 0x7, Then only 0 and values of 2^width or more are invalid", () => {
     expect(errorsOf(form({ poly: "0" })).poly).toEqual({ code: "zero" });
-    expect(errorsOf(form({ poly: "0x8" })).poly).toEqual({ code: "tooWide", width: 3 });
+    expect(errorsOf(form({ poly: "0x8" })).poly).toEqual({ code: "tooWide", width: 3, at: { line: 1, column: 1 } });
     expect(errorsOf(form({ poly: "0x7" }))).not.toHaveProperty("poly");
   });
 
-  it("Given width 3, When init is 2^width or more and xorout is not hex, Then both are invalid", () => {
+  it("Given width 3, When init is 2^width or more and xorout is not hex, Then both are invalid at their positions", () => {
     expect(errorsOf(form({ init: "0x8", xorout: "0xg" }))).toMatchObject({
-      init: { code: "tooWide", width: 3 },
-      xorout: { code: "notHex" },
+      init: { code: "tooWide", width: 3, at: { line: 1, column: 1 } },
+      xorout: { code: "badChar", at: { line: 1, column: 3 } },
     });
+  });
+
+  it("Given width 16, When poly is written as a C array of one number, Then it is read", () => {
+    expect(parseConfig(form({ width: "16", poly: "{0x1021}" }))).toMatchObject({ ok: true, params: { poly: 0x1021n } });
+  });
+
+  it("Given width 16, When poly holds two numbers or none, Then poly is invalid", () => {
+    expect(errorsOf(form({ width: "16", poly: "10 21" })).poly).toEqual({ code: "oneValue", at: { line: 1, column: 4 } });
+    expect(errorsOf(form({ width: "16", poly: " " })).poly).toEqual({ code: "notHex" });
   });
 
   it("Given an invalid width, When poly is also out of range, Then ranges such as poly are not checked and only width is invalid", () => {
     expect(Object.keys(errorsOf(form({ width: "x", poly: "0x8" })))).toEqual(["width"]);
   });
 
-  it("Given input mode hex, When written as a 5 with a space, Then the space is ignored and bits are taken MSB first", () => {
-    expect(parseConfig(form({ inputMode: "hex", input: "a 5" }))).toMatchObject({ bits: [1, 0, 1, 0, 0, 1, 0, 1] });
+  it("Given input mode hex, When a5 is entered, Then its bits are taken MSB first", () => {
+    expect(parseConfig(form({ inputMode: "hex", input: "a5" }))).toMatchObject({ bits: [1, 0, 1, 0, 0, 1, 0, 1] });
+  });
+
+  it("Given input mode hex, When a byte is split by a space as a 5, Then each part is a number of odd digits and invalid", () => {
+    expect(errorsOf(form({ inputMode: "hex", input: "a 5" })).input).toEqual({ code: "oddHex", at: { line: 1, column: 1 } });
+  });
+
+  it("Given input mode hex, When a C array is pasted, Then its numbers are the bytes", () => {
+    expect(parseConfig(form({ inputMode: "hex", input: "{0x31, 0x32};" }))).toMatchObject({
+      bits: [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0],
+    });
   });
 
   it("Given input mode hex, When the digit count is odd, Then the input is invalid", () => {
-    expect(errorsOf(form({ inputMode: "hex", input: "abc" })).input).toEqual({ code: "oddHex" });
+    expect(errorsOf(form({ inputMode: "hex", input: "abc" })).input).toEqual({ code: "oddHex", at: { line: 1, column: 1 } });
   });
 
   it("Given input mode text, When é is entered, Then it becomes its UTF-8 bytes", () => {
@@ -155,7 +178,7 @@ describe("parseConfig with frames", () => {
   });
 
   it("Given a line with an odd number of digits, When parsed, Then the input is invalid even if the total is even", () => {
-    expect(errorsOf(frames({ input: "A5F\n0" })).input).toEqual({ code: "oddHex" });
+    expect(errorsOf(frames({ input: "A5F\n0" })).input).toEqual({ code: "oddHex", at: { line: 1, column: 1 } });
   });
 
   it.each(["x", "-1", "1.5"])("Given from %j, When parsed, Then the range is invalid", (from) => {

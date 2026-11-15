@@ -27,6 +27,10 @@ export const es: Messages = {
   errors: {
     widthRange: "Introduce un entero de 1 a 64",
     notHex: "Introduce un número hexadecimal",
+    badChar: "Solo se pueden leer números y separadores",
+    hexInDecimal: "0x solo se puede usar en base 16",
+    oneValue: "Introduce un solo número",
+    at: (line: number, column: number) => ` (línea ${line}, columna ${column})`,
     tooWide: (width: number) => `Introduce un valor que quepa en ${width} bits`,
     zero: "No se permite 0",
     notBits: "Usa solo 0 y 1",

@@ -22,6 +22,10 @@ export const zh: Messages = {
   errors: {
     widthRange: "请输入 1～64 的整数",
     notHex: "请输入十六进制数",
+    badChar: "只能读取数字和分隔符",
+    hexInDecimal: "只有基数为 16 时才能使用 0x",
+    oneValue: "请只输入一个数",
+    at: (line: number, column: number) => `（第 ${line} 行第 ${column} 列）`,
     tooWide: (width: number) => `请输入 ${width} 位以内的值`,
     zero: "不能为 0",
     notBits: "只能输入 0 和 1",

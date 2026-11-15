@@ -1,4 +1,5 @@
 import { frameSpan, type CrcField, type FrameLayout } from "./frames";
+import { readBytes, readValue, type Element, type PasteError } from "./paste";
 import type { InputMode } from "./presets";
 import { bitsFromBytes, type Bit, type CrcParams } from "./trace";
 
@@ -27,15 +28,14 @@ export type ConfigForm = Readonly<{
 export type ConfigField = "width" | "poly" | "init" | "xorout" | "input" | "range";
 
 /**
- * Field errors. widthRange: width is not an integer from 1 to 64. notHex: not a hex number. tooWide: does not fit in width bits.
- * zero: 0 is not allowed. notBits: contains characters other than 0 and 1. oddHex: odd number of hex digits (not whole bytes).
- * tooLong: input exceeds max bits. refinBytes: refin is used but the input is not a multiple of 8 bits. notIndex: a byte number
+ * Field errors. widthRange: width is not an integer from 1 to 64. The errors of pasted text (see PasteError) are on the hex input
+ * and on poly, init and xorout. zero: 0 is not allowed. notBits: contains characters other than 0 and 1. tooLong: input exceeds max bits. refinBytes: refin is used but the input is not a multiple of 8 bits. notIndex: a byte number
  * is not an integer of 0 or more. outsideFrame: the range or the CRC field does not fit the selected frame. tooManyFrames: hex
  * input has more than max lines. frameTooLong: a line of hex input is longer than max bytes.
  */
 export type ConfigError =
-  | Readonly<{ code: "widthRange" | "notHex" | "zero" | "notBits" | "oddHex" | "refinBytes" | "notIndex" | "outsideFrame" }>
-  | Readonly<{ code: "tooWide"; width: number }>
+  | Readonly<{ code: "widthRange" | "zero" | "notBits" | "refinBytes" | "notIndex" | "outsideFrame" }>
+  | PasteError
   | Readonly<{ code: "tooLong" | "tooManyFrames" | "frameTooLong"; max: number }>;
 
 /** The frames of hex input, one per non-blank line, the layout shared by all of them, and the frame being visualized. */
@@ -57,13 +57,14 @@ function parseWidth(text: string): Parsed<number> {
   return n >= 1 && n <= 64 ? ok(n) : fail({ code: "widthRange" });
 }
 
-function parseHexBelow(text: string, width: number, allowZero: boolean): Parsed<bigint> {
-  const t = text.trim().replace(/^0x/i, "");
-  if (!/^[0-9a-f]+$/i.test(t)) return fail({ code: "notHex" });
-  const n = BigInt(`0x${t}`);
-  if (n >= 1n << BigInt(width)) return fail({ code: "tooWide", width });
-  if (!allowZero && n === 0n) return fail({ code: "zero" });
-  return ok(n);
+/** The element bytes are read in until the field has an element badge. */
+const BYTE: Element = { bits: 8, order: "be" };
+
+function parseValueBelow(text: string, width: number, allowZero: boolean): Parsed<bigint> {
+  const n = readValue(text, 16, width);
+  if (!n.ok) return n;
+  if (!allowZero && n.value === 0n) return fail({ code: "zero" });
+  return n;
 }
 
 function parseInputBits(mode: InputMode, text: string): Parsed<Bit[]> {
@@ -81,17 +82,14 @@ function parseInputBits(mode: InputMode, text: string): Parsed<Bit[]> {
   }
 }
 
-/** Reads hex input as frames: each non-blank line is one frame of whole bytes, whitespace ignored. */
+/** Reads hex input as frames, one per line that holds a number, within the limits on frames. */
 function parseHexFrames(text: string): Parsed<number[][]> {
-  const lines = text
-    .split(/\r?\n/)
-    .map((l) => l.replace(/\s/g, ""))
-    .filter((l) => l !== "");
-  if (!lines.every((l) => /^[0-9a-f]*$/i.test(l))) return fail({ code: "notHex" });
-  if (!lines.every((l) => l.length % 2 === 0)) return fail({ code: "oddHex" });
+  const read = readBytes(text, 16, BYTE);
+  if (!read.ok) return read;
+  const lines = read.value;
   if (lines.length > MAX_FRAMES) return fail({ code: "tooManyFrames", max: MAX_FRAMES });
-  if (lines.some((l) => l.length / 2 > MAX_FRAME_BYTES)) return fail({ code: "frameTooLong", max: MAX_FRAME_BYTES });
-  return ok(lines.map((l) => l.match(/../g)!.map((h) => Number.parseInt(h, 16))));
+  if (lines.some((l) => l.length > MAX_FRAME_BYTES)) return fail({ code: "frameTooLong", max: MAX_FRAME_BYTES });
+  return ok(lines);
 }
 
 /** Reads a byte number; empty is undefined. */
@@ -169,9 +167,9 @@ export function parseConfig(form: ConfigForm): ConfigResult {
     return { ok: false, errors: { width: width.error, ...errors } };
   }
 
-  const poly = parseHexBelow(form.poly, width.value, false);
-  const init = parseHexBelow(form.init, width.value, true);
-  const xorout = parseHexBelow(form.xorout, width.value, true);
+  const poly = parseValueBelow(form.poly, width.value, false);
+  const init = parseValueBelow(form.init, width.value, true);
+  const xorout = parseValueBelow(form.xorout, width.value, true);
   if (!poly.ok) errors.poly = poly.error;
   if (!init.ok) errors.init = init.error;
   if (!xorout.ok) errors.xorout = xorout.error;
