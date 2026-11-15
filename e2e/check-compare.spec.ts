@@ -2,17 +2,13 @@ import { expect, type Page } from "@playwright/test";
 import { given, test, then, when } from "./support/scenario";
 import { CheckPage } from "./support/checkPage";
 
-const heading = (page: Page) => page.locator(".compare-card h3 button");
+const jump = (page: Page) => page.locator(".check-page h2 button");
 
 const ARC = "?width=16&poly=0x8005&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789";
 
 test.describe("Comparing your own values on the Check page", () => {
   test("a pasted received frame replaces the received sequence and both checks give their verdicts", async ({ page }) => {
-    const c = await given("the Check page with CRC-16/ARC over 123456789, its Compare card opened", async () => {
-      const c = await CheckPage.open(page, ARC);
-      await heading(page).click();
-      return c;
-    });
+    const c = await given("the Check page with CRC-16/ARC over 123456789", () => CheckPage.open(page, ARC));
     const field = page.locator('.compare-card label[data-field="received"] input');
     await when("pasting 123456789 followed by its CRC 0xBB3D low byte first", () =>
       field.fill("31 32 33 34 35 36 37 38 39 3D BB"),
@@ -31,10 +27,7 @@ test.describe("Comparing your own values on the Check page", () => {
   });
 
   test("your check is compared with the CRC of 123456789 with the current settings", async ({ page }) => {
-    await given("the Check page with CRC-16/ARC, its Compare card opened", async () => {
-      await CheckPage.open(page, ARC);
-      await heading(page).click();
-    });
+    await given("the Check page with CRC-16/ARC", () => CheckPage.open(page, ARC));
     const field = page.locator('.compare-card label[data-field="yourCheck"] input');
     const result = page.locator(".compare-card .compare-result");
     await when("pasting 0xBB3D", () => field.fill("0xBB3D"));
@@ -46,41 +39,19 @@ test.describe("Comparing your own values on the Check page", () => {
     });
   });
 
-  test("the Compare card is folded to its heading at first, and opens and closes on it", async ({ page }) => {
-    await given("the Check page", () => CheckPage.open(page, ARC));
-    await then("only the heading is shown, as a button saying what it is for", async () => {
-      await expect(heading(page)).toHaveAttribute("aria-expanded", "false");
-      await expect(heading(page)).toContainText("自分のコードの値と比べる");
-      await expect(page.locator(".compare-card form")).toHaveCount(0);
+  test("the button beside the page heading moves to the Compare card, which comes after both verdicts", async ({ page }) => {
+    const c = await given("the Check page", () => CheckPage.open(page, ARC));
+    await then("the button says what the card is for, and the card comes after the verdicts", async () => {
+      await expect(jump(page)).toContainText("自分のコードの値と比べる");
+      const verdict = (await c.verdict("whole").boundingBox())!;
+      const card = (await page.locator(".compare-card").boundingBox())!;
+      expect(card.y).toBeGreaterThan(verdict.y + verdict.height);
     });
-    await when("pressing the heading", () => heading(page).click());
-    await then("the fields are shown", async () => {
-      await expect(heading(page)).toHaveAttribute("aria-expanded", "true");
-      await expect(page.locator(".compare-card form")).toBeVisible();
-    });
-    await when("pressing it again", () => heading(page).click());
-    await then("it is folded", () => expect(heading(page)).toHaveAttribute("aria-expanded", "false"));
-  });
-
-  test("the card folds once a pasted value reads, but not while typing or pressing a bit", async ({ page }) => {
-    const c = await given("the Check page with its Compare card opened", async () => {
-      const c = await CheckPage.open(page, ARC);
-      await heading(page).click();
-      return c;
-    });
-    const field = page.locator('.compare-card label[data-field="yourCheck"] input');
-    await when("typing 0xBB3D", () => field.fill("0xBB3D"));
-    await then("it stays open", () => expect(heading(page)).toHaveAttribute("aria-expanded", "true"));
-    await when("pressing a bit of the received string", () => c.bits().last().click());
-    await then("it stays open", () => expect(heading(page)).toHaveAttribute("aria-expanded", "true"));
-    await when("pasting 0xBB3D", async () => {
-      await field.fill("");
-      await field.dispatchEvent("paste");
-      await field.fill("0xBB3D");
-    });
-    await then("it folds, and its heading marks the match", async () => {
-      await expect(heading(page)).toHaveAttribute("aria-expanded", "false");
-      await expect(heading(page)).toContainText("✓");
+    await when("pressing the button", () => jump(page).click());
+    await then("the cursor is in the received field, which is in view", async () => {
+      const field = page.locator('.compare-card label[data-field="received"] input');
+      await expect(field).toBeFocused();
+      await expect(field).toBeInViewport({ ratio: 1 });
     });
   });
 });

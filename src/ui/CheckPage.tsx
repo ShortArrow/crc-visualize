@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { ArrowDown } from "lucide-react";
+import { useRef, useState } from "react";
 import { frame, receivedMessageLength, recheck, wholeCheck } from "../domain/check";
 import { crcOf } from "../domain/equivalence";
 import type { ConfigResult } from "../domain/parse";
@@ -10,6 +11,12 @@ import { Docked, DockedResult } from "./Dock";
 import { valueHex } from "./format";
 import { Explanation } from "./Explanation";
 import { CheckCompare, readReceived, type PageCompare } from "./pageCompare";
+
+/** Brings the Compare card into view and puts the cursor in its first field. */
+function toCard(card: HTMLElement | null) {
+  card?.scrollIntoView({ block: "nearest" });
+  card?.querySelector("input")?.focus({ preventScroll: true });
+}
 
 const CHECK_INPUT = bitsFromBytes([...new TextEncoder().encode("123456789")]);
 
@@ -24,28 +31,38 @@ type Props = Readonly<{
 /** Shows how the receiver checks, using the current settings and input. If the settings are invalid, shows only that. */
 export function CheckPage({ config, preset, compare, onCompare }: Props) {
   const m = useMessages();
+  const cardRef = useRef<HTMLElement>(null);
   const received = config.ok ? readReceived(config.params, compare) : undefined;
   return (
     <div className="check-page">
-      <h2>{m.check.heading}</h2>
-      {config.ok ? (
-        <CheckCompare
-          params={config.params}
-          compare={compare}
-          onCompare={onCompare}
-          received={received}
-          check={crcOf(config.params, CHECK_INPUT)}
-        />
-      ) : null}
+      <h2>
+        {m.check.heading}
+        {config.ok ? (
+          <button type="button" className="compare-jump" onClick={() => toCard(cardRef.current)}>
+            <ArrowDown size={14} />
+            {m.compare.cardTitle}
+          </button>
+        ) : null}
+      </h2>
       <Explanation>{m.check.note}</Explanation>
       {config.ok ? (
-        <Checks
-          key={received?.ok ? received.value.join("") : "sent"}
-          params={config.params}
-          message={config.bits}
-          preset={preset}
-          {...(received?.ok ? { received: received.value } : {})}
-        />
+        <>
+          <Checks
+            key={received?.ok ? received.value.join("") : "sent"}
+            params={config.params}
+            message={config.bits}
+            preset={preset}
+            {...(received?.ok ? { received: received.value } : {})}
+          />
+          <CheckCompare
+            ref={cardRef}
+            params={config.params}
+            compare={compare}
+            onCompare={onCompare}
+            received={received}
+            check={crcOf(config.params, CHECK_INPUT)}
+          />
+        </>
       ) : (
         <>
           <p className="invalid-config">{m.settings.invalid}</p>

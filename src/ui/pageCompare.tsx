@@ -1,5 +1,4 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import type { Ref } from "react";
 import { crcLength, receivedMessageLength } from "../domain/check";
 import type { CompareError } from "../domain/compare";
 import { elementOf, readBytes, readValue, type Base, type ElementId, type PasteError } from "../domain/paste";
@@ -40,67 +39,50 @@ type CheckCompareProps = Readonly<{
   received: Read<Bit[]> | undefined;
   /** The CRC of 123456789 with the current settings. */
   check: bigint;
+  /** Where the button beside the page heading moves to. */
+  ref?: Ref<HTMLElement>;
 }>;
 
-/**
- * The Compare card of the Check page: a received frame that replaces the received sequence, and your check. It is folded to its
- * heading at first, so that the received sequence and both verdicts stay in view below it, and folds again once a paste reads.
- */
-export function CheckCompare({ params, compare, onCompare, received, check }: CheckCompareProps) {
+/** The Compare card of the Check page: a received frame that replaces the received sequence, and your check. It comes after both verdicts. */
+export function CheckCompare({ params, compare, onCompare, received, check, ref }: CheckCompareProps) {
   const m = useMessages();
   const set = <K extends keyof PageCompare>(key: K, value: PageCompare[K]) => onCompare({ ...compare, [key]: value });
   const yours = compare.check.trim() === "" ? undefined : readValue(compare.check, compare.checkBase, params.width);
-  const [open, setOpen] = useState(false);
-  const pasted = useRef(false);
-  const settled = (received !== undefined || yours !== undefined) && received?.ok !== false && yours?.ok !== false;
-  useEffect(() => {
-    if (pasted.current && settled) setOpen(false);
-    pasted.current = false;
-  }, [compare.received, compare.check]);
-  const Chevron = open ? ChevronDown : ChevronRight;
   const base = (key: "receivedBase" | "checkBase") => (
     <Badge kind="base" name={m.badges.base} text={String(compare[key])} onPress={() => set(key, compare[key] === 16 ? 10 : 16)} />
   );
   return (
-    <section className="card compare-card" data-open={String(open)}>
-      <h3>
-        <button type="button" aria-expanded={open} onClick={() => setOpen(!open)}>
-          <Chevron size={14} />
-          {m.compare.cardTitle}
-          {yours?.ok ? <span className="compare-mark">{yours.value === check ? "✓" : "✗"}</span> : null}
-        </button>
-      </h3>
-      {open ? (
-        <form className="compare" onSubmit={(e) => e.preventDefault()} onPaste={() => (pasted.current = true)}>
-          <PasteField
-            name="received"
-            label="received"
-            value={compare.received}
-            onChange={(v) => set("received", v)}
-            badges={
-              <>
-                {base("receivedBase")}
-                <Badge
-                  kind="element"
-                  name={m.badges.element}
-                  text={elementText(compare.receivedElement)}
-                  onPress={() => set("receivedElement", nextElement(compare.receivedElement))}
-                />
-              </>
-            }
-            error={received && !received.ok ? received.error : undefined}
-          />
-          <PasteField
-            name="yourCheck"
-            label="your check"
-            value={compare.check}
-            onChange={(v) => set("check", v)}
-            badges={base("checkBase")}
-            error={yours && !yours.ok ? yours.error : undefined}
-          />
-          {yours?.ok ? <ValueResult yours={yours.value} computed={check} width={params.width} /> : null}
-        </form>
-      ) : null}
+    <section ref={ref} className="card compare-card">
+      <h3>{m.compare.cardTitle}</h3>
+      <form className="compare" onSubmit={(e) => e.preventDefault()}>
+        <PasteField
+          name="received"
+          label="received"
+          value={compare.received}
+          onChange={(v) => set("received", v)}
+          badges={
+            <>
+              {base("receivedBase")}
+              <Badge
+                kind="element"
+                name={m.badges.element}
+                text={elementText(compare.receivedElement)}
+                onPress={() => set("receivedElement", nextElement(compare.receivedElement))}
+              />
+            </>
+          }
+          error={received && !received.ok ? received.error : undefined}
+        />
+        <PasteField
+          name="yourCheck"
+          label="your check"
+          value={compare.check}
+          onChange={(v) => set("check", v)}
+          badges={base("checkBase")}
+          error={yours && !yours.ok ? yours.error : undefined}
+        />
+        {yours?.ok ? <ValueResult yours={yours.value} computed={check} width={params.width} /> : null}
+      </form>
     </section>
   );
 }
