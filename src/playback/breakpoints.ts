@@ -1,4 +1,4 @@
-import type { Step, StepKind } from "../domain/trace";
+import { bitEndStep, type Step, type StepKind } from "../domain/trace";
 
 /**
  * A breakpoint. A line breakpoint belongs to the kind of step its line runs, so it stays on the same line in every code language;
@@ -54,18 +54,13 @@ export function hitsUpTo(steps: readonly Step[], index: number, kind: StepKind):
   return steps.slice(0, index + 1).filter((s) => s.kind === kind).length;
 }
 
-/** Index of the step ending the clock of bit of the input stream, or -1 when the input has no such bit. */
-function bitEnd(steps: readonly Step[], bit: number): number {
-  return steps.findLastIndex((s) => (s.kind === "shift" || s.kind === "xor") && s.cursor === bit + 1);
-}
-
 /** Indices of the steps at which any enabled breakpoint hits. */
 export function breakIndices(steps: readonly Step[], breakpoints: readonly Breakpoint[]): ReadonlySet<number> {
   const hits = new Set<number>();
   for (const bp of breakpoints) {
     if (!bp.enabled) continue;
     if (bp.kind !== "line") {
-      const i = bitEnd(steps, bp.kind === "bit" ? bp.bit : bp.byte * 8 + 7);
+      const i = bitEndStep(steps, bp.kind === "bit" ? bp.bit : bp.byte * 8 + 7);
       if (i >= 0) hits.add(i);
       continue;
     }
