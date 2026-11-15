@@ -122,3 +122,8 @@ export function trace(params: CrcParams, input: readonly Bit[]): Step[] {
   push({ kind: "done", reg, stream, cursor: end });
   return steps;
 }
+
+/** Index of the step ending the clock of bit of the input stream, or -1 when the input has no such bit. */
+export function bitEndStep(steps: readonly Step[], bit: number): number {
+  return steps.findLastIndex((s) => (s.kind === "shift" || s.kind === "xor") && s.cursor === bit + 1);
+}

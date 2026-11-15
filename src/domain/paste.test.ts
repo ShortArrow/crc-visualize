@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readBytes, readValue, readValues, type Base, type Element } from "./paste";
+import { readBytes, readCrc, readValue, readValues, type Base, type Element } from "./paste";
 
 const E8: Element = { bits: 8, order: "be" };
 const bytes = (text: string, base: Base = 16, element: Element = E8) => readBytes(text, base, element);
@@ -132,5 +132,34 @@ describe("readValue", () => {
 
   it("Given no number, When read, Then it is an error with no position", () => {
     expect(readValue("  ", 16, 16)).toEqual({ ok: false, error: { code: "notHex" } });
+  });
+});
+
+describe("readCrc: a CRC given as one number or as its bytes", () => {
+  it("Given one number, When read, Then it is the CRC whatever the byte order", () => {
+    expect(readCrc("0x29B1", 16, E8, "le", 16)).toEqual({ ok: true, value: 0x29b1n });
+  });
+
+  it.each([
+    ["29 B1", "be"],
+    ["B1 29", "le"],
+    ["{0xB1, 0x29}", "le"],
+  ] as const)("Given the bytes %s read %s, When read, Then the CRC is 0x29B1", (text, order) => {
+    expect(readCrc(text, 16, E8, order, 16)).toEqual({ ok: true, value: 0x29b1n });
+  });
+
+  it("Given 3 bytes for a width of 16, When read, Then it is an error that asks for 2 bytes", () => {
+    expect(readCrc("29 B1 00", 16, E8, "be", 16)).toEqual({ ok: false, error: { code: "crcBytes", expected: 2 } });
+  });
+
+  it("Given 2 bytes above 12 bits for a width of 12, When read, Then it is an error at the first number", () => {
+    expect(readCrc("FF FF", 16, E8, "be", 12)).toEqual({
+      ok: false,
+      error: { code: "tooWide", width: 12, at: { line: 1, column: 1 } },
+    });
+  });
+
+  it("Given no number, When read, Then there is no CRC to compare", () => {
+    expect(readCrc(" ", 16, E8, "be", 16)).toEqual({ ok: false, error: { code: "notHex" } });
   });
 });

@@ -432,7 +432,8 @@ button.bp-gutter.bp-off::before {
   order: 2;
 }
 
-.config label {
+.config label,
+.compare label {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -446,6 +447,7 @@ button.bp-gutter.bp-off::before {
 }
 
 .config input:not([type="checkbox"], [type="radio"]),
+.compare input,
 .config select,
 .controls select {
   background: var(--bg);
@@ -458,30 +460,37 @@ button.bp-gutter.bp-off::before {
 }
 
 .config input:not([type="checkbox"], [type="radio"]),
+.compare input,
 .config select {
   width: 100%;
   min-width: 0;
 }
 
-.config .invalid input {
+.config .invalid input,
+.compare .invalid input {
   border-color: var(--hot);
 }
 
 /* A field with the badges that choose how its pasted numbers are read */
-.config .field-row {
+.field-row {
   display: flex;
   align-items: flex-start;
   gap: 4px;
 }
 
-.config .field-row .badges {
+.field-row .badges {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
+/* Beside a one-line field the badges run along it; beside a text area they stack */
+.field-row:has(> input) .badges {
+  flex-direction: row;
+}
+
 /* At least 24×24 CSS px, the minimum target size of WCAG 2.2 */
-.config .badge {
+.badge {
   min-width: 24px;
   min-height: 24px;
   padding: 0 4px;
@@ -495,14 +504,15 @@ button.bp-gutter.bp-off::before {
   cursor: pointer;
 }
 
-.config .badge:hover,
-.config .badge:focus-visible {
+.badge:hover,
+.badge:focus-visible {
   color: var(--accent);
   border-color: var(--accent);
 }
 
 /* Frames of hex input: the shared CRC range and field, and one row per frame with its bytes */
-.config textarea {
+.config textarea,
+.compare textarea {
   width: 100%;
   min-width: 0;
   resize: vertical;
@@ -515,7 +525,8 @@ button.bp-gutter.bp-off::before {
   font-size: 0.9rem;
 }
 
-.config .invalid textarea {
+.config .invalid textarea,
+.compare .invalid textarea {
   border-color: var(--hot);
 }
 
@@ -3745,4 +3756,53 @@ button.bit-cell:hover {
   .visualizer > .controls select {
     order: 1;
   }
+}
+
+/* The Compare section of the Visualizer: pasted values against the computed ones */
+.compare {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compare-result {
+  display: grid;
+  gap: 2px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.compare-result.ok,
+.compare-log .ok {
+  color: var(--ok);
+}
+
+.compare-log .ng,
+.compare-bits .diff {
+  color: var(--hot);
+}
+
+.compare-bits {
+  font-family: var(--mono);
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+
+.compare-note {
+  margin: 0;
+}
+
+.compare-log {
+  border-collapse: collapse;
+  font-family: var(--mono);
+}
+
+.compare-log :is(th, td) {
+  padding: 1px 6px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.compare-log tr.first-diff {
+  background: rgb(255 92 92 / 0.12);
 }
