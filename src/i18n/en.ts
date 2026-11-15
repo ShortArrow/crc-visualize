@@ -24,6 +24,7 @@ export const en: Messages = {
     invalid: "The settings contain errors. Fix the fields marked in red.",
     invalidStatus: "Invalid settings",
   },
+  badges: { base: "Base", element: "Element" },
   errors: {
     widthRange: "Enter an integer from 1 to 64",
     notHex: "Enter a hexadecimal number",

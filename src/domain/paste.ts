@@ -115,3 +115,13 @@ export function readValue(text: string, base: Base, width: number): Read<bigint>
   if (values.value.length > 1) return fail({ code: "oneValue", at: tokens[1]!.at });
   return ok(values.value[0]!);
 }
+
+/** The choices of the element badge, as they are written in the URL. */
+export const ELEMENT_IDS = ["8", "16be", "16le", "32be", "32le"] as const;
+export type ElementId = (typeof ELEMENT_IDS)[number];
+
+/** The element an element badge choice stands for. */
+export function elementOf(id: ElementId): Element {
+  const bits = Number.parseInt(id, 10) as Element["bits"];
+  return { bits, order: id.endsWith("le") ? "le" : "be" };
+}

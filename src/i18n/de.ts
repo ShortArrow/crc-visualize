@@ -24,6 +24,7 @@ export const de: Messages = {
     invalid: "Die Einstellungen enthalten Fehler. Korrigiere die rot markierten Felder.",
     invalidStatus: "Ungültige Einstellungen",
   },
+  badges: { base: "Basis", element: "Element" },
   errors: {
     widthRange: "Gib eine ganze Zahl von 1 bis 64 ein",
     notHex: "Gib eine Hexadezimalzahl ein",

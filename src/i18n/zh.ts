@@ -19,6 +19,7 @@ export const zh: Messages = {
     invalid: "设置有误。请修改标红的项目。",
     invalidStatus: "设置有误",
   },
+  badges: { base: "基数", element: "元素" },
   errors: {
     widthRange: "请输入 1～64 的整数",
     notHex: "请输入十六进制数",

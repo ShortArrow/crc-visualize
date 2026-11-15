@@ -711,6 +711,11 @@ export class Visualizer {
     rate: () => this.page.getByTitle("速度倍率"),
     loop: () => this.page.getByTitle("ループ再生（L）"),
     play: () => this.page.getByTitle("再生 / 一時停止（Space）"),
+    /** The badge that chooses the base or the element a field reads its pasted numbers in. */
+    badge: (field: "input" | "poly" | "init" | "xorout", kind: "base" | "element") =>
+      this.page.locator(`label:is([data-param="${field}"], [data-field="${field}"]) [data-badge="${kind}"]`),
+    /** The error shown under a field. */
+    error: (field: "input" | "poly") => this.page.locator(`label:is([data-param="${field}"], [data-field="${field}"]) .error`),
     query: () => new URL(this.page.url()).searchParams,
   };
 }

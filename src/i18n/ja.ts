@@ -22,6 +22,7 @@ export const ja = {
     invalid: "設定に誤りがあります。赤い項目を直してください。",
     invalidStatus: "設定に誤りがあります",
   },
+  badges: { base: "基数", element: "要素" },
   errors: {
     widthRange: "1〜64 の整数を入れてください",
     notHex: "16 進数で入れてください",
