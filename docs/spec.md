@@ -2,7 +2,7 @@
 
 # CRC Visualizer SPA Specification
 
-A browser app that shows the behaviour of an LFSR (hardware) and each line of a bit-at-a-time CRC implementation (software), synchronized one clock at a time. Terms and notation follow "16. Terms and notation".
+A browser app that shows the behaviour of an LFSR (hardware) and each line of a bit-at-a-time CRC implementation (software), synchronized one clock at a time. Terms and notation follow "17. Terms and notation".
 
 ## 1. CRC parameters (Rocksoft model)
 
@@ -126,7 +126,7 @@ The computation is returned as a `Step[]` by the pure function `trace(params, in
   - Each breakpoint can be enabled or disabled; a disabled one never hits.
 - Speed ramp: in auto mode, playback is slow (900 ms per step) until at least one clock with feedback bit 0 and one with feedback bit 1 have each been shown, and later clocks are fast (120 ms). Even for an input where only one of the values occurs, slow playback lasts at most the first 6 clocks. `init`, `reflectOut`, `xorOut` and `done` are always slow. In steady mode every step is 600 ms. In both modes the time is divided by the speed multiplier.
 - When the settings or the input change, the step sequence is rebuilt, playback returns to the start and stops.
-- Keeping settings: the CRC parameters, input mode, input value, speed mode, speed multiplier, loop on/off, code language (chapter 4), display language (chapter 17), breakpoints, and the CRC range, CRC in input and selected frame (chapter 2) are saved to localStorage each time they change, and restored the next time the app is opened. The playback position is not saved; playback starts at the start, stopped. Among the saved values, any item whose shape or value range is wrong is reset to its own default only (`CRC-3/TUTORIAL`, auto, ×1, no loop, pseudocode, the language determined from the browser's preferred languages, no breakpoints, no CRC in input).
+- Keeping settings: the CRC parameters, input mode, input value, speed mode, speed multiplier, loop on/off, code language (chapter 4), display language (chapter 18), breakpoints, and the CRC range, CRC in input and selected frame (chapter 2) are saved to localStorage each time they change, and restored the next time the app is opened. The playback position is not saved; playback starts at the start, stopped. Among the saved values, any item whose shape or value range is wrong is reset to its own default only (`CRC-3/TUTORIAL`, auto, ×1, no loop, pseudocode, the language determined from the browser's preferred languages, no breakpoints, no CRC in input).
 - Keeping the layout: the sidebar's open/closed state (except on a phone and on a short screen narrower than 1000 px; see Screen tiers) and width, the boundary between the diagram and the panel below, and the boundary between the pseudocode and the Progress panel are saved to localStorage each time they change, and restored the next time the app is opened. These settings adapt to the viewer's screen, so they are not put in the URL query. Saved values that are invalid, or that do not fit the current screen, are corrected to the default or into the range that fits.
 - Sharing by URL: the same items as the kept settings are also put in the URL query (`width`, `poly`, `init`, `refin`, `refout`, `xorout`, `inputMode`, `input`, `speed`, `rate`, `loop`, `code`, `lang`, `bp`, `from`, `to`, `crcField`, `frame`; booleans are `1`/`0`, and `crcField` is `none`, `be` or `le`), and rewritten each time they change without adding history entries. When the app is opened, items in the URL take precedence over the values saved in localStorage. Items missing from the URL or invalid ones take the saved value (or the default if none).
   - `bp` lists the breakpoints separated by commas. A line breakpoint is written as the step kind (such as `xor`), followed by `@` and the hit count if it has one (`xor@5`). A byte breakpoint is written as `byte` followed by its number (`byte3`), and a bit breakpoint as `bit` followed by its number (`bit13`). A disabled one is prefixed with `!`. Entries that cannot be read are dropped.
@@ -330,7 +330,7 @@ Shows how presets are named and how parameter names differ, with diagrams and ta
 4. Diagram of parameter-name aliases: on a fixed LFSR diagram (width 3, poly 0x3) drawn with the same parts as the visualizer's diagram, a leader line is drawn from the place where each parameter acts, and at its end only the parameter name (`poly` and so on) is written. The places are: `width` the row of registers, `poly` the tap gates, `init` the register boxes, `refin` the input stream, and `refout` and `xorout` the CRC output taken from the register.
    - Hovering over a parameter name emphasizes the place where it acts in the focused-parameter colour, and adds its full name and aliases on a small tag.
    - Parameter names are links; selecting one moves to that parameter's row in the table of 5 and highlights the row. The URL fragment is `#names/<parameter name>`.
-5. Parameter name table: for each parameter, the parameter name, full name, meaning and aliases are listed. The aliases are the same as in the description pane ("Aliases" in chapter 16).
+5. Parameter name table: for each parameter, the parameter name, full name, meaning and aliases are listed. The aliases are the same as in the description pane ("Aliases" in chapter 17).
 
 ## 9. Narrow down page
 
@@ -505,9 +505,9 @@ Given several pairs of data and their CRC, searches for the parameters that sati
 - Rows with invalid input (not readable as hexadecimal, or a CRC that does not fit in `width` bits) show the error in that field, and no search is run.
 - The URL fragment is `#estimate`.
 
-## 16. Terms and notation
+## 17. Terms and notation
 
-The rules under "Character types" are for the Japanese UI text (see chapter 17). The term table and the alias table give the Japanese UI wording, with the English UI wording (from `src/i18n/en.ts`) alongside.
+The rules under "Character types" are for the Japanese UI text (see chapter 18). The term table and the alias table give the Japanese UI wording, with the English UI wording (from `src/i18n/en.ts`) alongside.
 
 ### Character types
 
@@ -552,16 +552,16 @@ The aliases listed in the description pane are as follows. Only names whose corr
 
 A CRC with `refin` and `refout` both true can be computed by a right-shift (LSB-first) implementation, and a CRC with both false by a left-shift (MSB-first) implementation.
 
-## 17. Display language
+## 18. Display language
 
 - On-screen text can be shown in Japanese, English, Chinese (Simplified), Spanish, German and French. The on-screen text quoted in this specification is the English UI wording (the Japanese edition, [spec.ja.md](spec.ja.md), quotes the Japanese UI wording); other languages show translations with the same meaning.
 - Not translated: parameter names, the official names and aliases of presets, field labels and options of the settings panel, identifiers in the pseudocode and the diagram's formulas, the notation of numbers, and key names.
 - The full names of the parameters (the Japanese name when the UI is in Japanese) and aliases shown in the description pane and the parameter name table are the names used in that language. The aliases also include English names common in the literature.
-- The character-type rules of chapter 16 are for the Japanese UI. In every language, one concept is rendered with one term throughout.
+- The character-type rules of chapter 17 are for the Japanese UI. In every language, one concept is rendered with one term throughout.
 - Default language: the first entry in the browser's preferred-language list (`navigator.languages`), read from the start, whose language code (such as `zh` of `zh-CN`) matches one of the 6 above. If none matches, English.
 - Switching: at the right end of the status bar, a selector lists each language by its own name (日本語, English, 中文, Español, Deutsch, Français). The chosen language is kept, like the other settings, in localStorage and the URL query (`lang`, with values `ja`, `en`, `zh`, `es`, `de`, `fr`); if nothing is saved, the default language is used. Every page is shown in the same language, and the document language (`<html lang>`) follows it.
 
-## 18. Unspecified
+## 19. Unspecified
 
 - `width` above 64 bits (such as CRC-82) is not handled.
 - A window 700 CSS px wide or wider, such as a tablet's, gets the PC layout with the adjustments in "Screen tiers" (chapter 7); no layout is set out for tablets alone.
