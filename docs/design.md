@@ -83,6 +83,29 @@ Revisit when: `bigint` arithmetic makes stepping or building a page noticeably s
 
 Checked by: the comparison with the catalogue's `check` values in `src/domain/equivalence.test.ts`, which covers the presets of 64 bits.
 
+## Pasted text is read as numbers and separators only
+
+Protects: every value read from pasted text is one that was pasted, and no pasted value is dropped without an error.
+
+- The tools that print bytes and numbers have no end, and each prints addresses, names and character columns of its own.
+- A rule that skips such parts presumes one tool's output, and can drop a value without an error: skipping a first number of more than 2 digits as an address drops the `0x1021` of `0x1021 0x31`.
+- Numbers and a few separators are what source code, logs and debuggers share. Deleting the rest before pasting costs the viewer little, and an error that points at the first character left shows what to delete.
+- A pasted value that differs is checked against a fixed, ordered list of the usual mistakes (byte order, reflection, the final XOR, the range). Each is stated as "would match if", since a value that matches after a change only suggests the mistake.
+
+Refused:
+
+- Skipping addresses, character columns, comments, names such as `crc=` or literal suffixes. Each skip rule presumes some tool's output and opens a path that drops a value silently.
+- Splitting a `0x` number above `0xFF` into bytes where bytes are read. Its byte order depends on the type it was written for (a `uint16_t` `0x1021` lies in little-endian memory as `21 10`), so it is an error.
+- Telling the base from the numbers. `49 50 51` reads as decimal and as hexadecimal, so a switch on the field decides it.
+- Recognising tools by their output (gdb, hexdump, xxd and so on). Each one adds a case, and a text that two cases accept is read by whichever comes first.
+- Hints for a `width` below 8. A changed value matches by chance too often to suggest anything.
+
+Next decision: a new character is accepted only as a separator, and only if no text accepted now is read differently. A form that needs anything else is deleted by the viewer and listed under Unspecified.
+
+Revisit when: a form viewers often paste cannot be cut down to numbers and separators in the tool that prints it.
+
+Checked by: the unit tests of the parser, one for each row of the table in "Reading pasted text".
+
 ## `main` changes only through pull requests that pass CI
 
 Protects: only commits that have passed the type check, the unit tests and the E2E tests are published at crc.shortarrow.jp, and no Cloudflare credentials are kept in GitHub.
