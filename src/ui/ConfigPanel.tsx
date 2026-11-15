@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { BaseField, ConfigError, ConfigField, ConfigForm } from "../domain/parse";
-import { ELEMENT_IDS, type ElementId } from "../domain/paste";
 import { PRESETS, type InputMode, type Preset } from "../domain/presets";
+import { Badge, elementText, nextElement } from "./Badge";
 import { polynomialText } from "./format";
 import { presetLabel } from "./presetLabel";
 import type { CrcParams, ParamName } from "../domain/trace";
@@ -49,20 +49,6 @@ type Props = Readonly<{
 }>;
 
 const CUSTOM = "";
-
-const nextElement = (id: ElementId): ElementId => ELEMENT_IDS[(ELEMENT_IDS.indexOf(id) + 1) % ELEMENT_IDS.length]!;
-const elementText = (id: ElementId): string => (id === "8" ? id : `${id.slice(0, 2)} ${id.slice(2).toUpperCase()}`);
-
-type BadgeProps = Readonly<{ kind: "base" | "element"; name: string; text: string; onPress: () => void }>;
-
-/** A small button on a field that shows a reading choice and steps to the next one when pressed. */
-function Badge({ kind, name, text, onPress }: BadgeProps) {
-  return (
-    <button type="button" className="badge" data-badge={kind} aria-label={`${name} ${text}`} title={name} onClick={onPress}>
-      {text}
-    </button>
-  );
-}
 
 /** Settings panel for the CRC parameters and input. */
 export function ConfigPanel({ form, params, presetName, errors, onChange, focus, onFieldHover }: Props) {
