@@ -36,7 +36,7 @@ The input mode is one of the following 3.
 
 ### Frames and the CRC range
 
-In hexadecimal, each non-blank line of the input is one frame, and each line must be whole bytes. There are at most 64 frames of at most 256 bytes each, which bounds the work of listing and checking them whatever a shared URL carries. All frames share one layout:
+In hexadecimal, each line of the input that holds a number is one frame, and each line must be whole bytes. There are at most 64 frames of at most 256 bytes each, which bounds the work of listing and checking them whatever a shared URL carries. All frames share one layout:
 
 - CRC range: the bytes the CRC is computed over, as byte numbers from 0 at the start of each frame, both ends included. Without a start, the range starts at byte 0. Without an end, it runs to the frame's last byte, or to the byte before the CRC in input when there is one, so frames of different lengths can share one layout.
 - CRC in input: when the input holds a CRC as well, as a frame received over a link does, that CRC is read. None (the default) when it does not. When it does, it lies right after the range, taking ⌈`width`/8⌉ bytes. `BE` reads it high byte first and `LE` low byte first, and it is compared with the CRC computed over the range.
@@ -59,11 +59,11 @@ Where bytes are read (the input, `received`, a CRC given as several numbers), th
 - With the element at 8, a hexadecimal number without `0x` is read two digits at a time from the left, each pair one byte (`313233` and `3132 33` are both `31 32 33`), and one of an odd number of digits is an error.
 - Every other number is one element: a number with `0x`, a decimal number, and with the element at 16 or 32 a hexadecimal number without `0x` too. Its bytes are laid out in the chosen order (`0x3` is `03` with the element at 8), and a number that does not fit in the element is an error at its position.
 
-In the hexadecimal input, each non-blank line is one frame, also inside brackets that span several lines.
+In the hexadecimal input, each line that holds a number is one frame, also inside brackets that span several lines. A line of separators alone, such as `{`, is not a frame.
 
-Where values are read (`poly`, `init`, `xorout`, `your crc` as one number, `your log`, `your table`), each number is one value, and one that does not fit in `width` bits is an error at its position.
+Where values are read (`poly`, `init`, `xorout`, `your crc` as one number, `your log`, `your table`), each number is one value, and one that does not fit in `width` bits is an error at its position. Where one value is read (`poly`, `init`, `xorout`, `your crc` as one number), a second number is an error at its position.
 
-The bases of the input and of the `poly`, `init` and `xorout` fields, and the element of the input, are kept with the other settings (chapter 6).
+The bases of the input and of the `poly`, `init` and `xorout` fields, and the element of the input, are kept with the other settings (chapter 6). Choosing a preset, or opening values in the Visualizer from another page, sets them back to base 16 and element 8, since those values are written in hexadecimal bytes.
 
 | Pasted                                                      | Read as                            |
 | ----------------------------------------------------------- | ---------------------------------- |
