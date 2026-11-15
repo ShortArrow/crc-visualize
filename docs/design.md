@@ -95,7 +95,7 @@ Protects: every value read from pasted text is one that was pasted, and no paste
 Refused:
 
 - Skipping addresses, character columns, comments, names such as `crc=` or literal suffixes. Each skip rule presumes some tool's output and opens a path that drops a value silently.
-- Splitting a `0x` number above `0xFF` into bytes where bytes are read. Its byte order depends on the type it was written for (a `uint16_t` `0x1021` lies in little-endian memory as `21 10`), so it is an error.
+- Telling the size of an element and its byte order from the numbers where bytes are read. `0x1021` could be a 16-bit element or a mistake among bytes, and its byte order depends on the type and the machine it was written for (a `uint16_t` `0x1021` lies in little-endian memory as `21 10`), not on the text. The element badge on the field decides both, and a number that does not fit is an error.
 - Telling the base from the numbers. `49 50 51` reads as decimal and as hexadecimal, so a switch on the field decides it.
 - Recognising tools by their output (gdb, hexdump, xxd and so on). Each one adds a case, and a text that two cases accept is read by whichever comes first.
 - Hints for a `width` below 8. A changed value matches by chance too often to suggest anything.
