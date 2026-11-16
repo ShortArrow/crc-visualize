@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { branches, formatValue, matching, splittingParams, type NarrowPath } from "../domain/narrow";
+import type { ParamName } from "../domain/trace";
 import type { Preset } from "../domain/presets";
 import { useMessages } from "../i18n/I18n";
 import { narrowHash } from "./route";
@@ -61,6 +62,9 @@ function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
   const candidates = matching(presets, prefix);
   const param = path.fixed[depth]?.param ?? (depth === path.fixed.length ? path.open : undefined);
   const [only] = candidates;
+  const [pointed, setPointed] = useState<ParamName | undefined>(undefined);
+  const [focused, setFocused] = useState<ParamName | undefined>(undefined);
+  const explained = pointed ?? focused ?? param;
   if (candidates.length === 1 && only) {
     return (
       <div className="narrow-node narrow-result" data-depth={depth}>
@@ -77,11 +81,25 @@ function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
       <nav className="split-by">
         {m.narrow.splitBy}
         {splittingParams(candidates).map((p) => (
-          <a key={p} href={narrowHash({ fixed: prefix, open: p })} data-param={p} aria-current={p === param ? "true" : undefined}>
+          <a
+            key={p}
+            href={narrowHash({ fixed: prefix, open: p })}
+            data-param={p}
+            aria-current={p === param ? "true" : undefined}
+            onPointerEnter={() => setPointed(p)}
+            onPointerLeave={() => setPointed(undefined)}
+            onFocus={() => setFocused(p)}
+            onBlur={() => setFocused(undefined)}
+          >
             {p}
           </a>
         ))}
       </nav>
+      {explained ? (
+        <p className="param-meaning" data-param={explained}>
+          {m.params[explained].title}: {m.params[explained].summary}
+        </p>
+      ) : null}
       {param ? (
         <ul className="branches" data-param={param}>
           {branches(candidates, param).map((branch) => {

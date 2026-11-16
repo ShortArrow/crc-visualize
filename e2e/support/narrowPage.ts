@@ -31,6 +31,11 @@ export class NarrowPage {
     return this.node(depth).locator(`:scope > .split-by a[data-param="${param}"]`);
   }
 
+  /** The line under the choice of parameter at the node at depth that gives the meaning of one parameter. */
+  meaning(depth: number): Locator {
+    return this.node(depth).locator(":scope > .param-meaning");
+  }
+
   /** The branch of the node at depth whose value is written as value. */
   branch(depth: number, value: string): Locator {
     return this.node(depth).locator(`:scope > .branches > .branch[data-value="${value}"]`);

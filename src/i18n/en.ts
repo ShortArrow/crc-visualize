@@ -14,6 +14,11 @@ export const en: Messages = {
     estimate: "Estimate",
   },
   workbench: {
+    splitters: {
+      sidebar: "Width of the sidebar",
+      panel: "Height of the diagram and the panel below",
+      code: "Width of the pseudocode and Progress",
+    },
     sidebarToggle: "Toggle sidebar (Ctrl+B)",
     sidebarLabel: "Settings",
     language: "Language",
