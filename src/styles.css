@@ -3853,3 +3853,52 @@ button.bit-cell:hover {
   font-family: var(--mono);
   color: var(--fg);
 }
+
+/* The Compare card of a page: its fields side by side, so it takes few lines */
+.compare-card .compare {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.compare-card .compare > label {
+  flex: 1 1 16em;
+}
+
+.compare-card .compare > .compare-result {
+  flex: 1 1 100%;
+}
+
+.compare-card h3 {
+  margin: 0;
+}
+
+/* The button beside the Check page's heading that moves to its Compare card: on the heading's line, adding no height */
+.check-page h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.check-page h2 .compare-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  margin-block: -4px;
+  padding: 0 4px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.compare-card h3 {
+  font-size: 0.9rem;
+  line-height: 1.2;
+}

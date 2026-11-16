@@ -3,9 +3,10 @@ import { matchLog, type LogMatch } from "../domain/compare";
 import { elementOf, readCrc, readValues, type Base, type ElementId } from "../domain/paste";
 import { registerValue, type CrcParams, type Step } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
-import { errorText, type Messages } from "../i18n/messages";
+import type { Messages } from "../i18n/messages";
 import { Badge, elementText, nextElement } from "./Badge";
 import { valueHex } from "./format";
+import { PasteField, ValueResult } from "./PasteField";
 
 /** What is pasted into the Compare section and how it is read; kept neither in the URL nor in storage. */
 export type CompareForm = Readonly<{
@@ -27,43 +28,6 @@ type Props = Readonly<{
   /** Moves playback to the step at index. */
   onSeek: (index: number) => void;
 }>;
-
-/** The bits of value in width bits, MSB first, those that differ from other marked. */
-function BitRow({ value, other, width }: Readonly<{ value: bigint; other: bigint; width: number }>) {
-  return (
-    <code className="compare-bits">
-      {Array.from({ length: width }, (_, i) => {
-        const k = BigInt(width - 1 - i);
-        const bit = (value >> k) & 1n;
-        return (
-          <span key={i} className={bit === ((other >> k) & 1n) ? undefined : "diff"}>
-            {String(bit)}
-          </span>
-        );
-      })}
-    </code>
-  );
-}
-
-/** A pasted value against the computed one: ✓ when they match, otherwise both in binary with the differing bits marked. */
-function ValueResult({ yours, computed, width }: Readonly<{ yours: bigint; computed: bigint; width: number }>) {
-  const m = useMessages();
-  if (yours === computed) {
-    return (
-      <p className="compare-result ok" data-result="ok">
-        ✓ {m.compare.matches} {valueHex(computed, width)}
-      </p>
-    );
-  }
-  return (
-    <div className="compare-result ng" data-result="ng">
-      <span>✗ {m.compare.yours}</span>
-      <BitRow value={yours} other={computed} width={width} />
-      <span>{m.compare.computed}</span>
-      <BitRow value={computed} other={yours} width={width} />
-    </div>
-  );
-}
 
 const rowName = (m: Messages, match: LogMatch, at: "init" | number) =>
   at === "init" ? "init" : `${match.unit === "byte" ? m.compare.byte : m.compare.bit} ${at}`;
@@ -125,11 +89,13 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
   );
   return (
     <form className="compare" onSubmit={(e) => e.preventDefault()}>
-      <label data-field="yourCrc" className={crc && !crc.ok ? "invalid" : undefined}>
-        <span>your crc</span>
-        <span className="field-row">
-          <input value={form.crc} spellCheck={false} onChange={(e) => set("crc", e.target.value)} />
-          <span className="badges">
+      <PasteField
+        name="yourCrc"
+        label="your crc"
+        value={form.crc}
+        onChange={(v) => set("crc", v)}
+        badges={
+          <>
             {baseBadge("crcBase")}
             <Badge
               kind="element"
@@ -143,19 +109,20 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
               text={form.crcOrder.toUpperCase()}
               onPress={() => set("crcOrder", form.crcOrder === "be" ? "le" : "be")}
             />
-          </span>
-        </span>
-        {crc && !crc.ok ? <small className="error">{errorText(m, crc.error)}</small> : null}
-      </label>
+          </>
+        }
+        error={crc && !crc.ok ? crc.error : undefined}
+      />
       {crc?.ok ? <ValueResult yours={crc.value} computed={registerValue(steps.at(-1)!.reg)} width={width} /> : null}
-      <label data-field="yourLog" className={log && !log.ok ? "invalid" : undefined}>
-        <span>your log</span>
-        <span className="field-row">
-          <textarea wrap="off" rows={3} value={form.log} spellCheck={false} onChange={(e) => set("log", e.target.value)} />
-          <span className="badges">{baseBadge("logBase")}</span>
-        </span>
-        {log && !log.ok ? <small className="error">{errorText(m, log.error)}</small> : null}
-      </label>
+      <PasteField
+        name="yourLog"
+        label="your log"
+        value={form.log}
+        onChange={(v) => set("log", v)}
+        multiline
+        badges={baseBadge("logBase")}
+        error={log && !log.ok ? log.error : undefined}
+      />
       {log?.ok ? <LogTable match={log.value} width={width} /> : null}
     </form>
   );

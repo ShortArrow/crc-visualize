@@ -24,6 +24,7 @@ export const ja = {
   },
   badges: { base: "基数", element: "要素", order: "バイト順" },
   compare: {
+    cardTitle: "自分のコードの値と比べる",
     heading: "照合",
     yours: "あなたの値",
     computed: "計算した値",
@@ -42,6 +43,7 @@ export const ja = {
     crcBytes: (expected: number) => `数を 1 つか、${expected} バイトで入れてください`,
     logCount: (got: number, bytes: number, bits: number) =>
       `数が ${got} 個あります。1 バイトごとなら ${bytes} 個か ${bytes + 1} 個、1 ビットごとなら ${bits} 個か ${bits + 1} 個にしてください`,
+    receivedShort: (bytes: number) => `CRC を含めて ${bytes} バイト以上入れてください`,
     logCountBits: (got: number, bits: number) =>
       `数が ${got} 個あります。1 ビットごとに ${bits} 個か ${bits + 1} 個にしてください`,
     at: (line: number, column: number) => `（${line} 行 ${column} 列）`,

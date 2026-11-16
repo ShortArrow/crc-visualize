@@ -557,7 +557,8 @@ Values copied from the viewer's own CRC code (the register partway through, the 
 ### Where the fields are
 
 - On the Visualizer page, the Compare section of the sidebar holds the fields. It comes right after Settings and is open at first.
-- On the Naming, Narrow down, Check, Equivalences and Table pages, a Compare card comes first in the editor area. On a short screen it stays open while the explanation paragraphs close.
+- On the Naming, Narrow down, Equivalences and Table pages, a Compare card comes first in the editor area. On a short screen it stays open while the explanation paragraphs close.
+- On the Check page, the Compare card comes last, so that the received string and both verdicts stay in view above it. Beside the page heading, a button ("Compare with values from your code") scrolls to the card and puts the cursor in its first field.
 - The Estimation page takes its pairs in this form already, so it has no Compare card.
 - The Cyclic and Redundancy pages take no pasted values. Their generator polynomial is one of a few small ones, chosen on the page and not linked to the settings (chapter 10).
 - Field labels are in English only, like the settings panel: `your crc`, `your log`, `your poly`, `your check`, `your table`, `received`.
