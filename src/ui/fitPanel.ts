@@ -15,7 +15,8 @@ function measure(split: HTMLElement, hardware: HTMLElement, ratio: number): numb
     ratio,
     {
       height: split.clientHeight - (splitter?.offsetHeight ?? 0),
-      chrome: head.offsetHeight + px(area.paddingTop) + px(area.paddingBottom),
+      chrome:
+        head.offsetHeight + px(area.paddingTop) + px(area.paddingBottom) + px(area.borderTopWidth) + px(area.borderBottomWidth),
       width: hardware.clientWidth - px(area.paddingLeft) - px(area.paddingRight),
     },
     { width: view.width, height: view.height },

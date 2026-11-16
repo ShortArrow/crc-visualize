@@ -53,6 +53,67 @@ body,
   grid-column: 3;
 }
 
+/*
+ * Panels: on the PC layout and a short screen, the sidebar and the editor area (on the Visualizer, the playback controls, the
+ * diagram, the pseudocode and Progress) are bordered, rounded and set apart from each other by --gap, but not from the window's
+ * edges or the status bar; a screen lower than 480 px sets them neither apart nor bordered, so what an action changes stays in view
+ */
+.workbench {
+  --gap: 8px;
+  --frame: 1px;
+  --radius: 8px;
+}
+
+.workbench:not(.phone) {
+  background: var(--panel);
+}
+
+.workbench.short {
+  --gap: 4px;
+}
+
+@media (max-height: 479px) {
+  .workbench,
+  .workbench.short {
+    --gap: 0px;
+    --frame: 0px;
+    --radius: 0px;
+  }
+
+  .workbench .splitter {
+    background: var(--border);
+  }
+}
+
+.workbench:not(.phone) > .sidebar {
+  border: var(--frame) solid var(--border);
+  border-radius: var(--radius);
+}
+
+.workbench:not(.phone) > .editor {
+  border: var(--frame) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.workbench:not(.phone) > .editor:has(> .visualizer) {
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.workbench:not(.phone) .visualizer {
+  row-gap: var(--gap);
+}
+
+.workbench:not(.phone) .visualizer :is(.controls, .hardware),
+.workbench:not(.phone, .short) .visualizer .panel > :is(.software, .log-pane),
+.workbench.short .visualizer .panel {
+  border: var(--frame) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
 .activity {
   grid-row: 1;
   display: flex;
@@ -134,32 +195,74 @@ body,
 }
 
 /* 領域の境界。ドラッグで動かす。 */
+/*
+ * A boundary is the gap between two panels, at least 8 px to grab however narrow the gap; it draws a 2 px accent line along its
+ * middle only while pointed at, focused or dragged. Where panels are not set apart, the 1 px line between them is the boundary
+ */
 .splitter {
   position: relative;
-  background: var(--border);
   touch-action: none;
+  outline: none;
 }
 
 .splitter-x {
-  width: 1px;
+  width: max(var(--gap), 1px);
   cursor: col-resize;
 }
 
 .splitter-y {
-  height: 1px;
+  height: max(var(--gap), 1px);
   cursor: row-resize;
+}
+
+.splitter::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+}
+
+.splitter-x::before {
+  inset: 0 min(0px, calc((var(--gap) - 8px) / 2));
+}
+
+.splitter-y::before {
+  inset: min(0px, calc((var(--gap) - 8px) / 2)) 0;
 }
 
 .splitter::after {
   content: "";
   position: absolute;
-  inset: -3px;
   z-index: 1;
 }
 
-.splitter:hover,
-.splitter:active {
+.splitter-x::after {
+  inset: 0 auto;
+  left: calc(50% - 1px);
+  width: 2px;
+}
+
+.splitter-y::after {
+  inset: auto 0;
+  top: calc(50% - 1px);
+  height: 2px;
+}
+
+.splitter:hover::after,
+.splitter:focus-visible::after,
+body[data-resizing] .splitter:active::after {
   background: var(--accent);
+}
+
+body[data-resizing] {
+  user-select: none;
+}
+
+body[data-resizing="x"] {
+  cursor: col-resize;
+}
+
+body[data-resizing="y"] {
+  cursor: row-resize;
 }
 
 .toc {
