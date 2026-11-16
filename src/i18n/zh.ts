@@ -48,7 +48,14 @@ export const zh: Messages = {
       reversed: "按 width 位反转（右移实现的写法）",
       neither: (asIs: string, reversed: string) => `都不是：原样 ${asIs}，反转 ${reversed}`,
     },
+    table: {
+      left: "与左移的表 T 一致",
+      right: "与右移的表 T 一致",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left" ? `最接近左移的表 T；首个不同在索引 ${index}` : `最接近右移的表 T；首个不同在索引 ${index}`,
+    },
     placeholders: {
+      table: "例如：0x0000, 0x1021, 0x2042, …",
       init: "例如：0x0000",
       crc: "例如：0x31C3 或 31 C3",
       log: "例如：0x2672, 0x20B5, 0x9752, …",
@@ -67,6 +74,7 @@ export const zh: Messages = {
     crcBytes: (expected: number) => `请输入一个数，或 ${expected} 个字节`,
     logCount: (got: number, bytes: number, bits: number) =>
       `有 ${got} 个数：按字节应为 ${bytes} 或 ${bytes + 1} 个，按位应为 ${bits} 或 ${bits + 1} 个`,
+    tableCount: (got: number) => `请按索引顺序输入 256 个数（已输入 ${got} 个）`,
     receivedShort: (bytes: number) => `请输入至少 ${bytes} 个字节（含 CRC）`,
     logCountBits: (got: number, bits: number) => `有 ${got} 个数：按位应为 ${bits} 或 ${bits + 1} 个`,
     at: (line: number, column: number) => `（第 ${line} 行第 ${column} 列）`,

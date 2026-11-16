@@ -56,7 +56,16 @@ export const de: Messages = {
       reversed: "in width Bit umgekehrt, wie eine Rechtsschiebe-Implementierung es schreibt",
       neither: (asIs: string, reversed: string) => `keines von beiden: unverändert ${asIs}, umgekehrt ${reversed}`,
     },
+    table: {
+      left: "stimmt mit Tabelle T für Linksschieben überein",
+      right: "stimmt mit Tabelle T für Rechtsschieben überein",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `am nächsten an Tabelle T für Linksschieben; erster Unterschied bei Index ${index}`
+          : `am nächsten an Tabelle T für Rechtsschieben; erster Unterschied bei Index ${index}`,
+    },
     placeholders: {
+      table: "z. B. 0x0000, 0x1021, 0x2042, …",
       init: "z. B. 0x0000",
       crc: "z. B. 0x31C3 oder 31 C3",
       log: "z. B. 0x2672, 0x20B5, 0x9752, …",
@@ -75,6 +84,7 @@ export const de: Messages = {
     crcBytes: (expected: number) => `Gib eine Zahl oder ${expected} Bytes ein`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} Zahlen: erwartet ${bytes} oder ${bytes + 1} (eine pro Byte) oder ${bits} oder ${bits + 1} (eine pro Bit)`,
+    tableCount: (got: number) => `Gib 256 Zahlen in Indexreihenfolge ein (eingegeben: ${got})`,
     receivedShort: (bytes: number) => `Gib mindestens ${bytes} Bytes ein, den CRC eingeschlossen`,
     logCountBits: (got: number, bits: number) => `${got} Zahlen: erwartet ${bits} oder ${bits + 1} (eine pro Bit)`,
     at: (line: number, column: number) => ` (Zeile ${line}, Spalte ${column})`,

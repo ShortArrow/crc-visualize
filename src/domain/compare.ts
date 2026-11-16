@@ -1,3 +1,4 @@
+import { crcTable } from "./table";
 import { bitEndStep, reflectValue, registerValue, type CrcParams, type Step } from "./trace";
 
 /** The shift a register value is held by: left as the hardware model holds it, right reflected in width bits. */
@@ -15,8 +16,11 @@ export type LogError = Readonly<{ code: "logCount"; got: number; bytes?: number;
 /** A received frame pasted on the Check page that is shorter than the CRC; bytes is the least it can be. */
 export type ReceivedError = Readonly<{ code: "receivedShort"; bytes: number }>;
 
+/** A pasted table whose count is not 256. */
+export type TableError = Readonly<{ code: "tableCount"; got: number }>;
+
 /** The errors of comparing pasted values beyond reading them. */
-export type CompareError = LogError | ReceivedError;
+export type CompareError = LogError | ReceivedError | TableError;
 
 type Point = Readonly<{ at: "init" | number; step: number }>;
 
@@ -65,4 +69,33 @@ export type ConstantForm = "asIs" | "reversed" | "neither";
 export function constantForm(pasted: bigint, setting: bigint, width: number): ConstantForm {
   if (pasted === setting) return "asIs";
   return pasted === reflectValue(setting, width) ? "reversed" : "neither";
+}
+
+/**
+ * A pasted table against table T of the shift it is closest to: firstDiff is undefined when every entry matches, otherwise the
+ * first index that differs with the two values there.
+ */
+export type TableMatch = Readonly<{
+  shift: Shift;
+  firstDiff: Readonly<{ index: number; yours: bigint; computed: bigint }> | undefined;
+}>;
+
+/** Compares your table with table T as a left and as a right shift make it from params' poly; a tie goes to the left shift. */
+export function matchTable(
+  params: CrcParams,
+  values: readonly bigint[],
+): { ok: true; value: TableMatch } | { ok: false; error: TableError } {
+  if (values.length !== 256) return { ok: false, error: { code: "tableCount", got: values.length } };
+  const tables = {
+    left: crcTable({ ...params, refin: false, refout: false }),
+    right: crcTable({ ...params, refin: true, refout: true }),
+  };
+  const matching = (table: readonly bigint[]) => table.filter((v, i) => v === values[i]).length;
+  const shift: Shift = matching(tables.right) > matching(tables.left) ? "right" : "left";
+  const table = tables[shift];
+  const index = table.findIndex((v, i) => v !== values[i]);
+  return {
+    ok: true,
+    value: { shift, firstDiff: index < 0 ? undefined : { index, yours: values[index]!, computed: table[index]! } },
+  };
 }

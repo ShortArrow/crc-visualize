@@ -51,7 +51,16 @@ export const ja = {
       reversed: "width ビットで反転（右送りの実装の書き方）",
       neither: (asIs: string, reversed: string) => `どちらでもない：そのまま ${asIs}、反転 ${reversed}`,
     },
+    table: {
+      left: "左送りの表 T と一致",
+      right: "右送りの表 T と一致",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `いちばん近いのは左送りの表 T。最初に違うのはインデックス ${index}`
+          : `いちばん近いのは右送りの表 T。最初に違うのはインデックス ${index}`,
+    },
     placeholders: {
+      table: "例：0x0000, 0x1021, 0x2042, …",
       init: "例：0x0000",
       crc: "例：0x31C3 または 31 C3",
       log: "例：0x2672, 0x20B5, 0x9752, …",
@@ -70,6 +79,7 @@ export const ja = {
     crcBytes: (expected: number) => `数を 1 つか、${expected} バイトで入れてください`,
     logCount: (got: number, bytes: number, bits: number) =>
       `数が ${got} 個あります。1 バイトごとなら ${bytes} 個か ${bytes + 1} 個、1 ビットごとなら ${bits} 個か ${bits + 1} 個にしてください`,
+    tableCount: (got: number) => `インデックス順に 256 個の数を入れてください（入れた数は ${got} 個）`,
     receivedShort: (bytes: number) => `CRC を含めて ${bytes} バイト以上入れてください`,
     logCountBits: (got: number, bits: number) =>
       `数が ${got} 個あります。1 ビットごとに ${bits} 個か ${bits + 1} 個にしてください`,

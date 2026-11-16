@@ -56,7 +56,16 @@ export const en: Messages = {
       reversed: "reversed in width bits, as a right-shift implementation writes it",
       neither: (asIs: string, reversed: string) => `neither: as it is ${asIs}, reversed ${reversed}`,
     },
+    table: {
+      left: "matches table T for a left shift",
+      right: "matches table T for a right shift",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `closest to table T for a left shift; first difference at index ${index}`
+          : `closest to table T for a right shift; first difference at index ${index}`,
+    },
     placeholders: {
+      table: "e.g. 0x0000, 0x1021, 0x2042, …",
       init: "e.g. 0x0000",
       crc: "e.g. 0x31C3 or 31 C3",
       log: "e.g. 0x2672, 0x20B5, 0x9752, …",
@@ -75,6 +84,7 @@ export const en: Messages = {
     crcBytes: (expected: number) => `Enter one number, or ${expected} bytes`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} numbers: expected ${bytes} or ${bytes + 1} (one per byte), or ${bits} or ${bits + 1} (one per bit)`,
+    tableCount: (got: number) => `Enter 256 numbers, in index order (${got} were entered)`,
     receivedShort: (bytes: number) => `Enter at least ${bytes} bytes, the CRC included`,
     logCountBits: (got: number, bits: number) => `${got} numbers: expected ${bits} or ${bits + 1} (one per bit)`,
     at: (line: number, column: number) => ` (line ${line}, column ${column})`,

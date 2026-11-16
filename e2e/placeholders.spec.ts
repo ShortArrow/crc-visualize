@@ -30,6 +30,7 @@ const FIELDS: readonly (readonly [string, string, string, string])[] = [
   ["the Narrow down page", "/#narrow", '.compare-card label[data-field="your check"] input', "例：0x31C3"],
   ["the Equivalences page", "/#equivalence", '.compare-card label[data-field="your poly"] input', "例：0x1021"],
   ["the Equivalences page", "/#equivalence", '.compare-card label[data-field="your init"] input', "例：0x0000"],
+  ["the Table page", "/#table", '.compare-card label[data-field="yourTable"] textarea', "例：0x0000, 0x1021, 0x2042, …"],
   ["the Narrow down page", "/#narrow", '.compare-card label[data-field="width"] input', "例：16（空ならすべての幅）"],
 ];
 

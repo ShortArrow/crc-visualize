@@ -195,6 +195,8 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
             key={keyOf(config)}
             config={config}
             playback={{ speedMode, rate, loop, onSpeedMode: setSpeedMode, onRate: setRate, onLoop: setLoop }}
+            compare={pageCompare}
+            onCompare={setPageCompare}
           />
         ),
         equivalence: <EquivalencePage config={config} compare={pageCompare} onCompare={setPageCompare} />,
