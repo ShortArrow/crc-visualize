@@ -14,6 +14,11 @@ export const en: Messages = {
     estimate: "Estimate",
   },
   workbench: {
+    splitters: {
+      sidebar: "Width of the sidebar",
+      panel: "Height of the diagram and the panel below",
+      code: "Width of the pseudocode and Progress",
+    },
     sidebarToggle: "Toggle sidebar (Ctrl+B)",
     sidebarLabel: "Settings",
     language: "Language",
@@ -26,6 +31,7 @@ export const en: Messages = {
   },
   badges: { base: "Base", element: "Element", order: "Byte order" },
   compare: {
+    cardTitle: "Compare with values from your code",
     heading: "Compare",
     yours: "yours",
     computed: "computed",
@@ -44,6 +50,7 @@ export const en: Messages = {
     crcBytes: (expected: number) => `Enter one number, or ${expected} bytes`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} numbers: expected ${bytes} or ${bytes + 1} (one per byte), or ${bits} or ${bits + 1} (one per bit)`,
+    receivedShort: (bytes: number) => `Enter at least ${bytes} bytes, the CRC included`,
     logCountBits: (got: number, bits: number) => `${got} numbers: expected ${bits} or ${bits + 1} (one per bit)`,
     at: (line: number, column: number) => ` (line ${line}, column ${column})`,
     tooWide: (width: number) => `Enter a value that fits in ${width} bits`,
@@ -98,6 +105,8 @@ export const en: Messages = {
     done: "Done",
   },
   log: {
+    views: { steps: "Steps", perByte: "Per byte" },
+    byteTable: { byte: "byte", register: "register", right: "right shift" },
     byteNo: (n: number) => `byte ${n}`,
     willXor: "feedback = 1, so XOR with poly next",
     noXor: "feedback = 0, so no XOR",

@@ -14,6 +14,11 @@ export const fr: Messages = {
     estimate: "Estimation",
   },
   workbench: {
+    splitters: {
+      sidebar: "Largeur de la barre latérale",
+      panel: "Hauteur du schéma et du panneau en dessous",
+      code: "Largeur du pseudo-code et de la progression",
+    },
     sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)",
     sidebarLabel: "Réglages",
     language: "Langue",
@@ -26,6 +31,7 @@ export const fr: Messages = {
   },
   badges: { base: "Base", element: "Élément", order: "Ordre des octets" },
   compare: {
+    cardTitle: "Comparer avec les valeurs de votre code",
     heading: "Comparer",
     yours: "le vôtre",
     computed: "calculé",
@@ -44,6 +50,7 @@ export const fr: Messages = {
     crcBytes: (expected: number) => `Saisissez un nombre ou ${expected} octets`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} nombres : il en faut ${bytes} ou ${bytes + 1} (un par octet), ou ${bits} ou ${bits + 1} (un par bit)`,
+    receivedShort: (bytes: number) => `Saisissez au moins ${bytes} octets, CRC compris`,
     logCountBits: (got: number, bits: number) => `${got} nombres : il en faut ${bits} ou ${bits + 1} (un par bit)`,
     at: (line: number, column: number) => ` (ligne ${line}, colonne ${column})`,
     tooWide: (width: number) => `Saisissez une valeur qui tient sur ${width} bits`,
@@ -98,6 +105,8 @@ export const fr: Messages = {
     done: "Terminé",
   },
   log: {
+    views: { steps: "Étapes", perByte: "Par octet" },
+    byteTable: { byte: "octet", register: "registre", right: "décalage à droite" },
     byteNo: (n: number) => `octet ${n}`,
     willXor: "feedback = 1, donc XOR avec poly ensuite",
     noXor: "feedback = 0, donc pas de XOR",

@@ -106,6 +106,25 @@ Revisit when: a form viewers often paste cannot be cut down to numbers and separ
 
 Checked by: the unit tests of the parser, one for each row of the table in "Reading pasted text".
 
+## The Check page puts its Compare card last
+
+Protects: the bit just pressed and both verdicts stay in view on every screen in the screens table, with or without the Compare card.
+
+- A value is pasted once, and bits are pressed many times. The repeated action keeps its view, and the paste takes a scroll.
+- The Check page is sized in em of the editor's height, so its verdicts end a few pixels from the bottom on a tall, narrow screen. How many pixels depends on the fonts the browser has: a 30 px line above the received string fits with one set of fonts and overflows by about half a line with another.
+- Placed after the verdicts, the card moves nothing above it. The button beside the page heading adds no line.
+
+Refused:
+
+- The card first, folded to its heading. It fits or not by the font, and the screens tests passed on one machine and failed in CI with the same code.
+- The card first and open, as on the other pages. Its fields push the received string below the screen.
+
+Next decision: anything added to the Check page goes after the verdicts, or into a line that already exists.
+
+Revisit when: the Check page stops sizing itself to the editor's height.
+
+Checked by: the screens tests, "the check page keeps what an action changes in view", on every screen in the table.
+
 ## `main` changes only through pull requests that pass CI
 
 Protects: only commits that have passed the type check, the unit tests and the E2E tests are published at crc.shortarrow.jp, and no Cloudflare credentials are kept in GitHub.

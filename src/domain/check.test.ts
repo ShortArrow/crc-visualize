@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { crcBits, frame, recheck, residue, wholeCheck } from "./check";
+import { crcBits, frame, receivedMessageLength, recheck, residue, wholeCheck } from "./check";
 import { crcOf } from "./equivalence";
 import { CATALOGUE } from "./presets";
 import { flip } from "./redundancy";
@@ -83,5 +83,19 @@ describe("check", () => {
   it("Given parameters where refin and refout differ, When the whole codeword is run through, Then it does not apply", () => {
     const p = { ...params("CRC-16/KERMIT"), refout: false };
     expect(wholeCheck(p, frame(p, text("1")))).toBeUndefined();
+  });
+});
+
+describe("receivedMessageLength", () => {
+  it("Given a received frame of a reflected 16-bit CRC, When split, Then the last 16 bits are the CRC", () => {
+    expect(receivedMessageLength(params("CRC-16/KERMIT"), 88)).toBe(72);
+  });
+
+  it("Given a received frame shorter than the CRC, When split, Then there is no message to check", () => {
+    expect(receivedMessageLength(params("CRC-16/KERMIT"), 8)).toBeUndefined();
+  });
+
+  it("Given exactly the CRC, When split, Then the message is empty", () => {
+    expect(receivedMessageLength(params("CRC-5/USB"), 8)).toBe(0);
   });
 });

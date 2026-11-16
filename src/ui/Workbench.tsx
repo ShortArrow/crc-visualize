@@ -12,20 +12,21 @@ import {
   Table2,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { useMessages } from "../i18n/I18n";
 import { LOCALE_NAMES, LOCALES, type Locale } from "../i18n/locale";
 import { namesHash, narrowHash, type Route } from "./route";
 import { DockSlot } from "./Dock";
 import { Splitter } from "./Splitter";
-import { fitLayout, type PaneLayout } from "./panes";
+import { DEFAULT_PANES, fitLayout, type PaneLayout } from "./panes";
 import { useScreen } from "./phone";
 import { viewWidth } from "./zoom";
 
 type Props = Readonly<{
   route: Route;
   layout: PaneLayout;
-  onLayout: (layout: PaneLayout) => void;
+  /** A new pane layout; saved unless save is false (while a boundary is being dragged). */
+  onLayout: (layout: PaneLayout, save?: boolean) => void;
   locale: Locale;
   onLocale: (locale: Locale) => void;
   sidebar: ReactNode;
@@ -34,7 +35,6 @@ type Props = Readonly<{
 }>;
 
 const ICON_SIZE = 22;
-const ACTIVITY_WIDTH = 48;
 
 /** Links to the pages in the activity bar, top to bottom. */
 const PAGE_LINKS: readonly Readonly<{ page: Route["page"]; href: string; Icon: LucideIcon }>[] = [
@@ -64,6 +64,8 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
   const { tier, keepsSidebar } = useScreen();
   const phone = tier === "phone";
   const [unsavedOpen, setUnsavedOpen] = useState(false);
+  const dragFrom = useRef(layout);
+  const widen = (from: PaneLayout, dx: number) => fitLayout({ ...from, sidebarWidth: from.sidebarWidth + dx }, viewWidth());
   const [dock, setDock] = useState<HTMLElement | null>(null);
   const docking = phone || (tier === "short" && !keepsSidebar && route.page !== "visualizer");
   const open = keepsSidebar ? layout.sidebarOpen : unsavedOpen;
@@ -114,7 +116,12 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
             <Splitter
               axis="x"
               name="sidebar"
-              onMove={(x) => onLayout(fitLayout({ ...layout, sidebarWidth: x - ACTIVITY_WIDTH }, viewWidth()))}
+              label={m.workbench.splitters.sidebar}
+              onStart={() => (dragFrom.current = layout)}
+              onMove={(dx) => onLayout(widen(dragFrom.current, dx), false)}
+              onStep={(dx) => onLayout(widen(layout, dx))}
+              onReset={() => onLayout(fitLayout({ ...layout, sidebarWidth: DEFAULT_PANES.sidebarWidth }, viewWidth()))}
+              onEnd={() => onLayout(layout)}
             />
           )}
         </>

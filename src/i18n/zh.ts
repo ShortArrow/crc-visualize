@@ -13,7 +13,13 @@ export const zh: Messages = {
     table: "查表",
     estimate: "推断",
   },
-  workbench: { sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）", sidebarLabel: "设置", language: "显示语言", explanation: "说明" },
+  workbench: {
+    splitters: { sidebar: "侧边栏的宽度", panel: "图与下方面板的高度", code: "伪代码与进度的宽度" },
+    sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）",
+    sidebarLabel: "设置",
+    language: "显示语言",
+    explanation: "说明",
+  },
   settings: {
     heading: "设置",
     invalid: "设置有误。请修改标红的项目。",
@@ -21,6 +27,7 @@ export const zh: Messages = {
   },
   badges: { base: "基数", element: "元素", order: "字节序" },
   compare: {
+    cardTitle: "与你代码中的值比对",
     heading: "比对",
     yours: "你的值",
     computed: "计算值",
@@ -39,6 +46,7 @@ export const zh: Messages = {
     crcBytes: (expected: number) => `请输入一个数，或 ${expected} 个字节`,
     logCount: (got: number, bytes: number, bits: number) =>
       `有 ${got} 个数：按字节应为 ${bytes} 或 ${bytes + 1} 个，按位应为 ${bits} 或 ${bits + 1} 个`,
+    receivedShort: (bytes: number) => `请输入至少 ${bytes} 个字节（含 CRC）`,
     logCountBits: (got: number, bits: number) => `有 ${got} 个数：按位应为 ${bits} 或 ${bits + 1} 个`,
     at: (line: number, column: number) => `（第 ${line} 行第 ${column} 列）`,
     tooWide: (width: number) => `请输入 ${width} 位以内的值`,
@@ -93,6 +101,8 @@ export const zh: Messages = {
     done: "完成",
   },
   log: {
+    views: { steps: "步骤", perByte: "按字节" },
+    byteTable: { byte: "字节", register: "寄存器", right: "右移" },
     byteNo: (n: number) => `第 ${n} 字节`,
     willXor: "feedback = 1，所以接下来与 poly XOR",
     noXor: "feedback = 0，所以不 XOR",

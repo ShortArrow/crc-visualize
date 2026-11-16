@@ -14,6 +14,11 @@ export const es: Messages = {
     estimate: "Estimación",
   },
   workbench: {
+    splitters: {
+      sidebar: "Ancho de la barra lateral",
+      panel: "Alto del diagrama y del panel inferior",
+      code: "Ancho del pseudocódigo y del progreso",
+    },
     sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)",
     sidebarLabel: "Ajustes",
     language: "Idioma",
@@ -26,6 +31,7 @@ export const es: Messages = {
   },
   badges: { base: "Base", element: "Elemento", order: "Orden de bytes" },
   compare: {
+    cardTitle: "Comparar con los valores de tu código",
     heading: "Comparar",
     yours: "tuyo",
     computed: "calculado",
@@ -44,6 +50,7 @@ export const es: Messages = {
     crcBytes: (expected: number) => `Introduce un número o ${expected} bytes`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} números: se esperan ${bytes} o ${bytes + 1} (uno por byte), o ${bits} o ${bits + 1} (uno por bit)`,
+    receivedShort: (bytes: number) => `Introduce al menos ${bytes} bytes, con el CRC`,
     logCountBits: (got: number, bits: number) => `${got} números: se esperan ${bits} o ${bits + 1} (uno por bit)`,
     at: (line: number, column: number) => ` (línea ${line}, columna ${column})`,
     tooWide: (width: number) => `Introduce un valor que quepa en ${width} bits`,
@@ -98,6 +105,8 @@ export const es: Messages = {
     done: "Terminado",
   },
   log: {
+    views: { steps: "Pasos", perByte: "Por byte" },
+    byteTable: { byte: "byte", register: "registro", right: "desplazamiento a la derecha" },
     byteNo: (n: number) => `byte ${n}`,
     willXor: "feedback = 1, así que a continuación XOR con poly",
     noXor: "feedback = 0, así que no hay XOR",

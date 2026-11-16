@@ -16,7 +16,13 @@ export const ja = {
     table: "表引き",
     estimate: "推定",
   },
-  workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", sidebarLabel: "設定", language: "表示言語", explanation: "説明" },
+  workbench: {
+    splitters: { sidebar: "サイドバーの幅", panel: "図と下のパネルの高さ", code: "擬似コードと経過の幅" },
+    sidebarToggle: "サイドバーの開閉（Ctrl+B）",
+    sidebarLabel: "設定",
+    language: "表示言語",
+    explanation: "説明",
+  },
   settings: {
     heading: "設定",
     invalid: "設定に誤りがあります。赤い項目を直してください。",
@@ -24,6 +30,7 @@ export const ja = {
   },
   badges: { base: "基数", element: "要素", order: "バイト順" },
   compare: {
+    cardTitle: "自分のコードの値と比べる",
     heading: "照合",
     yours: "あなたの値",
     computed: "計算した値",
@@ -42,6 +49,7 @@ export const ja = {
     crcBytes: (expected: number) => `数を 1 つか、${expected} バイトで入れてください`,
     logCount: (got: number, bytes: number, bits: number) =>
       `数が ${got} 個あります。1 バイトごとなら ${bytes} 個か ${bytes + 1} 個、1 ビットごとなら ${bits} 個か ${bits + 1} 個にしてください`,
+    receivedShort: (bytes: number) => `CRC を含めて ${bytes} バイト以上入れてください`,
     logCountBits: (got: number, bits: number) =>
       `数が ${got} 個あります。1 ビットごとに ${bits} 個か ${bits + 1} 個にしてください`,
     at: (line: number, column: number) => `（${line} 行 ${column} 列）`,
@@ -97,6 +105,8 @@ export const ja = {
     done: "完了",
   } satisfies Record<StepKind, string>,
   log: {
+    views: { steps: "ステップ", perByte: "バイトごと" },
+    byteTable: { byte: "バイト", register: "レジスタ", right: "右送り" },
     byteNo: (n: number) => `${n} バイト目`,
     willXor: "feedback = 1 なので次に poly と XOR する",
     noXor: "feedback = 0 なので XOR しない",

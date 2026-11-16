@@ -14,6 +14,11 @@ export const de: Messages = {
     estimate: "Schätzung",
   },
   workbench: {
+    splitters: {
+      sidebar: "Breite der Seitenleiste",
+      panel: "Höhe des Diagramms und des Bereichs darunter",
+      code: "Breite von Pseudocode und Verlauf",
+    },
     sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)",
     sidebarLabel: "Optionen",
     language: "Sprache",
@@ -26,6 +31,7 @@ export const de: Messages = {
   },
   badges: { base: "Basis", element: "Element", order: "Bytereihenfolge" },
   compare: {
+    cardTitle: "Mit Werten aus deinem Code vergleichen",
     heading: "Vergleich",
     yours: "deins",
     computed: "berechnet",
@@ -44,6 +50,7 @@ export const de: Messages = {
     crcBytes: (expected: number) => `Gib eine Zahl oder ${expected} Bytes ein`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} Zahlen: erwartet ${bytes} oder ${bytes + 1} (eine pro Byte) oder ${bits} oder ${bits + 1} (eine pro Bit)`,
+    receivedShort: (bytes: number) => `Gib mindestens ${bytes} Bytes ein, den CRC eingeschlossen`,
     logCountBits: (got: number, bits: number) => `${got} Zahlen: erwartet ${bits} oder ${bits + 1} (eine pro Bit)`,
     at: (line: number, column: number) => ` (Zeile ${line}, Spalte ${column})`,
     tooWide: (width: number) => `Gib einen Wert ein, der in ${width} Bit passt`,
@@ -98,6 +105,8 @@ export const de: Messages = {
     done: "Fertig",
   },
   log: {
+    views: { steps: "Schritte", perByte: "Pro Byte" },
+    byteTable: { byte: "Byte", register: "Register", right: "Rechtsschieben" },
     byteNo: (n: number) => `Byte ${n}`,
     willXor: "feedback = 1, daher als Nächstes XOR mit poly",
     noXor: "feedback = 0, daher kein XOR",
