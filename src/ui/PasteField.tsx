@@ -17,10 +17,12 @@ type Props = Readonly<{
   /** The badges that choose how the pasted numbers are read. */
   badges: ReactNode;
   error: ConfigError | CompareError | undefined;
+  /** A line under the field about what was pasted, shown when there is no error. */
+  note?: ReactNode;
 }>;
 
 /** A field values are pasted into, with its badges beside it and the error of what was pasted under it. */
-export function PasteField({ name, label, value, onChange, multiline = false, badges, error }: Props) {
+export function PasteField({ name, label, value, onChange, multiline = false, badges, error, note }: Props) {
   const m = useMessages();
   return (
     <label data-field={name} className={error ? "invalid" : undefined}>
@@ -33,7 +35,7 @@ export function PasteField({ name, label, value, onChange, multiline = false, ba
         )}
         <span className="badges">{badges}</span>
       </span>
-      {error ? <small className="error">{errorText(m, error)}</small> : null}
+      {error ? <small className="error">{errorText(m, error)}</small> : note}
     </label>
   );
 }

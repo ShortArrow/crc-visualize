@@ -46,6 +46,11 @@ export const en: Messages = {
       koopman: "would match if it is the Koopman notation",
       full: "would match if it is the notation that includes x^width",
     },
+    readAs: {
+      one: "One number, read as the CRC itself; the element and byte-order badges are not used",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${count} numbers of ${bits} bits${element ? `, each ${element === "le" ? "low" : "high"} byte first` : ""}: ${bytes} → read ${order === "le" ? "low" : "high"} byte first: ${value}`,
+    },
   },
   errors: {
     widthRange: "Enter an integer from 1 to 64",

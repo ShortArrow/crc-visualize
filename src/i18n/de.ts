@@ -46,6 +46,11 @@ export const de: Messages = {
       koopman: "würde in Koopman-Schreibweise stimmen",
       full: "würde in der Schreibweise mit x^width stimmen",
     },
+    readAs: {
+      one: "Eine Zahl, als CRC selbst gelesen; Element- und Byte-Reihenfolge-Badges werden nicht verwendet",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${count} Zahlen zu ${bits} Bit${element ? `, jeweils ${element === "le" ? "niederwertiges" : "höchstwertiges"} Byte zuerst` : ""}: ${bytes} → mit ${order === "le" ? "niederwertigem" : "höchstwertigem"} Byte zuerst gelesen: ${value}`,
+    },
   },
   errors: {
     widthRange: "Gib eine ganze Zahl von 1 bis 64 ein",

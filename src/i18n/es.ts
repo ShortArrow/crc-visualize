@@ -46,6 +46,11 @@ export const es: Messages = {
       koopman: "coincidiría en notación de Koopman",
       full: "coincidiría en la notación que incluye x^width",
     },
+    readAs: {
+      one: "Un número, leído como el propio CRC; no se usan las insignias de elemento ni de orden de bytes",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${count} números de ${bits} bits${element ? `, cada uno con el byte ${element === "le" ? "bajo" : "alto"} primero` : ""}: ${bytes} → leído con el byte ${order === "le" ? "bajo" : "alto"} primero: ${value}`,
+    },
   },
   errors: {
     widthRange: "Introduce un entero de 1 a 64",

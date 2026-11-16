@@ -3883,6 +3883,12 @@ button.bit-cell:hover {
   gap: 8px;
 }
 
+/* How your crc was read, under its field */
+.crc-reading {
+  color: var(--muted);
+  font-size: 0.8em;
+}
+
 .compare-result {
   display: grid;
   gap: 2px;

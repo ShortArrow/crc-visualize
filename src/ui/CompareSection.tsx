@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { matchLog, type LogMatch } from "../domain/compare";
-import { elementOf, readCrc, readValues, type Base, type ElementId } from "../domain/paste";
+import { elementOf, readCrc, readValues, type Base, type CrcRead, type Element, type ElementId } from "../domain/paste";
 import { registerValue, type CrcParams, type Step } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import type { Messages } from "../i18n/messages";
@@ -66,6 +66,21 @@ function LogTable({ match, width }: Readonly<{ match: LogMatch; width: number }>
   );
 }
 
+/** How your crc was read: one number as it is, or its numbers laid out as bytes and read in order. */
+function readingText(m: Messages, read: CrcRead, element: Element, order: "be" | "le", width: number): string {
+  if (read.bytes === undefined) return m.compare.readAs.one;
+  const bytes = read.bytes.map((b) => b.toString(16).toUpperCase().padStart(2, "0")).join(" ");
+  const count = (read.bytes.length * 8) / element.bits;
+  return m.compare.readAs.bytes(
+    element.bits,
+    count,
+    element.bits === 8 ? undefined : element.order,
+    bytes,
+    order,
+    valueHex(read.value, width),
+  );
+}
+
 /**
  * The Visualizer's Compare section (spec chapter 16): your crc against the CRC of the range, and your log against the register
  * after each byte or bit. When the log differs, playback moves to the end of its first differing row.
@@ -112,8 +127,13 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
           </>
         }
         error={crc && !crc.ok ? crc.error : undefined}
+        note={
+          crc?.ok ? (
+            <small className="crc-reading">{readingText(m, crc.value, elementOf(form.crcElement), form.crcOrder, width)}</small>
+          ) : null
+        }
       />
-      {crc?.ok ? <ValueResult yours={crc.value} computed={registerValue(steps.at(-1)!.reg)} width={width} /> : null}
+      {crc?.ok ? <ValueResult yours={crc.value.value} computed={registerValue(steps.at(-1)!.reg)} width={width} /> : null}
       <PasteField
         name="yourLog"
         label="your log"
