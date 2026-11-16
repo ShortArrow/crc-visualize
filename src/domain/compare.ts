@@ -57,3 +57,12 @@ export function matchLog(
   const firstDiff = rows.findIndex((r) => !r.ok);
   return { ok: true, value: { unit: found.unit, shift, rows, firstDiff: firstDiff >= 0 ? firstDiff : undefined } };
 }
+
+/** How a constant pasted from code is written against the setting: as it is, reversed in width bits (a right-shift implementation), or neither. */
+export type ConstantForm = "asIs" | "reversed" | "neither";
+
+/** The form pasted is written in for setting in width bits; a setting that reads the same reversed counts as it is. */
+export function constantForm(pasted: bigint, setting: bigint, width: number): ConstantForm {
+  if (pasted === setting) return "asIs";
+  return pasted === reflectValue(setting, width) ? "reversed" : "neither";
+}

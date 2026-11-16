@@ -1,13 +1,14 @@
 import type { Ref } from "react";
 import { crcLength, receivedMessageLength } from "../domain/check";
-import type { CompareError } from "../domain/compare";
+import { constantForm, type CompareError } from "../domain/compare";
 import { parseWidth, type ConfigError } from "../domain/parse";
 import { checkMatches, polyMatches } from "../domain/presetMatch";
 import type { Preset } from "../domain/presets";
 import { elementOf, readBytes, readValue, type Base, type ElementId, type PasteError } from "../domain/paste";
-import { bitsFromBytes, type Bit, type CrcParams } from "../domain/trace";
+import { bitsFromBytes, reflectValue, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { Badge, elementText, nextElement } from "./Badge";
+import { valueHex } from "./format";
 import { PasteField, ValueResult } from "./PasteField";
 
 /** What is pasted into the Compare cards of the pages other than the Visualizer; kept neither in the URL nor in storage. */
@@ -25,6 +26,11 @@ export type PageCompare = Readonly<{
   narrowCheck: string;
   narrowCheckBase: Base;
   narrowWidth: string;
+  /** your poly and your init on the Equivalences page, read in the settings' width. */
+  eqPoly: string;
+  eqPolyBase: Base;
+  eqInit: string;
+  eqInitBase: Base;
 }>;
 
 export const EMPTY_PAGE_COMPARE: PageCompare = {
@@ -39,6 +45,10 @@ export const EMPTY_PAGE_COMPARE: PageCompare = {
   narrowCheck: "",
   narrowCheckBase: 16,
   narrowWidth: "",
+  eqPoly: "",
+  eqPolyBase: 16,
+  eqInit: "",
+  eqInitBase: 16,
 };
 
 type Read<T> = { ok: true; value: T } | { ok: false; error: PasteError | CompareError };
@@ -252,6 +262,93 @@ export function NarrowCompare({ presets, compare, onCompare }: PresetCompareProp
           widthError={width.ok ? undefined : width.error}
         />
         {read?.ok ? <PresetNames presets={checkMatches(presets, read.value, width.ok ? width.value : undefined)} /> : null}
+      </form>
+    </section>
+  );
+}
+
+/** One constant pasted on the Equivalences page, against its setting: ✓ as it is or reversed, or ✗ with both forms written out. */
+function ConstantField({
+  name,
+  placeholder,
+  value,
+  base,
+  setting,
+  width,
+  onValue,
+  onBase,
+}: Readonly<{
+  name: string;
+  placeholder: string;
+  value: string;
+  base: Base;
+  setting: bigint;
+  width: number;
+  onValue: (v: string) => void;
+  onBase: () => void;
+}>) {
+  const m = useMessages();
+  const read = value.trim() === "" ? undefined : readValue(value, base, width);
+  const form = read?.ok ? constantForm(read.value, setting, width) : undefined;
+  return (
+    <>
+      <PasteField
+        name={name}
+        label={name}
+        value={value}
+        onChange={onValue}
+        placeholder={placeholder}
+        badges={<Badge kind="base" name={m.badges.base} text={String(base)} onPress={onBase} />}
+        error={read && !read.ok ? read.error : undefined}
+      />
+      {form ? (
+        <p
+          className="compare-result constant-result"
+          data-field={name}
+          data-form={form}
+          data-result={form === "neither" ? "ng" : "ok"}
+        >
+          {form === "neither"
+            ? `✗ ${m.compare.forms.neither(valueHex(setting, width), valueHex(reflectValue(setting, width), width))}`
+            : `✓ ${m.compare.forms[form]}`}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+/** The Compare card of the Equivalences page: your poly and your init against the settings' poly and init. */
+export function EquivalenceCompare({
+  params,
+  compare,
+  onCompare,
+}: Readonly<{ params: CrcParams; compare: PageCompare; onCompare: (compare: PageCompare) => void }>) {
+  const m = useMessages();
+  const set = <K extends keyof PageCompare>(key: K, value: PageCompare[K]) => onCompare({ ...compare, [key]: value });
+  return (
+    <section className="card compare-card">
+      <h3>{m.compare.cardTitle}</h3>
+      <form className="compare" onSubmit={(e) => e.preventDefault()}>
+        <ConstantField
+          name="your poly"
+          placeholder={m.compare.placeholders.poly}
+          value={compare.eqPoly}
+          base={compare.eqPolyBase}
+          setting={params.poly}
+          width={params.width}
+          onValue={(v) => set("eqPoly", v)}
+          onBase={() => set("eqPolyBase", compare.eqPolyBase === 16 ? 10 : 16)}
+        />
+        <ConstantField
+          name="your init"
+          placeholder={m.compare.placeholders.init}
+          value={compare.eqInit}
+          base={compare.eqInitBase}
+          setting={params.init}
+          width={params.width}
+          onValue={(v) => set("eqInit", v)}
+          onBase={() => set("eqInitBase", compare.eqInitBase === 16 ? 10 : 16)}
+        />
       </form>
     </section>
   );

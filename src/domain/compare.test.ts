@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { matchLog } from "./compare";
+import { constantForm, matchLog } from "./compare";
 import { bitEndStep, bitsFromBytes, reflectValue, trace, type Bit, type CrcParams } from "./trace";
 
 const SMBUS: CrcParams = { width: 8, poly: 0x07n, init: 0n, refin: false, refout: false, xorout: 0n };
@@ -98,5 +98,20 @@ describe("matchLog: the shift direction and the first row that differs", () => {
 
     expect(r).toMatchObject({ ok: true, value: { firstDiff: 3 } });
     expect(r.ok && r.value.rows[3]).toMatchObject({ at: 3, ok: false, step: bitEndStep(steps, 31) });
+  });
+});
+
+describe("constantForm", () => {
+  it("Given 0x1021 pasted for a poly of 0x1021 in 16 bits, When compared, Then it is the setting as it is", () => {
+    expect(constantForm(0x1021n, 0x1021n, 16)).toBe("asIs");
+  });
+  it("Given 0x8408 pasted for a poly of 0x1021 in 16 bits, When compared, Then it is the setting reversed", () => {
+    expect(constantForm(0x8408n, 0x1021n, 16)).toBe("reversed");
+  });
+  it("Given 0x1234 pasted for a poly of 0x1021 in 16 bits, When compared, Then it is neither", () => {
+    expect(constantForm(0x1234n, 0x1021n, 16)).toBe("neither");
+  });
+  it("Given 0x15 pasted for a poly of 0x15 in 5 bits, which reads the same reversed, When compared, Then it is as it is", () => {
+    expect(constantForm(0x15n, 0x15n, 5)).toBe("asIs");
   });
 });

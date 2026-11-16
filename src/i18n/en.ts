@@ -51,7 +51,13 @@ export const en: Messages = {
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
         `${count} numbers of ${bits} bits${element ? `, each ${element === "le" ? "low" : "high"} byte first` : ""}: ${bytes} → read ${order === "le" ? "low" : "high"} byte first: ${value}`,
     },
+    forms: {
+      asIs: "as it is",
+      reversed: "reversed in width bits, as a right-shift implementation writes it",
+      neither: (asIs: string, reversed: string) => `neither: as it is ${asIs}, reversed ${reversed}`,
+    },
     placeholders: {
+      init: "e.g. 0x0000",
       crc: "e.g. 0x31C3 or 31 C3",
       log: "e.g. 0x2672, 0x20B5, 0x9752, …",
       received: "e.g. 31 32 33 34 35 36 37 38 39 31 C3",

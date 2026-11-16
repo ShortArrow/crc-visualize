@@ -51,7 +51,13 @@ export const es: Messages = {
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
         `${count} números de ${bits} bits${element ? `, cada uno con el byte ${element === "le" ? "bajo" : "alto"} primero` : ""}: ${bytes} → leído con el byte ${order === "le" ? "bajo" : "alto"} primero: ${value}`,
     },
+    forms: {
+      asIs: "tal cual",
+      reversed: "invertido en width bits, como lo escribe una implementación con desplazamiento a la derecha",
+      neither: (asIs: string, reversed: string) => `ninguno: tal cual ${asIs}, invertido ${reversed}`,
+    },
     placeholders: {
+      init: "p. ej. 0x0000",
       crc: "p. ej. 0x31C3 o 31 C3",
       log: "p. ej. 0x2672, 0x20B5, 0x9752, …",
       received: "p. ej. 31 32 33 34 35 36 37 38 39 31 C3",
