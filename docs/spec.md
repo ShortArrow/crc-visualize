@@ -580,6 +580,8 @@ Values copied from the viewer's own CRC code (the register partway through, the 
 
 - `your log` is matched by its count. For n input bytes, n numbers are the register after each byte, and n + 1 start with `init`; 8n and 8n + 1 numbers are the register after each bit. Any other count is an error that gives both counts. The shift direction is the one whose first number matches; when neither matches, the left shift is shown.
 - `your table` with a count other than 256 is an error that gives the count.
+- On the Naming and Narrow down pages, `your poly` and `your check` are one number each, with a base badge. The `width` beside them is a whole number from 1 to 64, or empty; anything else is an error under it. With `width` given, a value that does not fit in it (for `your poly`, in `width` + 1 bits, so the x^width-included notation can be pasted) is an error, and only the presets of that `width` are compared.
+- The result is ✓ followed by the official names of the presets that match, or ✗ when none does. For `your poly`, the other notations are tried only when no preset matches in normal notation, and each that some preset would match is listed after the ✗ with those presets: "would match if it is the reversed notation: …", then the Koopman and the x^width-included notations. With `width` empty, a value can match presets of different widths in different notations (`0x9` is the normal `poly` of CRC-5/EPC-C1G2 and the Koopman notation of CRC-4/G-704); giving `width` tells them apart.
 - Matching values are marked ✓ and differing ones ✗, as in the frame list (chapter 7).
 
 ### The answer without playback
