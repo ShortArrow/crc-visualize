@@ -143,7 +143,10 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     );
 
   if (route.page === "names") {
-    return frame(<NamesToc />)(<NamesPage target={route.param} />, <span>{m.pages.names}</span>);
+    return frame(<NamesToc />)(
+      <NamesPage target={route.param} compare={pageCompare} onCompare={setPageCompare} />,
+      <span>{m.pages.names}</span>,
+    );
   }
   if (route.page === "narrow") {
     const path = fitPath(CATALOGUE, route.path);
@@ -153,7 +156,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     };
     const props = { presets: CATALOGUE, path, onOpen: open };
     return frame(<NarrowSidebar {...props} />)(
-      <NarrowPage {...props} />,
+      <NarrowPage {...props} compare={pageCompare} onCompare={setPageCompare} />,
       <span>{m.narrow.status(matching(CATALOGUE, path.fixed).length)}</span>,
     );
   }

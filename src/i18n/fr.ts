@@ -40,6 +40,12 @@ export const fr: Messages = {
     rightShift: "comparé comme le registre d’un décalage à droite",
     byte: "octet",
     bit: "bit",
+    none: "Aucun préréglage ne concorde",
+    notations: {
+      reversed: "concorderait en notation inversée",
+      koopman: "concorderait en notation de Koopman",
+      full: "concorderait dans la notation qui inclut x^width",
+    },
   },
   errors: {
     widthRange: "Saisissez un entier de 1 à 64",

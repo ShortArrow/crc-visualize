@@ -58,7 +58,8 @@ type Parsed<T> = { ok: true; value: T } | { ok: false; error: ConfigError };
 const ok = <T>(value: T): Parsed<T> => ({ ok: true, value });
 const fail = (error: ConfigError): Parsed<never> => ({ ok: false, error });
 
-function parseWidth(text: string): Parsed<number> {
+/** Reads a width: a whole number from 1 to 64. */
+export function parseWidth(text: string): Parsed<number> {
   const t = text.trim();
   if (!/^\d+$/.test(t)) return fail({ code: "widthRange" });
   const n = Number(t);

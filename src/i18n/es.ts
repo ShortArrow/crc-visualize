@@ -40,6 +40,12 @@ export const es: Messages = {
     rightShift: "comparado como lo guarda un desplazamiento a la derecha",
     byte: "byte",
     bit: "bit",
+    none: "Ningún preajuste coincide",
+    notations: {
+      reversed: "coincidiría en notación invertida",
+      koopman: "coincidiría en notación de Koopman",
+      full: "coincidiría en la notación que incluye x^width",
+    },
   },
   errors: {
     widthRange: "Introduce un entero de 1 a 64",

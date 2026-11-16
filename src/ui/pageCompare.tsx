@@ -1,6 +1,9 @@
 import type { Ref } from "react";
 import { crcLength, receivedMessageLength } from "../domain/check";
 import type { CompareError } from "../domain/compare";
+import { parseWidth, type ConfigError } from "../domain/parse";
+import { checkMatches, polyMatches } from "../domain/presetMatch";
+import type { Preset } from "../domain/presets";
 import { elementOf, readBytes, readValue, type Base, type ElementId, type PasteError } from "../domain/paste";
 import { bitsFromBytes, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
@@ -14,9 +17,29 @@ export type PageCompare = Readonly<{
   receivedElement: ElementId;
   check: string;
   checkBase: Base;
+  /** your poly on the Naming page, and the width it is compared in (empty: every width). */
+  poly: string;
+  polyBase: Base;
+  polyWidth: string;
+  /** your check on the Narrow down page, apart from the Check page's, which is read in the settings' width. */
+  narrowCheck: string;
+  narrowCheckBase: Base;
+  narrowWidth: string;
 }>;
 
-export const EMPTY_PAGE_COMPARE: PageCompare = { received: "", receivedBase: 16, receivedElement: "8", check: "", checkBase: 16 };
+export const EMPTY_PAGE_COMPARE: PageCompare = {
+  received: "",
+  receivedBase: 16,
+  receivedElement: "8",
+  check: "",
+  checkBase: 16,
+  poly: "",
+  polyBase: 16,
+  polyWidth: "",
+  narrowCheck: "",
+  narrowCheckBase: 16,
+  narrowWidth: "",
+};
 
 type Read<T> = { ok: true; value: T } | { ok: false; error: PasteError | CompareError };
 
@@ -82,6 +105,137 @@ export function CheckCompare({ params, compare, onCompare, received, check, ref 
           error={yours && !yours.ok ? yours.error : undefined}
         />
         {yours?.ok ? <ValueResult yours={yours.value} computed={check} width={params.width} /> : null}
+      </form>
+    </section>
+  );
+}
+
+type PresetCompareProps = Readonly<{
+  presets: readonly Preset[];
+  compare: PageCompare;
+  onCompare: (compare: PageCompare) => void;
+}>;
+
+/** A width field: undefined when empty (every width), otherwise the width or the error under it. */
+function readWidth(text: string): { ok: true; value: number | undefined } | { ok: false; error: ConfigError } {
+  return text.trim() === "" ? { ok: true, value: undefined } : parseWidth(text);
+}
+
+/** The official names of presets after ✓, or ✗ with no names when there are none. */
+function PresetNames({ presets }: Readonly<{ presets: readonly Preset[] }>) {
+  const m = useMessages();
+  return presets.length > 0 ? (
+    <p className="compare-result ok" data-result="ok">
+      ✓ {presets.map((p) => p.name).join(", ")}
+    </p>
+  ) : (
+    <p className="compare-result ng" data-result="ng">
+      ✗ {m.compare.none}
+    </p>
+  );
+}
+
+/** A value pasted with the width it is compared in, and the badge and error of each. */
+function ValueWithWidth({
+  name,
+  value,
+  base,
+  width,
+  onValue,
+  onBase,
+  onWidth,
+  valueError,
+  widthError,
+}: Readonly<{
+  name: string;
+  value: string;
+  base: Base;
+  width: string;
+  onValue: (v: string) => void;
+  onBase: () => void;
+  onWidth: (v: string) => void;
+  valueError: PasteError | undefined;
+  widthError: ConfigError | undefined;
+}>) {
+  const m = useMessages();
+  return (
+    <>
+      <PasteField
+        name={name}
+        label={name}
+        value={value}
+        onChange={onValue}
+        badges={<Badge kind="base" name={m.badges.base} text={String(base)} onPress={onBase} />}
+        error={valueError}
+      />
+      <PasteField name="width" label="width" value={width} onChange={onWidth} badges={null} error={widthError} />
+    </>
+  );
+}
+
+/** The Compare card of the Naming page: your poly against the presets' poly, then in the other notations when none matches. */
+export function NamingCompare({ presets, compare, onCompare }: PresetCompareProps) {
+  const m = useMessages();
+  const set = <K extends keyof PageCompare>(key: K, value: PageCompare[K]) => onCompare({ ...compare, [key]: value });
+  const width = readWidth(compare.polyWidth);
+  const read =
+    compare.poly.trim() === "" || !width.ok ? undefined : readValue(compare.poly, compare.polyBase, (width.value ?? 64) + 1);
+  const match = read?.ok ? polyMatches(presets, read.value, width.ok ? width.value : undefined) : undefined;
+  return (
+    <section className="card compare-card">
+      <h3>{m.compare.cardTitle}</h3>
+      <form className="compare" onSubmit={(e) => e.preventDefault()}>
+        <ValueWithWidth
+          name="your poly"
+          value={compare.poly}
+          base={compare.polyBase}
+          width={compare.polyWidth}
+          onValue={(v) => set("poly", v)}
+          onBase={() => set("polyBase", compare.polyBase === 16 ? 10 : 16)}
+          onWidth={(v) => set("polyWidth", v)}
+          valueError={read && !read.ok ? read.error : undefined}
+          widthError={width.ok ? undefined : width.error}
+        />
+        {match ? (
+          <div className="compare-result-list">
+            <PresetNames presets={match.normal} />
+            {match.others.map(({ notation, presets: matched }) => (
+              <p key={notation} className="compare-hint" data-notation={notation}>
+                {m.compare.notations[notation]}: {matched.map((p) => p.name).join(", ")}
+              </p>
+            ))}
+          </div>
+        ) : null}
+      </form>
+    </section>
+  );
+}
+
+/** The Compare card of the Narrow down page: your check against the check of the presets. */
+export function NarrowCompare({ presets, compare, onCompare }: PresetCompareProps) {
+  const m = useMessages();
+  const set = <K extends keyof PageCompare>(key: K, value: PageCompare[K]) => onCompare({ ...compare, [key]: value });
+  const width = readWidth(compare.narrowWidth);
+  const read =
+    compare.narrowCheck.trim() === "" || !width.ok
+      ? undefined
+      : readValue(compare.narrowCheck, compare.narrowCheckBase, width.value ?? 64);
+  return (
+    <section className="card compare-card">
+      <h3>{m.compare.cardTitle}</h3>
+      <form className="compare" onSubmit={(e) => e.preventDefault()}>
+        <ValueWithWidth
+          name="your check"
+          value={compare.narrowCheck}
+          base={compare.narrowCheckBase}
+          width={compare.narrowWidth}
+          onValue={(v) => set("narrowCheck", v)}
+          onBase={() => set("narrowCheckBase", compare.narrowCheckBase === 16 ? 10 : 16)}
+          onWidth={(v) => set("narrowWidth", v)}
+          valueError={read && !read.ok ? read.error : undefined}
+          widthError={width.ok ? undefined : width.error}
+        />
+        {read?.ok ? <PresetNames presets={checkMatches(presets, read.value, width.ok ? width.value : undefined)} /> : null}
       </form>
     </section>
   );

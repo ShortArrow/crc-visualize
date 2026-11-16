@@ -36,6 +36,8 @@ export const zh: Messages = {
     rightShift: "按右移寄存器比对",
     byte: "字节",
     bit: "位",
+    none: "没有一致的预设",
+    notations: { reversed: "若为反转表示则一致", koopman: "若为 Koopman 表示则一致", full: "若为包含 x^width 的表示则一致" },
   },
   errors: {
     widthRange: "请输入 1～64 的整数",

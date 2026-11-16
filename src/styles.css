@@ -1922,6 +1922,12 @@ button.bp-gutter.bp-off::before {
   color: var(--muted);
 }
 
+/* What the page scrolls into view when the path changes: kept a few px clear of the edge, so no fraction of a px is cut off */
+.narrow-node,
+.narrow-node > .split-by {
+  scroll-margin-block: 4px;
+}
+
 .split-by {
   display: flex;
   flex-wrap: wrap;

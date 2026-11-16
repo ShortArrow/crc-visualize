@@ -39,6 +39,8 @@ export const ja = {
     rightShift: "右送りのレジスタとして照合",
     byte: "バイト",
     bit: "ビット",
+    none: "一致するプリセットなし",
+    notations: { reversed: "反転表記なら一致", koopman: "Koopman 表記なら一致", full: "x^width を含む表記なら一致" },
   },
   errors: {
     widthRange: "1〜64 の整数を入れてください",

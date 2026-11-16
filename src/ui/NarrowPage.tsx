@@ -5,6 +5,7 @@ import type { Preset } from "../domain/presets";
 import { useMessages } from "../i18n/I18n";
 import { narrowHash } from "./route";
 import { Explanation } from "./Explanation";
+import { NarrowCompare, type PageCompare } from "./pageCompare";
 import { PresetTable } from "./PresetTable";
 
 type Props = Readonly<{
@@ -18,7 +19,13 @@ type Props = Readonly<{
  * column headings are emphasized for the parameters that still split them. Whenever the path changes, the deepest node (its choice
  * of parameter, or the single candidate) is scrolled into view.
  */
-export function NarrowPage({ presets, path, onOpen }: Props) {
+export function NarrowPage({
+  presets,
+  path,
+  onOpen,
+  compare,
+  onCompare,
+}: Props & Readonly<{ compare: PageCompare; onCompare: (compare: PageCompare) => void }>) {
   const m = useMessages();
   const candidates = matching(presets, path.fixed);
   const tree = useRef<HTMLElement>(null);
@@ -30,6 +37,7 @@ export function NarrowPage({ presets, path, onOpen }: Props) {
   return (
     <div className="narrow-page">
       <h2>{m.narrow.heading}</h2>
+      <NarrowCompare presets={presets} compare={compare} onCompare={onCompare} />
       <Explanation>{m.narrow.note}</Explanation>
       <div className="page-columns">
         <section className="card narrow-tree" ref={tree}>

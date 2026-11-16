@@ -40,6 +40,12 @@ export const de: Messages = {
     rightShift: "verglichen, wie ein Rechtsschieben das Register hält",
     byte: "Byte",
     bit: "Bit",
+    none: "Keine Voreinstellung stimmt",
+    notations: {
+      reversed: "würde in umgekehrter Schreibweise stimmen",
+      koopman: "würde in Koopman-Schreibweise stimmen",
+      full: "würde in der Schreibweise mit x^width stimmen",
+    },
   },
   errors: {
     widthRange: "Gib eine ganze Zahl von 1 bis 64 ein",
