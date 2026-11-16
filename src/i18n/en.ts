@@ -41,6 +41,16 @@ export const en: Messages = {
       koopman: "would match if it is the Koopman notation",
       full: "would match if it is the notation that includes x^width",
     },
+    hints: {
+      order: "would match if the bytes were read in the other order",
+      reflect: "would match if the bits were reflected in width bits",
+      xorout: "would match if it were XORed with xorout",
+      ones: "would match if it were XORed with all ones",
+      "order+xorout": "would match if the bytes were read in the other order and then XORed with xorout",
+      "order+ones": "would match if the bytes were read in the other order and then XORed with all ones",
+      "reflect+xorout": "would match if the bits were reflected in width bits and then XORed with xorout",
+      "reflect+ones": "would match if the bits were reflected in width bits and then XORed with all ones",
+    },
     readAs: {
       one: "One number, read as the CRC itself; the element and byte-order badges are not used",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

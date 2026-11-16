@@ -41,6 +41,16 @@ export const es: Messages = {
       koopman: "coincidiría en notación de Koopman",
       full: "coincidiría en la notación que incluye x^width",
     },
+    hints: {
+      order: "coincidiría leyendo los bytes en el orden inverso",
+      reflect: "coincidiría reflejando los bits en width bits",
+      xorout: "coincidiría con un XOR con xorout",
+      ones: "coincidiría con un XOR con todos los bits a 1",
+      "order+xorout": "coincidiría leyendo los bytes en el orden inverso y luego con un XOR con xorout",
+      "order+ones": "coincidiría leyendo los bytes en el orden inverso y luego con un XOR con todos los bits a 1",
+      "reflect+xorout": "coincidiría reflejando los bits en width bits y luego con un XOR con xorout",
+      "reflect+ones": "coincidiría reflejando los bits en width bits y luego con un XOR con todos los bits a 1",
+    },
     readAs: {
       one: "Un número, leído como el propio CRC; no se usan las insignias de elemento ni de orden de bytes",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

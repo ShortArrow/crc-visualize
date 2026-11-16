@@ -3922,3 +3922,16 @@ button.bit-cell:hover {
   font-size: 0.9rem;
   line-height: 1.2;
 }
+
+.compare-hints {
+  margin: 2px 0 0;
+  padding-left: 1.2em;
+  color: var(--fg);
+}
+
+/* your crc with its result and hints, scrolled into view together after a paste */
+.compare-crc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
