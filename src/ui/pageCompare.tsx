@@ -1,6 +1,7 @@
 import type { Ref } from "react";
 import { crcLength, receivedMessageLength } from "../domain/check";
-import { constantForm, matchTable, type CompareError, type TableMatch } from "../domain/compare";
+import { constantForm, matchTable, matchTableLog, type CompareError, type LogMatch, type TableMatch } from "../domain/compare";
+import type { TableRun } from "../domain/table";
 import { parseWidth, type ConfigError } from "../domain/parse";
 import { checkMatches, polyMatches } from "../domain/presetMatch";
 import type { Preset } from "../domain/presets";
@@ -9,6 +10,7 @@ import { bitsFromBytes, reflectValue, type Bit, type CrcParams } from "../domain
 import { useMessages } from "../i18n/I18n";
 import { Badge, elementText, nextElement } from "./Badge";
 import { valueHex } from "./format";
+import { LogTable } from "./CompareSection";
 import { PasteField, ValueResult } from "./PasteField";
 
 /** What is pasted into the Compare cards of the pages other than the Visualizer; kept neither in the URL nor in storage. */
@@ -34,6 +36,9 @@ export type PageCompare = Readonly<{
   /** your table on the Table page: 256 numbers in index order. */
   table: string;
   tableBase: Base;
+  /** your log on the Table page: crc after each byte of the byte-at-a-time computation. */
+  tableLog: string;
+  tableLogBase: Base;
 }>;
 
 export const EMPTY_PAGE_COMPARE: PageCompare = {
@@ -54,6 +59,8 @@ export const EMPTY_PAGE_COMPARE: PageCompare = {
   eqInitBase: 16,
   table: "",
   tableBase: 16,
+  tableLog: "",
+  tableLogBase: 16,
 };
 
 type Read<T> = { ok: true; value: T } | { ok: false; error: PasteError | CompareError };
@@ -366,17 +373,32 @@ export function readTable(params: CrcParams, compare: PageCompare): Read<TableMa
   return values.ok ? matchTable(params, values.value) : values;
 }
 
-/** The Compare card of the Table page: your table against table T for a left and for a right shift. */
+/** your log on the Table page read and compared with run, or undefined when nothing is pasted or the input is not whole bytes. */
+export function readTableLog(params: CrcParams, run: TableRun | undefined, compare: PageCompare): Read<LogMatch> | undefined {
+  if (compare.tableLog.trim() === "" || !run) return undefined;
+  const values = readValues(compare.tableLog, compare.tableLogBase, params.width);
+  return values.ok ? matchTableLog(params, run, values.value) : values;
+}
+
+/**
+ * The Compare card of the Table page: your table against table T for a left and for a right shift, and your log against crc
+ * after each byte, the latter while the input is whole bytes.
+ */
 export function TableCompare({
   params,
   compare,
   onCompare,
   read,
+  log,
+  bytes,
 }: Readonly<{
   params: CrcParams;
   compare: PageCompare;
   onCompare: (compare: PageCompare) => void;
   read: Read<TableMatch> | undefined;
+  log: Read<LogMatch> | undefined;
+  /** Whether the input is whole bytes, so that a log of the byte-at-a-time computation can be compared. */
+  bytes: boolean;
 }>) {
   const m = useMessages();
   const set = <K extends keyof PageCompare>(key: K, value: PageCompare[K]) => onCompare({ ...compare, [key]: value });
@@ -416,6 +438,26 @@ export function TableCompare({
             </div>
           )
         ) : null}
+        {bytes ? (
+          <PasteField
+            name="yourLog"
+            label="your log"
+            value={compare.tableLog}
+            onChange={(v) => set("tableLog", v)}
+            placeholder={m.compare.placeholders.log}
+            multiline
+            badges={
+              <Badge
+                kind="base"
+                name={m.badges.base}
+                text={String(compare.tableLogBase)}
+                onPress={() => set("tableLogBase", compare.tableLogBase === 16 ? 10 : 16)}
+              />
+            }
+            error={log && !log.ok ? log.error : undefined}
+          />
+        ) : null}
+        {log?.ok ? <LogTable match={log.value} width={params.width} /> : null}
       </form>
     </section>
   );
