@@ -51,7 +51,16 @@ export const es: Messages = {
       reversed: "invertido en width bits, como lo escribe una implementación con desplazamiento a la derecha",
       neither: (asIs: string, reversed: string) => `ninguno: tal cual ${asIs}, invertido ${reversed}`,
     },
+    table: {
+      left: "coincide con la tabla T del desplazamiento a la izquierda",
+      right: "coincide con la tabla T del desplazamiento a la derecha",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `más cercana a la tabla T del desplazamiento a la izquierda; primera diferencia en el índice ${index}`
+          : `más cercana a la tabla T del desplazamiento a la derecha; primera diferencia en el índice ${index}`,
+    },
     placeholders: {
+      table: "p. ej. 0x0000, 0x1021, 0x2042, …",
       init: "p. ej. 0x0000",
       crc: "p. ej. 0x31C3 o 31 C3",
       log: "p. ej. 0x2672, 0x20B5, 0x9752, …",
@@ -70,6 +79,7 @@ export const es: Messages = {
     crcBytes: (expected: number) => `Introduce un número o ${expected} bytes`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} números: se esperan ${bytes} o ${bytes + 1} (uno por byte), o ${bits} o ${bits + 1} (uno por bit)`,
+    tableCount: (got: number) => `Introduce 256 números, en orden de índice (se introdujeron ${got})`,
     receivedShort: (bytes: number) => `Introduce al menos ${bytes} bytes, con el CRC`,
     logCountBits: (got: number, bits: number) => `${got} números: se esperan ${bits} o ${bits + 1} (uno por bit)`,
     at: (line: number, column: number) => ` (línea ${line}, columna ${column})`,

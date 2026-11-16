@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { constantForm, matchLog } from "./compare";
+import { constantForm, matchLog, matchTable } from "./compare";
+import { crcTable } from "./table";
 import { bitEndStep, bitsFromBytes, reflectValue, trace, type Bit, type CrcParams } from "./trace";
 
 const SMBUS: CrcParams = { width: 8, poly: 0x07n, init: 0n, refin: false, refout: false, xorout: 0n };
@@ -113,5 +114,34 @@ describe("constantForm", () => {
   });
   it("Given 0x15 pasted for a poly of 0x15 in 5 bits, which reads the same reversed, When compared, Then it is as it is", () => {
     expect(constantForm(0x15n, 0x15n, 5)).toBe("asIs");
+  });
+});
+
+describe("matchTable", () => {
+  const XMODEM: CrcParams = { width: 16, poly: 0x1021n, init: 0n, refin: false, refout: false, xorout: 0n };
+  const left = crcTable(XMODEM);
+  const right = crcTable({ ...XMODEM, refin: true, refout: true });
+  it("Given the left-shift table of poly 0x1021, When matched, Then it is the left shift with no difference", () => {
+    expect(matchTable(XMODEM, left)).toEqual({ ok: true, value: { shift: "left", firstDiff: undefined } });
+  });
+  it("Given the right-shift table of poly 0x1021, When matched, Then it is the right shift with no difference", () => {
+    expect(matchTable(XMODEM, right)).toEqual({ ok: true, value: { shift: "right", firstDiff: undefined } });
+  });
+  it("Given the left-shift table with entry 5 changed, When matched, Then it is the left shift, first differing at 5", () => {
+    const pasted = left.map((v, i) => (i === 5 ? v ^ 1n : v));
+    expect(matchTable(XMODEM, pasted)).toEqual({
+      ok: true,
+      value: { shift: "left", firstDiff: { index: 5, yours: left[5]! ^ 1n, computed: left[5]! } },
+    });
+  });
+  it("Given 256 zeros, which match both tables at index 0 only, When matched, Then the tie goes to the left shift, first differing at 1", () => {
+    const zeros = Array.from({ length: 256 }, () => 0n);
+    expect(matchTable(XMODEM, zeros)).toEqual({
+      ok: true,
+      value: { shift: "left", firstDiff: { index: 1, yours: 0n, computed: left[1]! } },
+    });
+  });
+  it("Given 255 numbers, When matched, Then it is an error that gives the count", () => {
+    expect(matchTable(XMODEM, left.slice(1))).toEqual({ ok: false, error: { code: "tableCount", got: 255 } });
   });
 });

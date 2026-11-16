@@ -51,7 +51,16 @@ export const fr: Messages = {
       reversed: "inversé sur width bits, comme l'écrit une implémentation à décalage à droite",
       neither: (asIs: string, reversed: string) => `ni l'un ni l'autre : tel quel ${asIs}, inversé ${reversed}`,
     },
+    table: {
+      left: "concorde avec la table T du décalage à gauche",
+      right: "concorde avec la table T du décalage à droite",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `plus proche de la table T du décalage à gauche ; première différence à l'indice ${index}`
+          : `plus proche de la table T du décalage à droite ; première différence à l'indice ${index}`,
+    },
     placeholders: {
+      table: "ex. 0x0000, 0x1021, 0x2042, …",
       init: "ex. 0x0000",
       crc: "ex. 0x31C3 ou 31 C3",
       log: "ex. 0x2672, 0x20B5, 0x9752, …",
@@ -70,6 +79,7 @@ export const fr: Messages = {
     crcBytes: (expected: number) => `Saisissez un nombre ou ${expected} octets`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} nombres : il en faut ${bytes} ou ${bytes + 1} (un par octet), ou ${bits} ou ${bits + 1} (un par bit)`,
+    tableCount: (got: number) => `Saisissez 256 nombres, dans l'ordre des indices (${got} saisis)`,
     receivedShort: (bytes: number) => `Saisissez au moins ${bytes} octets, CRC compris`,
     logCountBits: (got: number, bits: number) => `${got} nombres : il en faut ${bits} ou ${bits + 1} (un par bit)`,
     at: (line: number, column: number) => ` (ligne ${line}, colonne ${column})`,
