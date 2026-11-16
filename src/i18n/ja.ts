@@ -40,6 +40,14 @@ export const ja = {
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
         `${bits} ビットの数 ${count} つを${element ? `、それぞれ${element === "le" ? "下位" : "上位"}バイトから` : ""}並べて ${bytes} → ${order === "le" ? "下位" : "上位"}バイトから CRC として読んで ${value}`,
     },
+    placeholders: {
+      crc: "例：0x31C3 または 31 C3",
+      log: "例：0x2672, 0x20B5, 0x9752, …",
+      received: "例：31 32 33 34 35 36 37 38 39 31 C3",
+      check: "例：0x31C3",
+      poly: "例：0x1021",
+      width: "例：16（空ならすべての幅）",
+    },
   },
   errors: {
     widthRange: "1〜64 の整数を入れてください",

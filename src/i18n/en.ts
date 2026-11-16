@@ -46,6 +46,14 @@ export const en: Messages = {
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
         `${count} numbers of ${bits} bits${element ? `, each ${element === "le" ? "low" : "high"} byte first` : ""}: ${bytes} → read ${order === "le" ? "low" : "high"} byte first: ${value}`,
     },
+    placeholders: {
+      crc: "e.g. 0x31C3 or 31 C3",
+      log: "e.g. 0x2672, 0x20B5, 0x9752, …",
+      received: "e.g. 31 32 33 34 35 36 37 38 39 31 C3",
+      check: "e.g. 0x31C3",
+      poly: "e.g. 0x1021",
+      width: "e.g. 16 (empty: every width)",
+    },
   },
   errors: {
     widthRange: "Enter an integer from 1 to 64",
