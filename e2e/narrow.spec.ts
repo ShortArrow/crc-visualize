@@ -81,6 +81,38 @@ test.describe("Narrowing", () => {
     });
   });
 
+  test("under the choice of parameter, a line gives the meaning of the one pointed at, else focused, else split by", async ({
+    page,
+  }) => {
+    const n = await given("#narrow/width is open, split by width", () => NarrowPage.open(page, "#narrow/width"));
+    await then("the line gives the meaning of width, the parameter split by", () =>
+      expect(n.meaning(0)).toContainText("幅: CRC のビット数"),
+    );
+    await when("pointing at poly", () => n.splitBy(0, "poly").hover());
+    await then("the line gives the meaning of poly", () => expect(n.meaning(0)).toContainText("生成多項式: 最上位の x^width"));
+    await when("moving the pointer away and moving the keyboard focus to init", async () => {
+      await page.mouse.move(0, 0);
+      await n.splitBy(0, "init").focus();
+    });
+    await then("the line gives the meaning of init", () => expect(n.meaning(0)).toContainText("初期値: 最初の入力ビット"));
+    await when("pointing at refin while init has the focus", () => n.splitBy(0, "refin").hover());
+    await then("the pointer wins", () => expect(n.meaning(0)).toContainText("入力の反転: true なら"));
+    await when("moving the pointer away and the focus out", async () => {
+      await page.mouse.move(0, 0);
+      await n.splitBy(0, "init").blur();
+    });
+    await then("the line is back to width", () => expect(n.meaning(0)).toContainText("幅: CRC のビット数"));
+  });
+
+  test("before any parameter is chosen, the meaning line is shown only while one is pointed at or focused", async ({ page }) => {
+    const n = await given("#narrow is open", () => NarrowPage.open(page, "#narrow"));
+    await then("there is no meaning line", () => expect(n.meaning(0)).toHaveCount(0));
+    await when("pointing at xorout", () => n.splitBy(0, "xorout").hover());
+    await then("the line gives the meaning of xorout", () =>
+      expect(n.meaning(0)).toContainText("最終 XOR 値: 最後に CRC と XOR する値"),
+    );
+  });
+
   test("a parameter that is the same in every candidate is not offered for splitting", async ({ page }) => {
     const n = await given("#narrow/width=16/poly=0x8005 is open", () => NarrowPage.open(page, "#narrow/width=16/poly=0x8005"));
     await then("the node after poly offers neither width nor poly, but does offer init", async () => {
