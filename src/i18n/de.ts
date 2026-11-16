@@ -14,6 +14,11 @@ export const de: Messages = {
     estimate: "Schätzung",
   },
   workbench: {
+    splitters: {
+      sidebar: "Breite der Seitenleiste",
+      panel: "Höhe des Diagramms und des Bereichs darunter",
+      code: "Breite von Pseudocode und Verlauf",
+    },
     sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)",
     sidebarLabel: "Optionen",
     language: "Sprache",
