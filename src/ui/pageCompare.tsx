@@ -4,7 +4,7 @@ import { constantForm, matchTable, matchTableLog, type CompareError, type LogMat
 import type { TableRun } from "../domain/table";
 import { parseWidth, type ConfigError } from "../domain/parse";
 import { checkHints, checkMatches, polyMatches } from "../domain/presetMatch";
-import { valueHints } from "../domain/hints";
+import { asHints, valueHints } from "../domain/hints";
 import type { Preset } from "../domain/presets";
 import { elementOf, readBytes, readValue, readValues, type Base, type ElementId, type PasteError } from "../domain/paste";
 import { bitsFromBytes, reflectValue, type Bit, type CrcParams } from "../domain/trace";
@@ -134,7 +134,7 @@ export function CheckCompare({ params, compare, onCompare, received, check, ref 
             yours={yours.value}
             computed={check}
             width={params.width}
-            hints={valueHints(yours.value, check, params.width, params.xorout)}
+            hints={asHints(valueHints(yours.value, check, params.width, params.xorout))}
           />
         ) : null}
       </form>
@@ -468,7 +468,7 @@ export function TableCompare({
                 yours={match.firstDiff.yours}
                 computed={match.firstDiff.computed}
                 width={params.width}
-                hints={valueHints(match.firstDiff.yours, match.firstDiff.computed, params.width, undefined)}
+                hints={asHints(valueHints(match.firstDiff.yours, match.firstDiff.computed, params.width, undefined))}
               />
             </div>
           )

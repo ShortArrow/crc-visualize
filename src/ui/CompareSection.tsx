@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { matchLog, type LogMatch } from "../domain/compare";
-import { valueHints } from "../domain/hints";
+import { asHints, valueHints } from "../domain/hints";
 import { elementOf, readCrc, readValues, type Base, type CrcRead, type Element, type ElementId } from "../domain/paste";
 import { registerValue, type CrcParams, type Step } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
@@ -47,7 +47,7 @@ export function LogTable({ match, params }: Readonly<{ match: LogMatch; params: 
           <p className="compare-note">
             {m.compare.firstDiff}: {rowName(m, match, diff.at)}
           </p>
-          <HintList hints={valueHints(diff.yours, diff.computed, width, xorout)} />
+          <HintList hints={asHints(valueHints(diff.yours, diff.computed, width, xorout))} />
         </>
       )}
       <table className="compare-log">
@@ -150,7 +150,7 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
             yours={crc.value.value}
             computed={computed}
             width={width}
-            hints={valueHints(crc.value.value, computed, width, params.xorout)}
+            hints={asHints(valueHints(crc.value.value, computed, width, params.xorout))}
           />
         ) : null}
       </div>

@@ -55,3 +55,9 @@ export function valueHints(yours: bigint, computed: bigint, width: number, xorou
   };
   return VALUE_HINTS.filter(turns);
 }
+
+/** One hint as it is listed under a value that differs. */
+export type Hint = Readonly<{ kind: "value"; hint: ValueHint }>;
+
+/** hints 1 to 5 as listed hints. */
+export const asHints = (hints: readonly ValueHint[]): Hint[] => hints.map((hint) => ({ kind: "value", hint }));

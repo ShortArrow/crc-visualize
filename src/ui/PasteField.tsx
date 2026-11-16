@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { CompareError } from "../domain/compare";
-import type { ValueHint } from "../domain/hints";
+import type { Hint } from "../domain/hints";
 import type { ConfigError } from "../domain/parse";
 import { useMessages } from "../i18n/I18n";
 import { errorText } from "../i18n/messages";
@@ -68,12 +68,12 @@ function BitRow({ value, other, width }: Readonly<{ value: bigint; other: bigint
 }
 
 /** The hints that would make a pasted value match (spec chapter 16), each as "would match if …"; nothing when there are none. */
-export function HintList({ hints }: Readonly<{ hints: readonly ValueHint[] }>) {
+export function HintList({ hints }: Readonly<{ hints: readonly Hint[] }>) {
   const m = useMessages();
   if (hints.length === 0) return null;
   return (
     <ul className="compare-hints">
-      {hints.map((hint) => (
+      {hints.map(({ hint }) => (
         <li key={hint} data-hint={hint}>
           {m.compare.hints[hint]}
         </li>
@@ -91,7 +91,7 @@ export function ValueResult({
   computed,
   width,
   hints,
-}: Readonly<{ yours: bigint; computed: bigint; width: number; hints: readonly ValueHint[] }>) {
+}: Readonly<{ yours: bigint; computed: bigint; width: number; hints: readonly Hint[] }>) {
   const m = useMessages();
   if (yours === computed) {
     return (
