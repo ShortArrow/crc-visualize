@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkMatches, polyMatches } from "./presetMatch";
+import { checkHints, checkMatches, polyMatches } from "./presetMatch";
 import { CATALOGUE } from "./presets";
 
 const names = (presets: readonly { name: string }[]) => presets.map((p) => p.name);
@@ -48,5 +48,26 @@ describe("checkMatches", () => {
   });
   it("Given 0xBB3D and width 32, When matching, Then no preset matches", () => {
     expect(checkMatches(CATALOGUE, 0xbb3dn, 32)).toEqual([]);
+  });
+});
+
+describe("checkHints", () => {
+  const presetsUnder = (value: bigint, width: number | undefined, hint: string) =>
+    checkHints(CATALOGUE, value, width).find((h) => h.hint === hint)?.presets ?? [];
+  it("Given 0x3DBB and width 16, When trying the hints, Then CRC-16/ARC would match with the bytes in the other order", () => {
+    expect(names(presetsUnder(0x3dbbn, 16, "order"))).toContain("CRC-16/ARC");
+  });
+  it("Given 0x3DBB and width 16, When trying the hints, Then each hint listed has a preset, and the byte order comes first", () => {
+    const hints = checkHints(CATALOGUE, 0x3dbbn, 16);
+    expect(hints.every((h) => h.presets.length > 0)).toBe(true);
+    expect(hints[0]!.hint).toBe("order");
+  });
+  it("Given the check of CRC-5/USB reflected in 5 bits, When trying the hints with no width, Then no preset of a width below 8 is listed", () => {
+    const listed = checkHints(CATALOGUE, 0x13n, undefined).flatMap((h) => h.presets);
+    expect(listed.filter((p) => p.params.width < 8)).toEqual([]);
+  });
+  it("Given 0x13DBB, which does not fit in 16 bits, When trying the hints with no width, Then no 16-bit preset is listed", () => {
+    const listed = checkHints(CATALOGUE, 0x13dbbn, undefined).flatMap((h) => h.presets);
+    expect(listed.filter((p) => p.params.width === 16)).toEqual([]);
   });
 });
