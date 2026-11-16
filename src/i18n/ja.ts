@@ -73,6 +73,8 @@ export const ja = {
     crcBytes: (expected: number) => `数を 1 つか、${expected} バイトで入れてください`,
     logCount: (got: number, bytes: number, bits: number) =>
       `数が ${got} 個あります。1 バイトごとなら ${bytes} 個か ${bytes + 1} 個、1 ビットごとなら ${bits} 個か ${bits + 1} 個にしてください`,
+    byteLogCount: (got: number, bytes: number) =>
+      `各バイトの後の ${bytes} 個か、最初のバイトの前から ${bytes + 1} 個の数を入れてください（入れた数は ${got} 個）`,
     tableCount: (got: number) => `インデックス順に 256 個の数を入れてください（入れた数は ${got} 個）`,
     receivedShort: (bytes: number) => `CRC を含めて ${bytes} バイト以上入れてください`,
     logCountBits: (got: number, bits: number) =>

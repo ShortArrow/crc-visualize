@@ -79,6 +79,8 @@ export const fr: Messages = {
     crcBytes: (expected: number) => `Saisissez un nombre ou ${expected} octets`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} nombres : il en faut ${bytes} ou ${bytes + 1} (un par octet), ou ${bits} ou ${bits + 1} (un par bit)`,
+    byteLogCount: (got: number, bytes: number) =>
+      `Saisissez ${bytes} nombres, un après chaque octet, ou ${bytes + 1} à partir du crc avant le premier octet (${got} saisis)`,
     tableCount: (got: number) => `Saisissez 256 nombres, dans l'ordre des indices (${got} saisis)`,
     receivedShort: (bytes: number) => `Saisissez au moins ${bytes} octets, CRC compris`,
     logCountBits: (got: number, bits: number) => `${got} nombres : il en faut ${bits} ou ${bits + 1} (un par bit)`,

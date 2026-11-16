@@ -79,6 +79,8 @@ export const en: Messages = {
     crcBytes: (expected: number) => `Enter one number, or ${expected} bytes`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} numbers: expected ${bytes} or ${bytes + 1} (one per byte), or ${bits} or ${bits + 1} (one per bit)`,
+    byteLogCount: (got: number, bytes: number) =>
+      `Enter ${bytes} numbers, one after each byte, or ${bytes + 1} starting with crc before the first byte (${got} were entered)`,
     tableCount: (got: number) => `Enter 256 numbers, in index order (${got} were entered)`,
     receivedShort: (bytes: number) => `Enter at least ${bytes} bytes, the CRC included`,
     logCountBits: (got: number, bits: number) => `${got} numbers: expected ${bits} or ${bits + 1} (one per bit)`,
