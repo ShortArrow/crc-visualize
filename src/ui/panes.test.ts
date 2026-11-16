@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_PANES, fitLayout, fitPanelRatio, restoreLayout, type PaneLayout } from "./panes";
+import { DEFAULT_PANES, fitLayout, fitPanelRatio, restoreLayout, splitShare, type PaneLayout } from "./panes";
 
 const custom: PaneLayout = { sidebarOpen: false, sidebarWidth: 360, panelRatio: 0.5, codeRatio: 0.7 };
 
@@ -32,14 +32,33 @@ describe("fitLayout", () => {
     expect(fitLayout(custom, 1366)).toEqual(custom);
   });
 
-  it("Given a too-narrow sidebar and splits too close to the edges, When fitting, Then the sidebar becomes 200px and the split ratios are clamped to 0.15–0.85", () => {
+  it("Given a too-narrow sidebar and splits too close to the edges, When fitting, Then the sidebar becomes 180px and the split ratios are clamped to 0.15–0.85", () => {
     const layout = fitLayout({ ...custom, sidebarWidth: 50, panelRatio: 0.01, codeRatio: 0.99 }, 1366);
 
-    expect(layout).toMatchObject({ sidebarWidth: 200, panelRatio: 0.15, codeRatio: 0.85 });
+    expect(layout).toMatchObject({ sidebarWidth: 180, panelRatio: 0.15, codeRatio: 0.85 });
   });
 
-  it("Given a sidebar wider than half the screen, When fitting it to a 1000px-wide screen, Then the sidebar is clamped to half the screen, 500px", () => {
-    expect(fitLayout({ ...custom, sidebarWidth: 700 }, 1000).sidebarWidth).toBe(500);
+  it("Given a sidebar wider than 480px, When fitting it to a 1600px-wide screen, Then the sidebar is 480px", () => {
+    expect(fitLayout({ ...custom, sidebarWidth: 700 }, 1600).sidebarWidth).toBe(480);
+  });
+
+  it("Given a sidebar wider than half the screen, When fitting it to an 800px-wide screen, Then the sidebar is clamped to half the screen, 400px", () => {
+    expect(fitLayout({ ...custom, sidebarWidth: 450 }, 800).sidebarWidth).toBe(400);
+  });
+});
+
+describe("splitShare", () => {
+  it("Given a boundary 300px into a 1000px split, When sharing, Then the first panel takes 0.3", () => {
+    expect(splitShare(300, 1000)).toBeCloseTo(0.3);
+  });
+  it("Given a boundary 20px into a 1000px split, When sharing, Then the first panel keeps 15 %, more than 80px", () => {
+    expect(splitShare(20, 1000)).toBeCloseTo(0.15);
+  });
+  it("Given a boundary 20px into a 400px split, When sharing, Then the first panel keeps 80px, more than 15 %", () => {
+    expect(splitShare(20, 400)).toBeCloseTo(0.2);
+  });
+  it("Given a boundary 390px into a 400px split, When sharing, Then the second panel keeps 80px", () => {
+    expect(splitShare(390, 400)).toBeCloseTo(0.8);
   });
 });
 

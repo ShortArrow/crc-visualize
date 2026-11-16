@@ -14,6 +14,11 @@ export const fr: Messages = {
     estimate: "Estimation",
   },
   workbench: {
+    splitters: {
+      sidebar: "Largeur de la barre latérale",
+      panel: "Hauteur du schéma et du panneau en dessous",
+      code: "Largeur du pseudo-code et de la progression",
+    },
     sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)",
     sidebarLabel: "Réglages",
     language: "Langue",

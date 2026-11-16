@@ -44,7 +44,7 @@ import { FramePanel } from "./ui/FramePanel";
 import { StepLog } from "./ui/StepLog";
 import { VariablesView } from "./ui/VariablesView";
 import { Workbench } from "./ui/Workbench";
-import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
+import { DEFAULT_PANES, fitLayout, loadLayout, saveLayout, splitShare, type PaneLayout } from "./ui/panes";
 import { useScreen } from "./ui/phone";
 import { PanelTabs, tabPanel, type PanelTab } from "./ui/PanelTabs";
 import { screenZoom, viewWidth } from "./ui/zoom";
@@ -241,11 +241,14 @@ function useLastValid(config: ConfigResult): Readonly<{ params: CrcParams; bits:
   return last.current;
 }
 
-/** Screen layout; restored from localStorage and fitted to the current screen, saved on every change. */
-function useLayout(): [PaneLayout, (layout: PaneLayout) => void] {
+/** Screen layout; restored from localStorage and fitted to the current screen, saved on each change unless save is false. */
+function useLayout(): [PaneLayout, (layout: PaneLayout, save?: boolean) => void] {
   const [layout, setLayout] = useState(() => fitLayout(loadLayout(), viewWidth()));
-  useEffect(() => saveLayout(layout), [layout]);
-  return [layout, setLayout];
+  const update = (next: PaneLayout, save = true) => {
+    setLayout(next);
+    if (save) saveLayout(next);
+  };
+  return [layout, update];
 }
 
 /** The page the URL fragment points to; re-read whenever the fragment changes. */
@@ -287,7 +290,7 @@ type VisualizerProps = Readonly<{
   onRate: (rate: number) => void;
   onLoop: (loop: boolean) => void;
   onCodeLang: (lang: CodeLang) => void;
-  onLayout: (layout: PaneLayout) => void;
+  onLayout: (layout: PaneLayout, save?: boolean) => void;
 }>;
 
 /** Parts of the diagram values flow through at the step shown. */
@@ -328,11 +331,24 @@ function Visualizer(props: VisualizerProps) {
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const hardware = useRef<HTMLElement>(null);
-  const ratioIn = (el: HTMLElement | null, f: (rect: DOMRect) => number) => {
-    if (!el) return 0.5;
-    const [r, z] = [el.getBoundingClientRect(), screenZoom()];
-    return f(new DOMRect(r.x / z, r.y / z, r.width / z, r.height / z));
+  /**
+   * The lengths the two boundaries share out, in the app's own CSS px: the bottom panel's height of the split's (less its boundary),
+   * and the pseudocode's width of the panel's (less its boundary).
+   */
+  const splitSizes = () => {
+    const z = screenZoom();
+    const size = (el: Element | null | undefined, axis: "width" | "height") => (el?.getBoundingClientRect()[axis] ?? 0) / z;
+    const [s, p] = [split.current, panel.current];
+    return {
+      panel: size(p, "height"),
+      split: Math.max(1, size(s, "height") - size(s?.querySelector('[data-splitter="panel"]'), "height")),
+      code: size(p?.querySelector(".software"), "width"),
+      panelWidth: Math.max(1, size(p, "width") - size(p?.querySelector('[data-splitter="code"]'), "width")),
+    };
   };
+  const dragFrom = useRef(splitSizes());
+  const withPanel = (panelRatio: number) => fitLayout({ ...layout, panelRatio }, viewWidth());
+  const withCode = (codeRatio: number) => fitLayout({ ...layout, codeRatio }, viewWidth());
   const run = keyOf([params, bits]);
   const zoom = useDiagramZoom(run, hardware);
   const panelRatio = useFittedPanelRatio(split, hardware, layout.panelRatio, !phone && zoom.scale === undefined, [run]);
@@ -458,11 +474,12 @@ function Visualizer(props: VisualizerProps) {
           <Splitter
             axis="y"
             name="panel"
-            onMove={(y) =>
-              onLayout(
-                fitLayout({ ...layout, panelRatio: ratioIn(split.current, (r) => (r.bottom - y) / r.height) }, viewWidth()),
-              )
-            }
+            label={m.workbench.splitters.panel}
+            onStart={() => (dragFrom.current = splitSizes())}
+            onMove={(dy) => onLayout(withPanel(splitShare(dragFrom.current.panel - dy, dragFrom.current.split)), false)}
+            onStep={(dy) => onLayout(withPanel(splitShare(splitSizes().panel - dy, splitSizes().split)))}
+            onReset={() => onLayout(withPanel(DEFAULT_PANES.panelRatio))}
+            onEnd={() => onLayout(layout)}
           />
         )}
         <section
@@ -498,9 +515,12 @@ function Visualizer(props: VisualizerProps) {
             <Splitter
               axis="x"
               name="code"
-              onMove={(x) =>
-                onLayout(fitLayout({ ...layout, codeRatio: ratioIn(panel.current, (r) => (x - r.left) / r.width) }, viewWidth()))
-              }
+              label={m.workbench.splitters.code}
+              onStart={() => (dragFrom.current = splitSizes())}
+              onMove={(dx) => onLayout(withCode(splitShare(dragFrom.current.code + dx, dragFrom.current.panelWidth)), false)}
+              onStep={(dx) => onLayout(withCode(splitShare(splitSizes().code + dx, splitSizes().panelWidth)))}
+              onReset={() => onLayout(withCode(DEFAULT_PANES.codeRatio))}
+              onEnd={() => onLayout(layout)}
             />
           )}
           <div className="log-pane" {...tabPanel(short, "log", tab)}>
