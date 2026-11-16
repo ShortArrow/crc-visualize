@@ -1,10 +1,10 @@
 import type { Ref } from "react";
 import { crcLength, receivedMessageLength } from "../domain/check";
-import { constantForm, type CompareError } from "../domain/compare";
+import { constantForm, matchTable, type CompareError, type TableMatch } from "../domain/compare";
 import { parseWidth, type ConfigError } from "../domain/parse";
 import { checkMatches, polyMatches } from "../domain/presetMatch";
 import type { Preset } from "../domain/presets";
-import { elementOf, readBytes, readValue, type Base, type ElementId, type PasteError } from "../domain/paste";
+import { elementOf, readBytes, readValue, readValues, type Base, type ElementId, type PasteError } from "../domain/paste";
 import { bitsFromBytes, reflectValue, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { Badge, elementText, nextElement } from "./Badge";
@@ -31,6 +31,9 @@ export type PageCompare = Readonly<{
   eqPolyBase: Base;
   eqInit: string;
   eqInitBase: Base;
+  /** your table on the Table page: 256 numbers in index order. */
+  table: string;
+  tableBase: Base;
 }>;
 
 export const EMPTY_PAGE_COMPARE: PageCompare = {
@@ -49,6 +52,8 @@ export const EMPTY_PAGE_COMPARE: PageCompare = {
   eqPolyBase: 16,
   eqInit: "",
   eqInitBase: 16,
+  table: "",
+  tableBase: 16,
 };
 
 type Read<T> = { ok: true; value: T } | { ok: false; error: PasteError | CompareError };
@@ -349,6 +354,68 @@ export function EquivalenceCompare({
           onValue={(v) => set("eqInit", v)}
           onBase={() => set("eqInitBase", compare.eqInitBase === 16 ? 10 : 16)}
         />
+      </form>
+    </section>
+  );
+}
+
+/** your table read and compared with table T of each shift, or undefined when nothing is pasted. */
+export function readTable(params: CrcParams, compare: PageCompare): Read<TableMatch> | undefined {
+  if (compare.table.trim() === "") return undefined;
+  const values = readValues(compare.table, compare.tableBase, params.width);
+  return values.ok ? matchTable(params, values.value) : values;
+}
+
+/** The Compare card of the Table page: your table against table T for a left and for a right shift. */
+export function TableCompare({
+  params,
+  compare,
+  onCompare,
+  read,
+}: Readonly<{
+  params: CrcParams;
+  compare: PageCompare;
+  onCompare: (compare: PageCompare) => void;
+  read: Read<TableMatch> | undefined;
+}>) {
+  const m = useMessages();
+  const set = <K extends keyof PageCompare>(key: K, value: PageCompare[K]) => onCompare({ ...compare, [key]: value });
+  const match = read?.ok ? read.value : undefined;
+  return (
+    <section className="card compare-card">
+      <h3>{m.compare.cardTitle}</h3>
+      <form className="compare" onSubmit={(e) => e.preventDefault()}>
+        <PasteField
+          name="yourTable"
+          label="your table"
+          value={compare.table}
+          onChange={(v) => set("table", v)}
+          placeholder={m.compare.placeholders.table}
+          multiline
+          badges={
+            <Badge
+              kind="base"
+              name={m.badges.base}
+              text={String(compare.tableBase)}
+              onPress={() => set("tableBase", compare.tableBase === 16 ? 10 : 16)}
+            />
+          }
+          error={read && !read.ok ? read.error : undefined}
+        />
+        {match ? (
+          match.firstDiff === undefined ? (
+            <p className="compare-result ok table-result" data-result="ok" data-shift={match.shift}>
+              ✓ {m.compare.table[match.shift]}
+            </p>
+          ) : (
+            <div className="table-result" data-result="ng" data-shift={match.shift} data-index={match.firstDiff.index}>
+              <p className="compare-result ng">
+                ✗ {m.compare.table.closest(match.shift, `0x${match.firstDiff.index.toString(16).toUpperCase().padStart(2, "0")}`)}
+              </p>
+              <ValueResult yours={match.firstDiff.yours} computed={match.firstDiff.computed} width={params.width} />
+            </div>
+          )
+        ) : null}
       </form>
     </section>
   );

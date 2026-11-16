@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { crcOf } from "../domain/equivalence";
 import type { ConfigResult } from "../domain/parse";
 import {
@@ -24,6 +24,7 @@ import { DockedResult, DockSlot } from "./Dock";
 import { useRevealSpan } from "./reveal";
 import { valueHex } from "./format";
 import { Explanation } from "./Explanation";
+import { readTable, TableCompare, type PageCompare } from "./pageCompare";
 
 const byteHex = (value: number) => `0x${value.toString(16).toUpperCase().padStart(2, "0")}`;
 const binary = (value: bigint, width: number) => value.toString(2).padStart(width, "0");
@@ -40,14 +41,29 @@ export type PlaybackSettings = Readonly<{
 }>;
 
 /** The byte-at-a-time table method for the current settings and input. If the settings are invalid, shows only that. */
-export function TablePage({ config, playback }: Readonly<{ config: ConfigResult; playback: PlaybackSettings }>) {
+export function TablePage({
+  config,
+  playback,
+  compare,
+  onCompare,
+}: Readonly<{
+  config: ConfigResult;
+  playback: PlaybackSettings;
+  compare: PageCompare;
+  onCompare: (compare: PageCompare) => void;
+}>) {
   const m = useMessages();
+  const read = config.ok ? readTable(config.params, compare) : undefined;
+  const diff = read?.ok ? read.value : undefined;
+  const focus =
+    config.ok && diff?.firstDiff !== undefined && diff.shift === tableDirection(config.params) ? diff.firstDiff.index : undefined;
   return (
     <div className="table-page">
       <h2>{m.table.heading}</h2>
+      {config.ok ? <TableCompare params={config.params} compare={compare} onCompare={onCompare} read={read} /> : null}
       <Explanation>{m.table.note}</Explanation>
       {config.ok ? (
-        <TableMethod params={config.params} bits={config.bits} playback={playback} />
+        <TableMethod params={config.params} bits={config.bits} playback={playback} focus={focus} />
       ) : (
         <p className="invalid-config">{m.settings.invalid}</p>
       )}
@@ -94,14 +110,20 @@ function stepsOf(mode: PlayMode, params: CrcParams, input: readonly Bit[]): Play
 
 const MODES: readonly PlayMode[] = ["value", "table", "use"];
 
-type MethodProps = Readonly<{ params: CrcParams; bits: readonly Bit[]; playback: PlaybackSettings }>;
+type MethodProps = Readonly<{
+  params: CrcParams;
+  bits: readonly Bit[];
+  playback: PlaybackSettings;
+  /** An index of table T to choose, as the first that differs in your table. */
+  focus?: number | undefined;
+}>;
 
 /**
  * Table T, how a value is made, and the byte-at-a-time steps, drawn at the step of the playback chosen: making a value, making
  * the table, or using it. While paused, a step row switches to using the table at the look-up of its byte, and a filled cell
  * shows how its value is made, or, while making a value, makes that one.
  */
-function TableMethod({ params, bits, playback }: MethodProps) {
+function TableMethod({ params, bits, playback, focus }: MethodProps) {
   const m = useMessages();
   const t = m.table;
   const w = params.width;
@@ -126,6 +148,9 @@ function TableMethod({ params, bits, playback }: MethodProps) {
   const step = steps[player.index]!;
   const [row, setRow] = useState(0);
   const [picked, setPicked] = useState<Readonly<{ at: string; entry: number }> | undefined>(undefined);
+  useEffect(() => {
+    if (focus !== undefined) setPicked({ at, entry: focus });
+  }, [focus]);
   const [entryTitle, firstClock] = useRevealSpan<HTMLHeadingElement, HTMLTableRowElement>([picked]);
   const { rows, byte } = mode === "use" ? bytesShown(step, run) : bytesShown({ kind: "done" }, run);
   const current = byte ?? row;
