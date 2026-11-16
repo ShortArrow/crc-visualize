@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { parseConfig, type ConfigForm, type ConfigResult } from "./domain/parse";
+import { parseConfig, readFrames, type ConfigForm, type ConfigResult } from "./domain/parse";
+import { crcRange, type CrcRange } from "./domain/hints";
 import { fitPath, matching } from "./domain/narrow";
 import { CATALOGUE, findPreset, TUTORIAL, type Preset } from "./domain/presets";
 import { MessagesProvider, useMessages } from "./i18n/I18n";
@@ -223,6 +224,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       onBreakpoints={setBreakpoints}
       compare={compare}
       onCompare={setCompare}
+      range={crcRange(shown.bits, form.inputMode === "hex" ? readFrames(form) : undefined, shown.params.width)}
       frame={frame}
       onSpeedMode={setSpeedMode}
       onRate={setRate}
@@ -282,6 +284,8 @@ type VisualizerProps = Readonly<{
   /** What is pasted into the Compare section; it stays when the settings change. */
   compare: CompareForm;
   onCompare: (compare: CompareForm) => void;
+  /** The CRC range among the bytes around it, for the range hint of the Compare section. */
+  range: CrcRange | undefined;
   onBreakpoints: (breakpoints: readonly Breakpoint[]) => void;
   /** Fits the editor area and status bar into the screen frame with the given sidebar. */
   frame: (sidebar: ReactNode) => Frame;
@@ -319,6 +323,7 @@ function Visualizer(props: VisualizerProps) {
     settings,
     breakpoints,
     compare,
+    range,
     frame,
   } = props;
   const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints, onCompare } = props;
@@ -374,6 +379,8 @@ function Visualizer(props: VisualizerProps) {
                   <CompareSection
                     params={params}
                     steps={steps}
+                    bits={bits}
+                    range={range}
                     form={compare}
                     onChange={onCompare}
                     onSeek={(index) => send({ type: "seek", index })}

@@ -61,8 +61,15 @@ export function valueHints(yours: bigint, computed: bigint, width: number, xorou
   return VALUE_HINTS.filter(turns);
 }
 
-/** One hint as it is listed under a value that differs. */
-export type Hint = Readonly<{ kind: "value"; hint: ValueHint }>;
+/**
+ * One hint as it is listed under a value that differs: one of hints 1 to 5, the CRC range ending by bytes earlier (negative) or
+ * later, the row before or after, or other presets of the same width.
+ */
+export type Hint =
+  | Readonly<{ kind: "value"; hint: ValueHint }>
+  | Readonly<{ kind: "range"; by: number }>
+  | Readonly<{ kind: "row"; side: "before" | "after" }>
+  | Readonly<{ kind: "preset"; names: readonly string[] }>;
 
 /** hints 1 to 5 as listed hints. */
 export const asHints = (hints: readonly ValueHint[]): Hint[] => hints.map((hint) => ({ kind: "value", hint }));

@@ -73,11 +73,34 @@ export function HintList({ hints }: Readonly<{ hints: readonly Hint[] }>) {
   if (hints.length === 0) return null;
   return (
     <ul className="compare-hints">
-      {hints.map(({ hint }) => (
-        <li key={hint} data-hint={hint}>
-          {m.compare.hints[hint]}
-        </li>
-      ))}
+      {hints.map((hint) => {
+        switch (hint.kind) {
+          case "value":
+            return (
+              <li key={hint.hint} data-hint={hint.hint}>
+                {m.compare.hints[hint.hint]}
+              </li>
+            );
+          case "range":
+            return (
+              <li key={`range${hint.by}`} data-hint="range" data-by={hint.by}>
+                {m.compare.rangeHint(hint.by)}
+              </li>
+            );
+          case "row":
+            return (
+              <li key={`row-${hint.side}`} data-hint="row" data-side={hint.side}>
+                {m.compare.rowHint[hint.side]}
+              </li>
+            );
+          case "preset":
+            return (
+              <li key="preset" data-hint="preset">
+                {m.compare.presetHint(hint.names.join(", "))}
+              </li>
+            );
+        }
+      })}
     </ul>
   );
 }

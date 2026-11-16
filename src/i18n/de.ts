@@ -52,6 +52,9 @@ export const de: Messages = {
       "reflect+xorout": "würde stimmen, wenn die Bits in width Bits gespiegelt und dann mit xorout XOR-verknüpft würden",
       "reflect+ones": "würde stimmen, wenn die Bits in width Bits gespiegelt und dann mit lauter Einsen XOR-verknüpft würden",
     },
+    rangeHint: (by: number) => `würde stimmen, wenn der CRC-Bereich ${Math.abs(by)} Byte ${by < 0 ? "früher" : "später"} endete`,
+    rowHint: { before: "würde mit der vorigen Zeile stimmen", after: "würde mit der nächsten Zeile stimmen" },
+    presetHint: (names: string) => `würde stimmen, wenn mit ${names} berechnet`,
     readAs: {
       one: "Eine Zahl, als CRC selbst gelesen; Element- und Byte-Reihenfolge-Badges werden nicht verwendet",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

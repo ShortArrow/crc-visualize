@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { matchLog, type LogMatch } from "../domain/compare";
-import { asHints, valueHints } from "../domain/hints";
+import { crcOf } from "../domain/equivalence";
+import { asHints, presetHints, rangeHints, rowHints, valueHints, type CrcRange, type Hint } from "../domain/hints";
+import { CATALOGUE } from "../domain/presets";
 import { elementOf, readCrc, readValues, type Base, type CrcRead, type Element, type ElementId } from "../domain/paste";
-import { registerValue, type CrcParams, type Step } from "../domain/trace";
+import { registerValue, type Bit, type CrcParams, type Step } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import type { Messages } from "../i18n/messages";
 import { Badge, elementText, nextElement } from "./Badge";
@@ -25,6 +27,10 @@ export const EMPTY_COMPARE: CompareForm = { crc: "", crcBase: 16, crcElement: "8
 type Props = Readonly<{
   params: CrcParams;
   steps: readonly Step[];
+  /** The bits the CRC is computed over. */
+  bits: readonly Bit[];
+  /** The CRC range among the bytes around it, for hint 6; undefined when it cannot move. */
+  range: CrcRange | undefined;
   form: CompareForm;
   onChange: (form: CompareForm) => void;
   /** Moves playback to the step at index. */
@@ -47,7 +53,12 @@ export function LogTable({ match, params }: Readonly<{ match: LogMatch; params: 
           <p className="compare-note">
             {m.compare.firstDiff}: {rowName(m, match, diff.at)}
           </p>
-          <HintList hints={asHints(valueHints(diff.yours, diff.computed, width, xorout))} />
+          <HintList
+            hints={[
+              ...asHints(valueHints(diff.yours, diff.computed, width, xorout)),
+              ...rowHints(match.rows, match.firstDiff!, width).map((side): Hint => ({ kind: "row", side })),
+            ]}
+          />
         </>
       )}
       <table className="compare-log">
@@ -89,11 +100,22 @@ function readingText(m: Messages, read: CrcRead, element: Element, order: "be" |
   );
 }
 
+/** Hints 1 to 7 for your crc against computed, the CRC of bits over range; none when they are equal. */
+function crcHints(params: CrcParams, bits: readonly Bit[], range: CrcRange | undefined, yours: bigint, computed: bigint): Hint[] {
+  if (yours === computed) return [];
+  const presets = presetHints(CATALOGUE, params, yours, (p) => crcOf(p.params, bits));
+  return [
+    ...asHints(valueHints(yours, computed, params.width, params.xorout)),
+    ...(range ? rangeHints(params, range, yours).map((by): Hint => ({ kind: "range", by })) : []),
+    ...(presets.length > 0 ? [{ kind: "preset", names: presets.map((p) => p.name) } as const] : []),
+  ];
+}
+
 /**
  * The Visualizer's Compare section (spec chapter 16): your crc against the CRC of the range, and your log against the register
  * after each byte or bit. When the log differs, playback moves to the end of its first differing row.
  */
-export function CompareSection({ params, steps, form, onChange, onSeek }: Props) {
+export function CompareSection({ params, steps, bits, range, form, onChange, onSeek }: Props) {
   const m = useMessages();
   const set = <K extends keyof CompareForm>(key: K, value: CompareForm[K]) => onChange({ ...form, [key]: value });
   const { width } = params;
@@ -150,7 +172,7 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
             yours={crc.value.value}
             computed={computed}
             width={width}
-            hints={asHints(valueHints(crc.value.value, computed, width, params.xorout))}
+            hints={crcHints(params, bits, range, crc.value.value, computed)}
           />
         ) : null}
       </div>

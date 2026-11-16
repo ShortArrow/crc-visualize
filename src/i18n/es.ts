@@ -51,6 +51,10 @@ export const es: Messages = {
       "reflect+xorout": "coincidiría reflejando los bits en width bits y luego con un XOR con xorout",
       "reflect+ones": "coincidiría reflejando los bits en width bits y luego con un XOR con todos los bits a 1",
     },
+    rangeHint: (by: number) =>
+      `coincidiría si el rango del CRC terminara ${Math.abs(by)} ${Math.abs(by) === 1 ? "byte" : "bytes"} ${by < 0 ? "antes" : "después"}`,
+    rowHint: { before: "coincidiría con la fila anterior", after: "coincidiría con la fila siguiente" },
+    presetHint: (names: string) => `coincidiría calculado con ${names}`,
     readAs: {
       one: "Un número, leído como el propio CRC; no se usan las insignias de elemento ni de orden de bytes",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

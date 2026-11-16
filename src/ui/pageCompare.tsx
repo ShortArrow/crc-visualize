@@ -4,8 +4,8 @@ import { constantForm, matchTable, matchTableLog, type CompareError, type LogMat
 import type { TableRun } from "../domain/table";
 import { parseWidth, type ConfigError } from "../domain/parse";
 import { checkHints, checkMatches, polyMatches } from "../domain/presetMatch";
-import { asHints, valueHints } from "../domain/hints";
-import type { Preset } from "../domain/presets";
+import { asHints, presetHints, valueHints, type Hint } from "../domain/hints";
+import { CATALOGUE, type Preset } from "../domain/presets";
 import { elementOf, readBytes, readValue, readValues, type Base, type ElementId, type PasteError } from "../domain/paste";
 import { bitsFromBytes, reflectValue, type Bit, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
@@ -89,6 +89,16 @@ type CheckCompareProps = Readonly<{
   ref?: Ref<HTMLElement>;
 }>;
 
+/** Hints 1 to 5 and 7 for your check against check, the CRC of 123456789; none when they are equal. */
+function checkHintsOf(params: CrcParams, yours: bigint, check: bigint): Hint[] {
+  if (yours === check) return [];
+  const presets = presetHints(CATALOGUE, params, yours, (p) => p.check);
+  return [
+    ...asHints(valueHints(yours, check, params.width, params.xorout)),
+    ...(presets.length > 0 ? [{ kind: "preset", names: presets.map((p) => p.name) } as const] : []),
+  ];
+}
+
 /** The Compare card of the Check page: a received frame that replaces the received sequence, and your check. It comes after both verdicts. */
 export function CheckCompare({ params, compare, onCompare, received, check, ref }: CheckCompareProps) {
   const m = useMessages();
@@ -134,7 +144,7 @@ export function CheckCompare({ params, compare, onCompare, received, check, ref 
             yours={yours.value}
             computed={check}
             width={params.width}
-            hints={asHints(valueHints(yours.value, check, params.width, params.xorout))}
+            hints={checkHintsOf(params, yours.value, check)}
           />
         ) : null}
       </form>
