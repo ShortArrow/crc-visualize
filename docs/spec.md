@@ -563,6 +563,16 @@ Values copied from the viewer's own CRC code (the register partway through, the 
 - The Cyclic and Redundancy pages take no pasted values. Their generator polynomial is one of a few small ones, chosen on the page and not linked to the settings (chapter 10).
 - Field labels are in English only, like the settings panel: `your crc`, `your log`, `your poly`, `your check`, `your table`, `received`.
 - What is pasted is kept neither in the URL nor in storage. It stays when the settings change and is compared again with the new settings.
+- An empty field shows an example of what it takes in faint text inside it (its placeholder); the label beside it stays. Every example follows one rule: it is what CRC-16/XMODEM gives for `123456789`, written so that it reads with the field's badges as they are at first (base 16, 8-bit elements, high byte first). The words around the numbers are translated; the faint text has a contrast of at least 4.5:1 with the field.
+
+  | Field        | Placeholder                           |
+  | ------------ | ------------------------------------- |
+  | `your crc`   | e.g. 0x31C3 or 31 C3                  |
+  | `your log`   | e.g. 0x2672, 0x20B5, 0x9752, …        |
+  | `received`   | e.g. 31 32 33 34 35 36 37 38 39 31 C3 |
+  | `your check` | e.g. 0x31C3                           |
+  | `your poly`  | e.g. 0x1021                           |
+  | `width`      | e.g. 16 (empty: every width)          |
 
 ### What each page compares
 
