@@ -4,6 +4,8 @@
   --border: #393b40;
   --fg: #d4d4d4;
   --muted: #7f848e;
+  /* Example text in an empty field: at least 4.5:1 on --bg, which --muted is not */
+  --placeholder: #8b9099;
   --accent: #61afef;
   --hot: #ff5c5c;
   --ok: #4ec98b;
@@ -567,6 +569,12 @@ button.bp-gutter.bp-off::before {
 .config select {
   width: 100%;
   min-width: 0;
+}
+
+.compare input::placeholder,
+.compare textarea::placeholder {
+  color: var(--placeholder);
+  opacity: 1;
 }
 
 .config .invalid input,

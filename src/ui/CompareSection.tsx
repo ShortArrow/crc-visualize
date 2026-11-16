@@ -106,6 +106,7 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
     <form className="compare" onSubmit={(e) => e.preventDefault()}>
       <PasteField
         name="yourCrc"
+        placeholder={m.compare.placeholders.crc}
         label="your crc"
         value={form.crc}
         onChange={(v) => set("crc", v)}
@@ -136,6 +137,7 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
       {crc?.ok ? <ValueResult yours={crc.value.value} computed={registerValue(steps.at(-1)!.reg)} width={width} /> : null}
       <PasteField
         name="yourLog"
+        placeholder={m.compare.placeholders.log}
         label="your log"
         value={form.log}
         onChange={(v) => set("log", v)}

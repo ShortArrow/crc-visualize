@@ -12,6 +12,8 @@ type Props = Readonly<{
   label: string;
   value: string;
   onChange: (value: string) => void;
+  /** An example of what the field takes, shown while it is empty (spec chapter 16). */
+  placeholder: string;
   /** A text area of several lines rather than one line. */
   multiline?: boolean;
   /** The badges that choose how the pasted numbers are read. */
@@ -22,16 +24,23 @@ type Props = Readonly<{
 }>;
 
 /** A field values are pasted into, with its badges beside it and the error of what was pasted under it. */
-export function PasteField({ name, label, value, onChange, multiline = false, badges, error, note }: Props) {
+export function PasteField({ name, label, value, onChange, placeholder, multiline = false, badges, error, note }: Props) {
   const m = useMessages();
   return (
     <label data-field={name} className={error ? "invalid" : undefined}>
       <span>{label}</span>
       <span className="field-row">
         {multiline ? (
-          <textarea wrap="off" rows={3} value={value} spellCheck={false} onChange={(e) => onChange(e.target.value)} />
+          <textarea
+            wrap="off"
+            rows={3}
+            value={value}
+            placeholder={placeholder}
+            spellCheck={false}
+            onChange={(e) => onChange(e.target.value)}
+          />
         ) : (
-          <input value={value} spellCheck={false} onChange={(e) => onChange(e.target.value)} />
+          <input value={value} placeholder={placeholder} spellCheck={false} onChange={(e) => onChange(e.target.value)} />
         )}
         <span className="badges">{badges}</span>
       </span>

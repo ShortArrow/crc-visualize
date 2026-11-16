@@ -51,6 +51,14 @@ export const es: Messages = {
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
         `${count} números de ${bits} bits${element ? `, cada uno con el byte ${element === "le" ? "bajo" : "alto"} primero` : ""}: ${bytes} → leído con el byte ${order === "le" ? "bajo" : "alto"} primero: ${value}`,
     },
+    placeholders: {
+      crc: "p. ej. 0x31C3 o 31 C3",
+      log: "p. ej. 0x2672, 0x20B5, 0x9752, …",
+      received: "p. ej. 31 32 33 34 35 36 37 38 39 31 C3",
+      check: "p. ej. 0x31C3",
+      poly: "p. ej. 0x1021",
+      width: "p. ej. 16 (vacío: todos los anchos)",
+    },
   },
   errors: {
     widthRange: "Introduce un entero de 1 a 64",

@@ -80,6 +80,7 @@ export function CheckCompare({ params, compare, onCompare, received, check, ref 
       <form className="compare" onSubmit={(e) => e.preventDefault()}>
         <PasteField
           name="received"
+          placeholder={m.compare.placeholders.received}
           label="received"
           value={compare.received}
           onChange={(v) => set("received", v)}
@@ -98,6 +99,7 @@ export function CheckCompare({ params, compare, onCompare, received, check, ref 
         />
         <PasteField
           name="yourCheck"
+          placeholder={m.compare.placeholders.check}
           label="your check"
           value={compare.check}
           onChange={(v) => set("check", v)}
@@ -138,6 +140,7 @@ function PresetNames({ presets }: Readonly<{ presets: readonly Preset[] }>) {
 /** A value pasted with the width it is compared in, and the badge and error of each. */
 function ValueWithWidth({
   name,
+  placeholder,
   value,
   base,
   width,
@@ -148,6 +151,8 @@ function ValueWithWidth({
   widthError,
 }: Readonly<{
   name: string;
+  /** The example shown in the value field while it is empty. */
+  placeholder: string;
   value: string;
   base: Base;
   width: string;
@@ -162,13 +167,22 @@ function ValueWithWidth({
     <>
       <PasteField
         name={name}
+        placeholder={placeholder}
         label={name}
         value={value}
         onChange={onValue}
         badges={<Badge kind="base" name={m.badges.base} text={String(base)} onPress={onBase} />}
         error={valueError}
       />
-      <PasteField name="width" label="width" value={width} onChange={onWidth} badges={null} error={widthError} />
+      <PasteField
+        name="width"
+        label="width"
+        value={width}
+        onChange={onWidth}
+        placeholder={m.compare.placeholders.width}
+        badges={null}
+        error={widthError}
+      />
     </>
   );
 }
@@ -187,6 +201,7 @@ export function NamingCompare({ presets, compare, onCompare }: PresetCompareProp
       <form className="compare" onSubmit={(e) => e.preventDefault()}>
         <ValueWithWidth
           name="your poly"
+          placeholder={m.compare.placeholders.poly}
           value={compare.poly}
           base={compare.polyBase}
           width={compare.polyWidth}
@@ -226,6 +241,7 @@ export function NarrowCompare({ presets, compare, onCompare }: PresetCompareProp
       <form className="compare" onSubmit={(e) => e.preventDefault()}>
         <ValueWithWidth
           name="your check"
+          placeholder={m.compare.placeholders.check}
           value={compare.narrowCheck}
           base={compare.narrowCheckBase}
           width={compare.narrowWidth}
