@@ -573,6 +573,7 @@ Values copied from the viewer's own CRC code (the register partway through, the 
   | `your check` | e.g. 0x31C3                           |
   | `your poly`  | e.g. 0x1021                           |
   | `your init`  | e.g. 0x0000                           |
+  | `your table` | e.g. 0x0000, 0x1021, 0x2042, …        |
   | `width`      | e.g. 16 (empty: every width)          |
 
 ### What each page compares
