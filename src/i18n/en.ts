@@ -36,7 +36,11 @@ export const en: Messages = {
     byte: "byte",
     bit: "bit",
     none: "No preset matches",
-    notations: { reversed: "would match if it is the reversed notation", koopman: "would match if it is the Koopman notation", full: "would match if it is the notation that includes x^width" },
+    notations: {
+      reversed: "would match if it is the reversed notation",
+      koopman: "would match if it is the Koopman notation",
+      full: "would match if it is the notation that includes x^width",
+    },
   },
   errors: {
     widthRange: "Enter an integer from 1 to 64",
