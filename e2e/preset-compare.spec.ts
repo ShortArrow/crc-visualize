@@ -69,8 +69,8 @@ test.describe("The Compare cards on a short screen", () => {
   test.use({ viewport: { width: 1280, height: 590 } });
 
   for (const [name, open] of [
-    ["Naming", (page: Page) => NamesPage.open(page)],
-    ["Narrow down", (page: Page) => NarrowPage.open(page)],
+    ["Naming", async (page: Page): Promise<void> => void (await NamesPage.open(page))],
+    ["Narrow down", async (page: Page): Promise<void> => void (await NarrowPage.open(page))],
   ] as const) {
     test(`the ${name} page's Compare card comes first and stays open`, async ({ page }) => {
       await given(`the ${name} page on 1280×590`, () => open(page));
