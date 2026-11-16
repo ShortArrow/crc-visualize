@@ -197,7 +197,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
             playback={{ speedMode, rate, loop, onSpeedMode: setSpeedMode, onRate: setRate, onLoop: setLoop }}
           />
         ),
-        equivalence: <EquivalencePage config={config} />,
+        equivalence: <EquivalencePage config={config} compare={pageCompare} onCompare={setPageCompare} />,
       }[route.page],
       <span>{config.ok ? (preset?.name ?? "custom") : m.settings.invalidStatus}</span>,
     );

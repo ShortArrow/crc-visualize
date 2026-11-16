@@ -46,7 +46,13 @@ export const fr: Messages = {
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
         `${count} nombres de ${bits} bits${element ? `, chacun octet de poids ${element === "le" ? "faible" : "fort"} en premier` : ""} : ${bytes} → lu octet de poids ${order === "le" ? "faible" : "fort"} en premier : ${value}`,
     },
+    forms: {
+      asIs: "tel quel",
+      reversed: "inversé sur width bits, comme l'écrit une implémentation à décalage à droite",
+      neither: (asIs: string, reversed: string) => `ni l'un ni l'autre : tel quel ${asIs}, inversé ${reversed}`,
+    },
     placeholders: {
+      init: "ex. 0x0000",
       crc: "ex. 0x31C3 ou 31 C3",
       log: "ex. 0x2672, 0x20B5, 0x9752, …",
       received: "ex. 31 32 33 34 35 36 37 38 39 31 C3",

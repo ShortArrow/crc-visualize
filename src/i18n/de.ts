@@ -46,7 +46,13 @@ export const de: Messages = {
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
         `${count} Zahlen zu ${bits} Bit${element ? `, jeweils ${element === "le" ? "niederwertiges" : "höchstwertiges"} Byte zuerst` : ""}: ${bytes} → mit ${order === "le" ? "niederwertigem" : "höchstwertigem"} Byte zuerst gelesen: ${value}`,
     },
+    forms: {
+      asIs: "unverändert",
+      reversed: "in width Bit umgekehrt, wie eine Rechtsschiebe-Implementierung es schreibt",
+      neither: (asIs: string, reversed: string) => `keines von beiden: unverändert ${asIs}, umgekehrt ${reversed}`,
+    },
     placeholders: {
+      init: "z. B. 0x0000",
       crc: "z. B. 0x31C3 oder 31 C3",
       log: "z. B. 0x2672, 0x20B5, 0x9752, …",
       received: "z. B. 31 32 33 34 35 36 37 38 39 31 C3",

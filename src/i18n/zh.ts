@@ -37,7 +37,13 @@ export const zh: Messages = {
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
         `${count} 个 ${bits} 位的数${element ? `，各自从${element === "le" ? "低" : "高"}字节开始` : ""}排列为 ${bytes} → 从${order === "le" ? "低" : "高"}字节开始作为 CRC 读取：${value}`,
     },
+    forms: {
+      asIs: "原样",
+      reversed: "按 width 位反转（右移实现的写法）",
+      neither: (asIs: string, reversed: string) => `都不是：原样 ${asIs}，反转 ${reversed}`,
+    },
     placeholders: {
+      init: "例如：0x0000",
       crc: "例如：0x31C3 或 31 C3",
       log: "例如：0x2672, 0x20B5, 0x9752, …",
       received: "例如：31 32 33 34 35 36 37 38 39 31 C3",
