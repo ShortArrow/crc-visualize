@@ -136,8 +136,8 @@ describe("readValue", () => {
 });
 
 describe("readCrc: a CRC given as one number or as its bytes", () => {
-  it("Given one number, When read, Then it is the CRC whatever the byte order", () => {
-    expect(readCrc("0x29B1", 16, E8, "le", 16)).toEqual({ ok: true, value: 0x29b1n });
+  it("Given one number, When read, Then it is the CRC whatever the byte order, with no bytes laid out", () => {
+    expect(readCrc("0x29B1", 16, E8, "le", 16)).toEqual({ ok: true, value: { value: 0x29b1n } });
   });
 
   it.each([
@@ -145,8 +145,23 @@ describe("readCrc: a CRC given as one number or as its bytes", () => {
     ["B1 29", "le"],
     ["{0xB1, 0x29}", "le"],
   ] as const)("Given the bytes %s read %s, When read, Then the CRC is 0x29B1", (text, order) => {
-    expect(readCrc(text, 16, E8, order, 16)).toEqual({ ok: true, value: 0x29b1n });
+    expect(readCrc(text, 16, E8, order, 16)).toEqual({ ok: true, value: { value: 0x29b1n, bytes: expect.any(Array) } });
   });
+
+  it.each([
+    ["be", "be", [0x12, 0x34, 0x56, 0x78], 0x12345678n],
+    ["le", "be", [0x34, 0x12, 0x78, 0x56], 0x34127856n],
+    ["be", "le", [0x12, 0x34, 0x56, 0x78], 0x78563412n],
+    ["le", "le", [0x34, 0x12, 0x78, 0x56], 0x56781234n],
+  ] as const)(
+    "Given 0x1234 0x5678 as 16-bit elements %s read %s for a width of 32, When read, Then the bytes are laid out by the element and read by the order",
+    (element, order, bytes, value) => {
+      expect(readCrc("0x1234 0x5678", 16, { bits: 16, order: element }, order, 32)).toEqual({
+        ok: true,
+        value: { value, bytes },
+      });
+    },
+  );
 
   it("Given 3 bytes for a width of 16, When read, Then it is an error that asks for 2 bytes", () => {
     expect(readCrc("29 B1 00", 16, E8, "be", 16)).toEqual({ ok: false, error: { code: "crcBytes", expected: 2 } });

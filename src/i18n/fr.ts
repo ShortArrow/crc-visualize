@@ -41,6 +41,11 @@ export const fr: Messages = {
       koopman: "concorderait en notation de Koopman",
       full: "concorderait dans la notation qui inclut x^width",
     },
+    readAs: {
+      one: "Un nombre, lu comme le CRC lui-même ; les badges d'élément et d'ordre des octets ne servent pas",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${count} nombres de ${bits} bits${element ? `, chacun octet de poids ${element === "le" ? "faible" : "fort"} en premier` : ""} : ${bytes} → lu octet de poids ${order === "le" ? "faible" : "fort"} en premier : ${value}`,
+    },
   },
   errors: {
     widthRange: "Saisissez un entier de 1 à 64",

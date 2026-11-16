@@ -35,6 +35,11 @@ export const ja = {
     bit: "ビット",
     none: "一致するプリセットなし",
     notations: { reversed: "反転表記なら一致", koopman: "Koopman 表記なら一致", full: "x^width を含む表記なら一致" },
+    readAs: {
+      one: "数 1 つをそのまま CRC として読んだ（要素とバイト順は使っていない）",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${bits} ビットの数 ${count} つを${element ? `、それぞれ${element === "le" ? "下位" : "上位"}バイトから` : ""}並べて ${bytes} → ${order === "le" ? "下位" : "上位"}バイトから CRC として読んで ${value}`,
+    },
   },
   errors: {
     widthRange: "1〜64 の整数を入れてください",

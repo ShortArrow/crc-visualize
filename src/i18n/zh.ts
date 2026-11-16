@@ -32,6 +32,11 @@ export const zh: Messages = {
     bit: "位",
     none: "没有一致的预设",
     notations: { reversed: "若为反转表示则一致", koopman: "若为 Koopman 表示则一致", full: "若为包含 x^width 的表示则一致" },
+    readAs: {
+      one: "一个数，直接作为 CRC 读取（未使用元素和字节顺序）",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${count} 个 ${bits} 位的数${element ? `，各自从${element === "le" ? "低" : "高"}字节开始` : ""}排列为 ${bytes} → 从${order === "le" ? "低" : "高"}字节开始作为 CRC 读取：${value}`,
+    },
   },
   errors: {
     widthRange: "请输入 1～64 的整数",
