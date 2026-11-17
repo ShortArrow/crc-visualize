@@ -38,7 +38,8 @@ import type { ParamFocus } from "./ui/paramFocus";
 import type { FieldName } from "./ui/paramInfo";
 import { parseRoute, type Route } from "./ui/route";
 import { Splitter } from "./ui/Splitter";
-import { CompareSection, EMPTY_COMPARE, type CompareForm } from "./ui/CompareSection";
+import { CompareSection, EMPTY_COMPARE, readLog, type CompareForm } from "./ui/CompareSection";
+import { diffByte } from "./domain/compare";
 import { EMPTY_PAGE_COMPARE, type PageCompare } from "./ui/pageCompare";
 import { SidebarSections } from "./ui/SidebarSections";
 import { FramePanel } from "./ui/FramePanel";
@@ -360,6 +361,11 @@ function Visualizer(props: VisualizerProps) {
   const zoom = useDiagramZoom(run, hardware);
   const panelRatio = useFittedPanelRatio(split, hardware, layout.panelRatio, !phone && zoom.scale === undefined, [run]);
   const steps = useMemo(() => trace(params, bits), [run]);
+  const log = readLog(params, steps, compare);
+  const markedByte = bits.length % 8 === 0 && log?.ok ? diffByte(log.value) : undefined;
+  useEffect(() => {
+    if (markedByte !== undefined) setTab("log");
+  }, [markedByte]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const breaks = useMemo(() => breakIndices(steps, breakpoints), [steps, breakpoints]);
   const { player, send, stepMs } = usePlayer({ run, durations, rate, loop, onLoop, breaks });
@@ -540,6 +546,7 @@ function Visualizer(props: VisualizerProps) {
               current={player.index}
               input={bits}
               check={check}
+              diffByte={markedByte}
               {...(short ? {} : { title: m.visualizer.log })}
             />
           </div>
