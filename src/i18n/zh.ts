@@ -13,7 +13,13 @@ export const zh: Messages = {
     table: "查表",
     estimate: "推断",
   },
-  workbench: { sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）", sidebarLabel: "设置", language: "显示语言", explanation: "说明" },
+  workbench: {
+    splitters: { sidebar: "侧边栏的宽度", panel: "图与下方面板的高度", code: "伪代码与进度的宽度" },
+    sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）",
+    sidebarLabel: "设置",
+    language: "显示语言",
+    explanation: "说明",
+  },
   settings: {
     heading: "设置",
     invalid: "设置有误。请修改标红的项目。",

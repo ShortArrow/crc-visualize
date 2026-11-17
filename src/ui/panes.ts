@@ -9,7 +9,10 @@ export const DEFAULT_PANES: PaneLayout = { sidebarOpen: true, sidebarWidth: 300,
 /** localStorage key. Bump the version when the stored format changes. */
 export const PANES_KEY = "crc-visualize:panes:v1";
 
-const MIN_SIDEBAR = 200;
+const MIN_SIDEBAR = 180;
+const MAX_SIDEBAR = 480;
+/** The least a panel that a boundary divides keeps (px). */
+const PANE_MIN = 80;
 const MIN_RATIO = 0.15;
 const MAX_RATIO = 0.85;
 
@@ -34,14 +37,22 @@ export function restoreLayout(raw: string | null): PaneLayout {
   };
 }
 
-/** Fits the pane layout to a screen viewWidth (px) wide. The sidebar ranges from 200px to half the screen; split ratios range over 0.15–0.85. */
+/** Fits the pane layout to a screen viewWidth (px) wide. The sidebar ranges from 180px to 480px and half the screen; split ratios range over 0.15–0.85. */
 export function fitLayout(layout: PaneLayout, viewWidth: number): PaneLayout {
   return {
     ...layout,
-    sidebarWidth: Math.round(clamp(layout.sidebarWidth, MIN_SIDEBAR, Math.max(MIN_SIDEBAR, viewWidth / 2))),
+    sidebarWidth: Math.round(
+      clamp(layout.sidebarWidth, MIN_SIDEBAR, Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, viewWidth / 2))),
+    ),
     panelRatio: clamp(layout.panelRatio, MIN_RATIO, MAX_RATIO),
     codeRatio: clamp(layout.codeRatio, MIN_RATIO, MAX_RATIO),
   };
+}
+
+/** The first panel's share of a split total px long when the boundary is offset px from its start; each panel keeps PANE_MIN px and 15 %. */
+export function splitShare(offset: number, total: number): number {
+  const least = Math.max(MIN_RATIO, Math.min(0.5, PANE_MIN / total));
+  return clamp(offset / total, least, 1 - least);
 }
 
 /**

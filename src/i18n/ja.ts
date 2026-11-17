@@ -16,7 +16,13 @@ export const ja = {
     table: "表引き",
     estimate: "推定",
   },
-  workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", sidebarLabel: "設定", language: "表示言語", explanation: "説明" },
+  workbench: {
+    splitters: { sidebar: "サイドバーの幅", panel: "図と下のパネルの高さ", code: "擬似コードと経過の幅" },
+    sidebarToggle: "サイドバーの開閉（Ctrl+B）",
+    sidebarLabel: "設定",
+    language: "表示言語",
+    explanation: "説明",
+  },
   settings: {
     heading: "設定",
     invalid: "設定に誤りがあります。赤い項目を直してください。",
