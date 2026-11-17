@@ -336,6 +336,7 @@ function Visualizer(props: VisualizerProps) {
   const [phone, short] = [tier === "phone", tier === "short"];
   const variablesBesideCode = short || (!phone && !keepsSidebar);
   const [tab, setTab] = useState<PanelTab>("software");
+  const [tabAside, setTabAside] = useState<HTMLDivElement | null>(null);
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const hardware = useRef<HTMLElement>(null);
@@ -506,7 +507,7 @@ function Visualizer(props: VisualizerProps) {
               : { gridTemplateColumns: `minmax(0, ${layout.codeRatio}fr) auto minmax(0, ${1 - layout.codeRatio}fr)` }
           }
         >
-          {short ? <PanelTabs value={tab} onChange={setTab} /> : null}
+          {short ? <PanelTabs value={tab} onChange={setTab} aside={setTabAside} /> : null}
           <div className="software" {...tabPanel(short, "software", tab)}>
             <h2>
               {short ? null : m.visualizer.software}
@@ -547,6 +548,7 @@ function Visualizer(props: VisualizerProps) {
               input={bits}
               check={check}
               diffByte={markedByte}
+              {...(short ? { viewsIn: tab === "log" ? tabAside : null } : {})}
               {...(short ? {} : { title: m.visualizer.log })}
             />
           </div>

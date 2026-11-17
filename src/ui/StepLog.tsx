@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { perByte, type ByteRow } from "../domain/perByte";
 import { registerValue, type Bit, type CrcParams, type Step } from "../domain/trace";
@@ -22,6 +23,11 @@ type Props = Readonly<{
   onSeek: (index: number) => void;
   /** The input byte that holds the first row of your log that differs; Progress switches to Per byte and marks its row. */
   diffByte?: number | undefined;
+  /**
+   * Where the switch of views goes instead of the heading: an element beside the panel tabs on a short screen, null until it is
+   * mounted; undefined keeps it in the heading.
+   */
+  viewsIn?: Element | null;
 }>;
 
 const ROW_LABELS: Readonly<Record<Exclude<LogRow["label"], "before" | "reflected" | "result">, string>> = {
@@ -162,7 +168,17 @@ function Result({ step, input, check }: { step: Step; input: readonly Bit[]; che
  * fades the row in; stepping back reverses this. Each time diffByte changes to a byte, Progress switches to Per byte and scrolls
  * that byte's row into view.
  */
-export function StepLog({ params, steps, current, input, check, onSeek, title, diffByte }: Props & Readonly<{ title?: string }>) {
+export function StepLog({
+  params,
+  steps,
+  current,
+  input,
+  check,
+  onSeek,
+  title,
+  diffByte,
+  viewsIn,
+}: Props & Readonly<{ title?: string }>) {
   const m = useMessages();
   const step = steps[current]!;
   const [view, setView] = useState<"steps" | "perByte">("steps");
@@ -184,30 +200,36 @@ export function StepLog({ params, steps, current, input, check, onSeek, title, d
   const log = useRef<HTMLDivElement>(null);
   const scrollTo = (end: "newest" | "oldest") =>
     log.current?.scrollTo({ top: end === "newest" ? 0 : log.current.scrollHeight, behavior: "smooth" });
+  const views = bytes ? (
+    <span className="log-views" role="group">
+      {(["steps", "perByte"] as const).map((v) => (
+        <button key={v} type="button" data-view={v} aria-pressed={shown === v} onClick={() => setView(v)}>
+          {m.log.views[v]}
+        </button>
+      ))}
+    </span>
+  ) : null;
+  const viewsInHeading = viewsIn === undefined;
+  const heading = title !== undefined || (viewsInHeading && views) || shown === "steps";
   return (
     <>
-      <h2 className="log-heading">
-        {title}
-        {bytes ? (
-          <span className="log-views" role="group">
-            {(["steps", "perByte"] as const).map((v) => (
-              <button key={v} type="button" data-view={v} aria-pressed={shown === v} onClick={() => setView(v)}>
-                {m.log.views[v]}
+      {viewsIn && views ? createPortal(views, viewsIn) : null}
+      {heading ? (
+        <h2 className="log-heading">
+          {title}
+          {viewsInHeading ? views : null}
+          {shown === "steps" ? (
+            <span className="log-jump">
+              <button type="button" data-jump="newest" onClick={() => scrollTo("newest")}>
+                ↑ {m.log.newest}
               </button>
-            ))}
-          </span>
-        ) : null}
-        {shown === "steps" ? (
-          <span className="log-jump">
-            <button type="button" data-jump="newest" onClick={() => scrollTo("newest")}>
-              ↑ {m.log.newest}
-            </button>
-            <button type="button" data-jump="oldest" onClick={() => scrollTo("oldest")}>
-              ↓ {m.log.oldest}
-            </button>
-          </span>
-        ) : null}
-      </h2>
+              <button type="button" data-jump="oldest" onClick={() => scrollTo("oldest")}>
+                ↓ {m.log.oldest}
+              </button>
+            </span>
+          ) : null}
+        </h2>
+      ) : null}
       {bytes && shown === "perByte" ? (
         <ByteTable
           rows={bytes}
