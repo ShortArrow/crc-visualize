@@ -100,6 +100,12 @@ function readingText(m: Messages, read: CrcRead, element: Element, order: "be" |
   );
 }
 
+/** your log of form read and matched against the register of steps; undefined while the field is empty. */
+export function readLog(params: CrcParams, steps: readonly Step[], form: CompareForm) {
+  const values = form.log.trim() === "" ? undefined : readValues(form.log, form.logBase, params.width);
+  return values?.ok ? matchLog(params, steps, values.value) : values;
+}
+
 /** Hints 1 to 7 for your crc against computed, the CRC of bits over range; none when they are equal. */
 function crcHints(params: CrcParams, bits: readonly Bit[], range: CrcRange | undefined, yours: bigint, computed: bigint): Hint[] {
   if (yours === computed) return [];
@@ -123,8 +129,7 @@ export function CompareSection({ params, steps, bits, range, form, onChange, onS
   const crcArea = useReveal<HTMLDivElement>([form.crc, form.crcBase, form.crcElement, form.crcOrder]);
   const crc =
     form.crc.trim() === "" ? undefined : readCrc(form.crc, form.crcBase, elementOf(form.crcElement), form.crcOrder, width);
-  const values = form.log.trim() === "" ? undefined : readValues(form.log, form.logBase, width);
-  const log = values?.ok ? matchLog(params, steps, values.value) : values;
+  const log = readLog(params, steps, form);
   const diffStep = log?.ok && log.value.firstDiff !== undefined ? log.value.rows[log.value.firstDiff]!.step : undefined;
 
   useEffect(() => {
