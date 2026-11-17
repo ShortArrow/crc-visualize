@@ -75,6 +75,47 @@ test.describe("Comparing your own values on the Visualizer", () => {
     });
   });
 
+  test("your log that differs switches Progress to Per byte, whose row of that byte stays marked through Steps and back", async ({
+    page,
+  }) => {
+    await given("CRC-8/SMBUS over 123456789, Progress in Steps", async () => {
+      const v = await Visualizer.open(page);
+      await v.settings.preset().selectOption("CRC-8/SMBUS");
+      await expect(page.locator('.log-views [data-view="steps"]')).toHaveAttribute("aria-pressed", "true");
+    });
+    const c = compare(page);
+    const marked = page.locator(".byte-log tbody tr.first-diff");
+    await when("pasting the register after each byte with the 4th one off by one bit", () =>
+      c.field("yourLog").fill(hex(smbusAfterEachByte().map((r, i) => (i === 3 ? r ^ 1 : r)))),
+    );
+    await then("Progress is in Per byte, and only the row of byte 3 is marked", async () => {
+      await expect(page.locator('.log-views [data-view="perByte"]')).toHaveAttribute("aria-pressed", "true");
+      await expect(marked).toHaveCount(1);
+      await expect(marked.locator("th")).toHaveText("3");
+    });
+    await when("switching to Steps and back to Per byte", async () => {
+      await page.locator('.log-views [data-view="steps"]').click();
+      await expect(page.locator(".log-list")).toBeVisible();
+      await page.locator('.log-views [data-view="perByte"]').click();
+    });
+    await then("the row of byte 3 is still marked", () => expect(marked.locator("th")).toHaveText("3"));
+  });
+
+  test("your log whose init differs leaves Progress in Steps", async ({ page }) => {
+    await given("CRC-8/SMBUS over 123456789, Progress in Steps", async () => {
+      const v = await Visualizer.open(page);
+      await v.settings.preset().selectOption("CRC-8/SMBUS");
+    });
+    const c = compare(page);
+    await when("pasting init 0xFF and then the register after each byte", () =>
+      c.field("yourLog").fill(hex([0xff, ...smbusAfterEachByte()])),
+    );
+    await then("init is the first row that differs, and Progress is still in Steps", async () => {
+      await expect(c.firstDiff().locator("th")).toHaveText("init");
+      await expect(page.locator('.log-views [data-view="steps"]')).toHaveAttribute("aria-pressed", "true");
+    });
+  });
+
   test("your log of a count that fits neither the bytes nor the bits is an error", async ({ page }) => {
     await given("CRC-8/SMBUS over 123456789", async () => {
       const v = await Visualizer.open(page);

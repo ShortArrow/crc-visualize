@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type Ref } from "react";
 import { matchLog, type LogMatch } from "../domain/compare";
 import { crcOf } from "../domain/equivalence";
 import { asHints, presetHints, rangeHints, rowHints, valueHints, type CrcRange, type Hint } from "../domain/hints";
@@ -10,7 +10,7 @@ import type { Messages } from "../i18n/messages";
 import { Badge, elementText, nextElement } from "./Badge";
 import { valueHex } from "./format";
 import { HintList, PasteField, ValueResult } from "./PasteField";
-import { useReveal } from "./reveal";
+import { useReveal, useRevealSpan } from "./reveal";
 
 /** What is pasted into the Compare section and how it is read; kept neither in the URL nor in storage. */
 export type CompareForm = Readonly<{
@@ -40,8 +40,15 @@ type Props = Readonly<{
 const rowName = (m: Messages, match: LogMatch, at: "init" | number) =>
   at === "init" ? "init" : `${match.unit === "byte" ? m.compare.byte : m.compare.bit} ${at}`;
 
-/** your log row by row against the computed register, the first row that differs marked and its hints under the note. */
-export function LogTable({ match, params }: Readonly<{ match: LogMatch; params: CrcParams }>) {
+/**
+ * your log row by row against the computed register, the first row that differs marked and its hints under the note; diffRow
+ * receives the row of the first that differs.
+ */
+export function LogTable({
+  match,
+  params,
+  diffRow,
+}: Readonly<{ match: LogMatch; params: CrcParams; diffRow?: Ref<HTMLTableRowElement> }>) {
   const m = useMessages();
   const { width, xorout } = params;
   const diff = match.firstDiff === undefined ? undefined : match.rows[match.firstDiff]!;
@@ -72,7 +79,12 @@ export function LogTable({ match, params }: Readonly<{ match: LogMatch; params: 
         </thead>
         <tbody>
           {match.rows.map((row, i) => (
-            <tr key={i} className={i === match.firstDiff ? "first-diff" : undefined}>
+            <tr
+              key={i}
+              ref={i === match.firstDiff ? diffRow : undefined}
+              className={i === match.firstDiff ? "first-diff" : undefined}
+              data-reveal={i === match.firstDiff ? "" : undefined}
+            >
               <th>{rowName(m, match, row.at)}</th>
               <td>{valueHex(row.yours, width)}</td>
               <td>{valueHex(row.computed, width)}</td>
@@ -100,6 +112,12 @@ function readingText(m: Messages, read: CrcRead, element: Element, order: "be" |
   );
 }
 
+/** your log of form read and matched against the register of steps; undefined while the field is empty. */
+export function readLog(params: CrcParams, steps: readonly Step[], form: CompareForm) {
+  const values = form.log.trim() === "" ? undefined : readValues(form.log, form.logBase, params.width);
+  return values?.ok ? matchLog(params, steps, values.value) : values;
+}
+
 /** Hints 1 to 7 for your crc against computed, the CRC of bits over range; none when they are equal. */
 function crcHints(params: CrcParams, bits: readonly Bit[], range: CrcRange | undefined, yours: bigint, computed: bigint): Hint[] {
   if (yours === computed) return [];
@@ -123,8 +141,8 @@ export function CompareSection({ params, steps, bits, range, form, onChange, onS
   const crcArea = useReveal<HTMLDivElement>([form.crc, form.crcBase, form.crcElement, form.crcOrder]);
   const crc =
     form.crc.trim() === "" ? undefined : readCrc(form.crc, form.crcBase, elementOf(form.crcElement), form.crcOrder, width);
-  const values = form.log.trim() === "" ? undefined : readValues(form.log, form.logBase, width);
-  const log = values?.ok ? matchLog(params, steps, values.value) : values;
+  const log = readLog(params, steps, form);
+  const [logArea, logDiff] = useRevealSpan<HTMLDivElement, HTMLTableRowElement>([form.log, form.logBase]);
   const diffStep = log?.ok && log.value.firstDiff !== undefined ? log.value.rows[log.value.firstDiff]!.step : undefined;
 
   useEffect(() => {
@@ -176,17 +194,19 @@ export function CompareSection({ params, steps, bits, range, form, onChange, onS
           />
         ) : null}
       </div>
-      <PasteField
-        name="yourLog"
-        placeholder={m.compare.placeholders.log}
-        label="your log"
-        value={form.log}
-        onChange={(v) => set("log", v)}
-        multiline
-        badges={baseBadge("logBase")}
-        error={log && !log.ok ? log.error : undefined}
-      />
-      {log?.ok ? <LogTable match={log.value} params={params} /> : null}
+      <div ref={logArea} className="compare-log-area" data-reveal>
+        <PasteField
+          name="yourLog"
+          placeholder={m.compare.placeholders.log}
+          label="your log"
+          value={form.log}
+          onChange={(v) => set("log", v)}
+          multiline
+          badges={baseBadge("logBase")}
+          error={log && !log.ok ? log.error : undefined}
+        />
+        {log?.ok ? <LogTable match={log.value} params={params} diffRow={logDiff} /> : null}
+      </div>
     </form>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { constantForm, matchLog, matchTable, matchTableLog } from "./compare";
+import { constantForm, diffByte, matchLog, matchTable, matchTableLog } from "./compare";
 import { crcTable, tableRun } from "./table";
 import { bitEndStep, bitsFromBytes, reflectValue, trace, type Bit, type CrcParams } from "./trace";
 
@@ -182,5 +182,35 @@ describe("matchTableLog", () => {
       ok: false,
       error: { code: "byteLogCount", got: 5, bytes: 9 },
     });
+  });
+});
+
+describe("diffByte: the Per byte row that holds the first row of your log that differs", () => {
+  const steps = trace(SMBUS, CHECK);
+  const byXor = (log: readonly bigint[], at: number) => log.map((v, i) => (i === at ? v ^ 0xffn : v));
+  const diffOf = (log: readonly bigint[]) => {
+    const r = matchLog(SMBUS, steps, log);
+    if (!r.ok) throw new Error("count");
+    return diffByte(r.value);
+  };
+
+  it("Given a log after each byte whose 4th number differs, When asked, Then it is byte 3", () => {
+    expect(diffOf(byXor(perByte(SMBUS, CHECK), 3))).toBe(3);
+  });
+
+  it("Given a log with init first whose 4th byte differs, When asked, Then it is byte 3, not the row index 4", () => {
+    expect(diffOf([0n, ...byXor(perByte(SMBUS, CHECK), 3)])).toBe(3);
+  });
+
+  it("Given a log after each bit whose bit 21 differs, When asked, Then it is byte 2, which holds that bit", () => {
+    expect(diffOf(byXor(registerAfterEachBit(SMBUS, CHECK), 21))).toBe(2);
+  });
+
+  it("Given a log whose init differs, When asked, Then no byte holds it", () => {
+    expect(diffOf([0xffn, ...perByte(SMBUS, CHECK)])).toBeUndefined();
+  });
+
+  it("Given a log that matches, When asked, Then there is none", () => {
+    expect(diffOf(perByte(SMBUS, CHECK))).toBeUndefined();
   });
 });
