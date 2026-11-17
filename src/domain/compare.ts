@@ -65,6 +65,16 @@ export function matchLog(
   return { ok: true, value: { unit: found.unit, shift, rows, firstDiff: firstDiff >= 0 ? firstDiff : undefined } };
 }
 
+/**
+ * The input byte that holds the first row of match that differs, the row Per byte marks (spec chapter 16); undefined when every
+ * row matches or the first that differs is init.
+ */
+export function diffByte(match: LogMatch): number | undefined {
+  const at = match.firstDiff === undefined ? "init" : match.rows[match.firstDiff]!.at;
+  if (at === "init") return undefined;
+  return match.unit === "byte" ? at : Math.floor(at / 8);
+}
+
 /** How a constant pasted from code is written against the setting: as it is, reversed in width bits (a right-shift implementation), or neither. */
 export type ConstantForm = "asIs" | "reversed" | "neither";
 
