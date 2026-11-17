@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { Maximize, ZoomIn, ZoomOut } from "lucide-react";
 import { useMessages } from "../i18n/I18n";
-import { pinchScale, wheelSteps, zoomBy } from "./diagramScale";
+import { lowestScale, pinchScale, wheelSteps, zoomBy } from "./diagramScale";
 
 /** The zoom of the diagram: undefined at Fit (the automatic size), otherwise its scale in CSS px per unit of its view box. */
 export type DiagramZoom = Readonly<{
@@ -17,6 +17,15 @@ function drawnScale(area: HTMLElement | null): number {
   const box = svg?.viewBox.baseVal;
   if (!svg || !box || box.width === 0 || box.height === 0) return 1;
   return Math.min(svg.clientWidth / box.width, svg.clientHeight / box.height);
+}
+
+/** How far the diagram in area zooms out: down to the scale at which its whole width fits inside area's padding, if that is below MIN_SCALE. */
+function lowest(area: HTMLElement | null): number {
+  const box = area?.querySelector<SVGSVGElement>("svg.lfsr")?.viewBox.baseVal;
+  if (!area || !box || box.width === 0) return lowestScale(Infinity);
+  const style = getComputedStyle(area);
+  const inside = area.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  return lowestScale(inside / box.width);
 }
 
 const distance = (touches: TouchList) =>
@@ -45,7 +54,7 @@ export function useDiagramZoom(run: string, area: RefObject<HTMLElement | null>)
     const onWheel = (e: WheelEvent) => {
       if (!e.ctrlKey) return;
       e.preventDefault();
-      zoomToRef.current((s) => zoomBy(s, wheelSteps(e.deltaY)));
+      zoomToRef.current((s) => zoomBy(s, wheelSteps(e.deltaY), lowest(el)));
     };
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 2) return;
@@ -56,7 +65,7 @@ export function useDiagramZoom(run: string, area: RefObject<HTMLElement | null>)
       if (!pinch || e.touches.length !== 2) return;
       e.preventDefault();
       const { start, scale } = pinch;
-      zoomToRef.current(() => pinchScale(scale, start, distance(e.touches)));
+      zoomToRef.current(() => pinchScale(scale, start, distance(e.touches), lowest(el)));
     };
     const onTouchEnd = (e: TouchEvent) => {
       if (e.touches.length < 2) pinch = undefined;
@@ -77,8 +86,8 @@ export function useDiagramZoom(run: string, area: RefObject<HTMLElement | null>)
 
   return {
     scale,
-    zoomIn: () => zoomTo((s) => zoomBy(s, 1)),
-    zoomOut: () => zoomTo((s) => zoomBy(s, -1)),
+    zoomIn: () => zoomTo((s) => zoomBy(s, 1, lowest(area.current))),
+    zoomOut: () => zoomTo((s) => zoomBy(s, -1, lowest(area.current))),
     fit: () => setZoom(undefined),
   };
 }
