@@ -84,6 +84,8 @@ export const de: Messages = {
     crcBytes: (expected: number) => `Gib eine Zahl oder ${expected} Bytes ein`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} Zahlen: erwartet ${bytes} oder ${bytes + 1} (eine pro Byte) oder ${bits} oder ${bits + 1} (eine pro Bit)`,
+    byteLogCount: (got: number, bytes: number) =>
+      `Gib ${bytes} Zahlen ein, eine nach jedem Byte, oder ${bytes + 1} ab dem crc vor dem ersten Byte (eingegeben: ${got})`,
     tableCount: (got: number) => `Gib 256 Zahlen in Indexreihenfolge ein (eingegeben: ${got})`,
     receivedShort: (bytes: number) => `Gib mindestens ${bytes} Bytes ein, den CRC eingeschlossen`,
     logCountBits: (got: number, bits: number) => `${got} Zahlen: erwartet ${bits} oder ${bits + 1} (eine pro Bit)`,

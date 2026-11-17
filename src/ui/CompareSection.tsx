@@ -32,7 +32,8 @@ type Props = Readonly<{
 const rowName = (m: Messages, match: LogMatch, at: "init" | number) =>
   at === "init" ? "init" : `${match.unit === "byte" ? m.compare.byte : m.compare.bit} ${at}`;
 
-function LogTable({ match, width }: Readonly<{ match: LogMatch; width: number }>) {
+/** your log row by row against the computed register, the first row that differs marked. */
+export function LogTable({ match, width }: Readonly<{ match: LogMatch; width: number }>) {
   const m = useMessages();
   return (
     <div className="compare-result" data-result={match.firstDiff === undefined ? "ok" : "ng"}>

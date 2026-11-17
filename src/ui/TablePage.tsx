@@ -24,7 +24,7 @@ import { DockedResult, DockSlot } from "./Dock";
 import { useRevealSpan } from "./reveal";
 import { valueHex } from "./format";
 import { Explanation } from "./Explanation";
-import { readTable, TableCompare, type PageCompare } from "./pageCompare";
+import { readTable, readTableLog, TableCompare, type PageCompare } from "./pageCompare";
 
 const byteHex = (value: number) => `0x${value.toString(16).toUpperCase().padStart(2, "0")}`;
 const binary = (value: bigint, width: number) => value.toString(2).padStart(width, "0");
@@ -57,13 +57,25 @@ export function TablePage({
   const diff = read?.ok ? read.value : undefined;
   const focus =
     config.ok && diff?.firstDiff !== undefined && diff.shift === tableDirection(config.params) ? diff.firstDiff.index : undefined;
+  const run = config.ok ? tableRun(config.params, config.bits) : undefined;
+  const log = config.ok ? readTableLog(config.params, run, compare) : undefined;
+  const logDiff = log?.ok && log.value.firstDiff !== undefined ? log.value.rows[log.value.firstDiff]!.step : undefined;
   return (
     <div className="table-page">
       <h2>{m.table.heading}</h2>
-      {config.ok ? <TableCompare params={config.params} compare={compare} onCompare={onCompare} read={read} /> : null}
+      {config.ok ? (
+        <TableCompare
+          params={config.params}
+          compare={compare}
+          onCompare={onCompare}
+          read={read}
+          log={log}
+          bytes={run !== undefined}
+        />
+      ) : null}
       <Explanation>{m.table.note}</Explanation>
       {config.ok ? (
-        <TableMethod params={config.params} bits={config.bits} playback={playback} focus={focus} />
+        <TableMethod params={config.params} bits={config.bits} playback={playback} focus={focus} seekByte={logDiff} />
       ) : (
         <p className="invalid-config">{m.settings.invalid}</p>
       )}
@@ -116,6 +128,8 @@ type MethodProps = Readonly<{
   playback: PlaybackSettings;
   /** An index of table T to choose, as the first that differs in your table. */
   focus?: number | undefined;
+  /** A byte whose look-up the byte-at-a-time playback moves to, as the first that differs in your log. */
+  seekByte?: number | undefined;
 }>;
 
 /**
@@ -123,7 +137,7 @@ type MethodProps = Readonly<{
  * the table, or using it. While paused, a step row switches to using the table at the look-up of its byte, and a filled cell
  * shows how its value is made, or, while making a value, makes that one.
  */
-function TableMethod({ params, bits, playback, focus }: MethodProps) {
+function TableMethod({ params, bits, playback, focus, seekByte }: MethodProps) {
   const m = useMessages();
   const t = m.table;
   const w = params.width;
@@ -177,6 +191,9 @@ function TableMethod({ params, bits, playback, focus }: MethodProps) {
       use.findIndex((s) => s.kind === "lookup" && s.byte === i),
     );
   };
+  useEffect(() => {
+    if (seekByte !== undefined) choose(seekByte);
+  }, [seekByte]);
   const pick = (i: number) => {
     if (!isFilled(step, i, made)) return;
     if (mode !== "value") return setPicked({ at, entry: i });

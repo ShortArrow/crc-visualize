@@ -74,6 +74,8 @@ export const zh: Messages = {
     crcBytes: (expected: number) => `请输入一个数，或 ${expected} 个字节`,
     logCount: (got: number, bytes: number, bits: number) =>
       `有 ${got} 个数：按字节应为 ${bytes} 或 ${bytes + 1} 个，按位应为 ${bits} 或 ${bits + 1} 个`,
+    byteLogCount: (got: number, bytes: number) =>
+      `请输入每个字节之后的 ${bytes} 个数，或从第一个字节之前开始的 ${bytes + 1} 个数（已输入 ${got} 个）`,
     tableCount: (got: number) => `请按索引顺序输入 256 个数（已输入 ${got} 个）`,
     receivedShort: (bytes: number) => `请输入至少 ${bytes} 个字节（含 CRC）`,
     logCountBits: (got: number, bits: number) => `有 ${got} 个数：按位应为 ${bits} 或 ${bits + 1} 个`,

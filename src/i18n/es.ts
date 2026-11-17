@@ -84,6 +84,8 @@ export const es: Messages = {
     crcBytes: (expected: number) => `Introduce un número o ${expected} bytes`,
     logCount: (got: number, bytes: number, bits: number) =>
       `${got} números: se esperan ${bytes} o ${bytes + 1} (uno por byte), o ${bits} o ${bits + 1} (uno por bit)`,
+    byteLogCount: (got: number, bytes: number) =>
+      `Introduce ${bytes} números, uno tras cada byte, o ${bytes + 1} empezando por el crc antes del primer byte (se introdujeron ${got})`,
     tableCount: (got: number) => `Introduce 256 números, en orden de índice (se introdujeron ${got})`,
     receivedShort: (bytes: number) => `Introduce al menos ${bytes} bytes, con el CRC`,
     logCountBits: (got: number, bits: number) => `${got} números: se esperan ${bits} o ${bits + 1} (uno por bit)`,

@@ -1,4 +1,4 @@
-import { crcTable } from "./table";
+import { crcTable, tableDirection, type TableRun } from "./table";
 import { bitEndStep, reflectValue, registerValue, type CrcParams, type Step } from "./trace";
 
 /** The shift a register value is held by: left as the hardware model holds it, right reflected in width bits. */
@@ -19,8 +19,11 @@ export type ReceivedError = Readonly<{ code: "receivedShort"; bytes: number }>;
 /** A pasted table whose count is not 256. */
 export type TableError = Readonly<{ code: "tableCount"; got: number }>;
 
+/** A log on the Table page whose count is neither the bytes of the input nor one more. */
+export type ByteLogError = Readonly<{ code: "byteLogCount"; got: number; bytes: number }>;
+
 /** The errors of comparing pasted values beyond reading them. */
-export type CompareError = LogError | ReceivedError | TableError;
+export type CompareError = LogError | ReceivedError | TableError | ByteLogError;
 
 type Point = Readonly<{ at: "init" | number; step: number }>;
 
@@ -97,5 +100,35 @@ export function matchTable(
   return {
     ok: true,
     value: { shift, firstDiff: index < 0 ? undefined : { index, yours: values[index]!, computed: table[index]! } },
+  };
+}
+
+/**
+ * Compares your log with crc after each byte of the byte-at-a-time run, as spec chapter 16 says for the Table page: n numbers for
+ * n bytes, or n + 1 starting with crc before the first byte. A row's step is the byte it ends.
+ */
+export function matchTableLog(
+  params: CrcParams,
+  run: TableRun,
+  values: readonly bigint[],
+): { ok: true; value: LogMatch } | { ok: false; error: ByteLogError } {
+  const bytes = run.steps.length;
+  if (values.length !== bytes && values.length !== bytes + 1)
+    return { ok: false, error: { code: "byteLogCount", got: values.length, bytes } };
+  const computed = [
+    ...(values.length === bytes + 1 ? [{ at: "init" as const, value: run.start, step: 0 }] : []),
+    ...run.steps.map((s, k) => ({ at: k, value: s.after, step: k })),
+  ];
+  const rows = computed.map(({ at, value, step }, i) => ({
+    at,
+    yours: values[i]!,
+    computed: value,
+    ok: values[i] === value,
+    step,
+  }));
+  const first = rows.findIndex((r) => !r.ok);
+  return {
+    ok: true,
+    value: { unit: "byte", shift: tableDirection(params), rows, firstDiff: first < 0 ? undefined : first },
   };
 }

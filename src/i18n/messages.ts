@@ -29,6 +29,8 @@ function message(m: Messages, error: ConfigError | CompareError): string {
       return m.errors[error.code](error.max);
     case "crcBytes":
       return m.errors.crcBytes(error.expected);
+    case "byteLogCount":
+      return m.errors.byteLogCount(error.got, error.bytes);
     case "tableCount":
       return m.errors.tableCount(error.got);
     case "receivedShort":

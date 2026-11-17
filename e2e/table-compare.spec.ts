@@ -40,4 +40,33 @@ test.describe("Comparing your table on the Table page", () => {
       expect(page.locator('.compare-card label[data-field="yourTable"] .error')).toContainText("255"),
     );
   });
+  test("your log is compared with crc after each byte, and the playback moves to the first byte that differs", async ({
+    page,
+  }) => {
+    const t = await given("the Table page with poly 0x1021 and no reflection over 123456789", () => TablePage.open(page, XMODEM));
+    const table = xmodemTable();
+    const log: number[] = [];
+    const indexes: number[] = [];
+    let crc = 0;
+    for (const c of "123456789") {
+      const index = ((crc >> 8) ^ c.charCodeAt(0)) & 0xff;
+      indexes.push(index);
+      crc = ((crc << 8) & 0xffff) ^ table[index]!;
+      log.push(crc);
+    }
+    const logField = page.locator('.compare-card label[data-field="yourLog"] textarea');
+    await when("pasting crc after each of the 9 bytes", () => logField.fill(asC(log)));
+    await then("every row matches", () =>
+      expect(page.locator(".compare-card .compare-result[data-result]").last()).toHaveAttribute("data-result", "ok"),
+    );
+    await when("pasting it with the 4th value changed", () => logField.fill(asC(log.map((v, i) => (i === 3 ? v ^ 1 : v)))));
+    await then("byte 3 is marked, and table T shows the index that byte looks up", async () => {
+      await expect(page.locator(".compare-card .compare-log tr.first-diff th")).toContainText("3");
+      await expect(t.usedCell()).toHaveAttribute("data-index", String(indexes[3]));
+    });
+    await when("pasting 5 numbers", () => logField.fill(asC(log.slice(0, 5))));
+    await then("it is an error that gives both counts", () =>
+      expect(page.locator('.compare-card label[data-field="yourLog"] .error')).toContainText("9"),
+    );
+  });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { constantForm, matchLog, matchTable } from "./compare";
-import { crcTable } from "./table";
+import { constantForm, matchLog, matchTable, matchTableLog } from "./compare";
+import { crcTable, tableRun } from "./table";
 import { bitEndStep, bitsFromBytes, reflectValue, trace, type Bit, type CrcParams } from "./trace";
 
 const SMBUS: CrcParams = { width: 8, poly: 0x07n, init: 0n, refin: false, refout: false, xorout: 0n };
@@ -143,5 +143,44 @@ describe("matchTable", () => {
   });
   it("Given 255 numbers, When matched, Then it is an error that gives the count", () => {
     expect(matchTable(XMODEM, left.slice(1))).toEqual({ ok: false, error: { code: "tableCount", got: 255 } });
+  });
+});
+
+describe("matchTableLog", () => {
+  const XMODEM: CrcParams = { width: 16, poly: 0x1021n, init: 0n, refin: false, refout: false, xorout: 0n };
+  const run = tableRun(XMODEM, CHECK)!;
+  const after = run.steps.map((s) => s.after);
+  it("Given crc after each of the 9 bytes, When matched, Then 9 byte rows match as a left shift", () => {
+    const match = matchTableLog(XMODEM, run, after);
+    expect(match.ok && match.value.rows.length).toBe(9);
+    expect(match.ok && match.value).toMatchObject({ unit: "byte", shift: "left", firstDiff: undefined });
+  });
+  it("Given init and then crc after each byte, When matched, Then the first row is init", () => {
+    const match = matchTableLog(XMODEM, run, [0n, ...after]);
+    expect(match.ok && match.value.rows[0]!.at).toBe("init");
+  });
+  it("Given crc after each byte with the 4th changed, When matched, Then the 4th row, byte 3, differs first", () => {
+    const match = matchTableLog(
+      XMODEM,
+      run,
+      after.map((v, i) => (i === 3 ? v ^ 1n : v)),
+    );
+    expect(match.ok && match.value.firstDiff).toBe(3);
+    expect(match.ok && match.value.rows[3]!.step).toBe(3);
+  });
+  it("Given CRC-16/ARC, whose table shifts right, When matched against its run, Then it is a right shift", () => {
+    const arc = tableRun(ARC, CHECK)!;
+    const match = matchTableLog(
+      ARC,
+      arc,
+      arc.steps.map((s) => s.after),
+    );
+    expect(match.ok && match.value).toMatchObject({ shift: "right", firstDiff: undefined });
+  });
+  it("Given 5 numbers for 9 bytes, When matched, Then it is an error that gives both counts", () => {
+    expect(matchTableLog(XMODEM, run, after.slice(0, 5))).toEqual({
+      ok: false,
+      error: { code: "byteLogCount", got: 5, bytes: 9 },
+    });
   });
 });
