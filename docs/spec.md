@@ -611,6 +611,7 @@ Values copied from the viewer's own CRC code (the register partway through, the 
 
 - The settings panel of the Visualizer shows the CRC of the CRC range (`crc = 0x…`) in every input mode, whatever the playback position.
 - A switch at the top of Progress (Steps | Per byte) shows instead one row per input byte: the byte number, the byte, and the register at the end of the byte in hexadecimal (with `refin` = `refout` = true, also as a right shift holds it). The last row is followed by the CRC. Pressing a row moves playback to the end of that byte. Per byte is not offered when the input is not whole bytes.
+- When `your log` on the Visualizer differs, Progress switches to Per byte (on a short screen, its tab is chosen as well) and marks the row of the byte that holds the first row that differs: that byte for a log after each byte, and the byte that holds that bit for a log after each bit. The mark stays while the log differs, through playback and a switch back to Steps. When the first row that differs is `init`, or Per byte is not offered, Progress is left as it is.
 
 ### Hints
 
