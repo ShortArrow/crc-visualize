@@ -38,6 +38,16 @@ export const zh: Messages = {
     bit: "位",
     none: "没有一致的预设",
     notations: { reversed: "若为反转表示则一致", koopman: "若为 Koopman 表示则一致", full: "若为包含 x^width 的表示则一致" },
+    hints: {
+      order: "若按相反的字节顺序读取则一致",
+      reflect: "若在 width 位内反转位则一致",
+      xorout: "若与 xorout 异或则一致",
+      ones: "若与全 1 的值异或则一致",
+      "order+xorout": "若按相反的字节顺序读取后再与 xorout 异或则一致",
+      "order+ones": "若按相反的字节顺序读取后再与全 1 的值异或则一致",
+      "reflect+xorout": "若在 width 位内反转后再与 xorout 异或则一致",
+      "reflect+ones": "若在 width 位内反转后再与全 1 的值异或则一致",
+    },
     readAs: {
       one: "一个数，直接作为 CRC 读取（未使用元素和字节顺序）",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

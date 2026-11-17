@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { matchLog, type LogMatch } from "../domain/compare";
+import { valueHints } from "../domain/hints";
 import { elementOf, readCrc, readValues, type Base, type CrcRead, type Element, type ElementId } from "../domain/paste";
 import { registerValue, type CrcParams, type Step } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import type { Messages } from "../i18n/messages";
 import { Badge, elementText, nextElement } from "./Badge";
 import { valueHex } from "./format";
-import { PasteField, ValueResult } from "./PasteField";
+import { HintList, PasteField, ValueResult } from "./PasteField";
+import { useReveal } from "./reveal";
 
 /** What is pasted into the Compare section and how it is read; kept neither in the URL nor in storage. */
 export type CompareForm = Readonly<{
@@ -32,16 +34,21 @@ type Props = Readonly<{
 const rowName = (m: Messages, match: LogMatch, at: "init" | number) =>
   at === "init" ? "init" : `${match.unit === "byte" ? m.compare.byte : m.compare.bit} ${at}`;
 
-/** your log row by row against the computed register, the first row that differs marked. */
-export function LogTable({ match, width }: Readonly<{ match: LogMatch; width: number }>) {
+/** your log row by row against the computed register, the first row that differs marked and its hints under the note. */
+export function LogTable({ match, params }: Readonly<{ match: LogMatch; params: CrcParams }>) {
   const m = useMessages();
+  const { width, xorout } = params;
+  const diff = match.firstDiff === undefined ? undefined : match.rows[match.firstDiff]!;
   return (
     <div className="compare-result" data-result={match.firstDiff === undefined ? "ok" : "ng"}>
       {match.shift === "right" ? <p className="compare-note">{m.compare.rightShift}</p> : null}
-      {match.firstDiff === undefined ? null : (
-        <p className="compare-note">
-          {m.compare.firstDiff}: {rowName(m, match, match.rows[match.firstDiff]!.at)}
-        </p>
+      {diff === undefined ? null : (
+        <>
+          <p className="compare-note">
+            {m.compare.firstDiff}: {rowName(m, match, diff.at)}
+          </p>
+          <HintList hints={valueHints(diff.yours, diff.computed, width, xorout)} />
+        </>
       )}
       <table className="compare-log">
         <thead>
@@ -90,6 +97,8 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
   const m = useMessages();
   const set = <K extends keyof CompareForm>(key: K, value: CompareForm[K]) => onChange({ ...form, [key]: value });
   const { width } = params;
+  const computed = registerValue(steps.at(-1)!.reg);
+  const crcArea = useReveal<HTMLDivElement>([form.crc, form.crcBase, form.crcElement, form.crcOrder]);
   const crc =
     form.crc.trim() === "" ? undefined : readCrc(form.crc, form.crcBase, elementOf(form.crcElement), form.crcOrder, width);
   const values = form.log.trim() === "" ? undefined : readValues(form.log, form.logBase, width);
@@ -105,37 +114,46 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
   );
   return (
     <form className="compare" onSubmit={(e) => e.preventDefault()}>
-      <PasteField
-        name="yourCrc"
-        placeholder={m.compare.placeholders.crc}
-        label="your crc"
-        value={form.crc}
-        onChange={(v) => set("crc", v)}
-        badges={
-          <>
-            {baseBadge("crcBase")}
-            <Badge
-              kind="element"
-              name={m.badges.element}
-              text={elementText(form.crcElement)}
-              onPress={() => set("crcElement", nextElement(form.crcElement))}
-            />
-            <Badge
-              kind="order"
-              name={m.badges.order}
-              text={form.crcOrder.toUpperCase()}
-              onPress={() => set("crcOrder", form.crcOrder === "be" ? "le" : "be")}
-            />
-          </>
-        }
-        error={crc && !crc.ok ? crc.error : undefined}
-        note={
-          crc?.ok ? (
-            <small className="crc-reading">{readingText(m, crc.value, elementOf(form.crcElement), form.crcOrder, width)}</small>
-          ) : null
-        }
-      />
-      {crc?.ok ? <ValueResult yours={crc.value.value} computed={registerValue(steps.at(-1)!.reg)} width={width} /> : null}
+      <div ref={crcArea} className="compare-crc" data-reveal>
+        <PasteField
+          name="yourCrc"
+          placeholder={m.compare.placeholders.crc}
+          label="your crc"
+          value={form.crc}
+          onChange={(v) => set("crc", v)}
+          badges={
+            <>
+              {baseBadge("crcBase")}
+              <Badge
+                kind="element"
+                name={m.badges.element}
+                text={elementText(form.crcElement)}
+                onPress={() => set("crcElement", nextElement(form.crcElement))}
+              />
+              <Badge
+                kind="order"
+                name={m.badges.order}
+                text={form.crcOrder.toUpperCase()}
+                onPress={() => set("crcOrder", form.crcOrder === "be" ? "le" : "be")}
+              />
+            </>
+          }
+          error={crc && !crc.ok ? crc.error : undefined}
+          note={
+            crc?.ok ? (
+              <small className="crc-reading">{readingText(m, crc.value, elementOf(form.crcElement), form.crcOrder, width)}</small>
+            ) : null
+          }
+        />
+        {crc?.ok ? (
+          <ValueResult
+            yours={crc.value.value}
+            computed={computed}
+            width={width}
+            hints={valueHints(crc.value.value, computed, width, params.xorout)}
+          />
+        ) : null}
+      </div>
       <PasteField
         name="yourLog"
         placeholder={m.compare.placeholders.log}
@@ -146,7 +164,7 @@ export function CompareSection({ params, steps, form, onChange, onSeek }: Props)
         badges={baseBadge("logBase")}
         error={log && !log.ok ? log.error : undefined}
       />
-      {log?.ok ? <LogTable match={log.value} width={width} /> : null}
+      {log?.ok ? <LogTable match={log.value} params={params} /> : null}
     </form>
   );
 }

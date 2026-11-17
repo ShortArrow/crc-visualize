@@ -46,6 +46,18 @@ export const fr: Messages = {
       koopman: "concorderait en notation de Koopman",
       full: "concorderait dans la notation qui inclut x^width",
     },
+    hints: {
+      order: "concorderait en lisant les octets dans l'ordre inverse",
+      reflect: "concorderait en inversant les bits sur width bits",
+      xorout: "concorderait avec un XOR par xorout",
+      ones: "concorderait avec un XOR par une valeur dont tous les bits sont à 1",
+      "order+xorout": "concorderait en lisant les octets dans l'ordre inverse, puis avec un XOR par xorout",
+      "order+ones":
+        "concorderait en lisant les octets dans l'ordre inverse, puis avec un XOR par une valeur dont tous les bits sont à 1",
+      "reflect+xorout": "concorderait en inversant les bits sur width bits, puis avec un XOR par xorout",
+      "reflect+ones":
+        "concorderait en inversant les bits sur width bits, puis avec un XOR par une valeur dont tous les bits sont à 1",
+    },
     readAs: {
       one: "Un nombre, lu comme le CRC lui-même ; les badges d'élément et d'ordre des octets ne servent pas",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { CompareError } from "../domain/compare";
+import type { ValueHint } from "../domain/hints";
 import type { ConfigError } from "../domain/parse";
 import { useMessages } from "../i18n/I18n";
 import { errorText } from "../i18n/messages";
@@ -66,8 +67,31 @@ function BitRow({ value, other, width }: Readonly<{ value: bigint; other: bigint
   );
 }
 
-/** A pasted value against the computed one: ✓ when they match, otherwise both in binary with the differing bits marked. */
-export function ValueResult({ yours, computed, width }: Readonly<{ yours: bigint; computed: bigint; width: number }>) {
+/** The hints that would make a pasted value match (spec chapter 16), each as "would match if …"; nothing when there are none. */
+export function HintList({ hints }: Readonly<{ hints: readonly ValueHint[] }>) {
+  const m = useMessages();
+  if (hints.length === 0) return null;
+  return (
+    <ul className="compare-hints">
+      {hints.map((hint) => (
+        <li key={hint} data-hint={hint}>
+          {m.compare.hints[hint]}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * A pasted value against the computed one: ✓ when they match, otherwise both in binary with the differing bits marked, and the
+ * hints under them.
+ */
+export function ValueResult({
+  yours,
+  computed,
+  width,
+  hints,
+}: Readonly<{ yours: bigint; computed: bigint; width: number; hints: readonly ValueHint[] }>) {
   const m = useMessages();
   if (yours === computed) {
     return (
@@ -82,6 +106,7 @@ export function ValueResult({ yours, computed, width }: Readonly<{ yours: bigint
       <BitRow value={yours} other={computed} width={width} />
       <span>{m.compare.computed}</span>
       <BitRow value={computed} other={yours} width={width} />
+      <HintList hints={hints} />
     </div>
   );
 }

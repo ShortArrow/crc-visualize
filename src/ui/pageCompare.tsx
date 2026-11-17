@@ -3,7 +3,8 @@ import { crcLength, receivedMessageLength } from "../domain/check";
 import { constantForm, matchTable, matchTableLog, type CompareError, type LogMatch, type TableMatch } from "../domain/compare";
 import type { TableRun } from "../domain/table";
 import { parseWidth, type ConfigError } from "../domain/parse";
-import { checkMatches, polyMatches } from "../domain/presetMatch";
+import { checkHints, checkMatches, polyMatches } from "../domain/presetMatch";
+import { valueHints } from "../domain/hints";
 import type { Preset } from "../domain/presets";
 import { elementOf, readBytes, readValue, readValues, type Base, type ElementId, type PasteError } from "../domain/paste";
 import { bitsFromBytes, reflectValue, type Bit, type CrcParams } from "../domain/trace";
@@ -128,7 +129,14 @@ export function CheckCompare({ params, compare, onCompare, received, check, ref 
           badges={base("checkBase")}
           error={yours && !yours.ok ? yours.error : undefined}
         />
-        {yours?.ok ? <ValueResult yours={yours.value} computed={check} width={params.width} /> : null}
+        {yours?.ok ? (
+          <ValueResult
+            yours={yours.value}
+            computed={check}
+            width={params.width}
+            hints={valueHints(yours.value, check, params.width, params.xorout)}
+          />
+        ) : null}
       </form>
     </section>
   );
@@ -248,7 +256,29 @@ export function NamingCompare({ presets, compare, onCompare }: PresetCompareProp
   );
 }
 
-/** The Compare card of the Narrow down page: your check against the check of the presets. */
+/** The presets whose check is value, or when none is, ✗ followed by each hint that some preset would match, with those presets. */
+function CheckResult({
+  presets,
+  value,
+  width,
+}: Readonly<{ presets: readonly Preset[]; value: bigint; width: number | undefined }>) {
+  const m = useMessages();
+  const exact = checkMatches(presets, value, width);
+  return (
+    <div className="compare-result-list">
+      <PresetNames presets={exact} />
+      {exact.length > 0
+        ? null
+        : checkHints(presets, value, width).map(({ hint, presets: matched }) => (
+            <p key={hint} className="compare-hint" data-hint={hint}>
+              {m.compare.hints[hint]}: {matched.map((p) => p.name).join(", ")}
+            </p>
+          ))}
+    </div>
+  );
+}
+
+/** The Compare card of the Narrow down page: your check against the check of the presets, then under hints 1 to 5. */
 export function NarrowCompare({ presets, compare, onCompare }: PresetCompareProps) {
   const m = useMessages();
   const set = <K extends keyof PageCompare>(key: K, value: PageCompare[K]) => onCompare({ ...compare, [key]: value });
@@ -273,7 +303,7 @@ export function NarrowCompare({ presets, compare, onCompare }: PresetCompareProp
           valueError={read && !read.ok ? read.error : undefined}
           widthError={width.ok ? undefined : width.error}
         />
-        {read?.ok ? <PresetNames presets={checkMatches(presets, read.value, width.ok ? width.value : undefined)} /> : null}
+        {read?.ok ? <CheckResult presets={presets} value={read.value} width={width.ok ? width.value : undefined} /> : null}
       </form>
     </section>
   );
@@ -434,7 +464,12 @@ export function TableCompare({
               <p className="compare-result ng">
                 ✗ {m.compare.table.closest(match.shift, `0x${match.firstDiff.index.toString(16).toUpperCase().padStart(2, "0")}`)}
               </p>
-              <ValueResult yours={match.firstDiff.yours} computed={match.firstDiff.computed} width={params.width} />
+              <ValueResult
+                yours={match.firstDiff.yours}
+                computed={match.firstDiff.computed}
+                width={params.width}
+                hints={valueHints(match.firstDiff.yours, match.firstDiff.computed, params.width, undefined)}
+              />
             </div>
           )
         ) : null}
@@ -457,7 +492,7 @@ export function TableCompare({
             error={log && !log.ok ? log.error : undefined}
           />
         ) : null}
-        {log?.ok ? <LogTable match={log.value} width={params.width} /> : null}
+        {log?.ok ? <LogTable match={log.value} params={params} /> : null}
       </form>
     </section>
   );

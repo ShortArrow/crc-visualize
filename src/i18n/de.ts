@@ -46,6 +46,17 @@ export const de: Messages = {
       koopman: "würde in Koopman-Schreibweise stimmen",
       full: "würde in der Schreibweise mit x^width stimmen",
     },
+    hints: {
+      order: "würde stimmen, wenn die Bytes in umgekehrter Reihenfolge gelesen würden",
+      reflect: "würde stimmen, wenn die Bits in width Bits gespiegelt würden",
+      xorout: "würde stimmen, wenn mit xorout XOR-verknüpft würde",
+      ones: "würde stimmen, wenn mit lauter Einsen XOR-verknüpft würde",
+      "order+xorout": "würde stimmen, wenn die Bytes in umgekehrter Reihenfolge gelesen und dann mit xorout XOR-verknüpft würden",
+      "order+ones":
+        "würde stimmen, wenn die Bytes in umgekehrter Reihenfolge gelesen und dann mit lauter Einsen XOR-verknüpft würden",
+      "reflect+xorout": "würde stimmen, wenn die Bits in width Bits gespiegelt und dann mit xorout XOR-verknüpft würden",
+      "reflect+ones": "würde stimmen, wenn die Bits in width Bits gespiegelt und dann mit lauter Einsen XOR-verknüpft würden",
+    },
     readAs: {
       one: "Eine Zahl, als CRC selbst gelesen; Element- und Byte-Reihenfolge-Badges werden nicht verwendet",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

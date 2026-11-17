@@ -624,6 +624,21 @@ A pasted value that differs from the computed one is shown with it in binary, on
 6. For a CRC: the CRC range ended 1 to ⌈`width`/8⌉ bytes earlier or later, within the frame. For a row of `your log`: it were the row before or after.
 7. For a CRC of the input or of `123456789`: another catalogue preset of the same `width` gives it; the preset is named.
 
+In 1, the value is taken as ⌈`width`/8⌉ bytes and their order reversed; a result that does not fit in `width` bits does not match. In 5, the pasted value has its bytes put in the other order or its bits reflected first, and is then XORed with `xorout` or with all ones. Code that skipped both the final reflection and the final XOR gives a value that this order turns back into the computed one.
+
+Which hints each value gets:
+
+| Value                                        | Hints                                                                                         |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `your crc`                                   | 1 to 7 (7 as a CRC of the input)                                                              |
+| The first row of `your log` that differs     | 1 to 6, transforming the row as it is compared (as a right shift holds it, for a right shift) |
+| `your check` on the Check page               | 1 to 5 and 7 (7 as a CRC of `123456789`)                                                      |
+| The first index of `your table` that differs | 1 and 2, as no final XOR goes into table T                                                    |
+
+The hints are listed under the two values in binary; for `your log`, under the note of the first row that differs. In binary and text input the CRC range is the whole input, so 6 tries only the ranges that end before the end of the input, and only when the input is whole bytes.
+
+For `your check` on the Narrow down page, hints 1 to 5 are tried only when no preset matches it as it is, each with the `width` and `xorout` of the preset, for the presets of `width` 8 or more that the value fits in. After the ✗, each hint that some preset would match is listed in the order above, with those presets.
+
 Hints are shown only when `width` is 8 or more. With a smaller `width` a transformed value matches by chance too often (1 in 8 for a `width` of 3), so only the differing bits are shown.
 
 A `poly` entered with its x^width term (a value with bit `width` set and below 2^(`width`+1)) is an error that gives the value without that term.

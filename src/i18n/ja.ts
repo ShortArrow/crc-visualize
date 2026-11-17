@@ -41,6 +41,16 @@ export const ja = {
     bit: "ビット",
     none: "一致するプリセットなし",
     notations: { reversed: "反転表記なら一致", koopman: "Koopman 表記なら一致", full: "x^width を含む表記なら一致" },
+    hints: {
+      order: "バイトを逆の並びで読めば一致",
+      reflect: "width ビットでビットを反転すれば一致",
+      xorout: "xorout と XOR すれば一致",
+      ones: "全て 1 の値と XOR すれば一致",
+      "order+xorout": "バイトを逆の並びで読み、xorout と XOR すれば一致",
+      "order+ones": "バイトを逆の並びで読み、全て 1 の値と XOR すれば一致",
+      "reflect+xorout": "width ビットで反転し、xorout と XOR すれば一致",
+      "reflect+ones": "width ビットで反転し、全て 1 の値と XOR すれば一致",
+    },
     readAs: {
       one: "数 1 つをそのまま CRC として読んだ（要素とバイト順は使っていない）",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

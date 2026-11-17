@@ -1,4 +1,5 @@
 import type { Preset } from "./presets";
+import { HINT_MIN_WIDTH, VALUE_HINTS, valueHints, type ValueHint } from "./hints";
 import { reflectValue } from "./trace";
 
 /** The notations of a poly other than the normal one: reversed, Koopman, and with the x^width term included. */
@@ -42,4 +43,20 @@ export function polyMatches(presets: readonly Preset[], value: bigint, width: nu
 /** The presets of width (every width when undefined) whose check, the CRC of 123456789, is value. */
 export function checkMatches(presets: readonly Preset[], value: bigint, width: number | undefined): Preset[] {
   return ofWidth(presets, width).filter((p) => p.check === value);
+}
+
+/** The presets that a pasted check would match under one hint. */
+export type CheckHint = Readonly<{ hint: ValueHint; presets: readonly Preset[] }>;
+
+/**
+ * Hints 1 to 5 of a pasted check against each preset of width (every width when undefined), with the width and xorout of that
+ * preset, for the presets of HINT_MIN_WIDTH bits or more that value fits in. In the order of VALUE_HINTS; a hint no preset matches
+ * is left out. Meant for when checkMatches finds none.
+ */
+export function checkHints(presets: readonly Preset[], value: bigint, width: number | undefined): CheckHint[] {
+  const tried = ofWidth(presets, width).filter((p) => p.params.width >= HINT_MIN_WIDTH && value >> BigInt(p.params.width) === 0n);
+  const hinted = tried.map((p) => ({ preset: p, hints: valueHints(value, p.check, p.params.width, p.params.xorout) }));
+  return VALUE_HINTS.map((hint) => ({ hint, presets: hinted.filter((h) => h.hints.includes(hint)).map((h) => h.preset) })).filter(
+    (h) => h.presets.length > 0,
+  );
 }

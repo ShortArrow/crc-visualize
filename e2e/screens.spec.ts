@@ -135,6 +135,17 @@ for (const screen of SCREENS) {
           allInView(page, { setting: v.settings.param("poly"), help: v.settings.help() }),
         );
       }
+      await when("pasting into your crc the CRC of CRC-16/KERMIT, 0x2189, with its bytes swapped", async () => {
+        if (!(await v.workbench.sidebar().isVisible())) await v.workbench.sidebarToggle().click();
+        await page.locator('.compare label[data-field="yourCrc"] input').fill("0x8921");
+      });
+      await then("the field, ✗ and the first hint are in view", () =>
+        allInView(page, {
+          field: page.locator('.compare label[data-field="yourCrc"] input'),
+          "✗": page.locator(".compare .compare-result[data-result='ng']").first(),
+          "first hint": page.locator(".compare .compare-hints li").first(),
+        }),
+      );
     });
 
     test(`${on}, the naming page keeps what an action changes in view`, async ({ page }) => {
