@@ -14,6 +14,11 @@ export const es: Messages = {
     estimate: "Estimación",
   },
   workbench: {
+    splitters: {
+      sidebar: "Ancho de la barra lateral",
+      panel: "Alto del diagrama y del panel inferior",
+      code: "Ancho del pseudocódigo y del progreso",
+    },
     sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)",
     sidebarLabel: "Ajustes",
     language: "Idioma",
