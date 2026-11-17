@@ -48,6 +48,9 @@ export const zh: Messages = {
       "reflect+xorout": "若在 width 位内反转后再与 xorout 异或则一致",
       "reflect+ones": "若在 width 位内反转后再与全 1 的值异或则一致",
     },
+    rangeHint: (by: number) => (by < 0 ? `若 CRC 范围提前 ${-by} 字节结束则一致` : `若 CRC 范围推后 ${by} 字节结束则一致`),
+    rowHint: { before: "若为前一行的值则一致", after: "若为后一行的值则一致" },
+    presetHint: (names: string) => `若用 ${names} 计算则一致`,
     readAs: {
       one: "一个数，直接作为 CRC 读取（未使用元素和字节顺序）",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

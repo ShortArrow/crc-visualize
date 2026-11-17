@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { valueHints } from "./hints";
+import { crcOf } from "./equivalence";
+import { crcRange, presetHints, rangeHints, rowHints, valueHints } from "./hints";
+import type { Frames } from "./parse";
+import { CATALOGUE } from "./presets";
+import { bitsFromBytes, type CrcParams } from "./trace";
 
 describe("valueHints", () => {
   it("Given CRC-16/ARC's 0xBB3D, When 0x3DBB is pasted, Then it would match with its bytes in the other order", () => {
@@ -47,5 +51,87 @@ describe("valueHints", () => {
   it("Given no final XOR, as for a table entry, When the value XOR all ones or in the other byte order is pasted, Then only the byte order is a hint", () => {
     expect(valueHints(0x44c2n, 0xbb3dn, 16, undefined)).toEqual([]);
     expect(valueHints(0x3dbbn, 0xbb3dn, 16, undefined)).toEqual(["order"]);
+  });
+});
+
+const XMODEM: CrcParams = { width: 16, poly: 0x1021n, init: 0n, refin: false, refout: false, xorout: 0n };
+const bytesOf = (text: string) => [...text].map((c) => c.charCodeAt(0));
+const crcOfBytes = (params: CrcParams, bytes: readonly number[]) => crcOf(params, bitsFromBytes(bytes));
+
+describe("rangeHints", () => {
+  it("Given the whole of 123456789 as the range, When your crc is that of its first 7 bytes, Then it would match ending 2 bytes earlier", () => {
+    const bytes = bytesOf("123456789");
+    const range = { bytes, from: 0, to: 8, last: 8 };
+    expect(rangeHints(XMODEM, range, crcOfBytes(XMODEM, bytes.slice(0, 7)))).toEqual([-2]);
+  });
+  it("Given a frame with 2 bytes after the range, When your crc takes in one of them, Then it would match ending 1 byte later", () => {
+    const bytes = [...bytesOf("123456789"), 0x31, 0xc3];
+    const range = { bytes, from: 0, to: 8, last: 10 };
+    expect(rangeHints(XMODEM, range, crcOfBytes(XMODEM, bytes.slice(0, 10)))).toEqual([1]);
+  });
+  it("Given ends both earlier and later that give the same CRC, When listed, Then the earlier ones come first, the nearer first", () => {
+    const bytes = [0x00, 0x00, 0x00, 0x00, 0x00];
+    const range = { bytes, from: 0, to: 2, last: 4 };
+    const yours = crcOfBytes(XMODEM, bytes.slice(0, 2));
+    expect(rangeHints(XMODEM, range, yours)).toEqual([-1, -2, 1, 2]);
+  });
+  it("Given a range of one byte, When your crc is that of no bytes, Then the range is not made shorter than one byte", () => {
+    const range = { bytes: [0x31], from: 0, to: 0, last: 0 };
+    expect(rangeHints(XMODEM, range, crcOfBytes(XMODEM, []))).toEqual([]);
+  });
+  it("Given width 5, When the range ending earlier would match, Then no hint is given", () => {
+    const usb: CrcParams = { width: 5, poly: 0x5n, init: 0x1fn, refin: true, refout: true, xorout: 0x1fn };
+    const bytes = bytesOf("123456789");
+    expect(rangeHints(usb, { bytes, from: 0, to: 8, last: 8 }, crcOfBytes(usb, bytes.slice(0, 8)))).toEqual([]);
+  });
+});
+
+describe("crcRange", () => {
+  it("Given text input, When finding the range, Then it is the whole input and cannot end later", () => {
+    expect(crcRange(bitsFromBytes([0x31, 0x32]), undefined, 16)).toEqual({ bytes: [0x31, 0x32], from: 0, to: 1, last: 1 });
+  });
+  it("Given binary input that is not whole bytes, When finding the range, Then there is none", () => {
+    expect(crcRange([1, 0, 1], undefined, 16)).toBeUndefined();
+  });
+  it("Given hex frames with a CRC field, When finding the range, Then it is that of the selected frame, which can end as late as its last byte", () => {
+    const frames: Frames = {
+      list: [[0x01], [0x31, 0x32, 0x33, 0xaa, 0xbb]],
+      layout: { from: 0, crcField: "be" },
+      selected: 1,
+    };
+    expect(crcRange([], frames, 16)).toEqual({ bytes: [0x31, 0x32, 0x33, 0xaa, 0xbb], from: 0, to: 2, last: 4 });
+  });
+});
+
+describe("rowHints", () => {
+  const row = (yours: bigint, computed: bigint) => ({ at: 0, yours, computed, ok: yours === computed, step: 0 });
+  it("Given a row whose value is the one computed for the row before, When listed, Then it would match the row before", () => {
+    const rows = [row(0x10n, 0x10n), row(0x10n, 0x20n), row(0x30n, 0x30n)];
+    expect(rowHints(rows, 1, 8)).toEqual(["before"]);
+  });
+  it("Given a row whose value is the one computed for the row after, When listed, Then it would match the row after", () => {
+    const rows = [row(0x10n, 0x10n), row(0x30n, 0x20n), row(0x30n, 0x30n)];
+    expect(rowHints(rows, 1, 8)).toEqual(["after"]);
+  });
+  it("Given width 5, When the row before matches, Then no hint is given", () => {
+    const rows = [row(0x1n, 0x1n), row(0x1n, 0x2n)];
+    expect(rowHints(rows, 1, 5)).toEqual([]);
+  });
+});
+
+describe("presetHints", () => {
+  const arc = CATALOGUE.find((p) => p.name === "CRC-16/ARC")!;
+  it("Given CRC-16/ARC, When your check is that of CRC-16/MODBUS, Then CRC-16/MODBUS is named and CRC-16/ARC is not", () => {
+    const named = presetHints(CATALOGUE, arc.params, 0x4b37n, (p) => p.check).map((p) => p.name);
+    expect(named).toContain("CRC-16/MODBUS");
+    expect(named).not.toContain("CRC-16/ARC");
+  });
+  it("Given CRC-16/ARC, When your check is that of a 32-bit preset, Then no preset of another width is named", () => {
+    expect(presetHints(CATALOGUE, arc.params, 0xcbf43926n, (p) => p.check)).toEqual([]);
+  });
+  it("Given CRC-5/USB, When your check is that of another 5-bit preset, Then no hint is given", () => {
+    const usb = CATALOGUE.find((p) => p.name === "CRC-5/USB")!;
+    const other = CATALOGUE.find((p) => p.params.width === 5 && p !== usb)!;
+    expect(presetHints(CATALOGUE, usb.params, other.check, (p) => p.check)).toEqual([]);
   });
 });

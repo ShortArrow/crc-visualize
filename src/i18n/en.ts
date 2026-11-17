@@ -56,6 +56,10 @@ export const en: Messages = {
       "reflect+xorout": "would match if the bits were reflected in width bits and then XORed with xorout",
       "reflect+ones": "would match if the bits were reflected in width bits and then XORed with all ones",
     },
+    rangeHint: (by: number) =>
+      `would match if the CRC range ended ${Math.abs(by)} ${Math.abs(by) === 1 ? "byte" : "bytes"} ${by < 0 ? "earlier" : "later"}`,
+    rowHint: { before: "would match the row before", after: "would match the row after" },
+    presetHint: (names: string) => `would match if computed with ${names}`,
     readAs: {
       one: "One number, read as the CRC itself; the element and byte-order badges are not used",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

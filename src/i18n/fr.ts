@@ -58,6 +58,10 @@ export const fr: Messages = {
       "reflect+ones":
         "concorderait en inversant les bits sur width bits, puis avec un XOR par une valeur dont tous les bits sont à 1",
     },
+    rangeHint: (by: number) =>
+      `concorderait si la plage du CRC se terminait ${Math.abs(by)} ${Math.abs(by) === 1 ? "octet" : "octets"} plus ${by < 0 ? "tôt" : "tard"}`,
+    rowHint: { before: "concorderait avec la ligne précédente", after: "concorderait avec la ligne suivante" },
+    presetHint: (names: string) => `concorderait en calculant avec ${names}`,
     readAs: {
       one: "Un nombre, lu comme le CRC lui-même ; les badges d'élément et d'ordre des octets ne servent pas",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>

@@ -51,6 +51,10 @@ export const ja = {
       "reflect+xorout": "width ビットで反転し、xorout と XOR すれば一致",
       "reflect+ones": "width ビットで反転し、全て 1 の値と XOR すれば一致",
     },
+    rangeHint: (by: number) =>
+      by < 0 ? `CRC の範囲が ${-by} バイト前で終われば一致` : `CRC の範囲が ${by} バイト後で終われば一致`,
+    rowHint: { before: "前の行の値なら一致", after: "後の行の値なら一致" },
+    presetHint: (names: string) => `${names} で計算すれば一致`,
     readAs: {
       one: "数 1 つをそのまま CRC として読んだ（要素とバイト順は使っていない）",
       bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
