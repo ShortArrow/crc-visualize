@@ -1,7 +1,7 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import { streamPosition, toRegister, type Bit, type CrcParams, type ParamName, type Step } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
-import { lfsrLayout, type Point } from "./layout";
+import { lfsrLayout, toPoints, type Point } from "./layout";
 import { routeKeyframes } from "./motion";
 import { heldFeedback, particleWire, particles, upcomingValues, wireLevels, type Particle } from "./signals";
 
@@ -69,8 +69,6 @@ function FeedbackBox(props: { at: Point & { size: number }; value: Bit | undefin
 
 /** How a particle travels. Shared by the particle and the trail that paints the wire behind it. */
 type Travel = Readonly<{ delayMs: number; durationMs: number }>;
-
-const toPoints = (points: readonly Point[]) => points.map((p) => `${p.x},${p.y}`).join(" ");
 
 /**
  * A wire carrying a value. If level is undefined, nothing flows.

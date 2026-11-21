@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PARAM_NAMES, type ParamName } from "../domain/trace";
-import { lfsrLayout, type Point } from "./layout";
+import { lfsrLayout, toPoints, type Point } from "./layout";
 import { XorGate } from "./LfsrView";
 import { useMessages } from "../i18n/I18n";
 import { namesHash } from "./route";
@@ -21,7 +21,6 @@ const CARD_HEIGHT = 90;
 const midY = regY + box / 2;
 /** Gate of the rightmost tap (start of the callout line). */
 const rightGate = layout.gates.reduce((a, b) => (b.x > a.x ? b : a));
-const toPoints = (points: readonly Point[]) => points.map((p) => `${p.x},${p.y}`).join(" ");
 
 /** Where each parameter name sits at the end of its callout line, and the line's start (where it takes effect). */
 const CALLOUTS: Record<ParamName, Readonly<{ label: Point; from?: Point }>> = {

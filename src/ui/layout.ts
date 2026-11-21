@@ -2,6 +2,9 @@ import { toRegister, type CrcParams } from "../domain/trace";
 
 export type Point = Readonly<{ x: number; y: number }>;
 
+/** points as the points attribute of an SVG polyline or polygon. */
+export const toPoints = (points: readonly Point[]) => points.map((p) => `${p.x},${p.y}`).join(" ");
+
 /**
  * Layout of the LFSR diagram (SVG coordinates).
  * boxes[i] is r[i], with x at the box's left edge. gates are the centers of the XOR gates directly below each r[i] where poly[i] = 1.
