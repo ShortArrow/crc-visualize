@@ -12,7 +12,7 @@ import {
 import type { Preset } from "../domain/presets";
 import { useMessages } from "../i18n/I18n";
 import { Docked } from "./Dock";
-import { powerText } from "./format";
+import { powerText, valueBinary } from "./format";
 import { Explanation } from "./Explanation";
 
 const SIZE = 340;
@@ -24,8 +24,6 @@ const at = (d: number, n: number, r: number) => {
   const angle = (2 * Math.PI * d) / n;
   return { x: CENTER + r * Math.sin(angle), y: CENTER - r * Math.cos(angle) };
 };
-
-const binary = (value: number, width: number) => value.toString(2).padStart(width, "0");
 
 /**
  * Shows the codeword ring and the state ring of the generator polynomial generator side by side, sharing the rotation count k.
@@ -94,7 +92,7 @@ export function CyclicPage({
                 ))}
               </dd>
               <dt>{m.cyclic.remainder}</dt>
-              <dd className="cyclic-remainder">{binary(remainder(generator, rotated), generator.width)}</dd>
+              <dd className="cyclic-remainder">{valueBinary(remainder(generator, rotated), generator.width)}</dd>
             </dl>
           </Docked>
           <p className="cyclic-explain">{m.cyclic.explain(n)}</p>
@@ -206,7 +204,7 @@ function StateRing({ generator, k }: Readonly<{ generator: Generator; k: number 
               )
             ) : null}
             <text x={p.x} y={p.y} fontSize={crowded ? 10 : 13} transform={radial}>
-              {binary(state, generator.width)}
+              {valueBinary(state, generator.width)}
             </text>
           </g>
         );
@@ -215,7 +213,7 @@ function StateRing({ generator, k }: Readonly<{ generator: Generator; k: number 
         {`${powerText(k)} mod g(x)`}
       </text>
       <text className="state-caption value" x={CENTER} y={CENTER + 20}>
-        {`= ${binary(states[k] ?? 0, generator.width)}`}
+        {`= ${valueBinary(states[k] ?? 0, generator.width)}`}
       </text>
     </svg>
   );

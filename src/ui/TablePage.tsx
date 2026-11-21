@@ -22,12 +22,11 @@ import { usePlayer } from "../playback/usePlayer";
 import { Controls } from "./Controls";
 import { DockedResult, DockSlot } from "./Dock";
 import { useRevealSpan } from "./reveal";
-import { valueHex } from "./format";
+import { valueBinary, valueHex } from "./format";
 import { Explanation } from "./Explanation";
 import { readTable, readTableLog, TableCompare, type PageCompare } from "./pageCompare";
 
 const byteHex = (value: number) => `0x${value.toString(16).toUpperCase().padStart(2, "0")}`;
-const binary = (value: bigint, width: number) => value.toString(2).padStart(width, "0");
 const NIBBLES = Array.from({ length: 16 }, (_, i) => i);
 
 /** The playback settings shared with the Visualizer. */
@@ -371,11 +370,11 @@ function TableMethod({ params, bits, playback, focus, seekByte }: MethodProps) {
                     <td>{c.bit}</td>
                     <td>{c.feedback}</td>
                     <td>
-                      <code>{binary(c.shifted, w)}</code>
+                      <code>{valueBinary(c.shifted, w)}</code>
                     </td>
-                    <td>{c.feedback ? <code>{binary(c.xor, w)}</code> : t.noXor}</td>
+                    <td>{c.feedback ? <code>{valueBinary(c.xor, w)}</code> : t.noXor}</td>
                     <td>
-                      <code>{binary(c.reg, w)}</code>
+                      <code>{valueBinary(c.reg, w)}</code>
                     </td>
                   </tr>
                 ))}

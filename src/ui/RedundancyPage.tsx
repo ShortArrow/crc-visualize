@@ -14,13 +14,11 @@ import {
 import type { Bit } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { Docked, DockedResult } from "./Dock";
-import { powerOfTwoText, powerText } from "./format";
+import { powerOfTwoText, powerText, valueBinary } from "./format";
 import { Explanation } from "./Explanation";
 import { useRevealSpan } from "./reveal";
 
 const GRID_LIMIT = 128;
-
-const binary = (value: number, width: number) => value.toString(2).padStart(width, "0");
 
 /**
  * Uses codewords of the generator polynomial generator to show that the CRC is redundant bits appended to the message, and how they detect errors.
@@ -94,7 +92,7 @@ export function RedundancyPage({ generator }: Readonly<{ generator: Generator }>
             <dt>{m.redundancy.burst}</dt>
             <dd className="burst-length">{burstLength(error)}</dd>
             <dt>{m.redundancy.remainder}</dt>
-            <dd className="received-remainder">{binary(remainder(generator, received), generator.width)}</dd>
+            <dd className="received-remainder">{valueBinary(remainder(generator, received), generator.width)}</dd>
           </dl>
           <p className="verdict" data-verdict={result} ref={verdictLine} data-reveal>
             {m.redundancy.verdict[result]}
@@ -170,7 +168,7 @@ function CrcStripFigure({ generator, received }: Readonly<{ generator: Generator
             key={v}
             className={`strip-cell ${v === strip.fitting ? "fitting" : ""} ${v === strip.received ? "received" : ""}`}
           >
-            {binary(v, generator.width)}
+            {valueBinary(v, generator.width)}
           </span>
         ))}
       </div>
@@ -192,7 +190,7 @@ function WordGrid({ generator, received }: Readonly<{ generator: Generator; rece
           <span
             key={v}
             className={`word-dot ${codewords.has(v) ? "codeword" : ""} ${v === received ? "received" : ""}`}
-            title={binary(v, n)}
+            title={valueBinary(v, n)}
           />
         ))}
       </div>
