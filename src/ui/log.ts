@@ -1,4 +1,4 @@
-import type { Bit, Register, Step } from "../domain/trace";
+import { xorRegister, type Bit, type Register, type Step } from "../domain/trace";
 import type { Messages } from "../i18n/messages";
 import { toBinary, toHex } from "./format";
 
@@ -96,8 +96,6 @@ const rowOf = (index: number, label: LogRow["label"], reg: Register): LogRow => 
 
 const changedFrom = (from: Register, to: Register): boolean[] => to.map((bit, i) => bit !== from[i]).toReversed();
 
-const xorOf = (a: Register, b: Register): Register => a.map((bit, i) => (bit ^ b[i]!) as Bit);
-
 const byteOf = (stream: readonly Bit[], byteIndex: number): number =>
   stream.slice(byteIndex * 8, byteIndex * 8 + 8).reduce<number>((v, b) => v * 2 + b, 0);
 
@@ -141,7 +139,7 @@ export function logBlocks(steps: readonly Step[], current: number, limit: number
         rows.push({ ...rowOf(index, "shift", step.reg), dropped: step.dropped });
         break;
       case "xor":
-        rows.push(rowOf(index, "poly", xorOf(before, step.reg)), {
+        rows.push(rowOf(index, "poly", xorRegister(before, step.reg)), {
           ...rowOf(index, "xor", step.reg),
           changed: changedFrom(before, step.reg),
         });
@@ -162,7 +160,7 @@ export function logBlocks(steps: readonly Step[], current: number, limit: number
           key: index,
           rows: [
             rowOf(index, "before", before),
-            rowOf(index, "xorout", xorOf(before, step.reg)),
+            rowOf(index, "xorout", xorRegister(before, step.reg)),
             { ...rowOf(index, "result", step.reg), changed: changedFrom(before, step.reg) },
           ],
         });
