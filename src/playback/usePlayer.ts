@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { leftToTarget } from "./keys";
+import { leftToBrowser, leftToTarget } from "./keys";
 import { updatePlayer, type Player, type PlayerMsg } from "./playback";
 
 const KEY_MSG: Record<string, PlayerMsg> = {
@@ -26,8 +26,8 @@ type Options = Readonly<{
 
 /**
  * Playback of a step sequence of durations.length steps: advances on a timer while playing, and answers the playback keys
- * (Space, the left and right arrows, Home, End, and L for looping) outside text fields. stepMs is the time of the step shown,
- * after the speed multiplier.
+ * (Space, the left and right arrows, Home, End, and L for looping) pressed on their own outside text fields. stepMs is the time
+ * of the step shown, after the speed multiplier.
  */
 export function usePlayer({ run, durations, rate, loop, onLoop, breaks, start = 0 }: Options): Readonly<{
   player: Player;
@@ -53,6 +53,7 @@ export function usePlayer({ run, durations, rate, loop, onLoop, breaks, start = 
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (leftToBrowser(e)) return;
       if (e.target instanceof HTMLElement && leftToTarget(e.target.tagName, e.key)) return;
       const msg = KEY_MSG[e.key];
       if (msg) send(msg);
