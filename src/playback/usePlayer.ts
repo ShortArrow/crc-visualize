@@ -1,14 +1,6 @@
 import { useEffect, useState } from "react";
-import { leftToBrowser, leftToTarget } from "./keys";
+import { keyAction, leftToBrowser, leftToTarget } from "./keys";
 import { updatePlayer, type Player, type PlayerMsg } from "./playback";
-
-const KEY_MSG: Record<string, PlayerMsg> = {
-  " ": { type: "toggle" },
-  ArrowLeft: { type: "prev" },
-  ArrowRight: { type: "next" },
-  Home: { type: "first" },
-  End: { type: "last" },
-};
 
 type Options = Readonly<{
   /** Identity of the step sequence; when it changes, playback goes back to the starting step and stops. */
@@ -55,10 +47,10 @@ export function usePlayer({ run, durations, rate, loop, onLoop, breaks, start = 
     const onKey = (e: KeyboardEvent) => {
       if (leftToBrowser(e)) return;
       if (e.target instanceof HTMLElement && leftToTarget(e.target.tagName, e.key)) return;
-      const msg = KEY_MSG[e.key];
-      if (msg) send(msg);
-      else if (e.key.toLowerCase() === "l") onLoop(!loop);
-      else return;
+      const action = keyAction(e.key);
+      if (action === undefined) return;
+      if (action === "loop") onLoop(!loop);
+      else send(action);
       e.preventDefault();
     };
     window.addEventListener("keydown", onKey);

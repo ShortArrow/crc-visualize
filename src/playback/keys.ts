@@ -1,3 +1,5 @@
+import type { PlayerMsg } from "./playback";
+
 const FIELDS = ["INPUT", "SELECT", "TEXTAREA"];
 
 /**
@@ -16,3 +18,15 @@ export const leftToBrowser = ({
   altKey,
   metaKey,
 }: Readonly<{ ctrlKey: boolean; altKey: boolean; metaKey: boolean }>): boolean => ctrlKey || altKey || metaKey;
+
+const KEY_MSG: Record<string, PlayerMsg> = {
+  " ": { type: "toggle" },
+  ArrowLeft: { type: "prev" },
+  ArrowRight: { type: "next" },
+  Home: { type: "first" },
+  End: { type: "last" },
+};
+
+/** What a playback key does: a message to the player, "loop" to toggle looping, or undefined for a key that is not a shortcut. */
+export const keyAction = (key: string): PlayerMsg | "loop" | undefined =>
+  KEY_MSG[key] ?? (key.toLowerCase() === "l" ? "loop" : undefined);
