@@ -9,12 +9,12 @@ const PAUSED = "再生";
 const XOR_LINE = /\^=\s*poly/;
 
 test.describe("Sidebar sections", () => {
-  test("the sidebar has Settings, Variables and Breakpoints sections, which open and close and stay so after a reload", async ({
+  test("the sidebar has Settings, Compare, Variables and Breakpoints sections, which open and close and stay so after a reload", async ({
     page,
   }) => {
     const v = await given("the page is open with the default settings", () => Visualizer.open(page));
-    await then("the three sections are shown open, in order", async () => {
-      await expect(page.locator(".sidebar-section > h2")).toHaveText(["設定", "変数", "ブレークポイント"]);
+    await then("the four sections are shown open, in order", async () => {
+      await expect(page.locator(".sidebar-section > h2")).toHaveText(["設定", "照合", "変数", "ブレークポイント"]);
       await expect(v.debug.variable("crc")).toBeVisible();
     });
     await when("pressing the Variables heading", () => v.debug.sectionHeading("variables").click());
@@ -211,8 +211,8 @@ test.describe("Variables and breakpoints on a phone", () => {
       expect((await v.debug.gutter(XOR_LINE).boundingBox())!.width).toBeGreaterThanOrEqual(24);
     });
     await when("opening the drawer", () => v.workbench.sidebarToggle().click());
-    await then("it has the Settings and Breakpoints sections, without Variables", async () => {
-      await expect(page.locator(".sidebar .sidebar-section > h2")).toHaveText(["設定", "ブレークポイント"]);
+    await then("it has the Settings, Compare and Breakpoints sections, without Variables", async () => {
+      await expect(page.locator(".sidebar .sidebar-section > h2")).toHaveText(["設定", "照合", "ブレークポイント"]);
     });
   });
 });

@@ -14,6 +14,11 @@ export const en: Messages = {
     estimate: "Estimate",
   },
   workbench: {
+    splitters: {
+      sidebar: "Width of the sidebar",
+      panel: "Height of the diagram and the panel below",
+      code: "Width of the pseudocode and Progress",
+    },
     sidebarToggle: "Toggle sidebar (Ctrl+B)",
     sidebarLabel: "Settings",
     language: "Language",
@@ -24,12 +29,80 @@ export const en: Messages = {
     invalid: "The settings contain errors. Fix the fields marked in red.",
     invalidStatus: "Invalid settings",
   },
+  badges: { base: "Base", element: "Element", order: "Byte order" },
+  compare: {
+    cardTitle: "Compare with values from your code",
+    heading: "Compare",
+    yours: "yours",
+    computed: "computed",
+    matches: "matches",
+    firstDiff: "first difference",
+    rightShift: "compared as a right shift holds the register",
+    byte: "byte",
+    bit: "bit",
+    none: "No preset matches",
+    notations: {
+      reversed: "would match if it is the reversed notation",
+      koopman: "would match if it is the Koopman notation",
+      full: "would match if it is the notation that includes x^width",
+    },
+    hints: {
+      order: "would match if the bytes were read in the other order",
+      reflect: "would match if the bits were reflected in width bits",
+      xorout: "would match if it were XORed with xorout",
+      ones: "would match if it were XORed with all ones",
+      "order+xorout": "would match if the bytes were read in the other order and then XORed with xorout",
+      "order+ones": "would match if the bytes were read in the other order and then XORed with all ones",
+      "reflect+xorout": "would match if the bits were reflected in width bits and then XORed with xorout",
+      "reflect+ones": "would match if the bits were reflected in width bits and then XORed with all ones",
+    },
+    rangeHint: (by: number) =>
+      `would match if the CRC range ended ${Math.abs(by)} ${Math.abs(by) === 1 ? "byte" : "bytes"} ${by < 0 ? "earlier" : "later"}`,
+    rowHint: { before: "would match the row before", after: "would match the row after" },
+    presetHint: (names: string) => `would match if computed with ${names}`,
+    readAs: {
+      one: "One number, read as the CRC itself; the element and byte-order badges are not used",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${count} numbers of ${bits} bits${element ? `, each ${element === "le" ? "low" : "high"} byte first` : ""}: ${bytes} → read ${order === "le" ? "low" : "high"} byte first: ${value}`,
+    },
+    forms: {
+      asIs: "as it is",
+      reversed: "reversed in width bits, as a right-shift implementation writes it",
+      neither: (asIs: string, reversed: string) => `neither: as it is ${asIs}, reversed ${reversed}`,
+    },
+    table: {
+      left: "matches table T for a left shift",
+      right: "matches table T for a right shift",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `closest to table T for a left shift; first difference at index ${index}`
+          : `closest to table T for a right shift; first difference at index ${index}`,
+    },
+    placeholders: {
+      table: "e.g. 0x0000, 0x1021, 0x2042, …",
+      init: "e.g. 0x0000",
+      crc: "e.g. 0x31C3 or 31 C3",
+      log: "e.g. 0x2672, 0x20B5, 0x9752, …",
+      received: "e.g. 31 32 33 34 35 36 37 38 39 31 C3",
+      check: "e.g. 0x31C3",
+      poly: "e.g. 0x1021",
+      width: "e.g. 16 (empty: every width)",
+    },
+  },
   errors: {
     widthRange: "Enter an integer from 1 to 64",
     notHex: "Enter a hexadecimal number",
     badChar: "Only numbers and separators can be read",
     hexInDecimal: "0x can be used only in base 16",
     oneValue: "Enter one number",
+    crcBytes: (expected: number) => `Enter one number, or ${expected} bytes`,
+    logCount: (got: number, bytes: number, bits: number) =>
+      `${got} numbers: expected ${bytes} or ${bytes + 1} (one per byte), or ${bits} or ${bits + 1} (one per bit)`,
+    byteLogCount: (got: number, bytes: number) =>
+      `Enter ${bytes} numbers, one after each byte, or ${bytes + 1} starting with crc before the first byte (${got} were entered)`,
+    tableCount: (got: number) => `Enter 256 numbers, in index order (${got} were entered)`,
+    receivedShort: (bytes: number) => `Enter at least ${bytes} bytes, the CRC included`,
+    logCountBits: (got: number, bits: number) => `${got} numbers: expected ${bits} or ${bits + 1} (one per bit)`,
     at: (line: number, column: number) => ` (line ${line}, column ${column})`,
     tooWide: (width: number) => `Enter a value that fits in ${width} bits`,
     zero: "0 is not allowed",
@@ -83,6 +156,8 @@ export const en: Messages = {
     done: "Done",
   },
   log: {
+    views: { steps: "Steps", perByte: "Per byte" },
+    byteTable: { byte: "byte", register: "register", right: "right shift" },
     byteNo: (n: number) => `byte ${n}`,
     willXor: "feedback = 1, so XOR with poly next",
     noXor: "feedback = 0, so no XOR",

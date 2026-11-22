@@ -14,6 +14,11 @@ export const de: Messages = {
     estimate: "Schätzung",
   },
   workbench: {
+    splitters: {
+      sidebar: "Breite der Seitenleiste",
+      panel: "Höhe des Diagramms und des Bereichs darunter",
+      code: "Breite von Pseudocode und Verlauf",
+    },
     sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)",
     sidebarLabel: "Optionen",
     language: "Sprache",
@@ -24,12 +29,80 @@ export const de: Messages = {
     invalid: "Die Einstellungen enthalten Fehler. Korrigiere die rot markierten Felder.",
     invalidStatus: "Ungültige Einstellungen",
   },
+  badges: { base: "Basis", element: "Element", order: "Bytereihenfolge" },
+  compare: {
+    cardTitle: "Mit Werten aus deinem Code vergleichen",
+    heading: "Vergleich",
+    yours: "deins",
+    computed: "berechnet",
+    matches: "stimmt",
+    firstDiff: "erster Unterschied",
+    rightShift: "verglichen, wie ein Rechtsschieben das Register hält",
+    byte: "Byte",
+    bit: "Bit",
+    none: "Keine Voreinstellung stimmt",
+    notations: {
+      reversed: "würde in umgekehrter Schreibweise stimmen",
+      koopman: "würde in Koopman-Schreibweise stimmen",
+      full: "würde in der Schreibweise mit x^width stimmen",
+    },
+    hints: {
+      order: "würde stimmen, wenn die Bytes in umgekehrter Reihenfolge gelesen würden",
+      reflect: "würde stimmen, wenn die Bits in width Bits gespiegelt würden",
+      xorout: "würde stimmen, wenn mit xorout XOR-verknüpft würde",
+      ones: "würde stimmen, wenn mit lauter Einsen XOR-verknüpft würde",
+      "order+xorout": "würde stimmen, wenn die Bytes in umgekehrter Reihenfolge gelesen und dann mit xorout XOR-verknüpft würden",
+      "order+ones":
+        "würde stimmen, wenn die Bytes in umgekehrter Reihenfolge gelesen und dann mit lauter Einsen XOR-verknüpft würden",
+      "reflect+xorout": "würde stimmen, wenn die Bits in width Bits gespiegelt und dann mit xorout XOR-verknüpft würden",
+      "reflect+ones": "würde stimmen, wenn die Bits in width Bits gespiegelt und dann mit lauter Einsen XOR-verknüpft würden",
+    },
+    rangeHint: (by: number) => `würde stimmen, wenn der CRC-Bereich ${Math.abs(by)} Byte ${by < 0 ? "früher" : "später"} endete`,
+    rowHint: { before: "würde mit der vorigen Zeile stimmen", after: "würde mit der nächsten Zeile stimmen" },
+    presetHint: (names: string) => `würde stimmen, wenn mit ${names} berechnet`,
+    readAs: {
+      one: "Eine Zahl, als CRC selbst gelesen; Element- und Byte-Reihenfolge-Badges werden nicht verwendet",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${count} Zahlen zu ${bits} Bit${element ? `, jeweils ${element === "le" ? "niederwertiges" : "höchstwertiges"} Byte zuerst` : ""}: ${bytes} → mit ${order === "le" ? "niederwertigem" : "höchstwertigem"} Byte zuerst gelesen: ${value}`,
+    },
+    forms: {
+      asIs: "unverändert",
+      reversed: "in width Bit umgekehrt, wie eine Rechtsschiebe-Implementierung es schreibt",
+      neither: (asIs: string, reversed: string) => `keines von beiden: unverändert ${asIs}, umgekehrt ${reversed}`,
+    },
+    table: {
+      left: "stimmt mit Tabelle T für Linksschieben überein",
+      right: "stimmt mit Tabelle T für Rechtsschieben überein",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `am nächsten an Tabelle T für Linksschieben; erster Unterschied bei Index ${index}`
+          : `am nächsten an Tabelle T für Rechtsschieben; erster Unterschied bei Index ${index}`,
+    },
+    placeholders: {
+      table: "z. B. 0x0000, 0x1021, 0x2042, …",
+      init: "z. B. 0x0000",
+      crc: "z. B. 0x31C3 oder 31 C3",
+      log: "z. B. 0x2672, 0x20B5, 0x9752, …",
+      received: "z. B. 31 32 33 34 35 36 37 38 39 31 C3",
+      check: "z. B. 0x31C3",
+      poly: "z. B. 0x1021",
+      width: "z. B. 16 (leer: alle Breiten)",
+    },
+  },
   errors: {
     widthRange: "Gib eine ganze Zahl von 1 bis 64 ein",
     notHex: "Gib eine Hexadezimalzahl ein",
     badChar: "Nur Zahlen und Trennzeichen können gelesen werden",
     hexInDecimal: "0x ist nur zur Basis 16 erlaubt",
     oneValue: "Gib nur eine Zahl ein",
+    crcBytes: (expected: number) => `Gib eine Zahl oder ${expected} Bytes ein`,
+    logCount: (got: number, bytes: number, bits: number) =>
+      `${got} Zahlen: erwartet ${bytes} oder ${bytes + 1} (eine pro Byte) oder ${bits} oder ${bits + 1} (eine pro Bit)`,
+    byteLogCount: (got: number, bytes: number) =>
+      `Gib ${bytes} Zahlen ein, eine nach jedem Byte, oder ${bytes + 1} ab dem crc vor dem ersten Byte (eingegeben: ${got})`,
+    tableCount: (got: number) => `Gib 256 Zahlen in Indexreihenfolge ein (eingegeben: ${got})`,
+    receivedShort: (bytes: number) => `Gib mindestens ${bytes} Bytes ein, den CRC eingeschlossen`,
+    logCountBits: (got: number, bits: number) => `${got} Zahlen: erwartet ${bits} oder ${bits + 1} (eine pro Bit)`,
     at: (line: number, column: number) => ` (Zeile ${line}, Spalte ${column})`,
     tooWide: (width: number) => `Gib einen Wert ein, der in ${width} Bit passt`,
     zero: "0 ist nicht erlaubt",
@@ -83,6 +156,8 @@ export const de: Messages = {
     done: "Fertig",
   },
   log: {
+    views: { steps: "Schritte", perByte: "Pro Byte" },
+    byteTable: { byte: "Byte", register: "Register", right: "Rechtsschieben" },
     byteNo: (n: number) => `Byte ${n}`,
     willXor: "feedback = 1, daher als Nächstes XOR mit poly",
     noXor: "feedback = 0, daher kein XOR",

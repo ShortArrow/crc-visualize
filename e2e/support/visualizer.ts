@@ -180,7 +180,7 @@ export class Visualizer {
     areaWidth: async () => (await this.page.locator(".hardware").boundingBox())!.width,
     /**
      * How the diagram fits its area: the size and bottom of its box, the height-to-width ratio of the drawing (its view box), the
-     * bottom of its area and the area's bottom padding (px on the screen, so enlarged with the whole app on a large screen).
+     * bottom of its area and the area's bottom padding and border (px on the screen, so enlarged with the whole app on a large screen).
      */
     fit: () =>
       this.page.evaluate(() => {
@@ -194,7 +194,8 @@ export class Visualizer {
           aspect: view.height / view.width,
           areaBottom: area.getBoundingClientRect().bottom,
           padding:
-            (parseFloat(getComputedStyle(area).paddingBottom) * area.getBoundingClientRect().height) /
+            ((parseFloat(getComputedStyle(area).paddingBottom) + parseFloat(getComputedStyle(area).borderBottomWidth)) *
+              area.getBoundingClientRect().height) /
             (area as HTMLElement).offsetHeight,
         };
       }),
@@ -276,7 +277,10 @@ export class Visualizer {
     gapBelow: () =>
       this.page.locator(".log-pane").evaluate((pane) => {
         const log = pane.querySelector(".log")!.getBoundingClientRect();
-        return pane.getBoundingClientRect().bottom - parseFloat(getComputedStyle(pane).paddingBottom) - log.bottom;
+        const style = getComputedStyle(pane);
+        return (
+          pane.getBoundingClientRect().bottom - parseFloat(style.paddingBottom) - parseFloat(style.borderBottomWidth) - log.bottom
+        );
       }),
     /** The blocks of the log, newest first. */
     blocks: () => this.page.locator(".log-block"),
@@ -711,6 +715,11 @@ export class Visualizer {
     rate: () => this.page.getByTitle("速度倍率"),
     loop: () => this.page.getByTitle("ループ再生（L）"),
     play: () => this.page.getByTitle("再生 / 一時停止（Space）"),
+    /** The badge that chooses the base or the element a field reads its pasted numbers in. */
+    badge: (field: "input" | "poly" | "init" | "xorout", kind: "base" | "element") =>
+      this.page.locator(`label:is([data-param="${field}"], [data-field="${field}"]) [data-badge="${kind}"]`),
+    /** The error shown under a field. */
+    error: (field: "input" | "poly") => this.page.locator(`label:is([data-param="${field}"], [data-field="${field}"]) .error`),
     query: () => new URL(this.page.url()).searchParams,
   };
 }

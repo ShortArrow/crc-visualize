@@ -4,14 +4,20 @@ import { reflectValue, type CrcParams } from "../domain/trace";
 import { useMessages } from "../i18n/I18n";
 import { bitsToString, valueHex } from "./format";
 import { Explanation } from "./Explanation";
+import { EquivalenceCompare, type PageCompare } from "./pageCompare";
 
 /** Lists the substitutions that give the same CRC and what can be inferred from what is known. Examples are computed from config (the current settings and input). */
-export function EquivalencePage({ config }: Readonly<{ config: ConfigResult }>) {
+export function EquivalencePage({
+  config,
+  compare,
+  onCompare,
+}: Readonly<{ config: ConfigResult; compare: PageCompare; onCompare: (compare: PageCompare) => void }>) {
   const m = useMessages();
   const e = m.equivalence;
   return (
     <div className="equivalence-page">
       <h2>{e.heading}</h2>
+      {config.ok ? <EquivalenceCompare params={config.params} compare={compare} onCompare={onCompare} /> : null}
       <Explanation>{e.note}</Explanation>
       {config.ok ? null : <p className="invalid-config">{m.settings.invalid}</p>}
       <h3>{e.sameSection}</h3>

@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, Ref } from "react";
 import { useMessages } from "../i18n/I18n";
 
 /** The panes of the Visualizer's panel that a short screen shows one at a time. */
@@ -8,9 +8,18 @@ const TABS: readonly PanelTab[] = ["software", "log"];
 
 /**
  * Tabs choosing which pane of the Visualizer's panel a short screen shows (docs/spec.md, Screen tiers). The arrow keys, Home and
- * End move between them, as in a WAI-ARIA tab list.
+ * End move between them, as in a WAI-ARIA tab list. aside receives the element at the right end of their row, where a pane may put
+ * its own controls.
  */
-export function PanelTabs({ value, onChange }: { value: PanelTab; onChange: (tab: PanelTab) => void }) {
+export function PanelTabs({
+  value,
+  onChange,
+  aside,
+}: {
+  value: PanelTab;
+  onChange: (tab: PanelTab) => void;
+  aside?: Ref<HTMLDivElement>;
+}) {
   const m = useMessages();
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const at = TABS.indexOf(value);
@@ -30,22 +39,25 @@ export function PanelTabs({ value, onChange }: { value: PanelTab; onChange: (tab
     e.currentTarget.querySelector<HTMLElement>(`[data-tab="${next}"]`)?.focus();
   };
   return (
-    <div className="panel-tabs" role="tablist" aria-label={m.visualizer.panelTabs} onKeyDown={onKey}>
-      {TABS.map((tab) => (
-        <button
-          key={tab}
-          type="button"
-          role="tab"
-          id={`panel-tab-${tab}`}
-          aria-controls={`panel-${tab}`}
-          aria-selected={tab === value}
-          tabIndex={tab === value ? 0 : -1}
-          data-tab={tab}
-          onClick={() => onChange(tab)}
-        >
-          {tab === "software" ? m.visualizer.software : m.visualizer.log}
-        </button>
-      ))}
+    <div className="panel-tab-row">
+      <div className="panel-tabs" role="tablist" aria-label={m.visualizer.panelTabs} onKeyDown={onKey}>
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            role="tab"
+            id={`panel-tab-${tab}`}
+            aria-controls={`panel-${tab}`}
+            aria-selected={tab === value}
+            tabIndex={tab === value ? 0 : -1}
+            data-tab={tab}
+            onClick={() => onChange(tab)}
+          >
+            {tab === "software" ? m.visualizer.software : m.visualizer.log}
+          </button>
+        ))}
+      </div>
+      <div ref={aside} className="panel-tab-aside" />
     </div>
   );
 }

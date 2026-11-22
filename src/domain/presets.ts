@@ -201,7 +201,7 @@ export const PRESETS: readonly Preset[] = [
 /** Presets in the reveng catalogue, excluding the tutorial TUTORIAL. */
 export const CATALOGUE: readonly Preset[] = PRESETS.filter((p) => p !== TUTORIAL);
 
-const sameParams = (a: CrcParams, b: CrcParams) =>
+export const sameParams = (a: CrcParams, b: CrcParams) =>
   a.width === b.width &&
   a.poly === b.poly &&
   a.init === b.init &&

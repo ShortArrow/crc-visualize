@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { frame, recheck, wholeCheck } from "../domain/check";
+import { ArrowDown } from "lucide-react";
+import { useRef, useState } from "react";
+import { frame, receivedMessageLength, recheck, wholeCheck } from "../domain/check";
 import { crcOf } from "../domain/equivalence";
 import type { ConfigResult } from "../domain/parse";
 import type { Preset } from "../domain/presets";
@@ -9,20 +10,59 @@ import { useMessages } from "../i18n/I18n";
 import { Docked, DockedResult } from "./Dock";
 import { valueHex } from "./format";
 import { Explanation } from "./Explanation";
+import { CheckCompare, readReceived, type PageCompare } from "./pageCompare";
+
+/** Brings the Compare card into view and puts the cursor in its first field. */
+function toCard(card: HTMLElement | null) {
+  card?.scrollIntoView({ block: "nearest" });
+  card?.querySelector("input")?.focus({ preventScroll: true });
+}
 
 const CHECK_INPUT = bitsFromBytes([...new TextEncoder().encode("123456789")]);
 
-type Props = Readonly<{ config: ConfigResult; preset: Preset | undefined }>;
+type Props = Readonly<{
+  config: ConfigResult;
+  preset: Preset | undefined;
+  /** What is pasted into the Compare card; it stays when the settings change. */
+  compare: PageCompare;
+  onCompare: (compare: PageCompare) => void;
+}>;
 
 /** Shows how the receiver checks, using the current settings and input. If the settings are invalid, shows only that. */
-export function CheckPage({ config, preset }: Props) {
+export function CheckPage({ config, preset, compare, onCompare }: Props) {
   const m = useMessages();
+  const cardRef = useRef<HTMLElement>(null);
+  const received = config.ok ? readReceived(config.params, compare) : undefined;
   return (
     <div className="check-page">
-      <h2>{m.check.heading}</h2>
+      <h2>
+        {m.check.heading}
+        {config.ok ? (
+          <button type="button" className="compare-jump" onClick={() => toCard(cardRef.current)}>
+            <ArrowDown size={14} />
+            {m.compare.cardTitle}
+          </button>
+        ) : null}
+      </h2>
       <Explanation>{m.check.note}</Explanation>
       {config.ok ? (
-        <Checks params={config.params} message={config.bits} preset={preset} />
+        <>
+          <Checks
+            key={received?.ok ? received.value.join("") : "sent"}
+            params={config.params}
+            message={config.bits}
+            preset={preset}
+            {...(received?.ok ? { received: received.value } : {})}
+          />
+          <CheckCompare
+            ref={cardRef}
+            params={config.params}
+            compare={compare}
+            onCompare={onCompare}
+            received={received}
+            check={crcOf(config.params, CHECK_INPUT)}
+          />
+        </>
       ) : (
         <>
           <p className="invalid-config">{m.settings.invalid}</p>
@@ -33,15 +73,23 @@ export function CheckPage({ config, preset }: Props) {
   );
 }
 
-type ChecksProps = Readonly<{ params: CrcParams; message: readonly Bit[]; preset: Preset | undefined }>;
+type ChecksProps = Readonly<{
+  params: CrcParams;
+  message: readonly Bit[];
+  preset: Preset | undefined;
+  /** A pasted received frame, which replaces the sent sequence as the one whose bits can be flipped. */
+  received?: readonly Bit[];
+}>;
 
 /** The two ways to check, on the sent sequence and on a received sequence with a flipped bit, and the check value. The sent sequence is docked. */
-function Checks({ params, message, preset }: ChecksProps) {
+function Checks({ params, message, preset, received: pasted }: ChecksProps) {
   const m = useMessages();
-  const sent = frame(params, message);
-  const [flips, setFlips] = useState<Bit[]>(() => noError(sent.length));
+  const sent = pasted ?? frame(params, message);
+  const messageLength = pasted ? receivedMessageLength(params, pasted.length)! : message.length;
+  const [stored, setFlips] = useState<Bit[]>(() => noError(sent.length));
+  const flips = stored.length === sent.length ? stored : noError(sent.length);
   const received = xorBits(sent, flips);
-  const re = recheck(params, received, message.length);
+  const re = recheck(params, received, messageLength);
   const whole = wholeCheck(params, received);
   const w = params.width;
   return (
@@ -54,7 +102,7 @@ function Checks({ params, message, preset }: ChecksProps) {
             <button
               key={i}
               type="button"
-              className={`bit-cell ${i < message.length ? "message" : "crc"} ${i === message.length ? "crc-start" : ""} ${bit ? "one" : ""} ${flips[i] ? "flipped" : ""}`}
+              className={`bit-cell ${i < messageLength ? "message" : "crc"} ${i === messageLength ? "crc-start" : ""} ${bit ? "one" : ""} ${flips[i] ? "flipped" : ""}`}
               data-index={i}
               onClick={() => setFlips(flip(flips, i))}
             >
@@ -71,11 +119,11 @@ function Checks({ params, message, preset }: ChecksProps) {
       <ul className="frame-legend">
         <li data-key="message">
           <span className="bit-cell message">0</span>
-          {m.check.message(message.length)}
+          {m.check.message(messageLength)}
         </li>
         <li data-key="crc">
           <span className="bit-cell crc">0</span>
-          {m.check.crc(sent.length - message.length)}
+          {m.check.crc(sent.length - messageLength)}
         </li>
         <li data-key="values">
           <span className="bit-cell one">1</span>

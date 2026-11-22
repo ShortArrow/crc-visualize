@@ -11,10 +11,12 @@ export type Position = Readonly<{ line: number; column: number }>;
  * Errors in pasted text. badChar: a character that is neither part of a number nor a separator. hexInDecimal: a number with 0x
  * while the base is 10. oddHex: a hexadecimal number without 0x of an odd number of digits where it is split into bytes.
  * tooWide: a number that does not fit in width bits. oneValue: a second number where one value is read. notHex: no number at all.
+ * crcBytes: a CRC given as several numbers that are not expected bytes.
  */
 export type PasteError =
   | Readonly<{ code: "badChar" | "hexInDecimal" | "oddHex" | "oneValue"; at: Position }>
   | Readonly<{ code: "tooWide"; width: number; at: Position }>
+  | Readonly<{ code: "crcBytes"; expected: number }>
   | Readonly<{ code: "notHex" }>;
 
 export type Read<T> = { ok: true; value: T } | { ok: false; error: PasteError };
@@ -114,4 +116,36 @@ export function readValue(text: string, base: Base, width: number): Read<bigint>
   if (values.value.length === 0) return fail({ code: "notHex" });
   if (values.value.length > 1) return fail({ code: "oneValue", at: tokens[1]!.at });
   return ok(values.value[0]!);
+}
+
+/** The choices of the element badge, as they are written in the URL. */
+export const ELEMENT_IDS = ["8", "16be", "16le", "32be", "32le"] as const;
+export type ElementId = (typeof ELEMENT_IDS)[number];
+
+/** The element an element badge choice stands for. */
+export function elementOf(id: ElementId): Element {
+  const bits = Number.parseInt(id, 10) as Element["bits"];
+  return { bits, order: id.endsWith("le") ? "le" : "be" };
+}
+
+/** A CRC read from pasted text, and the bytes its numbers were laid out as, in pasted order, when there were several. */
+export type CrcRead = Readonly<{ value: bigint; bytes?: readonly number[] }>;
+
+/**
+ * Reads a CRC of width bits given as one number, or as its ceil(width / 8) bytes (read in element) laid out in order: be high byte
+ * first, le low byte first.
+ */
+export function readCrc(text: string, base: Base, element: Element, order: "be" | "le", width: number): Read<CrcRead> {
+  const tokens = tokenLines(text).flat();
+  if (tokens.length <= 1) {
+    const one = readValue(text, base, width);
+    return one.ok ? ok({ value: one.value }) : one;
+  }
+  const read = readBytes(text, base, element);
+  if (!read.ok) return read;
+  const bytes = read.value.flat();
+  const expected = Math.ceil(width / 8);
+  if (bytes.length !== expected) return fail({ code: "crcBytes", expected });
+  const value = (order === "be" ? bytes : bytes.toReversed()).reduce((acc, b) => (acc << 8n) | BigInt(b), 0n);
+  return value < 1n << BigInt(width) ? ok({ value, bytes }) : fail({ code: "tooWide", width, at: tokens[0]!.at });
 }

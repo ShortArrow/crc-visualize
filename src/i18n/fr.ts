@@ -14,6 +14,11 @@ export const fr: Messages = {
     estimate: "Estimation",
   },
   workbench: {
+    splitters: {
+      sidebar: "Largeur de la barre latérale",
+      panel: "Hauteur du schéma et du panneau en dessous",
+      code: "Largeur du pseudo-code et de la progression",
+    },
     sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)",
     sidebarLabel: "Réglages",
     language: "Langue",
@@ -24,12 +29,82 @@ export const fr: Messages = {
     invalid: "Les paramètres contiennent des erreurs. Corrigez les champs en rouge.",
     invalidStatus: "Paramètres invalides",
   },
+  badges: { base: "Base", element: "Élément", order: "Ordre des octets" },
+  compare: {
+    cardTitle: "Comparer avec les valeurs de votre code",
+    heading: "Comparer",
+    yours: "le vôtre",
+    computed: "calculé",
+    matches: "concorde",
+    firstDiff: "première différence",
+    rightShift: "comparé comme le registre d’un décalage à droite",
+    byte: "octet",
+    bit: "bit",
+    none: "Aucun préréglage ne concorde",
+    notations: {
+      reversed: "concorderait en notation inversée",
+      koopman: "concorderait en notation de Koopman",
+      full: "concorderait dans la notation qui inclut x^width",
+    },
+    hints: {
+      order: "concorderait en lisant les octets dans l'ordre inverse",
+      reflect: "concorderait en inversant les bits sur width bits",
+      xorout: "concorderait avec un XOR par xorout",
+      ones: "concorderait avec un XOR par une valeur dont tous les bits sont à 1",
+      "order+xorout": "concorderait en lisant les octets dans l'ordre inverse, puis avec un XOR par xorout",
+      "order+ones":
+        "concorderait en lisant les octets dans l'ordre inverse, puis avec un XOR par une valeur dont tous les bits sont à 1",
+      "reflect+xorout": "concorderait en inversant les bits sur width bits, puis avec un XOR par xorout",
+      "reflect+ones":
+        "concorderait en inversant les bits sur width bits, puis avec un XOR par une valeur dont tous les bits sont à 1",
+    },
+    rangeHint: (by: number) =>
+      `concorderait si la plage du CRC se terminait ${Math.abs(by)} ${Math.abs(by) === 1 ? "octet" : "octets"} plus ${by < 0 ? "tôt" : "tard"}`,
+    rowHint: { before: "concorderait avec la ligne précédente", after: "concorderait avec la ligne suivante" },
+    presetHint: (names: string) => `concorderait en calculant avec ${names}`,
+    readAs: {
+      one: "Un nombre, lu comme le CRC lui-même ; les badges d'élément et d'ordre des octets ne servent pas",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${count} nombres de ${bits} bits${element ? `, chacun octet de poids ${element === "le" ? "faible" : "fort"} en premier` : ""} : ${bytes} → lu octet de poids ${order === "le" ? "faible" : "fort"} en premier : ${value}`,
+    },
+    forms: {
+      asIs: "tel quel",
+      reversed: "inversé sur width bits, comme l'écrit une implémentation à décalage à droite",
+      neither: (asIs: string, reversed: string) => `ni l'un ni l'autre : tel quel ${asIs}, inversé ${reversed}`,
+    },
+    table: {
+      left: "concorde avec la table T du décalage à gauche",
+      right: "concorde avec la table T du décalage à droite",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `plus proche de la table T du décalage à gauche ; première différence à l'indice ${index}`
+          : `plus proche de la table T du décalage à droite ; première différence à l'indice ${index}`,
+    },
+    placeholders: {
+      table: "ex. 0x0000, 0x1021, 0x2042, …",
+      init: "ex. 0x0000",
+      crc: "ex. 0x31C3 ou 31 C3",
+      log: "ex. 0x2672, 0x20B5, 0x9752, …",
+      received: "ex. 31 32 33 34 35 36 37 38 39 31 C3",
+      check: "ex. 0x31C3",
+      poly: "ex. 0x1021",
+      width: "ex. 16 (vide : toutes les largeurs)",
+    },
+  },
   errors: {
     widthRange: "Saisissez un entier de 1 à 64",
     notHex: "Saisissez un nombre hexadécimal",
     badChar: "Seuls les nombres et les séparateurs peuvent être lus",
     hexInDecimal: "0x n’est permis qu’en base 16",
     oneValue: "Saisissez un seul nombre",
+    crcBytes: (expected: number) => `Saisissez un nombre ou ${expected} octets`,
+    logCount: (got: number, bytes: number, bits: number) =>
+      `${got} nombres : il en faut ${bytes} ou ${bytes + 1} (un par octet), ou ${bits} ou ${bits + 1} (un par bit)`,
+    byteLogCount: (got: number, bytes: number) =>
+      `Saisissez ${bytes} nombres, un après chaque octet, ou ${bytes + 1} à partir du crc avant le premier octet (${got} saisis)`,
+    tableCount: (got: number) => `Saisissez 256 nombres, dans l'ordre des indices (${got} saisis)`,
+    receivedShort: (bytes: number) => `Saisissez au moins ${bytes} octets, CRC compris`,
+    logCountBits: (got: number, bits: number) => `${got} nombres : il en faut ${bits} ou ${bits + 1} (un par bit)`,
     at: (line: number, column: number) => ` (ligne ${line}, colonne ${column})`,
     tooWide: (width: number) => `Saisissez une valeur qui tient sur ${width} bits`,
     zero: "0 n’est pas autorisé",
@@ -83,6 +158,8 @@ export const fr: Messages = {
     done: "Terminé",
   },
   log: {
+    views: { steps: "Étapes", perByte: "Par octet" },
+    byteTable: { byte: "octet", register: "registre", right: "décalage à droite" },
     byteNo: (n: number) => `octet ${n}`,
     willXor: "feedback = 1, donc XOR avec poly ensuite",
     noXor: "feedback = 0, donc pas de XOR",

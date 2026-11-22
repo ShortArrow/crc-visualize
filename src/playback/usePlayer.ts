@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
+import { leftToTarget } from "./keys";
 import { updatePlayer, type Player, type PlayerMsg } from "./playback";
-
-const isEditable = (target: EventTarget | null) =>
-  target instanceof HTMLElement && ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName);
 
 const KEY_MSG: Record<string, PlayerMsg> = {
   " ": { type: "toggle" },
@@ -55,7 +53,7 @@ export function usePlayer({ run, durations, rate, loop, onLoop, breaks, start = 
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isEditable(e.target)) return;
+      if (e.target instanceof HTMLElement && leftToTarget(e.target.tagName, e.key)) return;
       const msg = KEY_MSG[e.key];
       if (msg) send(msg);
       else if (e.key.toLowerCase() === "l") onLoop(!loop);

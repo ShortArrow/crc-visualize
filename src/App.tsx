@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { parseConfig, type ConfigForm, type ConfigResult } from "./domain/parse";
+import { parseConfig, readFrames, type ConfigForm, type ConfigResult } from "./domain/parse";
+import { crcRange, type CrcRange } from "./domain/hints";
 import { fitPath, matching } from "./domain/narrow";
 import { CATALOGUE, findPreset, TUTORIAL, type Preset } from "./domain/presets";
 import { MessagesProvider, useMessages } from "./i18n/I18n";
@@ -12,7 +13,8 @@ import { usePlayer } from "./playback/usePlayer";
 import { BreakpointList } from "./ui/BreakpointList";
 import type { CodeLang } from "./ui/code";
 import { CodeLangSelect, CodeView } from "./ui/CodeView";
-import { keyOf } from "./ui/format";
+import { keyOf, valueHex } from "./ui/format";
+import { crcOf } from "./domain/equivalence";
 import { ConfigPanel, formFromParams, formFromPreset } from "./ui/ConfigPanel";
 import { Controls } from "./ui/Controls";
 import { Docked } from "./ui/Dock";
@@ -36,12 +38,15 @@ import type { ParamFocus } from "./ui/paramFocus";
 import type { FieldName } from "./ui/paramInfo";
 import { parseRoute, type Route } from "./ui/route";
 import { Splitter } from "./ui/Splitter";
+import { CompareSection, EMPTY_COMPARE, readLog, type CompareForm } from "./ui/CompareSection";
+import { diffByte } from "./domain/compare";
+import { EMPTY_PAGE_COMPARE, type PageCompare } from "./ui/pageCompare";
 import { SidebarSections } from "./ui/SidebarSections";
 import { FramePanel } from "./ui/FramePanel";
 import { StepLog } from "./ui/StepLog";
 import { VariablesView } from "./ui/VariablesView";
 import { Workbench } from "./ui/Workbench";
-import { fitLayout, loadLayout, saveLayout, type PaneLayout } from "./ui/panes";
+import { DEFAULT_PANES, fitLayout, loadLayout, saveLayout, splitShare, type PaneLayout } from "./ui/panes";
 import { useScreen } from "./ui/phone";
 import { PanelTabs, tabPanel, type PanelTab } from "./ui/PanelTabs";
 import { screenZoom, viewWidth } from "./ui/zoom";
@@ -82,6 +87,8 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   const [loop, setLoop] = useState(restored.loop);
   const [codeLang, setCodeLang] = useState<CodeLang>(restored.codeLang);
   const [breakpoints, setBreakpoints] = useState<readonly Breakpoint[]>(restored.breakpoints);
+  const [compare, setCompare] = useState<CompareForm>(EMPTY_COMPARE);
+  const [pageCompare, setPageCompare] = useState<PageCompare>(EMPTY_PAGE_COMPARE);
   const [estimateCount, setEstimateCount] = useState<number | undefined>(undefined);
   useEffect(
     () => persistSettings({ form, speedMode, rate, loop, codeLang, locale, breakpoints }),
@@ -111,6 +118,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
         focus={focus}
         onFieldHover={setHoveredField}
       />
+      {config.ok ? <p className="config-crc">crc = {valueHex(crcOf(config.params, config.bits), config.params.width)}</p> : null}
       <FramePanel
         form={form}
         params={config.ok ? config.params : undefined}
@@ -137,7 +145,10 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     );
 
   if (route.page === "names") {
-    return frame(<NamesToc />)(<NamesPage target={route.param} />, <span>{m.pages.names}</span>);
+    return frame(<NamesToc />)(
+      <NamesPage target={route.param} compare={pageCompare} onCompare={setPageCompare} />,
+      <span>{m.pages.names}</span>,
+    );
   }
   if (route.page === "narrow") {
     const path = fitPath(CATALOGUE, route.path);
@@ -147,7 +158,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     };
     const props = { presets: CATALOGUE, path, onOpen: open };
     return frame(<NarrowSidebar {...props} />)(
-      <NarrowPage {...props} />,
+      <NarrowPage {...props} compare={pageCompare} onCompare={setPageCompare} />,
       <span>{m.narrow.status(matching(CATALOGUE, path.fixed).length)}</span>,
     );
   }
@@ -180,15 +191,17 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   if (route.page === "equivalence" || route.page === "check" || route.page === "table") {
     return frame(<CurrentSettingsSidebar config={config} form={form} />)(
       {
-        check: <CheckPage key={keyOf(config)} config={config} preset={preset} />,
+        check: <CheckPage key={keyOf(config)} config={config} preset={preset} compare={pageCompare} onCompare={setPageCompare} />,
         table: (
           <TablePage
             key={keyOf(config)}
             config={config}
             playback={{ speedMode, rate, loop, onSpeedMode: setSpeedMode, onRate: setRate, onLoop: setLoop }}
+            compare={pageCompare}
+            onCompare={setPageCompare}
           />
         ),
-        equivalence: <EquivalencePage config={config} />,
+        equivalence: <EquivalencePage config={config} compare={pageCompare} onCompare={setPageCompare} />,
       }[route.page],
       <span>{config.ok ? (preset?.name ?? "custom") : m.settings.invalidStatus}</span>,
     );
@@ -210,6 +223,9 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
       settings={settingsBody}
       breakpoints={breakpoints}
       onBreakpoints={setBreakpoints}
+      compare={compare}
+      onCompare={setCompare}
+      range={crcRange(shown.bits, form.inputMode === "hex" ? readFrames(form) : undefined, shown.params.width)}
       frame={frame}
       onSpeedMode={setSpeedMode}
       onRate={setRate}
@@ -230,11 +246,14 @@ function useLastValid(config: ConfigResult): Readonly<{ params: CrcParams; bits:
   return last.current;
 }
 
-/** Screen layout; restored from localStorage and fitted to the current screen, saved on every change. */
-function useLayout(): [PaneLayout, (layout: PaneLayout) => void] {
+/** Screen layout; restored from localStorage and fitted to the current screen, saved on each change unless save is false. */
+function useLayout(): [PaneLayout, (layout: PaneLayout, save?: boolean) => void] {
   const [layout, setLayout] = useState(() => fitLayout(loadLayout(), viewWidth()));
-  useEffect(() => saveLayout(layout), [layout]);
-  return [layout, setLayout];
+  const update = (next: PaneLayout, save = true) => {
+    setLayout(next);
+    if (save) saveLayout(next);
+  };
+  return [layout, update];
 }
 
 /** The page the URL fragment points to; re-read whenever the fragment changes. */
@@ -266,6 +285,11 @@ type VisualizerProps = Readonly<{
   /** The settings panel and the description pane, shown in the Settings section of the sidebar. */
   settings: ReactNode;
   breakpoints: readonly Breakpoint[];
+  /** What is pasted into the Compare section; it stays when the settings change. */
+  compare: CompareForm;
+  onCompare: (compare: CompareForm) => void;
+  /** The CRC range among the bytes around it, for the range hint of the Compare section. */
+  range: CrcRange | undefined;
   onBreakpoints: (breakpoints: readonly Breakpoint[]) => void;
   /** Fits the editor area and status bar into the screen frame with the given sidebar. */
   frame: (sidebar: ReactNode) => Frame;
@@ -273,7 +297,7 @@ type VisualizerProps = Readonly<{
   onRate: (rate: number) => void;
   onLoop: (loop: boolean) => void;
   onCodeLang: (lang: CodeLang) => void;
-  onLayout: (layout: PaneLayout) => void;
+  onLayout: (layout: PaneLayout, save?: boolean) => void;
 }>;
 
 /** Parts of the diagram values flow through at the step shown. */
@@ -302,26 +326,47 @@ function Visualizer(props: VisualizerProps) {
     layout,
     settings,
     breakpoints,
+    compare,
+    range,
     frame,
   } = props;
-  const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints } = props;
+  const { onSpeedMode, onRate, onLoop, onCodeLang, onLayout, onBreakpoints, onCompare } = props;
   const m = useMessages();
   const { tier, keepsSidebar } = useScreen();
   const [phone, short] = [tier === "phone", tier === "short"];
   const variablesBesideCode = short || (!phone && !keepsSidebar);
   const [tab, setTab] = useState<PanelTab>("software");
+  const [tabAside, setTabAside] = useState<HTMLDivElement | null>(null);
   const split = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const hardware = useRef<HTMLElement>(null);
-  const ratioIn = (el: HTMLElement | null, f: (rect: DOMRect) => number) => {
-    if (!el) return 0.5;
-    const [r, z] = [el.getBoundingClientRect(), screenZoom()];
-    return f(new DOMRect(r.x / z, r.y / z, r.width / z, r.height / z));
+  /**
+   * The lengths the two boundaries share out, in the app's own CSS px: the bottom panel's height of the split's (less its boundary),
+   * and the pseudocode's width of the panel's (less its boundary).
+   */
+  const splitSizes = () => {
+    const z = screenZoom();
+    const size = (el: Element | null | undefined, axis: "width" | "height") => (el?.getBoundingClientRect()[axis] ?? 0) / z;
+    const [s, p] = [split.current, panel.current];
+    return {
+      panel: size(p, "height"),
+      split: Math.max(1, size(s, "height") - size(s?.querySelector('[data-splitter="panel"]'), "height")),
+      code: size(p?.querySelector(".software"), "width"),
+      panelWidth: Math.max(1, size(p, "width") - size(p?.querySelector('[data-splitter="code"]'), "width")),
+    };
   };
+  const dragFrom = useRef(splitSizes());
+  const withPanel = (panelRatio: number) => fitLayout({ ...layout, panelRatio }, viewWidth());
+  const withCode = (codeRatio: number) => fitLayout({ ...layout, codeRatio }, viewWidth());
   const run = keyOf([params, bits]);
   const zoom = useDiagramZoom(run, hardware);
   const panelRatio = useFittedPanelRatio(split, hardware, layout.panelRatio, !phone && zoom.scale === undefined, [run]);
   const steps = useMemo(() => trace(params, bits), [run]);
+  const log = readLog(params, steps, compare);
+  const markedByte = bits.length % 8 === 0 && log?.ok ? diffByte(log.value) : undefined;
+  useEffect(() => {
+    if (markedByte !== undefined) setTab("log");
+  }, [markedByte]);
   const durations = useMemo(() => stepDurations(steps, speedMode), [steps, speedMode]);
   const breaks = useMemo(() => breakIndices(steps, breakpoints), [steps, breakpoints]);
   const { player, send, stepMs } = usePlayer({ run, durations, rate, loop, onLoop, breaks });
@@ -347,6 +392,25 @@ function Visualizer(props: VisualizerProps) {
     <SidebarSections
       sections={[
         { id: "settings", title: m.settings.heading, body: settings },
+        ...(invalid
+          ? []
+          : [
+              {
+                id: "compare",
+                title: m.compare.heading,
+                body: (
+                  <CompareSection
+                    params={params}
+                    steps={steps}
+                    bits={bits}
+                    range={range}
+                    form={compare}
+                    onChange={onCompare}
+                    onSeek={(index) => send({ type: "seek", index })}
+                  />
+                ),
+              },
+            ]),
         ...(phone || variablesBesideCode || invalid ? [] : [{ id: "variables", title: m.debug.variables, body: variables }]),
         ...(invalid
           ? []
@@ -426,11 +490,12 @@ function Visualizer(props: VisualizerProps) {
           <Splitter
             axis="y"
             name="panel"
-            onMove={(y) =>
-              onLayout(
-                fitLayout({ ...layout, panelRatio: ratioIn(split.current, (r) => (r.bottom - y) / r.height) }, viewWidth()),
-              )
-            }
+            label={m.workbench.splitters.panel}
+            onStart={() => (dragFrom.current = splitSizes())}
+            onMove={(dy) => onLayout(withPanel(splitShare(dragFrom.current.panel - dy, dragFrom.current.split)), false)}
+            onStep={(dy) => onLayout(withPanel(splitShare(splitSizes().panel - dy, splitSizes().split)))}
+            onReset={() => onLayout(withPanel(DEFAULT_PANES.panelRatio))}
+            onEnd={() => onLayout(layout)}
           />
         )}
         <section
@@ -442,7 +507,7 @@ function Visualizer(props: VisualizerProps) {
               : { gridTemplateColumns: `minmax(0, ${layout.codeRatio}fr) auto minmax(0, ${1 - layout.codeRatio}fr)` }
           }
         >
-          {short ? <PanelTabs value={tab} onChange={setTab} /> : null}
+          {short ? <PanelTabs value={tab} onChange={setTab} aside={setTabAside} /> : null}
           <div className="software" {...tabPanel(short, "software", tab)}>
             <h2>
               {short ? null : m.visualizer.software}
@@ -466,17 +531,24 @@ function Visualizer(props: VisualizerProps) {
             <Splitter
               axis="x"
               name="code"
-              onMove={(x) =>
-                onLayout(fitLayout({ ...layout, codeRatio: ratioIn(panel.current, (r) => (x - r.left) / r.width) }, viewWidth()))
-              }
+              label={m.workbench.splitters.code}
+              onStart={() => (dragFrom.current = splitSizes())}
+              onMove={(dx) => onLayout(withCode(splitShare(dragFrom.current.code + dx, dragFrom.current.panelWidth)), false)}
+              onStep={(dx) => onLayout(withCode(splitShare(splitSizes().code + dx, splitSizes().panelWidth)))}
+              onReset={() => onLayout(withCode(DEFAULT_PANES.codeRatio))}
+              onEnd={() => onLayout(layout)}
             />
           )}
           <div className="log-pane" {...tabPanel(short, "log", tab)}>
             <StepLog
+              params={params}
               steps={steps}
+              onSeek={(index) => send({ type: "seek", index })}
               current={player.index}
               input={bits}
               check={check}
+              diffByte={markedByte}
+              {...(short ? { viewsIn: tab === "log" ? tabAside : null } : {})}
               {...(short ? {} : { title: m.visualizer.log })}
             />
           </div>

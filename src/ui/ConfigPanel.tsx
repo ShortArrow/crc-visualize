@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
-import type { ConfigError, ConfigField, ConfigForm } from "../domain/parse";
+import type { BaseField, ConfigError, ConfigField, ConfigForm } from "../domain/parse";
 import { PRESETS, type InputMode, type Preset } from "../domain/presets";
+import { Badge, elementText, nextElement } from "./Badge";
 import { polynomialText } from "./format";
 import { presetLabel } from "./presetLabel";
 import type { CrcParams, ParamName } from "../domain/trace";
@@ -30,6 +31,8 @@ export function formFromParams(params: CrcParams, input: Preset["input"]): Confi
     to: "",
     crcField: "none",
     frame: "0",
+    bases: { input: 16, poly: 16, init: 16, xorout: 16 },
+    element: "8",
   };
 }
 
@@ -68,11 +71,26 @@ export function ConfigPanel({ form, params, presetName, errors, onChange, focus,
     onFocus: () => onFieldHover(field),
     onBlur: () => onFieldHover(undefined),
   });
+  const baseBadge = (key: BaseField) => (
+    <Badge
+      kind="base"
+      name={m.badges.base}
+      text={String(form.bases[key])}
+      onPress={() => set("bases", { ...form.bases, [key]: form.bases[key] === 16 ? 10 : 16 })}
+    />
+  );
   const text = (key: "width" | "poly" | "init" | "xorout") =>
     paramField(
       key,
       <>
-        <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />
+        {key === "width" ? (
+          <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />
+        ) : (
+          <span className="field-row">
+            <input value={form[key]} spellCheck={false} onChange={(e) => set(key, e.target.value)} />
+            {baseBadge(key)}
+          </span>
+        )}
         {key === "poly" && params ? (
           <small className="generator">g(x) = {polynomialText(params.width, params.poly)}</small>
         ) : null}
@@ -119,13 +137,24 @@ export function ConfigPanel({ form, params, presetName, errors, onChange, focus,
       <label className={`input-field ${errors.input ? "invalid" : ""}`} data-field="input" {...hover("input")}>
         <span>{FIELD_LABELS.input}</span>
         {form.inputMode === "hex" ? (
-          <textarea
-            wrap="off"
-            rows={Math.min(Math.max(form.input.split("\n").length, 2), 8)}
-            value={form.input}
-            spellCheck={false}
-            onChange={(e) => set("input", e.target.value)}
-          />
+          <span className="field-row">
+            <textarea
+              wrap="off"
+              rows={Math.min(Math.max(form.input.split("\n").length, 2), 8)}
+              value={form.input}
+              spellCheck={false}
+              onChange={(e) => set("input", e.target.value)}
+            />
+            <span className="badges">
+              {baseBadge("input")}
+              <Badge
+                kind="element"
+                name={m.badges.element}
+                text={elementText(form.element)}
+                onPress={() => set("element", nextElement(form.element))}
+              />
+            </span>
+          </span>
         ) : (
           <input value={form.input} spellCheck={false} onChange={(e) => set("input", e.target.value)} />
         )}

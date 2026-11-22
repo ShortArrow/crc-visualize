@@ -1,5 +1,7 @@
-import { Fragment, useLayoutEffect, useRef, type CSSProperties } from "react";
-import { registerValue, type Bit, type Step } from "../domain/trace";
+import { createPortal } from "react-dom";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
+import { perByte, type ByteRow } from "../domain/perByte";
+import { registerValue, type Bit, type CrcParams, type Step } from "../domain/trace";
 import { bitGroups, groupsHex, valueHex } from "./format";
 import { useMessages } from "../i18n/I18n";
 import type { Messages } from "../i18n/messages";
@@ -11,7 +13,22 @@ const LOG_LIMIT = 40;
 /** Duration (ms) of blocks sliding up or down, rows fading in and the values resizing. */
 const MOTION_MS = 240;
 
-type Props = Readonly<{ steps: readonly Step[]; current: number; input: readonly Bit[]; check: bigint | undefined }>;
+type Props = Readonly<{
+  params: CrcParams;
+  steps: readonly Step[];
+  current: number;
+  input: readonly Bit[];
+  check: bigint | undefined;
+  /** Moves playback to the step at index. */
+  onSeek: (index: number) => void;
+  /** The input byte that holds the first row of your log that differs; Progress switches to Per byte and marks its row. */
+  diffByte?: number | undefined;
+  /**
+   * Where the switch of views goes instead of the heading: an element beside the panel tabs on a short screen, null until it is
+   * mounted; undefined keeps it in the heading.
+   */
+  viewsIn?: Element | null;
+}>;
 
 const ROW_LABELS: Readonly<Record<Exclude<LogRow["label"], "before" | "reflected" | "result">, string>> = {
   init: "init",
@@ -148,36 +165,91 @@ function Result({ step, input, check }: { step: Step; input: readonly Bit[]; che
  * Step log under a heading of title (no title text when omitted) with buttons that scroll it to its newest and oldest lines.
  * Shows the steps in blocks, the block of the current step large at the top and earlier ones below at a uniform size.
  * A step that starts a block slides it in while the previous current block shrinks its text moving down; a step that adds a row
- * fades the row in; stepping back reverses this.
+ * fades the row in; stepping back reverses this. Each time diffByte changes to a byte, Progress switches to Per byte and scrolls
+ * that byte's row into view.
  */
-export function StepLog({ steps, current, input, check, title }: Props & Readonly<{ title?: string }>) {
+export function StepLog({
+  params,
+  steps,
+  current,
+  input,
+  check,
+  onSeek,
+  title,
+  diffByte,
+  viewsIn,
+}: Props & Readonly<{ title?: string }>) {
   const m = useMessages();
   const step = steps[current]!;
+  const [view, setView] = useState<"steps" | "perByte">("steps");
+  const bytes = perByte(params, steps, input);
+  const shown = bytes ? view : "steps";
+  const marked = useRef<HTMLTableRowElement>(null);
+  const revealing = useRef(false);
+  useEffect(() => {
+    if (diffByte === undefined) return;
+    setView("perByte");
+    revealing.current = true;
+  }, [diffByte]);
+  useEffect(() => {
+    if (!revealing.current || !marked.current) return;
+    revealing.current = false;
+    marked.current.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
   const list = useSlidingRows(current);
   const log = useRef<HTMLDivElement>(null);
   const scrollTo = (end: "newest" | "oldest") =>
     log.current?.scrollTo({ top: end === "newest" ? 0 : log.current.scrollHeight, behavior: "smooth" });
+  const views = bytes ? (
+    <span className="log-views" role="group">
+      {(["steps", "perByte"] as const).map((v) => (
+        <button key={v} type="button" data-view={v} aria-pressed={shown === v} onClick={() => setView(v)}>
+          {m.log.views[v]}
+        </button>
+      ))}
+    </span>
+  ) : null;
+  const viewsInHeading = viewsIn === undefined;
+  const heading = title !== undefined || (viewsInHeading && views) || shown === "steps";
   return (
     <>
-      <h2 className="log-heading">
-        {title}
-        <span className="log-jump">
-          <button type="button" data-jump="newest" onClick={() => scrollTo("newest")}>
-            ↑ {m.log.newest}
-          </button>
-          <button type="button" data-jump="oldest" onClick={() => scrollTo("oldest")}>
-            ↓ {m.log.oldest}
-          </button>
-        </span>
-      </h2>
-      <div ref={log} className="log">
-        {step.kind === "done" ? <Result step={step} input={input} check={check} /> : null}
-        <ol ref={list} className="log-list" style={{ "--log-ms": `${MOTION_MS}ms` } as CSSProperties}>
-          {logBlocks(steps, current, LOG_LIMIT).map((block, i) => (
-            <Block key={block.key} block={block} current={i === 0 && step.kind !== "done" ? current : undefined} />
-          ))}
-        </ol>
-      </div>
+      {viewsIn && views ? createPortal(views, viewsIn) : null}
+      {heading ? (
+        <h2 className="log-heading">
+          {title}
+          {viewsInHeading ? views : null}
+          {shown === "steps" ? (
+            <span className="log-jump">
+              <button type="button" data-jump="newest" onClick={() => scrollTo("newest")}>
+                ↑ {m.log.newest}
+              </button>
+              <button type="button" data-jump="oldest" onClick={() => scrollTo("oldest")}>
+                ↓ {m.log.oldest}
+              </button>
+            </span>
+          ) : null}
+        </h2>
+      ) : null}
+      {bytes && shown === "perByte" ? (
+        <ByteTable
+          rows={bytes}
+          params={params}
+          crc={registerValue(steps.at(-1)!.reg)}
+          current={current}
+          onSeek={onSeek}
+          diffByte={diffByte}
+          marked={marked}
+        />
+      ) : (
+        <div ref={log} className="log">
+          {step.kind === "done" ? <Result step={step} input={input} check={check} /> : null}
+          <ol ref={list} className="log-list" style={{ "--log-ms": `${MOTION_MS}ms` } as CSSProperties}>
+            {logBlocks(steps, current, LOG_LIMIT).map((block, i) => (
+              <Block key={block.key} block={block} current={i === 0 && step.kind !== "done" ? current : undefined} />
+            ))}
+          </ol>
+        </div>
+      )}
     </>
   );
 }
@@ -216,4 +288,60 @@ function useSlidingRows(current: number) {
     rowKeys.current = new Set([...(ref.current?.querySelectorAll<HTMLElement>(".log-row") ?? [])].map(rowKey));
   }, [current]);
   return ref;
+}
+
+type ByteTableProps = Readonly<{
+  rows: readonly ByteRow[];
+  params: CrcParams;
+  crc: bigint;
+  current: number;
+  onSeek: (index: number) => void;
+  /** The byte whose row is marked as holding the first row of your log that differs, held by marked. */
+  diffByte: number | undefined;
+  marked: RefObject<HTMLTableRowElement | null>;
+}>;
+
+/**
+ * Progress per byte: the register at the end of each input byte, then the CRC. Pressing a row moves playback to its end. The row of
+ * diffByte is marked.
+ */
+function ByteTable({ rows, params, crc, current, onSeek, diffByte, marked }: ByteTableProps) {
+  const m = useMessages();
+  const right = rows[0]?.right !== undefined;
+  return (
+    <div className="log byte-log">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{m.log.byteTable.byte}</th>
+            <th>{m.log.byteTable.register}</th>
+            {right ? <th>{m.log.byteTable.right}</th> : null}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.index}
+              ref={row.index === diffByte ? marked : undefined}
+              className={
+                [row.step === current ? "current" : "", row.index === diffByte ? "first-diff" : ""].join(" ").trim() || undefined
+              }
+              data-reveal={row.index === diffByte ? "" : undefined}
+            >
+              <th>
+                <button type="button" onClick={() => onSeek(row.step)}>
+                  {row.index}
+                </button>
+              </th>
+              <td>{valueHex(BigInt(row.byte), 8)}</td>
+              <td>{valueHex(row.register, params.width)}</td>
+              {right ? <td>{valueHex(row.right!, params.width)}</td> : null}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="byte-log-crc">crc = {valueHex(crc, params.width)}</p>
+    </div>
+  );
 }

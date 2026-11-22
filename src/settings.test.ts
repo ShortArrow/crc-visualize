@@ -15,6 +15,8 @@ const defaults: Settings = {
     to: "",
     crcField: "none",
     frame: "0",
+    bases: { input: 16, poly: 16, init: 16, xorout: 16 },
+    element: "8",
   },
   speedMode: "auto",
   rate: 1,
@@ -38,6 +40,8 @@ const saved: Settings = {
     to: "",
     crcField: "le",
     frame: "2",
+    bases: { input: 10, poly: 10, init: 16, xorout: 16 },
+    element: "16le",
   },
   speedMode: "steady",
   rate: 4,
@@ -68,7 +72,16 @@ describe("restoreSettings", () => {
 
   it("Given a stored value with items of the wrong shape or range, When restored, Then only those items fall back to the defaults", () => {
     const raw = JSON.stringify({
-      form: { ...saved.form, refin: "yes", inputMode: "octal", input: undefined, crcField: "mid", frame: 2 },
+      form: {
+        ...saved.form,
+        refin: "yes",
+        inputMode: "octal",
+        input: undefined,
+        crcField: "mid",
+        frame: 2,
+        bases: { poly: 8 },
+        element: "64",
+      },
       speedMode: "fast",
       rate: 3,
       loop: true,
@@ -85,6 +98,8 @@ describe("restoreSettings", () => {
         input: defaults.form.input,
         crcField: defaults.form.crcField,
         frame: defaults.form.frame,
+        bases: defaults.form.bases,
+        element: defaults.form.element,
       },
       speedMode: defaults.speedMode,
       rate: defaults.rate,
@@ -112,6 +127,20 @@ describe("settingsToQuery / settingsFromQuery", () => {
     expect(query.get("lang")).toBe("de");
     expect(query.get("bp")).toBe("xor@5,!byte3");
     expect([query.get("from"), query.get("to"), query.get("crcField"), query.get("frame")]).toEqual(["1", "", "le", "2"]);
+    expect([query.get("base"), query.get("element")]).toEqual(["input,poly", "16le"]);
+  });
+
+  it("Given every base at 16 and the element at 8, When written to a query, Then base is empty and element is 8", () => {
+    const query = new URLSearchParams(settingsToQuery(defaults));
+
+    expect([query.get("base"), query.get("element")]).toEqual(["", "8"]);
+  });
+
+  it("Given saved bases and element, When a query with an empty base and element 8 is read, Then the query's bases and element win", () => {
+    expect(settingsFromQuery("?base=&element=8", saved).form).toMatchObject({
+      bases: { input: 16, poly: 16, init: 16, xorout: 16 },
+      element: "8",
+    });
   });
 
   it("Given an input value containing symbols and Japanese text, When written to a query and read back, Then the original input value results", () => {
@@ -127,7 +156,10 @@ describe("settingsToQuery / settingsFromQuery", () => {
 
   it("Given base settings, When a query with an invalid value is read, Then that item keeps the base value", () => {
     expect(
-      settingsFromQuery("?refin=maybe&inputMode=octal&rate=3&speed=fast&loop=2&lang=ko&code=cobol&crcField=mid", saved),
+      settingsFromQuery(
+        "?refin=maybe&inputMode=octal&rate=3&speed=fast&loop=2&lang=ko&code=cobol&crcField=mid&base=poly,width&element=64",
+        saved,
+      ),
     ).toEqual(saved);
   });
 });

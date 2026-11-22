@@ -3,6 +3,7 @@ import { AMBIGUOUS_NAMES, aliasIndex, polyFamilies, splitPresetName } from "../d
 import { CATALOGUE } from "../domain/presets";
 import { PARAM_NAMES, type ParamName } from "../domain/trace";
 import { valueHex } from "./format";
+import { NamingCompare, type PageCompare } from "./pageCompare";
 import { ParamMap } from "./ParamMap";
 import { useMessages } from "../i18n/I18n";
 import type { Messages } from "../i18n/messages";
@@ -42,10 +43,15 @@ const withCode = (text: string, word: string) =>
   text.split(word).flatMap((part, i) => (i === 0 ? [part] : [<code key={i}>{word}</code>, part]));
 
 /** Page showing how presets are named and how parameter names differ. target is the parameter row to highlight. */
-export function NamesPage({ target }: { target: ParamName | undefined }) {
+export function NamesPage({
+  target,
+  compare,
+  onCompare,
+}: Readonly<{ target: ParamName | undefined; compare: PageCompare; onCompare: (compare: PageCompare) => void }>) {
   const m = useMessages();
   return (
     <div className="names-page">
+      <NamingCompare presets={CATALOGUE} compare={compare} onCompare={onCompare} />
       <NameParts />
       <Families />
       <Aliases />

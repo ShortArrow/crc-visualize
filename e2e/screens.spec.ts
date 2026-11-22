@@ -14,6 +14,16 @@ import { EstimatePage } from "./support/estimatePage";
 
 const QUERY = "?width=16&poly=0x1021&init=0x0&refin=1&refout=1&xorout=0x0&inputMode=text&input=123456789";
 
+/** The register of CRC-16/KERMIT after each byte of 123456789 as a right shift holds it, by a loop written apart from the app. */
+function kermitAfterEachByte(): number[] {
+  let reg = 0;
+  return [..."123456789"].map((c) => {
+    reg ^= c.charCodeAt(0);
+    for (let i = 0; i < 8; i++) reg = reg & 1 ? (reg >> 1) ^ 0x8408 : reg >> 1;
+    return reg;
+  });
+}
+
 /** The largest gap (px) allowed between the phone dock and the drawing above it: one finger-sized button. */
 const DOCK_GAP = 48;
 
@@ -57,6 +67,8 @@ for (const screen of SCREENS) {
   const phone = tierOf(screen) === "phone";
   /** Where the pages other than the visualizer put what is tapped and its result in the dock (docs/spec.md, Screen tiers). */
   const docking = phone || (tierOf(screen) === "short" && screen.width < 1000);
+  /** Whether Progress is in view beside the open sidebar; on a phone and on a narrow screen that is not short, only once it closes. */
+  const sidebarAside = !phone && (screen.width >= 1000 || tierOf(screen) === "short");
 
   test.describe(`Screens: ${on}`, () => {
     test.beforeEach(async ({ page }) => {
@@ -134,6 +146,43 @@ for (const screen of SCREENS) {
         await then("the setting and the help pane are in view", () =>
           allInView(page, { setting: v.settings.param("poly"), help: v.settings.help() }),
         );
+      }
+      await when("pasting into your crc the CRC of CRC-16/KERMIT, 0x2189, with its bytes swapped", async () => {
+        if (!(await v.workbench.sidebar().isVisible())) await v.workbench.sidebarToggle().click();
+        await page.locator('.compare label[data-field="yourCrc"] input').fill("0x8921");
+      });
+      await then("the field, ✗ and the first hint are in view", () =>
+        allInView(page, {
+          field: page.locator('.compare label[data-field="yourCrc"] input'),
+          "✗": page.locator(".compare .compare-result[data-result='ng']").first(),
+          "first hint": page.locator(".compare .compare-hints li").first(),
+        }),
+      );
+      await when("pasting into your log the register of CRC-16/KERMIT after each byte, the 4th XORed with all ones", () =>
+        page.locator('.compare label[data-field="yourLog"] textarea').fill(
+          kermitAfterEachByte()
+            .map((r, i) => `0x${(i === 3 ? r ^ 0xffff : r).toString(16)}`)
+            .join(", "),
+        ),
+      );
+      const perByteRow = { "Per byte row": page.locator(".byte-log tbody tr.first-diff") };
+      await then(
+        "the field, ✗ of the first row that differs, its first hint and, beside the sidebar, the row of byte 3 in Per byte are in view",
+        () =>
+          allInView(page, {
+            field: page.locator('.compare label[data-field="yourLog"] textarea'),
+            "✗": page.locator(".compare .compare-log tr.first-diff td.ng"),
+            "first hint": page.locator(".compare .compare-result:has(.compare-log) .compare-hints li").first(),
+            ...(sidebarAside ? perByteRow : {}),
+          }),
+      );
+      if (!sidebarAside) {
+        await when("closing the sidebar, on a phone by tapping beside the drawer", () =>
+          phone
+            ? v.workbench.drawerShade().click({ position: { x: screen.width - 10, y: 200 } })
+            : v.workbench.sidebarToggle().click(),
+        );
+        await then("the row of byte 3 in Per byte is in view", () => allInView(page, perByteRow));
       }
     });
 

@@ -1,9 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { branches, formatValue, matching, splittingParams, type NarrowPath } from "../domain/narrow";
+import type { ParamName } from "../domain/trace";
 import type { Preset } from "../domain/presets";
 import { useMessages } from "../i18n/I18n";
 import { narrowHash } from "./route";
 import { Explanation } from "./Explanation";
+import { NarrowCompare, type PageCompare } from "./pageCompare";
 import { PresetTable } from "./PresetTable";
 
 type Props = Readonly<{
@@ -17,7 +19,13 @@ type Props = Readonly<{
  * column headings are emphasized for the parameters that still split them. Whenever the path changes, the deepest node (its choice
  * of parameter, or the single candidate) is scrolled into view.
  */
-export function NarrowPage({ presets, path, onOpen }: Props) {
+export function NarrowPage({
+  presets,
+  path,
+  onOpen,
+  compare,
+  onCompare,
+}: Props & Readonly<{ compare: PageCompare; onCompare: (compare: PageCompare) => void }>) {
   const m = useMessages();
   const candidates = matching(presets, path.fixed);
   const tree = useRef<HTMLElement>(null);
@@ -29,6 +37,7 @@ export function NarrowPage({ presets, path, onOpen }: Props) {
   return (
     <div className="narrow-page">
       <h2>{m.narrow.heading}</h2>
+      <NarrowCompare presets={presets} compare={compare} onCompare={onCompare} />
       <Explanation>{m.narrow.note}</Explanation>
       <div className="page-columns">
         <section className="card narrow-tree" ref={tree}>
@@ -53,6 +62,9 @@ function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
   const candidates = matching(presets, prefix);
   const param = path.fixed[depth]?.param ?? (depth === path.fixed.length ? path.open : undefined);
   const [only] = candidates;
+  const [pointed, setPointed] = useState<ParamName | undefined>(undefined);
+  const [focused, setFocused] = useState<ParamName | undefined>(undefined);
+  const explained = pointed ?? focused ?? param;
   if (candidates.length === 1 && only) {
     return (
       <div className="narrow-node narrow-result" data-depth={depth}>
@@ -69,11 +81,25 @@ function NarrowNode({ presets, path, depth, onOpen }: NodeProps) {
       <nav className="split-by">
         {m.narrow.splitBy}
         {splittingParams(candidates).map((p) => (
-          <a key={p} href={narrowHash({ fixed: prefix, open: p })} data-param={p} aria-current={p === param ? "true" : undefined}>
+          <a
+            key={p}
+            href={narrowHash({ fixed: prefix, open: p })}
+            data-param={p}
+            aria-current={p === param ? "true" : undefined}
+            onPointerEnter={() => setPointed(p)}
+            onPointerLeave={() => setPointed(undefined)}
+            onFocus={() => setFocused(p)}
+            onBlur={() => setFocused(undefined)}
+          >
             {p}
           </a>
         ))}
       </nav>
+      {explained ? (
+        <p className="param-meaning" data-param={explained}>
+          {m.params[explained].title}: {m.params[explained].summary}
+        </p>
+      ) : null}
       {param ? (
         <ul className="branches" data-param={param}>
           {branches(candidates, param).map((branch) => {

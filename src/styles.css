@@ -4,6 +4,8 @@
   --border: #393b40;
   --fg: #d4d4d4;
   --muted: #7f848e;
+  /* Example text in an empty field: at least 4.5:1 on --bg, which --muted is not */
+  --placeholder: #8b9099;
   --accent: #61afef;
   --hot: #ff5c5c;
   --ok: #4ec98b;
@@ -51,6 +53,67 @@ body,
 .workbench > .splitter {
   grid-row: 1;
   grid-column: 3;
+}
+
+/*
+ * Panels: on the PC layout and a short screen, the sidebar and the editor area (on the Visualizer, the playback controls, the
+ * diagram, the pseudocode and Progress) are bordered, rounded and set apart from each other by --gap, but not from the window's
+ * edges or the status bar; a screen lower than 480 px sets them neither apart nor bordered, so what an action changes stays in view
+ */
+.workbench {
+  --gap: 8px;
+  --frame: 1px;
+  --radius: 8px;
+}
+
+.workbench:not(.phone) {
+  background: var(--panel);
+}
+
+.workbench.short {
+  --gap: 4px;
+}
+
+@media (max-height: 479px) {
+  .workbench,
+  .workbench.short {
+    --gap: 0px;
+    --frame: 0px;
+    --radius: 0px;
+  }
+
+  .workbench .splitter {
+    background: var(--border);
+  }
+}
+
+.workbench:not(.phone) > .sidebar {
+  border: var(--frame) solid var(--border);
+  border-radius: var(--radius);
+}
+
+.workbench:not(.phone) > .editor {
+  border: var(--frame) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.workbench:not(.phone) > .editor:has(> .visualizer) {
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.workbench:not(.phone) .visualizer {
+  row-gap: var(--gap);
+}
+
+.workbench:not(.phone) .visualizer :is(.controls, .hardware),
+.workbench:not(.phone, .short) .visualizer .panel > :is(.software, .log-pane),
+.workbench.short .visualizer .panel {
+  border: var(--frame) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
 }
 
 .activity {
@@ -134,32 +197,74 @@ body,
 }
 
 /* 領域の境界。ドラッグで動かす。 */
+/*
+ * A boundary is the gap between two panels, at least 8 px to grab however narrow the gap; it draws a 2 px accent line along its
+ * middle only while pointed at, focused or dragged. Where panels are not set apart, the 1 px line between them is the boundary
+ */
 .splitter {
   position: relative;
-  background: var(--border);
   touch-action: none;
+  outline: none;
 }
 
 .splitter-x {
-  width: 1px;
+  width: max(var(--gap), 1px);
   cursor: col-resize;
 }
 
 .splitter-y {
-  height: 1px;
+  height: max(var(--gap), 1px);
   cursor: row-resize;
+}
+
+.splitter::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+}
+
+.splitter-x::before {
+  inset: 0 min(0px, calc((var(--gap) - 8px) / 2));
+}
+
+.splitter-y::before {
+  inset: min(0px, calc((var(--gap) - 8px) / 2)) 0;
 }
 
 .splitter::after {
   content: "";
   position: absolute;
-  inset: -3px;
   z-index: 1;
 }
 
-.splitter:hover,
-.splitter:active {
+.splitter-x::after {
+  inset: 0 auto;
+  left: calc(50% - 1px);
+  width: 2px;
+}
+
+.splitter-y::after {
+  inset: auto 0;
+  top: calc(50% - 1px);
+  height: 2px;
+}
+
+.splitter:hover::after,
+.splitter:focus-visible::after,
+body[data-resizing] .splitter:active::after {
   background: var(--accent);
+}
+
+body[data-resizing] {
+  user-select: none;
+}
+
+body[data-resizing="x"] {
+  cursor: col-resize;
+}
+
+body[data-resizing="y"] {
+  cursor: row-resize;
 }
 
 .toc {
@@ -432,7 +537,8 @@ button.bp-gutter.bp-off::before {
   order: 2;
 }
 
-.config label {
+.config label,
+.compare label {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -446,6 +552,7 @@ button.bp-gutter.bp-off::before {
 }
 
 .config input:not([type="checkbox"], [type="radio"]),
+.compare input,
 .config select,
 .controls select {
   background: var(--bg);
@@ -458,17 +565,65 @@ button.bp-gutter.bp-off::before {
 }
 
 .config input:not([type="checkbox"], [type="radio"]),
+.compare input,
 .config select {
   width: 100%;
   min-width: 0;
 }
 
-.config .invalid input {
+.compare input::placeholder,
+.compare textarea::placeholder {
+  color: var(--placeholder);
+  opacity: 1;
+}
+
+.config .invalid input,
+.compare .invalid input {
   border-color: var(--hot);
 }
 
+/* A field with the badges that choose how its pasted numbers are read */
+.field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.field-row .badges {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Beside a one-line field the badges run along it; beside a text area they stack */
+.field-row:has(> input) .badges {
+  flex-direction: row;
+}
+
+/* At least 24×24 CSS px, the minimum target size of WCAG 2.2 */
+.badge {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.badge:hover,
+.badge:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* Frames of hex input: the shared CRC range and field, and one row per frame with its bytes */
-.config textarea {
+.config textarea,
+.compare textarea {
   width: 100%;
   min-width: 0;
   resize: vertical;
@@ -481,7 +636,8 @@ button.bp-gutter.bp-off::before {
   font-size: 0.9rem;
 }
 
-.config .invalid textarea {
+.config .invalid textarea,
+.compare .invalid textarea {
   border-color: var(--hot);
 }
 
@@ -1774,6 +1930,12 @@ button.bp-gutter.bp-off::before {
   color: var(--muted);
 }
 
+/* What the page scrolls into view when the path changes: kept a few px clear of the edge, so no fraction of a px is cut off */
+.narrow-node,
+.narrow-node > .split-by {
+  scroll-margin-block: 4px;
+}
+
 .split-by {
   display: flex;
   flex-wrap: wrap;
@@ -1798,6 +1960,13 @@ button.bp-gutter.bp-off::before {
   color: var(--bg);
   background: var(--accent);
   border-color: var(--accent);
+}
+
+/* The meaning of the parameter pointed at, focused or split by, under the choice of parameter */
+.param-meaning {
+  margin: 4px 0 0;
+  font-size: 0.85em;
+  color: var(--muted);
 }
 
 .branches {
@@ -1921,7 +2090,8 @@ button.bp-gutter.bp-off::before {
   margin-left: auto;
 }
 
-.log-jump button {
+.log-jump button,
+.log-views button {
   padding: 1px 6px;
   color: var(--fg);
   background: var(--bg);
@@ -1934,7 +2104,8 @@ button.bp-gutter.bp-off::before {
   cursor: pointer;
 }
 
-.log-jump button:hover {
+.log-jump button:hover,
+.log-views button:hover {
   border-color: var(--accent);
 }
 
@@ -3660,11 +3831,21 @@ button.bit-cell:hover {
   overflow-y: auto;
 }
 
+.panel-tab-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
 .panel-tabs {
   display: flex;
   gap: 4px;
-  padding: 4px 12px 0;
-  border-bottom: 1px solid var(--border);
+}
+
+.panel-tab-aside {
+  margin-left: auto;
 }
 
 .panel-tabs [role="tab"] {
@@ -3711,4 +3892,168 @@ button.bit-cell:hover {
   .visualizer > .controls select {
     order: 1;
   }
+}
+
+/* The Compare section of the Visualizer: pasted values against the computed ones */
+.compare {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* How your crc was read, under its field */
+.crc-reading {
+  color: var(--muted);
+  font-size: 0.8em;
+}
+
+.compare-result {
+  display: grid;
+  gap: 2px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.compare-result.ok,
+.compare-log .ok {
+  color: var(--ok);
+}
+
+.compare-log .ng,
+.compare-bits .diff {
+  color: var(--hot);
+}
+
+.compare-bits {
+  font-family: var(--mono);
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+
+.compare-note {
+  margin: 0;
+}
+
+.compare-log {
+  border-collapse: collapse;
+  font-family: var(--mono);
+}
+
+.compare-log :is(th, td) {
+  padding: 1px 6px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.compare-log tr.first-diff,
+.byte-log tr.first-diff {
+  background: rgb(255 92 92 / 0.12);
+}
+
+/* The switch between Progress step by step and per byte */
+.log-views {
+  display: flex;
+  gap: 4px;
+}
+
+.log-views button[aria-pressed="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Progress per byte: the register at the end of each input byte, then the CRC */
+.byte-log table {
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.byte-log :is(th, td) {
+  padding: 1px 8px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.byte-log tbody button {
+  min-width: 24px;
+  min-height: 24px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.byte-log tr.current {
+  background: rgb(97 175 239 / 0.12);
+}
+
+.byte-log-crc,
+.config-crc {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  color: var(--fg);
+}
+
+/* The Compare card of a page: its fields side by side, so it takes few lines */
+.compare-card .compare {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.compare-card .compare > label {
+  flex: 1 1 16em;
+}
+
+.compare-card .compare > .compare-result {
+  flex: 1 1 100%;
+}
+
+.compare-card h3 {
+  margin: 0;
+}
+
+/* The button beside the Check page's heading that moves to its Compare card: on the heading's line, adding no height */
+.check-page h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.check-page h2 .compare-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  margin-block: -4px;
+  padding: 0 4px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.compare-card h3 {
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.compare-hints {
+  margin: 2px 0 0;
+  padding-left: 1.2em;
+  color: var(--fg);
+}
+
+/* your crc with its result and hints, scrolled into view together after a paste */
+.compare-crc,
+.compare-log-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }

@@ -1,5 +1,5 @@
 import { frameSpan, type CrcField, type FrameLayout } from "./frames";
-import { readBytes, readValue, type Element, type PasteError } from "./paste";
+import { elementOf, readBytes, readValue, type Base, type ElementId, type PasteError } from "./paste";
 import type { InputMode } from "./presets";
 import { bitsFromBytes, type Bit, type CrcParams } from "./trace";
 
@@ -23,14 +23,22 @@ export type ConfigForm = Readonly<{
   to: string;
   crcField: CrcField;
   frame: string;
+  /** The base each field that reads pasted numbers is read in, and the element the hex input is read in. */
+  bases: Readonly<Record<BaseField, Base>>;
+  element: ElementId;
 }>;
+
+/** The fields that read pasted numbers and have a base badge. */
+export const BASE_FIELDS = ["input", "poly", "init", "xorout"] as const;
+export type BaseField = (typeof BASE_FIELDS)[number];
 
 export type ConfigField = "width" | "poly" | "init" | "xorout" | "input" | "range";
 
 /**
  * Field errors. widthRange: width is not an integer from 1 to 64. The errors of pasted text (see PasteError) are on the hex input
- * and on poly, init and xorout. zero: 0 is not allowed. notBits: contains characters other than 0 and 1. tooLong: input exceeds max bits. refinBytes: refin is used but the input is not a multiple of 8 bits. notIndex: a byte number
- * is not an integer of 0 or more. outsideFrame: the range or the CRC field does not fit the selected frame. tooManyFrames: hex
+ * and on poly, init and xorout. zero: 0 is not allowed. notBits: contains characters other than 0 and 1. tooLong: input exceeds
+ * max bits. refinBytes: refin is used but the input is not a multiple of 8 bits. notIndex: a byte number is not an integer of 0 or
+ * more. outsideFrame: the range or the CRC field does not fit the selected frame. tooManyFrames: hex
  * input has more than max lines. frameTooLong: a line of hex input is longer than max bytes.
  */
 export type ConfigError =
@@ -50,31 +58,30 @@ type Parsed<T> = { ok: true; value: T } | { ok: false; error: ConfigError };
 const ok = <T>(value: T): Parsed<T> => ({ ok: true, value });
 const fail = (error: ConfigError): Parsed<never> => ({ ok: false, error });
 
-function parseWidth(text: string): Parsed<number> {
+/** Reads a width: a whole number from 1 to 64. */
+export function parseWidth(text: string): Parsed<number> {
   const t = text.trim();
   if (!/^\d+$/.test(t)) return fail({ code: "widthRange" });
   const n = Number(t);
   return n >= 1 && n <= 64 ? ok(n) : fail({ code: "widthRange" });
 }
 
-/** The element bytes are read in until the field has an element badge. */
-const BYTE: Element = { bits: 8, order: "be" };
-
-function parseValueBelow(text: string, width: number, allowZero: boolean): Parsed<bigint> {
-  const n = readValue(text, 16, width);
+function parseValueBelow(text: string, base: Base, width: number, allowZero: boolean): Parsed<bigint> {
+  const n = readValue(text, base, width);
   if (!n.ok) return n;
   if (!allowZero && n.value === 0n) return fail({ code: "zero" });
   return n;
 }
 
-function parseInputBits(mode: InputMode, text: string): Parsed<Bit[]> {
-  switch (mode) {
+function parseInputBits(form: ConfigForm): Parsed<Bit[]> {
+  const text = form.input;
+  switch (form.inputMode) {
     case "bits": {
       const t = text.replace(/\s/g, "");
       return /^[01]*$/.test(t) ? ok([...t].map((c) => (c === "1" ? 1 : 0))) : fail({ code: "notBits" });
     }
     case "hex": {
-      const frames = parseHexFrames(text);
+      const frames = parseHexFrames(form);
       return frames.ok ? ok(bitsFromBytes(frames.value.flat())) : frames;
     }
     case "text":
@@ -83,8 +90,8 @@ function parseInputBits(mode: InputMode, text: string): Parsed<Bit[]> {
 }
 
 /** Reads hex input as frames, one per line that holds a number, within the limits on frames. */
-function parseHexFrames(text: string): Parsed<number[][]> {
-  const read = readBytes(text, 16, BYTE);
+function parseHexFrames(form: ConfigForm): Parsed<number[][]> {
+  const read = readBytes(form.input, form.bases.input, elementOf(form.element));
   if (!read.ok) return read;
   const lines = read.value;
   if (lines.length > MAX_FRAMES) return fail({ code: "tooManyFrames", max: MAX_FRAMES });
@@ -119,7 +126,7 @@ function selectedFrame(form: ConfigForm, count: number): number {
  */
 export function readFrames(form: ConfigForm): Frames | undefined {
   if (form.inputMode !== "hex") return undefined;
-  const list = parseHexFrames(form.input);
+  const list = parseHexFrames(form);
   if (!list.ok) return undefined;
   const layout = parseFrameLayout(form);
   return {
@@ -131,7 +138,7 @@ export function readFrames(form: ConfigForm): Frames | undefined {
 
 /** The bits to visualize from hex input: the CRC range of the selected frame, or none with no frames. Errors go on input or range. */
 function frameBits(form: ConfigForm, width: number): { input: Parsed<Bit[]>; range?: ConfigError } {
-  const list = parseHexFrames(form.input);
+  const list = parseHexFrames(form);
   if (!list.ok) return { input: list };
   const layout = parseFrameLayout(form);
   if (!layout.ok) return { input: ok([]), range: layout.error };
@@ -160,16 +167,16 @@ export function parseConfig(form: ConfigForm): ConfigResult {
   const errors: Partial<Record<ConfigField, ConfigError>> = {};
   const width = parseWidth(form.width);
   const hex = form.inputMode === "hex" && width.ok ? frameBits(form, width.value) : undefined;
-  const input = checkInput(hex?.input ?? parseInputBits(form.inputMode, form.input), form.refin);
+  const input = checkInput(hex?.input ?? parseInputBits(form), form.refin);
   if (!input.ok) errors.input = input.error;
   if (hex?.range) errors.range = hex.range;
   if (!width.ok) {
     return { ok: false, errors: { width: width.error, ...errors } };
   }
 
-  const poly = parseValueBelow(form.poly, width.value, false);
-  const init = parseValueBelow(form.init, width.value, true);
-  const xorout = parseValueBelow(form.xorout, width.value, true);
+  const poly = parseValueBelow(form.poly, form.bases.poly, width.value, false);
+  const init = parseValueBelow(form.init, form.bases.init, width.value, true);
+  const xorout = parseValueBelow(form.xorout, form.bases.xorout, width.value, true);
   if (!poly.ok) errors.poly = poly.error;
   if (!init.ok) errors.init = init.error;
   if (!xorout.ok) errors.xorout = xorout.error;

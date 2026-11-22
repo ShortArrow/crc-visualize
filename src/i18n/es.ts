@@ -14,6 +14,11 @@ export const es: Messages = {
     estimate: "Estimación",
   },
   workbench: {
+    splitters: {
+      sidebar: "Ancho de la barra lateral",
+      panel: "Alto del diagrama y del panel inferior",
+      code: "Ancho del pseudocódigo y del progreso",
+    },
     sidebarToggle: "Mostrar/ocultar barra lateral (Ctrl+B)",
     sidebarLabel: "Ajustes",
     language: "Idioma",
@@ -24,12 +29,80 @@ export const es: Messages = {
     invalid: "La configuración tiene errores. Corrige los campos marcados en rojo.",
     invalidStatus: "Configuración no válida",
   },
+  badges: { base: "Base", element: "Elemento", order: "Orden de bytes" },
+  compare: {
+    cardTitle: "Comparar con los valores de tu código",
+    heading: "Comparar",
+    yours: "tuyo",
+    computed: "calculado",
+    matches: "coincide",
+    firstDiff: "primera diferencia",
+    rightShift: "comparado como lo guarda un desplazamiento a la derecha",
+    byte: "byte",
+    bit: "bit",
+    none: "Ningún preajuste coincide",
+    notations: {
+      reversed: "coincidiría en notación invertida",
+      koopman: "coincidiría en notación de Koopman",
+      full: "coincidiría en la notación que incluye x^width",
+    },
+    hints: {
+      order: "coincidiría leyendo los bytes en el orden inverso",
+      reflect: "coincidiría reflejando los bits en width bits",
+      xorout: "coincidiría con un XOR con xorout",
+      ones: "coincidiría con un XOR con todos los bits a 1",
+      "order+xorout": "coincidiría leyendo los bytes en el orden inverso y luego con un XOR con xorout",
+      "order+ones": "coincidiría leyendo los bytes en el orden inverso y luego con un XOR con todos los bits a 1",
+      "reflect+xorout": "coincidiría reflejando los bits en width bits y luego con un XOR con xorout",
+      "reflect+ones": "coincidiría reflejando los bits en width bits y luego con un XOR con todos los bits a 1",
+    },
+    rangeHint: (by: number) =>
+      `coincidiría si el rango del CRC terminara ${Math.abs(by)} ${Math.abs(by) === 1 ? "byte" : "bytes"} ${by < 0 ? "antes" : "después"}`,
+    rowHint: { before: "coincidiría con la fila anterior", after: "coincidiría con la fila siguiente" },
+    presetHint: (names: string) => `coincidiría calculado con ${names}`,
+    readAs: {
+      one: "Un número, leído como el propio CRC; no se usan las insignias de elemento ni de orden de bytes",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${count} números de ${bits} bits${element ? `, cada uno con el byte ${element === "le" ? "bajo" : "alto"} primero` : ""}: ${bytes} → leído con el byte ${order === "le" ? "bajo" : "alto"} primero: ${value}`,
+    },
+    forms: {
+      asIs: "tal cual",
+      reversed: "invertido en width bits, como lo escribe una implementación con desplazamiento a la derecha",
+      neither: (asIs: string, reversed: string) => `ninguno: tal cual ${asIs}, invertido ${reversed}`,
+    },
+    table: {
+      left: "coincide con la tabla T del desplazamiento a la izquierda",
+      right: "coincide con la tabla T del desplazamiento a la derecha",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `más cercana a la tabla T del desplazamiento a la izquierda; primera diferencia en el índice ${index}`
+          : `más cercana a la tabla T del desplazamiento a la derecha; primera diferencia en el índice ${index}`,
+    },
+    placeholders: {
+      table: "p. ej. 0x0000, 0x1021, 0x2042, …",
+      init: "p. ej. 0x0000",
+      crc: "p. ej. 0x31C3 o 31 C3",
+      log: "p. ej. 0x2672, 0x20B5, 0x9752, …",
+      received: "p. ej. 31 32 33 34 35 36 37 38 39 31 C3",
+      check: "p. ej. 0x31C3",
+      poly: "p. ej. 0x1021",
+      width: "p. ej. 16 (vacío: todos los anchos)",
+    },
+  },
   errors: {
     widthRange: "Introduce un entero de 1 a 64",
     notHex: "Introduce un número hexadecimal",
     badChar: "Solo se pueden leer números y separadores",
     hexInDecimal: "0x solo se puede usar en base 16",
     oneValue: "Introduce un solo número",
+    crcBytes: (expected: number) => `Introduce un número o ${expected} bytes`,
+    logCount: (got: number, bytes: number, bits: number) =>
+      `${got} números: se esperan ${bytes} o ${bytes + 1} (uno por byte), o ${bits} o ${bits + 1} (uno por bit)`,
+    byteLogCount: (got: number, bytes: number) =>
+      `Introduce ${bytes} números, uno tras cada byte, o ${bytes + 1} empezando por el crc antes del primer byte (se introdujeron ${got})`,
+    tableCount: (got: number) => `Introduce 256 números, en orden de índice (se introdujeron ${got})`,
+    receivedShort: (bytes: number) => `Introduce al menos ${bytes} bytes, con el CRC`,
+    logCountBits: (got: number, bits: number) => `${got} números: se esperan ${bits} o ${bits + 1} (uno por bit)`,
     at: (line: number, column: number) => ` (línea ${line}, columna ${column})`,
     tooWide: (width: number) => `Introduce un valor que quepa en ${width} bits`,
     zero: "No se permite 0",
@@ -83,6 +156,8 @@ export const es: Messages = {
     done: "Terminado",
   },
   log: {
+    views: { steps: "Pasos", perByte: "Por byte" },
+    byteTable: { byte: "byte", register: "registro", right: "desplazamiento a la derecha" },
     byteNo: (n: number) => `byte ${n}`,
     willXor: "feedback = 1, así que a continuación XOR con poly",
     noXor: "feedback = 0, así que no hay XOR",

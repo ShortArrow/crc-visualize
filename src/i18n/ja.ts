@@ -16,11 +16,73 @@ export const ja = {
     table: "表引き",
     estimate: "推定",
   },
-  workbench: { sidebarToggle: "サイドバーの開閉（Ctrl+B）", sidebarLabel: "設定", language: "表示言語", explanation: "説明" },
+  workbench: {
+    splitters: { sidebar: "サイドバーの幅", panel: "図と下のパネルの高さ", code: "擬似コードと経過の幅" },
+    sidebarToggle: "サイドバーの開閉（Ctrl+B）",
+    sidebarLabel: "設定",
+    language: "表示言語",
+    explanation: "説明",
+  },
   settings: {
     heading: "設定",
     invalid: "設定に誤りがあります。赤い項目を直してください。",
     invalidStatus: "設定に誤りがあります",
+  },
+  badges: { base: "基数", element: "要素", order: "バイト順" },
+  compare: {
+    cardTitle: "自分のコードの値と比べる",
+    heading: "照合",
+    yours: "あなたの値",
+    computed: "計算した値",
+    matches: "一致",
+    firstDiff: "最初に違う所",
+    rightShift: "右送りのレジスタとして照合",
+    byte: "バイト",
+    bit: "ビット",
+    none: "一致するプリセットなし",
+    notations: { reversed: "反転表記なら一致", koopman: "Koopman 表記なら一致", full: "x^width を含む表記なら一致" },
+    hints: {
+      order: "バイトを逆の並びで読めば一致",
+      reflect: "width ビットでビットを反転すれば一致",
+      xorout: "xorout と XOR すれば一致",
+      ones: "全て 1 の値と XOR すれば一致",
+      "order+xorout": "バイトを逆の並びで読み、xorout と XOR すれば一致",
+      "order+ones": "バイトを逆の並びで読み、全て 1 の値と XOR すれば一致",
+      "reflect+xorout": "width ビットで反転し、xorout と XOR すれば一致",
+      "reflect+ones": "width ビットで反転し、全て 1 の値と XOR すれば一致",
+    },
+    rangeHint: (by: number) =>
+      by < 0 ? `CRC の範囲が ${-by} バイト前で終われば一致` : `CRC の範囲が ${by} バイト後で終われば一致`,
+    rowHint: { before: "前の行の値なら一致", after: "後の行の値なら一致" },
+    presetHint: (names: string) => `${names} で計算すれば一致`,
+    readAs: {
+      one: "数 1 つをそのまま CRC として読んだ（要素とバイト順は使っていない）",
+      bytes: (bits: number, count: number, element: "be" | "le" | undefined, bytes: string, order: "be" | "le", value: string) =>
+        `${bits} ビットの数 ${count} つを${element ? `、それぞれ${element === "le" ? "下位" : "上位"}バイトから` : ""}並べて ${bytes} → ${order === "le" ? "下位" : "上位"}バイトから CRC として読んで ${value}`,
+    },
+    forms: {
+      asIs: "そのまま",
+      reversed: "width ビットで反転（右送りの実装の書き方）",
+      neither: (asIs: string, reversed: string) => `どちらでもない：そのまま ${asIs}、反転 ${reversed}`,
+    },
+    table: {
+      left: "左送りの表 T と一致",
+      right: "右送りの表 T と一致",
+      closest: (shift: "left" | "right", index: string) =>
+        shift === "left"
+          ? `いちばん近いのは左送りの表 T。最初に違うのはインデックス ${index}`
+          : `いちばん近いのは右送りの表 T。最初に違うのはインデックス ${index}`,
+    },
+    placeholders: {
+      table: "例：0x0000, 0x1021, 0x2042, …",
+      init: "例：0x0000",
+      crc: "例：0x31C3 または 31 C3",
+      log: "例：0x2672, 0x20B5, 0x9752, …",
+      received: "例：31 32 33 34 35 36 37 38 39 31 C3",
+      check: "例：0x31C3",
+      poly: "例：0x1021",
+      width: "例：16（空ならすべての幅）",
+    },
   },
   errors: {
     widthRange: "1〜64 の整数を入れてください",
@@ -28,6 +90,15 @@ export const ja = {
     badChar: "数と区切りのほかは読めません",
     hexInDecimal: "0x を付けられるのは基数が 16 のときだけです",
     oneValue: "数は 1 つだけ入れてください",
+    crcBytes: (expected: number) => `数を 1 つか、${expected} バイトで入れてください`,
+    logCount: (got: number, bytes: number, bits: number) =>
+      `数が ${got} 個あります。1 バイトごとなら ${bytes} 個か ${bytes + 1} 個、1 ビットごとなら ${bits} 個か ${bits + 1} 個にしてください`,
+    byteLogCount: (got: number, bytes: number) =>
+      `各バイトの後の ${bytes} 個か、最初のバイトの前から ${bytes + 1} 個の数を入れてください（入れた数は ${got} 個）`,
+    tableCount: (got: number) => `インデックス順に 256 個の数を入れてください（入れた数は ${got} 個）`,
+    receivedShort: (bytes: number) => `CRC を含めて ${bytes} バイト以上入れてください`,
+    logCountBits: (got: number, bits: number) =>
+      `数が ${got} 個あります。1 ビットごとに ${bits} 個か ${bits + 1} 個にしてください`,
     at: (line: number, column: number) => `（${line} 行 ${column} 列）`,
     tooWide: (width: number) => `${width} ビットに収まる値にしてください`,
     zero: "0 は指定できません",
@@ -81,6 +152,8 @@ export const ja = {
     done: "完了",
   } satisfies Record<StepKind, string>,
   log: {
+    views: { steps: "ステップ", perByte: "バイトごと" },
+    byteTable: { byte: "バイト", register: "レジスタ", right: "右送り" },
     byteNo: (n: number) => `${n} バイト目`,
     willXor: "feedback = 1 なので次に poly と XOR する",
     noXor: "feedback = 0 なので XOR しない",

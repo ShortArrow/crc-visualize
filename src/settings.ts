@@ -1,5 +1,6 @@
 import { CRC_FIELDS } from "./domain/frames";
-import type { ConfigForm } from "./domain/parse";
+import { BASE_FIELDS, type BaseField, type ConfigForm } from "./domain/parse";
+import { ELEMENT_IDS, type Base } from "./domain/paste";
 import type { InputMode } from "./domain/presets";
 import { isLocale, type Locale } from "./i18n/locale";
 import { breakpointsFromParam, breakpointsToParam, type Breakpoint } from "./playback/breakpoints";
@@ -35,6 +36,23 @@ const oneOf =
   (x: unknown): x is T =>
     options.includes(x as T);
 
+const isBase = oneOf<Base>([16, 10]);
+
+function restoreBases(v: unknown, d: ConfigForm["bases"]): ConfigForm["bases"] {
+  const b = isRecord(v) ? v : {};
+  return Object.fromEntries(BASE_FIELDS.map((k) => [k, pick(b[k], isBase, d[k])])) as ConfigForm["bases"];
+}
+
+/** The base-10 fields as the URL lists them, separated by commas; empty when every field is at base 16. */
+const basesToParam = (bases: ConfigForm["bases"]): string => BASE_FIELDS.filter((k) => bases[k] === 10).join(",");
+
+/** Reads the base parameter; undefined when it names something other than a base field. */
+function basesFromParam(param: string): ConfigForm["bases"] | undefined {
+  const decimal = param === "" ? [] : param.split(",");
+  if (!decimal.every(oneOf<string>(BASE_FIELDS))) return undefined;
+  return Object.fromEntries(BASE_FIELDS.map((k) => [k, decimal.includes(k) ? 10 : 16])) as Record<BaseField, Base>;
+}
+
 function restoreForm(v: unknown, d: ConfigForm): ConfigForm {
   const f = isRecord(v) ? v : {};
   return {
@@ -50,6 +68,8 @@ function restoreForm(v: unknown, d: ConfigForm): ConfigForm {
     to: pick(f.to, isString, d.to),
     crcField: pick(f.crcField, oneOf(CRC_FIELDS), d.crcField),
     frame: pick(f.frame, isString, d.frame),
+    bases: restoreBases(f.bases, d.bases),
+    element: pick(f.element, oneOf(ELEMENT_IDS), d.element),
   };
 }
 
@@ -87,11 +107,16 @@ const FLAG_FIELDS = ["refin", "refout"] as const;
 const flag = (b: boolean) => (b ? "1" : "0");
 const unflag = (v: string): unknown => (v === "1" ? true : v === "0" ? false : v);
 
-/** Turns settings into a URL query string (without the leading ?); booleans are 1/0, the speed mode is speed, the code language is code, the display language is lang, the breakpoints are bp. */
+/**
+ * Turns settings into a URL query string (without the leading ?); booleans are 1/0, the speed mode is speed, the code language is
+ * code, the display language is lang, the breakpoints are bp. base and element are written even at their defaults.
+ */
 export function settingsToQuery({ form, speedMode, rate, loop, codeLang, locale, breakpoints }: Settings): string {
   const q = new URLSearchParams();
   for (const k of TEXT_FIELDS) q.set(k, form[k]);
   for (const k of FLAG_FIELDS) q.set(k, flag(form[k]));
+  q.set("base", basesToParam(form.bases));
+  q.set("element", form.element);
   q.set("speed", speedMode);
   q.set("rate", String(rate));
   q.set("loop", flag(loop));
@@ -109,6 +134,8 @@ export function settingsFromQuery(search: string, base: Settings): Settings {
   const form: Record<string, unknown> = { ...base.form };
   for (const k of TEXT_FIELDS) if (has(k)) form[k] = get(k);
   for (const k of FLAG_FIELDS) if (has(k)) form[k] = unflag(get(k));
+  if (has("base")) form.bases = basesFromParam(get("base"));
+  if (has("element")) form.element = get("element");
   return validate(
     {
       form,
