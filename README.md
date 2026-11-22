@@ -55,9 +55,7 @@ Docs are kept in English (`*.md`) and Japanese (`*.ja.md`); when one is changed,
 
 ## Privacy
 
-crc.shortarrow.jp is measured with Cloudflare Web Analytics. Cloudflare adds a script (`static.cloudflareinsights.com/beacon.min.js`) to each page it serves, and the script sends Cloudflare page views and page load performance, read through the browser's Performance API. Cloudflare's documentation states that Web Analytics does not collect or use visitors' personal data ([About](https://developers.cloudflare.com/web-analytics/about/)), that its beacon uses no client-side state such as cookies or localStorage to collect usage metrics and that its Core Web Vitals report (Vitals Explorer) does not fingerprint individuals by IP address or User Agent ([Core Web Vitals](https://developers.cloudflare.com/web-analytics/data-metrics/core-web-vitals/)), and that Cloudflare does not track individual end users across its customers' sites ([Data origin and collection](https://developers.cloudflare.com/web-analytics/data-metrics/data-origin-and-collection/)).
-
-The settings you enter are kept in the browser's localStorage and in the URL query. The app sends them nowhere itself, but the URL, query included, reaches Cloudflare when the page is requested.
+What crc.shortarrow.jp measures, and where it keeps what you enter, is on the [privacy page](https://crc.shortarrow.jp/privacy).
 
 ## License
 
