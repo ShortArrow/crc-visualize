@@ -19,14 +19,25 @@ export const leftToBrowser = ({
   metaKey,
 }: Readonly<{ ctrlKey: boolean; altKey: boolean; metaKey: boolean }>): boolean => ctrlKey || altKey || metaKey;
 
-const KEY_MSG: Record<string, PlayerMsg> = {
+const KEY_MSG: Record<string, PlayerMsg | "loop"> = {
   " ": { type: "toggle" },
+  k: { type: "toggle" },
   ArrowLeft: { type: "prev" },
+  j: { type: "prev" },
+  ",": { type: "prev" },
   ArrowRight: { type: "next" },
+  l: { type: "next" },
+  ".": { type: "next" },
   Home: { type: "first" },
   End: { type: "last" },
+  r: "loop",
 };
 
-/** What a playback key does: a message to the player, "loop" to toggle looping, or undefined for a key that is not a shortcut. */
-export const keyAction = (key: string): PlayerMsg | "loop" | undefined =>
-  KEY_MSG[key] ?? (key.toLowerCase() === "l" ? "loop" : undefined);
+/**
+ * What a playback key does among count steps: a message to the player, "loop" to toggle looping, or undefined for a key that is
+ * not a shortcut. A digit n jumps to step floor(n × count / 10), and a letter acts the same in either case.
+ */
+export const keyAction = (key: string, count: number): PlayerMsg | "loop" | undefined =>
+  /^[0-9]$/.test(key)
+    ? { type: "seek", index: Math.floor((Number(key) * count) / 10) }
+    : KEY_MSG[key.length === 1 ? key.toLowerCase() : key];

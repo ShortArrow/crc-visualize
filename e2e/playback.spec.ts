@@ -17,10 +17,10 @@ test.describe("Playback", () => {
   });
 
   test("with loop playback, after the end it returns to the start and keeps playing", async ({ page }) => {
-    const v = await given("loop playback is enabled with the L key and the position is one before the end", async () => {
+    const v = await given("loop playback is enabled with the R key and the position is one before the end", async () => {
       const v = await Visualizer.open(page);
       await expect(v.settings.loop()).toHaveAttribute("aria-pressed", "false");
-      await page.keyboard.press("l");
+      await page.keyboard.press("r");
       await expect(v.settings.loop()).toHaveAttribute("aria-pressed", "true");
       await v.goToEnd();
       await v.stepBack();
