@@ -3358,6 +3358,13 @@ button.bit-cell:hover {
   box-shadow: 4px 0 16px rgb(0 0 0 / 0.5);
 }
 
+.workbench.phone > .sidebar > .privacy-link {
+  display: block;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  color: var(--fg);
+}
+
 .drawer-shade {
   position: fixed;
   z-index: 10;
