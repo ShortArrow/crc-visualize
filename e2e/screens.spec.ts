@@ -431,6 +431,26 @@ for (const screen of ZOOM_SCREENS) {
   });
 }
 
+const WIDE = "?width=64&poly=0x42F0E1EBA9EA3693&init=0x0&refin=0&refout=0&xorout=0x0&inputMode=text&input=123456789";
+
+for (const screen of SCREENS) {
+  const on = `on ${screen.name} (${screen.width}×${screen.height})`;
+
+  test.describe(`Screens: a wide diagram ${on}`, () => {
+    test(`${on}, zooming out as far as it goes shows a 64-bit diagram's whole width`, async ({ page }) => {
+      await page.setViewportSize({ width: screen.width, height: screen.height });
+      const v = await given("the visualizer is open with CRC-64/ECMA-182", () => Visualizer.open(page, WIDE));
+      await when("pressing − until the diagram stops shrinking", async () => {
+        for (let last = Infinity, now = await v.diagram.drawnWidth(); now < last; last = now, now = await v.diagram.drawnWidth())
+          await v.diagram.zoom("out").click();
+      });
+      await then("the diagram is no wider than its area", async () =>
+        expect(await v.diagram.drawnWidth()).toBeLessThanOrEqual(await v.diagram.areaWidth()),
+      );
+    });
+  });
+}
+
 for (const screen of SCREENS.filter((s) => tierOf(s) === "short")) {
   const on = `on ${screen.name} (${screen.width}×${screen.height})`;
 
