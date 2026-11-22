@@ -26,7 +26,7 @@ To look for tests that fail only on a slow machine without loading your own, run
 
 `e2e/screens.spec.ts` checks the screen rules of chapter 7 of the spec on every target screen. A test whose rule the app does not meet yet is listed in `e2e/support/notYetMet.ts` and expected to fail; when a fix makes it pass, Playwright reports an unexpected pass, so the fix also removes it from the list.
 
-Keys: Space plays / pauses, ← → move one step, Home / End jump to the first / last step, and L toggles loop playback.
+Keys: Space or K plays / pauses, ← →, J L and , . move one step, Home / End jump to the first / last step, a digit n (0 to 9) jumps n tenths of the way through, and R toggles loop playback.
 
 Like a debugger, the sidebar shows the variables at the step shown, and playback pauses at breakpoints. Press left of a line number in the code to stop at that line (optionally at its n-th hit, such as the 5th XOR), or a bit of the input stream, or the line under one of its bytes, to stop once that bit or byte has been read.
 
