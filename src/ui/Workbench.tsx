@@ -132,6 +132,9 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
       {docking ? <div className="dock" ref={setDock} /> : null}
       <footer className="statusbar">
         {status}
+        <a className="privacy-link" href="/privacy">
+          {m.workbench.privacy}
+        </a>
         <select
           className="locale-select"
           value={locale}

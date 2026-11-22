@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy — CRC Visualizer</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#1e1f22" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #1e1f22;
+        --fg: #d4d4d4;
+        --muted: #7f848e;
+        --accent: #61afef;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          16px/1.7 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 32px 16px 48px;
+      }
+      h1 {
+        font-size: 28px;
+        margin: 0 0 24px;
+      }
+      h2 {
+        font-size: 20px;
+        margin: 40px 0 12px;
+      }
+      a {
+        color: var(--accent);
+      }
+      code {
+        font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+        font-size: 0.9em;
+        overflow-wrap: anywhere;
+      }
+      .back {
+        display: inline-block;
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Privacy</h1>
+      <section lang="en">
+        <p>
+          crc.shortarrow.jp is measured with Cloudflare Web Analytics. Cloudflare adds a script
+          (<code>static.cloudflareinsights.com/beacon.min.js</code>) to each page it serves, and the script sends Cloudflare page
+          views and page load performance, read through the browser's Performance API.
+        </p>
+        <p>
+          Cloudflare's documentation states that Web Analytics does not collect or use visitors' personal data (<a
+            href="https://developers.cloudflare.com/web-analytics/about/"
+            >About</a
+          >), that its beacon uses no client-side state such as cookies or localStorage to collect usage metrics and that its Core
+          Web Vitals report (Vitals Explorer) does not fingerprint individuals by IP address or User Agent (<a
+            href="https://developers.cloudflare.com/web-analytics/data-metrics/core-web-vitals/"
+            >Core Web Vitals</a
+          >), and that Cloudflare does not track individual end users across its customers' sites (<a
+            href="https://developers.cloudflare.com/web-analytics/data-metrics/data-origin-and-collection/"
+            >Data origin and collection</a
+          >).
+        </p>
+        <p>
+          The settings you enter are kept in the browser's localStorage and in the URL query. The app sends them nowhere itself,
+          but the URL, query included, reaches Cloudflare when the page is requested.
+        </p>
+        <a class="back" href="/">Back to CRC Visualizer</a>
+      </section>
+      <section lang="ja">
+        <h2>個人情報の扱い</h2>
+        <p>
+          crc.shortarrow.jp は Cloudflare Web Analytics で計測している。Cloudflare
+          が配信するページにスクリプト（<code>static.cloudflareinsights.com/beacon.min.js</code>）を差し込み、そのスクリプトがブラウザの
+          Performance API で読んだページの表示と読み込みの速さを Cloudflare に送る。
+        </p>
+        <p>
+          Cloudflare の文書は、Web Analytics は訪問者の個人データを集めも使いもしないこと（<a
+            href="https://developers.cloudflare.com/web-analytics/about/"
+            >About</a
+          >）、計測に Cookie や localStorage のようなブラウザ側の状態を使わず、Core Web Vitals の画面（Vitals Explorer）は IP
+          アドレスや User Agent で個人を識別（フィンガープリント）しないこと（<a
+            href="https://developers.cloudflare.com/web-analytics/data-metrics/core-web-vitals/"
+            >Core Web Vitals</a
+          >）、顧客のサイトをまたいで個々の利用者を追跡しないこと（<a
+            href="https://developers.cloudflare.com/web-analytics/data-metrics/data-origin-and-collection/"
+            >Data origin and collection</a
+          >）を説明している。
+        </p>
+        <p>
+          入力した設定は、ブラウザの localStorage と URL
+          のクエリに保つ。アプリ自身はそれをどこにも送らないが、ページを読み込むとき、クエリを含む URL は Cloudflare に届く。
+        </p>
+        <a class="back" href="/">CRC Visualizer に戻る</a>
+      </section>
+    </main>
+  </body>
+</html>

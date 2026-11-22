@@ -22,6 +22,7 @@ export const fr: Messages = {
     sidebarToggle: "Afficher/masquer la barre latérale (Ctrl+B)",
     sidebarLabel: "Réglages",
     language: "Langue",
+    privacy: "Confidentialité",
     explanation: "Explication",
   },
   settings: {
