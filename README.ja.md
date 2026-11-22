@@ -53,6 +53,12 @@ hex では、フレームを 1 行に 1 つずつ丸ごと貼り、フレーム�
 
 文書は英語（`*.md`）と日本語（`*.ja.md`）の 2 つを置き、片方を変えるときはもう片方も同時に直す。コードのコメントと docstring は英語で書く。
 
+## プライバシー
+
+crc.shortarrow.jp は Cloudflare Web Analytics で計測している。Cloudflare が配信するページにスクリプト（`static.cloudflareinsights.com/beacon.min.js`）を差し込み、そのスクリプトがブラウザの Performance API で読んだページの表示と読み込みの速さを Cloudflare に送る。Cloudflare の文書は、Web Analytics は訪問者の個人データを集めも使いもしないこと（[About](https://developers.cloudflare.com/web-analytics/about/)）、計測に Cookie や localStorage のようなブラウザ側の状態を使わず、Core Web Vitals の画面（Vitals Explorer）は IP アドレスや User Agent で個人を識別（フィンガープリント）しないこと（[Core Web Vitals](https://developers.cloudflare.com/web-analytics/data-metrics/core-web-vitals/)）、顧客のサイトをまたいで個々の利用者を追跡しないこと（[Data origin and collection](https://developers.cloudflare.com/web-analytics/data-metrics/data-origin-and-collection/)）を説明している。
+
+入力した設定は、ブラウザの localStorage と URL のクエリに保つ。アプリ自身はそれをどこにも送らないが、ページを読み込むとき、クエリを含む URL は Cloudflare に届く。
+
 ## ライセンス
 
 [MIT](LICENSE)
