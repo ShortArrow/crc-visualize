@@ -106,6 +106,10 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   const shown = useLastValid(config);
   const preset = config.ok ? findPreset(config.params) : undefined;
   const route = useRoute();
+  const openInVisualizer = (next: ConfigForm) => {
+    setForm(next);
+    location.hash = "";
+  };
 
   const settingsBody = (
     <>
@@ -152,10 +156,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   }
   if (route.page === "narrow") {
     const path = fitPath(CATALOGUE, route.path);
-    const open = (p: Preset) => {
-      setForm(formFromPreset(p));
-      location.hash = "";
-    };
+    const open = (p: Preset) => openInVisualizer(formFromPreset(p));
     const props = { presets: CATALOGUE, path, onOpen: open };
     return frame(<NarrowSidebar {...props} />)(
       <NarrowPage {...props} compare={pageCompare} onCompare={setPageCompare} />,
@@ -165,10 +166,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
   if (route.page === "cyclic" || route.page === "redundancy") {
     const { page, generator } = route;
     const key = `${generator.width}/${generator.poly}`;
-    const open = ({ params, input }: Pick<Preset, "params" | "input">) => {
-      setForm(formFromParams(params, input));
-      location.hash = "";
-    };
+    const open = ({ params, input }: Pick<Preset, "params" | "input">) => openInVisualizer(formFromParams(params, input));
     return frame(<GeneratorSidebar page={page} generator={generator} />)(
       page === "cyclic" ? (
         <CyclicPage key={key} generator={generator} onOpen={open} />
@@ -179,10 +177,7 @@ function Screen({ restored, locale, onLocale }: ScreenProps) {
     );
   }
   if (route.page === "estimate") {
-    const open = (params: CrcParams, input: Preset["input"]) => {
-      setForm(formFromParams(params, input));
-      location.hash = "";
-    };
+    const open = (params: CrcParams, input: Preset["input"]) => openInVisualizer(formFromParams(params, input));
     return frame(<EstimateSidebar />)(
       <EstimatePage onOpen={open} onCount={setEstimateCount} />,
       <span>{estimateCount === undefined ? m.pages.estimate : m.estimate.status(estimateCount)}</span>,

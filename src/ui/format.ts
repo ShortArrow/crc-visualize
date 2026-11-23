@@ -10,6 +10,9 @@ export const toHex = (reg: Register): string =>
     .toUpperCase()
     .padStart(Math.ceil(reg.length / 4), "0")}`;
 
+/** Writes value as a binary string, MSB first, padded with zeros to width digits. */
+export const valueBinary = (value: number | bigint, width: number): string => value.toString(2).padStart(width, "0");
+
 /** Writes the low width bits of value as a hexadecimal string (with 0x, uppercase) with as many digits as width needs. */
 export const valueHex = (value: bigint, width: number): string => toHex(toRegister(value, width));
 

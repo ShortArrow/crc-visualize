@@ -67,7 +67,8 @@ export function bitsFromBytes(bytes: readonly number[]): Bit[] {
   return bytes.flatMap((byte) => toRegister(BigInt(byte), 8).toReversed());
 }
 
-const xorRegister = (a: Register, b: Register): Register => a.map((x, i) => (x ^ b[i]!) as Bit);
+/** The bitwise XOR of two registers of the same width. */
+export const xorRegister = (a: Register, b: Register): Register => a.map((x, i) => (x ^ b[i]!) as Bit);
 
 /**
  * Position in step.stream of the value fed as bit k. With refin, a byte not yet reflected at this step shows that value at the
