@@ -22,6 +22,7 @@ export const en: Messages = {
     sidebarToggle: "Toggle sidebar (Ctrl+B)",
     sidebarLabel: "Settings",
     language: "Language",
+    privacy: "Privacy",
     explanation: "Explanation",
   },
   settings: {

@@ -53,6 +53,10 @@ Both unit and E2E tests are one scenario per test, split into Given / When / The
 
 Docs are kept in English (`*.md`) and Japanese (`*.ja.md`); when one is changed, the other must be updated together. Code comments and docstrings are written in English.
 
+## Privacy
+
+What crc.shortarrow.jp measures, and where it keeps what you enter, is on the [privacy page](https://crc.shortarrow.jp/privacy).
+
 ## License
 
 [MIT](LICENSE)

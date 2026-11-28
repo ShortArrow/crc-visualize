@@ -18,6 +18,7 @@ export const zh: Messages = {
     sidebarToggle: "显示/隐藏侧边栏（Ctrl+B）",
     sidebarLabel: "设置",
     language: "显示语言",
+    privacy: "隐私",
     explanation: "说明",
   },
   settings: {

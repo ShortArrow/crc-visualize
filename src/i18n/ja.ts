@@ -21,6 +21,7 @@ export const ja = {
     sidebarToggle: "サイドバーの開閉（Ctrl+B）",
     sidebarLabel: "設定",
     language: "表示言語",
+    privacy: "個人情報の扱い",
     explanation: "説明",
   },
   settings: {

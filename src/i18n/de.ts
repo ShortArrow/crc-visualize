@@ -22,6 +22,7 @@ export const de: Messages = {
     sidebarToggle: "Seitenleiste ein-/ausblenden (Ctrl+B)",
     sidebarLabel: "Optionen",
     language: "Sprache",
+    privacy: "Datenschutz",
     explanation: "Erläuterung",
   },
   settings: {

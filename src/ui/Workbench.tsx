@@ -111,6 +111,11 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
           {phone ? <div className="drawer-shade" onClick={() => setUnsavedOpen(false)} /> : null}
           <aside className="sidebar" onClick={closeOnChoice}>
             {sidebar}
+            {phone ? (
+              <a className="privacy-link" href="/privacy">
+                {m.workbench.privacy}
+              </a>
+            ) : null}
           </aside>
           {phone ? null : (
             <Splitter
@@ -132,6 +137,11 @@ export function Workbench({ route, layout, onLayout, locale, onLocale, sidebar, 
       {docking ? <div className="dock" ref={setDock} /> : null}
       <footer className="statusbar">
         {status}
+        {phone ? null : (
+          <a className="privacy-link" href="/privacy">
+            {m.workbench.privacy}
+          </a>
+        )}
         <select
           className="locale-select"
           value={locale}

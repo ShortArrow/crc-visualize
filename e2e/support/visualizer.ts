@@ -460,6 +460,10 @@ export class Visualizer {
     /** The icon of the sidebar toggle, whose lucide class names the panel opening or closing. */
     sidebarToggleIcon: () => this.page.locator(".activity .sidebar-toggle svg"),
     statusbar: () => this.page.locator(".statusbar"),
+    /** The link to the privacy page at the right end of the status bar. */
+    privacyLink: () => this.page.locator(".statusbar .privacy-link"),
+    /** The link to the privacy page at the end of the sidebar, where a phone puts it. */
+    drawerPrivacyLink: () => this.page.locator(".sidebar > .privacy-link"),
     /** The step shown in the status bar, which stands in for the newest log entry on a phone or a short screen. */
     statusStep: () => this.page.locator(".statusbar .status-step"),
     /** The shade behind the sidebar drawn over the editor on a phone; tapping it closes the sidebar. */

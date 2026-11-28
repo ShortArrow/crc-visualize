@@ -2055,9 +2055,14 @@ button.bp-gutter.bp-off::before {
   flex-shrink: 0;
 }
 
-.statusbar .locale-select {
+.statusbar > .privacy-link {
   flex: 0 0 auto;
   margin-left: auto;
+  color: inherit;
+}
+
+.statusbar .locale-select {
+  flex: 0 0 auto;
   padding: 0 4px;
   color: inherit;
   background: transparent;
@@ -3351,6 +3356,13 @@ button.bit-cell:hover {
   left: 0;
   width: min(85vw, 340px);
   box-shadow: 4px 0 16px rgb(0 0 0 / 0.5);
+}
+
+.workbench.phone > .sidebar > .privacy-link {
+  display: block;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  color: var(--fg);
 }
 
 .drawer-shade {
